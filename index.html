@@ -906,46 +906,12 @@
 }
 </style>
 
-<script>
-// Duplicate wins for seamless infinite scroll
-const winsTicker = document.querySelector('.wins-ticker');
-if (winsTicker) {
-    const wins = winsTicker.innerHTML;
-    winsTicker.innerHTML = wins + wins;
-}
-
-// Animate member count
-function animateCounter() {
-    const counter = document.getElementById('memberCount');
-    if (!counter) return;
-    const target = 1247;
-    const duration = 2000;
-    const start = 0;
-    const increment = target / (duration / 16);
-    let current = start;
-
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-            counter.textContent = target + '+';
-            clearInterval(timer);
-        } else {
-            counter.textContent = Math.floor(current) + '+';
-        }
-    }, 16);
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', animateCounter);
-} else {
-    setTimeout(animateCounter, 100);
-}
 <script src="https://js.stripe.com/v3/"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
-  // ⭐ Your Firebase Config (COMPLETE + CORRECT)
+  // ⭐ Your Firebase Config (COMPLETE)
   const firebaseConfig = {
     apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
     authDomain: "arcane-archives-3b0f5.firebaseapp.com",
@@ -959,34 +925,38 @@ if (document.readyState === 'loading') {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  // Stripe client with your live key
   const stripe = Stripe(
     "pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW"
   );
 
-  // Make checkout() global for your button
+  // Make checkout() available to your button's onclick
   window.checkout = async function checkout() {
     const user = auth.currentUser;
 
     if (!user) {
-      alert("Please log in or create an account before subscribing.");
-      window.location.href = "login.html";
-      return;
+      // Not blocking anymore – just warning
+      alert("After payment, you'll log in to activate your access.");
     }
 
     try {
-      const response = await fetch(
-        "/.netlify/functions/create-checkout-session",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            uid: user.uid // Send UID to backend
-          })
-        }
-      );
+      const response = await fetch("/.netlify/functions/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // your live price ID – REQUIRED by backend
+          priceId: "price_1SRnIxCXghparoQFb0oQPUes",
+          // pass uid if logged in (backend can ignore it if unused)
+          uid: user ? user.uid : null
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData = {};
+        try {
+          errorData = await response.json();
+        } catch (_) {}
+        console.error("Server error:", errorData);
         alert("Error: " + (errorData.error || "Failed to create checkout session"));
         return;
       }
@@ -994,24 +964,28 @@ if (document.readyState === 'loading') {
       const session = await response.json();
 
       if (!session.id) {
-        alert("Error: No session ID received from server.");
+        console.error("No session ID in response:", session);
+        alert("Error: No session ID received from server");
         return;
       }
 
       const result = await stripe.redirectToCheckout({
-        sessionId: session.id
+        sessionId: session.id,
       });
 
       if (result.error) {
+        console.error("Stripe redirect error:", result.error);
         alert(result.error.message);
       }
     } catch (error) {
-      alert("Something went wrong: " + error.message);
+      console.error("Checkout error:", error);
+      alert(
+        "Something went wrong: " +
+          error.message +
+          "\n\nCheck the browser console for more details."
+      );
     }
   };
 </script>
-</body>
-</html>
-
 </body>
 </html>
