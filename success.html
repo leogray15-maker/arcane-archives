@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #a78bfa;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--purple-light);
+            position: absolute;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .success-container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(147, 51, 234, 0.05);
+            border: 2px solid var(--purple);
+            border-radius: 20px;
+            padding: 4rem 3rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .success-container h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .success-container h2 {
+            font-size: 1.5rem;
+            color: var(--purple-light);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            line-height: 1.8;
+            margin-bottom: 3rem;
+        }
+
+        .next-steps {
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            text-align: left;
+        }
+
+        .next-steps h3 {
+            color: var(--purple-light);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            color: var(--text-light);
+        }
+
+        .step-icon {
+            font-size: 1.5rem;
+        }
+
+        .btn-enter {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-enter:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(147, 51, 234, 0.5);
+        }
+
+        .support-text {
+            margin-top: 2rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .support-text a {
+            color: var(--purple-light);
+            text-decoration: none;
+        }
+
+        .support-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 3rem 2rem;
+            }
+
+            .success-container h1 {
+                font-size: 2rem;
+            }
+
+            .success-icon {
+                font-size: 4rem;
+            }
+        }
+    
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Loading Screen - Include this at the top of body in all pages -->
+<div id="loadingScreen" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    transition: opacity 0.5s, visibility 0.5s;
+">
+    <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: pulse 2s ease-in-out infinite;">
+    
+    <div style="width: 300px; margin-bottom: 1rem;">
+        <div style="
+            width: 100%;
+            height: 6px;
+            background: rgba(147, 51, 234, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        ">
+            <div id="loadingBar" style="
+                width: 0%;
+                height: 100%;
+                background: linear-gradient(90deg, #9333ea, #a78bfa);
+                border-radius: 10px;
+                transition: width 0.3s ease;
+            "></div>
+        </div>
+    </div>
+    
+    <div id="loadingText" style="
+        color: #a78bfa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+    ">Loading... 0%</div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+
+<script>
+// Loading screen script
+(function() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.visibility = 'hidden';
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500);
+            }, 300);
+        }
+        loadingBar.style.width = progress + '%';
+        loadingText.textContent = `Loading... ${Math.round(progress)}%`;
+    }, 200);
+    
+    // Ensure loading completes
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            progress = 100;
+            clearInterval(interval);
+            loadingBar.style.width = '100%';
+            loadingText.textContent = 'Loading... 100%';
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.visibility = 'hidden';
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500);
+            }, 300);
+        }, 500);
+    });
+})();
+</script>
+
+
+    <div class="success-container">
+        <div class="success-icon">🏆</div>
+        <h1>Welcome to The Arcane Archives! 🎉</h1>
+        <h2>Your payment was successful</h2>
+        <p class="success-message">
+            You now have lifetime access to all courses, the community, and live calls. Your journey to forbidden knowledge begins now.
+        </p>
+
+        <div class="next-steps">
+            <h3>Next Steps:</h3>
+            <div class="step">
+                <div class="step-icon">✅</div>
+                <div>Payment confirmed</div>
+            </div>
+            <div class="step">
+                <div class="step-icon">✅</div>
+                <div>Account activated</div>
+            </div>
+            <div class="step">
+                <div class="step-icon">✅</div>
+                <div>Access granted</div>
+            </div>
+        </div>
+
+        <a href="dashboard.html" class="btn-enter">Enter The Archives</a>
+
+        <p class="support-text">
+            Receipt sent to your email. Need help? Contact <a href="mailto:support@arcane-archives.com">support@arcane-archives.com</a>
+        </p>
+    </div>
+
+    <script>
+        // Create confetti
+        function createConfetti() {
+            const colors = ['#9333ea', '#a78bfa', '#a78bfa', '#ec4899', '#10b981'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(confetti);
+            }
+        }
+
+        createConfetti();
+
+        // Remove confetti after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.confetti').forEach(c => c.remove());
+        }, 5000);
+    </script>
+
+<!-- Footer - Include this at the bottom of all pages -->
+<footer style="
+    background: #050505;
+    color: #e5e5e5;
+    padding: 3rem 2rem 2rem;
+    margin-top: 5rem;
+    border-top: 1px solid rgba(147, 51, 234, 0.2);
+">
+    <div style="
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        margin-bottom: 2rem;
+    ">
+        <div>
+            <h3 style="
+                font-size: 1.3rem;
+                margin-bottom: 1rem;
+                background: linear-gradient(135deg, #9333ea, #a78bfa);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                font-weight: 800;
+            ">THE ARCANE ARCHIVES</h3>
+            <p style="color: #a3a3a3; line-height: 1.6;">
+                Unlock the forbidden knowledge. Master business, mindset, health, and relationships.
+            </p>
+        </div>
+        
+        <div>
+            <h4 style="
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                color: #a78bfa;
+                font-weight: 700;
+            ">Quick Links</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="index.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Home</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="dashboard.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Dashboard</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="courses.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Courses</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="community.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Community</a>
+                </li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                color: #a78bfa;
+                font-weight: 700;
+            ">Legal</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="Privacy-policy.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Privacy Policy</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="terms-of-service.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Terms of Service</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="refund-policy.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Refund Policy</a>
+                </li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                color: #a78bfa;
+                font-weight: 700;
+            ">Contact</h4>
+            <p style="color: #a3a3a3; line-height: 1.6;">
+                Email: support@arcane-archives.com<br>
+                Website: arcanearchives.netlify.app
+            </p>
+        </div>
+    </div>
+    
+    <div style="
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(147, 51, 234, 0.1);
+        color: #a3a3a3;
+        font-size: 0.9rem;
+    ">
+        <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+    </div>
+</footer>
+
+<style>
+footer a:hover {
+    color: #a78bfa !important;
+}
+
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #a78bfa;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+        }
+
+        .nav-container {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: var(--bg-darker);
+            border-right: 1px solid rgba(147, 51, 234, 0.2);
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--purple-light);
+        }
+
+        .sidebar-menu a.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            border-left: 3px solid var(--purple);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 3rem;
+            min-height: calc(100vh - 70px);
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--purple);
+            border-color: var(--purple);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .course-card {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.3);
+            border-color: var(--purple);
+        }
+
+        .course-thumbnail {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+        }
+
+        .course-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--purple-light);
+            color: var(--bg-dark);
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .course-content {
+            padding: 1.5rem;
+        }
+
+        .course-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .course-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .course-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(147, 51, 234, 0.2);
+            border-radius: 3px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple), var(--purple-light));
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .course-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .course-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+                transition: left 0.3s;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Enhanced Loading Screen v2 - Include at top of body in all pages -->
+<div id="loadingScreen" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    transition: opacity 0.5s, visibility 0.5s;
+">
+    <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: pulse 2s ease-in-out infinite;">
+    
+    <div style="width: 300px; margin-bottom: 1rem;">
+        <div style="
+            width: 100%;
+            height: 6px;
+            background: rgba(147, 51, 234, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        ">
+            <div id="loadingBar" style="
+                width: 0%;
+                height: 100%;
+                background: linear-gradient(90deg, #9333ea, #a78bfa);
+                border-radius: 10px;
+                transition: width 0.3s ease;
+            "></div>
+        </div>
+    </div>
+    
+    <div id="loadingText" style="
+        color: #a78bfa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        min-height: 30px;
+        text-align: center;
+    ">Unlocking the archives...</div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+
+<script>
+// Enhanced loading screen with rotating messages
+(function() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    
+    const messages = [
+        'Unlocking the archives...',
+        'Preparing your journey...',
+        'Keep this a secret...',
+        'Loading forbidden knowledge...',
+        'Initializing consciousness shift...',
+        'Breaking the matrix...'
+    ];
+    
+    let progress = 0;
+    let messageIndex = 0;
+    
+    // Rotate messages
+    const messageInterval = setInterval(() => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        loadingText.textContent = messages[messageIndex];
+    }, 800);
+    
+    // Progress bar
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            clearInterval(messageInterval);
+            loadingText.textContent = 'Welcome to the archives...';
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.visibility = 'hidden';
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500);
+            }, 300);
+        }
+        loadingBar.style.width = progress + '%';
+    }, 200);
+    
+    // Ensure loading completes
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            progress = 100;
+            clearInterval(interval);
+            clearInterval(messageInterval);
+            loadingBar.style.width = '100%';
+            loadingText.textContent = 'Welcome to the archives...';
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.visibility = 'hidden';
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500);
+            }, 300);
+        }, 500);
+    });
+})();
+</script>
+
+
+<!-- Loading Screen - Include this at the top of body in all pages -->
+
+
+
+    <nav>
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <a href="dashboard.html" class="logo"><img src="ArcaneA.png" alt="Logo" style="height: 40px; width: auto;"> THE ARCANE ARCHIVES</a>
+            <div class="user-avatar" id="userAvatar">?</div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="courses.html" class="active">📚 All Courses</a></li>
+            <li><a href="community.html">💬 Community</a></li>
+            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="wins.html">🏆 Wins Board</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>All Courses</h1>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search courses..." id="searchInput">
+        </div>
+
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="in-progress">In Progress</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <div class="courses-grid" id="coursesGrid">
+            <!-- Money & Business -->
+            <div class="course-card" data-category="money">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <span>💰</span>
+                    <div class="course-badge">MONEY</div>
+                </div>
+                <div class="course-content">
+                    <h3>Financial Freedom Blueprint</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.5 hours</span>
+                        <span>📖 15 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="money">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <span>🏢</span>
+                    <div class="course-badge">BUSINESS</div>
+                </div>
+                <div class="course-content">
+                    <h3>Building Your First Business</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 4.0 hours</span>
+                        <span>📖 18 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="money">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <span>📊</span>
+                    <div class="course-badge">INVESTING</div>
+                </div>
+                <div class="course-content">
+                    <h3>Investment Fundamentals</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.5 hours</span>
+                        <span>📖 12 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="money">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <span>🤝</span>
+                    <div class="course-badge">BUSINESS</div>
+                </div>
+                <div class="course-content">
+                    <h3>Negotiation Mastery</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.0 hours</span>
+                        <span>📖 14 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <!-- Women & Game -->
+            <div class="course-card" data-category="relationships">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                    <span>🌹</span>
+                    <div class="course-badge">RELATIONSHIPS</div>
+                </div>
+                <div class="course-content">
+                    <h3>Attraction Fundamentals</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.8 hours</span>
+                        <span>📖 11 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="relationships">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                    <span>💬</span>
+                    <div class="course-badge">COMMUNICATION</div>
+                </div>
+                <div class="course-content">
+                    <h3>High-Value Communication</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.0 hours</span>
+                        <span>📖 10 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="relationships">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                    <span>🎯</span>
+                    <div class="course-badge">DATING</div>
+                </div>
+                <div class="course-content">
+                    <h3>Dating Strategy</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.2 hours</span>
+                        <span>📖 13 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="relationships">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                    <span>💑</span>
+                    <div class="course-badge">RELATIONSHIPS</div>
+                </div>
+                <div class="course-content">
+                    <h3>Relationship Dynamics</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.5 hours</span>
+                        <span>📖 12 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <!-- Health & Body -->
+            <div class="course-card" data-category="health">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #9333ea, #7e22ce);">
+                    <span>💪</span>
+                    <div class="course-badge">FITNESS</div>
+                </div>
+                <div class="course-content">
+                    <h3>Optimal Testosterone</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.2 hours</span>
+                        <span>📖 9 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="health">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #9333ea, #7e22ce);">
+                    <span>🏋️</span>
+                    <div class="course-badge">FITNESS</div>
+                </div>
+                <div class="course-content">
+                    <h3>Body Transformation</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 4.5 hours</span>
+                        <span>📖 20 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="health">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #9333ea, #7e22ce);">
+                    <span>🥗</span>
+                    <div class="course-badge">NUTRITION</div>
+                </div>
+                <div class="course-content">
+                    <h3>Peak Performance Nutrition</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.0 hours</span>
+                        <span>📖 14 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <!-- Mindset -->
+            <div class="course-card" data-category="mindset">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                    <span>🧠</span>
+                    <div class="course-badge">MINDSET</div>
+                </div>
+                <div class="course-content">
+                    <h3>Mental Dominance</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.8 hours</span>
+                        <span>📖 11 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="mindset">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                    <span>🔥</span>
+                    <div class="course-badge">DISCIPLINE</div>
+                </div>
+                <div class="course-content">
+                    <h3>Discipline & Willpower</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 2.0 hours</span>
+                        <span>📖 10 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="mindset">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                    <span>🎯</span>
+                    <div class="course-badge">PURPOSE</div>
+                </div>
+                <div class="course-content">
+                    <h3>Purpose & Direction</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.5 hours</span>
+                        <span>📖 15 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <!-- Philosophy -->
+            <div class="course-card" data-category="philosophy">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                    <span>📚</span>
+                    <div class="course-badge">PHILOSOPHY</div>
+                </div>
+                <div class="course-content">
+                    <h3>Stoic Wisdom</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.0 hours</span>
+                        <span>📖 12 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="philosophy">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                    <span>👑</span>
+                    <div class="course-badge">POWER</div>
+                </div>
+                <div class="course-content">
+                    <h3>Power Dynamics</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 4.0 hours</span>
+                        <span>📖 16 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+
+            <div class="course-card" data-category="philosophy">
+                <div class="course-thumbnail" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                    <span>🎭</span>
+                    <div class="course-badge">PSYCHOLOGY</div>
+                </div>
+                <div class="course-content">
+                    <h3>Human Psychology</h3>
+                    <div class="course-meta">
+                        <span>⏱️ 3.8 hours</span>
+                        <span>📖 17 lessons</span>
+                    </div>
+                    <button class="course-btn">Start Course</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                const username = user.displayName || user.email.split('@')[0];
+                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+            }
+        });
+
+        // Mobile menu
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Filter logic can be added here
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const courseCards = document.querySelectorAll('.course-card');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            courseCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+<!-- Footer - Include this at the bottom of all pages -->
+<footer style="
+    background: #050505;
+    color: #e5e5e5;
+    padding: 3rem 2rem 2rem;
+    margin-top: 5rem;
+    border-top: 1px solid rgba(147, 51, 234, 0.2);
+">
+    <div style="
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        margin-bottom: 2rem;
+    ">
+        <div>
+            <h3 style="
+                font-size: 1.3rem;
+                margin-bottom: 1rem;
+                background: linear-gradient(135deg, #9333ea, #a78bfa);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                font-weight: 800;
+            ">THE ARCANE ARCHIVES</h3>
+            <p style="color: #a3a3a3; line-height: 1.6;">
+                Unlock the forbidden knowledge. Master business, mindset, health, and relationships.
+            </p>
+        </div>
+        
+        <div>
+            <h4 style="
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                color: #a78bfa;
+                font-weight: 700;
+            ">Quick Links</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="index.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Home</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="dashboard.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Dashboard</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="courses.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Courses</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="community.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Community</a>
+                </li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                color: #a78bfa;
+                font-weight: 700;
+            ">Legal</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="Privacy-policy.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Privacy Policy</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="terms-of-service.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Terms of Service</a>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="refund-policy.html" style="color: #a3a3a3; text-decoration: none; transition: color 0.3s;">Refund Policy</a>
+                </li>
+            </ul>
+        </div>
+        
+        <div>
+            <h4 style="
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+                color: #a78bfa;
+                font-weight: 700;
+            ">Contact</h4>
+            <p style="color: #a3a3a3; line-height: 1.6;">
+                Email: support@arcane-archives.com<br>
+                Website: arcanearchives.netlify.app
+            </p>
+        </div>
+    </div>
+    
+    <div style="
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(147, 51, 234, 0.1);
+        color: #a3a3a3;
+        font-size: 0.9rem;
+    ">
+        <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+    </div>
+</footer>
+
+<style>
+footer a:hover {
+    color: #a78bfa !important;
+}
+
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

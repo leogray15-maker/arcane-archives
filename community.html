@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: fixed; top: 0; width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+        }
+        .nav-container {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px; font-weight: 900;
+            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .logo img { height: 40px; width: auto; }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.2rem;
+        }
+        .menu-toggle {
+            display: none; background: none; border: none;
+            font-size: 1.5rem; color: var(--text-light); cursor: pointer;
+        }
+        .sidebar {
+            position: fixed; left: 0; top: 70px; width: 250px;
+            height: calc(100vh - 70px);
+            background: var(--bg-darker);
+            border-right: 1px solid rgba(147, 51, 234, 0.2);
+            padding: 2rem 0; overflow-y: auto;
+        }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 1rem 2rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .sidebar-menu a:hover {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--purple-light);
+        }
+        .sidebar-menu a.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            border-left: 3px solid var(--purple);
+        }
+        .main-content {
+            margin-left: 250px;
+            margin-top: 70px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 70px);
+        }
+        .page-header {
+            padding: 2rem 3rem 1rem;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p { color: var(--text-dim); }
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 3rem;
+            overflow: hidden;
+        }
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-avatar {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .message-content {
+            flex: 1;
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .message-username {
+            font-weight: 700;
+            color: var(--purple-light);
+        }
+        .message-time {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        .message-text {
+            color: var(--text-light);
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .message-input-container {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 15px;
+        }
+        .message-input {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 60px;
+        }
+        .message-input:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+        .send-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            align-self: flex-end;
+        }
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+        }
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+        }
+        .no-messages {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .no-messages-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .sidebar { left: -250px; transition: left 0.3s; }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .page-header { padding: 1.5rem 1rem 1rem; }
+            .chat-container { padding: 1rem; }
+        }
+    
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <a href="dashboard.html" class="logo">
+                <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
+            </a>
+            <div class="user-avatar" id="userAvatar">?</div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="courses.html">📚 All Courses</a></li>
+            <li><a href="community.html" class="active">💬 Community</a></li>
+            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="wins.html">🏆 Wins Board</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>💬 Community Chat</h1>
+            <p>Connect with the brotherhood in real-time</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages-container" id="messagesContainer">
+                <div class="loading">⏳ Loading messages...</div>
+            </div>
+
+            <div class="message-input-container">
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Share your thoughts with the community...
+Press Enter to send, Shift+Enter for new line"
+                ></textarea>
+                <button id="sendBtn" class="send-btn">📤 Send</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const app = initializeApp({
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        });
+
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null, currentUsername = '', currentAvatar = '👤';
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                currentUser = user;
+                currentUsername = user.displayName || user.email.split('@')[0];
+                currentAvatar = localStorage.getItem('userAvatar') || '👤';
+                document.getElementById('userAvatar').textContent = currentAvatar;
+                loadMessages();
+            }
+        });
+
+        function loadMessages() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const q = query(collection(db, 'community'), orderBy('timestamp', 'desc'), limit(100));
+            
+            onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    messagesContainer.innerHTML = `
+                        <div class="no-messages">
+                            <div class="no-messages-icon">💬</div>
+                            <h3>No messages yet!</h3>
+                            <p>Be the first to start the conversation.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                messagesContainer.innerHTML = '';
+                const messages = [];
+                snapshot.forEach((doc) => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Reverse to show oldest first
+                messages.reverse().forEach((message) => {
+                    const messageEl = createMessageElement(message);
+                    messagesContainer.appendChild(messageEl);
+                });
+
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+
+        function createMessageElement(message) {
+            const div = document.createElement('div');
+            div.className = 'message';
+            
+            const timestamp = message.timestamp?.toDate() || new Date();
+            const timeAgo = getTimeAgo(timestamp);
+            
+            div.innerHTML = `
+                <div class="message-avatar">${message.avatar || '👤'}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-username">${message.username}</span>
+                        <span class="message-time">${timeAgo}</span>
+                    </div>
+                    <div class="message-text">${escapeHtml(message.message)}</div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '📤 Sending...';
+            
+            try {
+                await addDoc(collection(db, 'community'), {
+                    userId: currentUser.uid,
+                    username: currentUsername,
+                    avatar: currentAvatar,
+                    message: message,
+                    timestamp: serverTimestamp()
+                });
+                
+                messageInput.value = '';
+                sendBtn.textContent = '✅ Sent!';
+                
+                setTimeout(() => {
+                    sendBtn.textContent = '📤 Send';
+                    sendBtn.disabled = false;
+                }, 1000);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+                sendBtn.textContent = '📤 Send';
+                sendBtn.disabled = false;
+            }
+        }
+
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+
+        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+    </script>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root { --bg-dark: #0a0a0a; --bg-darker: #050505; --purple: #9333ea; --purple-dark: #7e22ce; --purple-light: #a78bfa; --text-light: #e5e5e5; --text-dim: #a3a3a3; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; }
+        
+        nav { position: fixed; top: 0; width: 100%; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid rgba(147, 51, 234, 0.2); }
+        .nav-container { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 900; background: linear-gradient(135deg, var(--purple), var(--purple-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; display: flex; align-items: center; gap: 12px; }
+        .logo img { height: 40px; width: auto; }
+        .user-menu { display: flex; align-items: center; gap: 1rem; position: relative; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; font-size: 1.2rem; transition: transform 0.3s; }
+        .user-avatar:hover { transform: scale(1.1); }
+        .user-dropdown { position: absolute; top: 50px; right: 0; background: rgba(10, 10, 10, 0.98); border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 10px; padding: 0.5rem 0; min-width: 180px; display: none; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        .user-dropdown.active { display: block; }
+        .user-dropdown a { display: block; padding: 0.8rem 1.5rem; color: var(--text-light); text-decoration: none; transition: background 0.3s; }
+        .user-dropdown a:hover { background: rgba(147, 51, 234, 0.1); }
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; }
+        
+        .sidebar { position: fixed; left: 0; top: 70px; width: 250px; height: calc(100vh - 70px); background: var(--bg-darker); border-right: 1px solid rgba(147, 51, 234, 0.2); padding: 2rem 0; overflow-y: auto; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; color: var(--text-dim); text-decoration: none; transition: all 0.3s; font-weight: 500; }
+        .sidebar-menu a:hover { background: rgba(147, 51, 234, 0.1); color: var(--purple-light); }
+        .sidebar-menu a.active { background: rgba(147, 51, 234, 0.2); color: var(--purple-light); border-left: 3px solid var(--purple); }
+        
+        .main-content { margin-left: 250px; margin-top: 70px; padding: 3rem; min-height: calc(100vh - 70px - 100px); }
+        
+        .welcome-banner { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); border-radius: 15px; padding: 2.5rem; margin-bottom: 3rem; box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3); }
+        .welcome-banner h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .welcome-banner p { font-size: 1.1rem; opacity: 0.9; }
+        
+        .xp-section { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 3rem; }
+        .xp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .xp-level { background: linear-gradient(135deg, var(--purple), var(--purple-light)); padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 700; font-size: 1.1rem; }
+        .xp-progress-container { background: rgba(147, 51, 234, 0.1); border-radius: 10px; height: 30px; overflow: hidden; margin-bottom: 1rem; }
+        .xp-progress-bar { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-light)); transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+        .xp-info { display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-card { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; transition: all 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(147, 51, 234, 0.2); }
+        .stat-card .icon { font-size: 2rem; margin-bottom: 1rem; }
+        .stat-card .value { font-size: 2.5rem; font-weight: 900; color: var(--purple-light); margin-bottom: 0.5rem; }
+        .stat-card .label { color: var(--text-dim); font-size: 0.9rem; }
+        .progress-bar-container { background: rgba(147, 51, 234, 0.1); border-radius: 5px; height: 8px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-light)); transition: width 0.5s ease; }
+        
+        .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; color: var(--purple-light); }
+        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .action-card { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; text-decoration: none; color: var(--text-light); display: block; }
+        .action-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(147, 51, 234, 0.3); border-color: var(--purple); }
+        .action-card .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .action-card h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .action-card p { color: var(--text-dim); font-size: 0.9rem; }
+        
+        .activity-list { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; }
+        .activity-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid rgba(147, 51, 234, 0.1); }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(147, 51, 234, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .activity-content { flex: 1; }
+        .activity-content p { margin-bottom: 0.25rem; }
+        .activity-content .time { font-size: 0.85rem; color: var(--text-dim); }
+        
+        footer { background: rgba(5, 5, 5, 0.95); padding: 1.5rem; border-top: 1px solid rgba(147, 51, 234, 0.2); text-align: center; margin-top: auto; }
+        .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .footer-links a:hover { color: var(--purple-light); }
+        .footer-bottom { color: var(--text-dim); font-size: 0.85rem; }
+        
+        @media (max-width: 768px) {
+            .sidebar { left: -250px; transition: left 0.3s; }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; padding: 2rem 1rem; }
+            .menu-toggle { display: block; }
+            .stats-grid, .quick-actions { grid-template-columns: 1fr; }
+            .welcome-banner h1 { font-size: 1.5rem; }
+            .xp-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <a href="dashboard.html" class="logo"><img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES</a>
+            <div class="user-menu">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="settings.html">⚙️ Settings</a>
+                    <a href="#" id="logoutBtn">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="active">🏠 Dashboard</a></li>
+            <li><a href="courses.html">📚 All Courses</a></li>
+            <li><a href="community.html">💬 Community</a></li>
+            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="wins.html">🏆 Wins Board</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Welcome Back, <span id="username">User</span>! 🔥</h1>
+            <p>Continue your journey to mastering the forbidden knowledge</p>
+        </div>
+
+        <div class="xp-section">
+            <div class="xp-header">
+                <div>
+                    <h2 style="color: var(--purple-light); margin-bottom: 0.5rem;">Your Progress</h2>
+                    <p style="color: var(--text-dim);">Keep grinding to level up</p>
+                </div>
+                <div class="xp-level" id="userLevel">Apprentice</div>
+            </div>
+            <div class="xp-progress-container">
+                <div class="xp-progress-bar" id="xpProgressBar" style="width: 0%;"><span id="xpProgressText">0 XP</span></div>
+            </div>
+            <div class="xp-info">
+                <span><span id="currentXP">0</span> XP</span>
+                <span>Next level: <span id="nextLevelXP">100</span> XP</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📖</div>
+                <div class="value" id="coursesCompleted">0</div>
+                <div class="label">Courses Completed</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="coursesProgress" style="width: 0%"></div></div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⏱️</div>
+                <div class="value" id="hoursLearning">0</div>
+                <div class="label">Hours of Learning</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="hoursProgress" style="width: 0%"></div></div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🔥</div>
+                <div class="value" id="dayStreak">0</div>
+                <div class="label">Day Streak</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="streakProgress" style="width: 0%"></div></div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🏆</div>
+                <div class="value" id="winsPosted">0</div>
+                <div class="label">Wins Posted</div>
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="winsProgress" style="width: 0%"></div></div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Quick Actions</h2>
+        <div class="quick-actions">
+            <a href="courses.html" class="action-card"><div class="icon">📚</div><h3>Browse Courses</h3><p>Explore our library of forbidden knowledge</p></a>
+            <a href="community.html" class="action-card"><div class="icon">💬</div><h3>Join Community</h3><p>Connect with fellow truth-seekers</p></a>
+            <a href="live-calls.html" class="action-card"><div class="icon">🎙️</div><h3>Upcoming Calls</h3><p>Join our weekly live Q&A sessions</p></a>
+            <a href="wins.html" class="action-card"><div class="icon">🏆</div><h3>Share Your Wins</h3><p>Celebrate your victories with the brotherhood</p></a>
+        </div>
+
+        <h2 class="section-title">Recent Activity</h2>
+        <div class="activity-list" id="activityList">
+            <div class="activity-item">
+                <div class="activity-icon">🎉</div>
+                <div class="activity-content">
+                    <p>Logged in</p>
+                    <p class="time" id="loginTime">Just now</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2024 The Arcane Archives. All rights reserved.</p></div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const app = initializeApp({ apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain: "arcane-archives-3b0f5.firebaseapp.com", projectId: "arcane-archives-3b0f5", storageBucket: "arcane-archives-3b0f5.firebasestorage.app", messagingSenderId: "264237235055", appId: "1:264237235055:web:4a2e5605b0ffb5307f069a" });
+
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const loginTime = new Date();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                const username = user.displayName || user.email.split('@')[0];
+                document.getElementById('username').textContent = username;
+                
+                const storedAvatar = localStorage.getItem('userAvatar');
+                const avatar = storedAvatar || username.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = avatar;
+                
+                localStorage.setItem('arcane_user', username);
+                localStorage.setItem('arcane_uid', user.uid);
+                localStorage.setItem('arcane_login_time', loginTime.toISOString());
+
+                await loadUserStats(user.uid);
+                updateLoginTime();
+            }
+        });
+
+        async function loadUserStats(uid) {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', uid));
+                let userData = userDoc.exists() ? userDoc.data() : {};
+
+                const xp = userData.xp || 0;
+                const coursesCompleted = userData.coursesCompleted || 0;
+                const hoursLearning = userData.hoursLearning || 0;
+                const dayStreak = userData.dayStreak || 0;
+                const winsPosted = userData.winsPosted || 0;
+
+                const level = Math.floor(xp / 100);
+                const nextLevelXP = (level + 1) * 100;
+                const xpProgress = (xp / nextLevelXP) * 100;
+
+                document.getElementById('currentXP').textContent = xp;
+                document.getElementById('nextLevelXP').textContent = nextLevelXP;
+                document.getElementById('xpProgressBar').style.width = xpProgress + '%';
+                document.getElementById('xpProgressText').textContent = xp + ' XP';
+                document.getElementById('userLevel').textContent = getLevelName(level);
+
+                document.getElementById('coursesCompleted').textContent = coursesCompleted;
+                document.getElementById('hoursLearning').textContent = hoursLearning;
+                document.getElementById('dayStreak').textContent = dayStreak;
+                document.getElementById('winsPosted').textContent = winsPosted;
+
+                document.getElementById('coursesProgress').style.width = Math.min((coursesCompleted / 12) * 100, 100) + '%';
+                document.getElementById('hoursProgress').style.width = Math.min((hoursLearning / 48) * 100, 100) + '%';
+                document.getElementById('streakProgress').style.width = Math.min((dayStreak / 30) * 100, 100) + '%';
+                document.getElementById('winsProgress').style.width = Math.min((winsPosted / 10) * 100, 100) + '%';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function getLevelName(level) {
+            if (level < 1) return '🌱 Apprentice';
+            if (level < 5) return '⚡ Adept';
+            if (level < 10) return '🔮 Archivist';
+            if (level < 20) return '👑 Master';
+            return '🌟 Legend';
+        }
+
+        function updateLoginTime() {
+            setInterval(() => {
+                const now = new Date();
+                const diff = now - loginTime;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(minutes / 60);
+                
+                let timeText = 'Just now';
+                if (minutes < 1) timeText = 'Just now';
+                else if (minutes < 60) timeText = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                else timeText = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                
+                document.getElementById('loginTime').textContent = timeText;
+            }, 30000);
+        }
+
+        document.getElementById('userAvatar').addEventListener('click', () => {
+            document.getElementById('userDropdown').classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userDropdown').classList.remove('active');
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            localStorage.clear();
+            window.location.href = 'login.html';
+        });
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
