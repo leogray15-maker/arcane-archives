@@ -1,402 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
-    <style>
-        :root { --bg-dark: #0a0a0a; --bg-darker: #050505; --purple: #9333ea; --purple-dark: #7e22ce; --purple-light: #a78bfa; --text-light: #e5e5e5; --text-dim: #a3a3a3; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; }
-        
-        nav { position: fixed; top: 0; width: 100%; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid rgba(147, 51, 234, 0.2); }
-        .nav-container { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 20px; font-weight: 900; background: linear-gradient(135deg, var(--purple), var(--purple-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; display: flex; align-items: center; gap: 12px; }
-        .logo img { height: 40px; width: auto; }
-        .user-menu { display: flex; align-items: center; gap: 1rem; position: relative; }
-        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; font-size: 1.2rem; transition: transform 0.3s; }
-        .user-avatar:hover { transform: scale(1.1); }
-        .user-dropdown { position: absolute; top: 50px; right: 0; background: rgba(10, 10, 10, 0.98); border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 10px; padding: 0.5rem 0; min-width: 180px; display: none; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
-        .user-dropdown.active { display: block; }
-        .user-dropdown a { display: block; padding: 0.8rem 1.5rem; color: var(--text-light); text-decoration: none; transition: background 0.3s; }
-        .user-dropdown a:hover { background: rgba(147, 51, 234, 0.1); }
-        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; }
-        
-        .sidebar { position: fixed; left: 0; top: 70px; width: 250px; height: calc(100vh - 70px); background: var(--bg-darker); border-right: 1px solid rgba(147, 51, 234, 0.2); padding: 2rem 0; overflow-y: auto; }
-        .sidebar-menu { list-style: none; }
-        .sidebar-menu a { display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; color: var(--text-dim); text-decoration: none; transition: all 0.3s; font-weight: 500; }
-        .sidebar-menu a:hover { background: rgba(147, 51, 234, 0.1); color: var(--purple-light); }
-        .sidebar-menu a.active { background: rgba(147, 51, 234, 0.2); color: var(--purple-light); border-left: 3px solid var(--purple); }
-        
-        .main-content { margin-left: 250px; margin-top: 70px; padding: 3rem; min-height: calc(100vh - 70px - 100px); }
-        
-        .welcome-banner { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); border-radius: 15px; padding: 2.5rem; margin-bottom: 3rem; box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3); }
-        .welcome-banner h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-        .welcome-banner p { font-size: 1.1rem; opacity: 0.9; }
-        
-        .xp-section { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 3rem; }
-        .xp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .xp-level { background: linear-gradient(135deg, var(--purple), var(--purple-light)); padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 700; font-size: 1.1rem; }
-        .xp-progress-container { background: rgba(147, 51, 234, 0.1); border-radius: 10px; height: 30px; overflow: hidden; margin-bottom: 1rem; }
-        .xp-progress-bar { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-light)); transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
-        .xp-info { display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
-        .stat-card { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; transition: all 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(147, 51, 234, 0.2); }
-        .stat-card .icon { font-size: 2rem; margin-bottom: 1rem; }
-        .stat-card .value { font-size: 2.5rem; font-weight: 900; color: var(--purple-light); margin-bottom: 0.5rem; }
-        .stat-card .label { color: var(--text-dim); font-size: 0.9rem; }
-        .progress-bar-container { background: rgba(147, 51, 234, 0.1); border-radius: 5px; height: 8px; overflow: hidden; margin-top: 0.5rem; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-light)); transition: width 0.5s ease; }
-        
-        .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; color: var(--purple-light); }
-        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
-        .action-card { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s; text-decoration: none; color: var(--text-light); display: block; }
-        .action-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(147, 51, 234, 0.3); border-color: var(--purple); }
-        .action-card .icon { font-size: 3rem; margin-bottom: 1rem; }
-        .action-card h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
-        .action-card p { color: var(--text-dim); font-size: 0.9rem; }
-        
-        .activity-list { background: rgba(147, 51, 234, 0.05); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; }
-        .activity-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid rgba(147, 51, 234, 0.1); }
-        .activity-item:last-child { border-bottom: none; }
-        .activity-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(147, 51, 234, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .activity-content { flex: 1; }
-        .activity-content p { margin-bottom: 0.25rem; }
-        .activity-content .time { font-size: 0.85rem; color: var(--text-dim); }
-        
-        footer { background: rgba(5, 5, 5, 0.95); padding: 1.5rem; border-top: 1px solid rgba(147, 51, 234, 0.2); text-align: center; margin-top: auto; }
-        .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
-        .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
-        .footer-links a:hover { color: var(--purple-light); }
-        .footer-bottom { color: var(--text-dim); font-size: 0.85rem; }
-        
-        @media (max-width: 768px) {
-            .sidebar { left: -250px; transition: left 0.3s; }
-            .sidebar.active { left: 0; }
-            .main-content { margin-left: 0; padding: 2rem 1rem; }
-            .menu-toggle { display: block; }
-            .stats-grid, .quick-actions { grid-template-columns: 1fr; }
-            .welcome-banner h1 { font-size: 1.5rem; }
-            .xp-header { flex-direction: column; align-items: flex-start; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Dashboard | The Arcane Archives</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <style>
+    body {
+      margin: 0;
+      background: #06030f;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      color: #eee;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+      background: #0c071a;
+      border-bottom: 1px solid #201735;
+    }
+
+    .nav h2 {
+      margin: 0;
+      color: #b29cff;
+    }
+
+    .nav button {
+      background: transparent;
+      border: 1px solid #b29cff;
+      color: #b29cff;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .container {
+      padding: 30px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .welcome {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: #120a26;
+      padding: 24px;
+      border-radius: 18px;
+      border: 1px solid #2c1d4e;
+      box-shadow: 0 0 20px #00000040;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #cdbaff;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      background: #1b1134;
+      border-radius: 10px;
+      height: 16px;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 16px;
+      background: linear-gradient(90deg, #a67bff, #d7c2ff);
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .avatar-circle {
+      width: 70px;
+      height: 70px;
+      background: #a67bff;
+      color: #06030f;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .center {
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
-<!-- Loading Screen -->
-<div id="loadingScreen" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    transition: opacity 0.5s, visibility 0.5s;
-">
-    <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: logoPulse 2s ease-in-out infinite;">
-    
-    <div style="width: 300px; max-width: 90%; margin-bottom: 1rem;">
-        <div style="
-            width: 100%;
-            height: 6px;
-            background: rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        ">
-            <div id="loadingBar" style="
-                width: 0%;
-                height: 100%;
-                background: linear-gradient(90deg, #9333ea, #a78bfa);
-                border-radius: 10px;
-                transition: width 0.3s ease;
-            "></div>
-        </div>
+
+  <!-- NAVIGATION -->
+  <div class="nav">
+    <h2>The Arcane Archives</h2>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="container">
+
+    <!-- WELCOME + AVATAR -->
+    <div class="center">
+      <div id="userAvatar" class="avatar-circle"></div>
+      <div class="welcome">
+        Welcome back, <span id="username">...</span> 🔮
+      </div>
     </div>
-    
-    <div id="loadingText" style="
-        color: #a78bfa;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        min-height: 30px;
-        text-align: center;
-    ">Unlocking the archives...</div>
-</div>
 
-<style>
-@keyframes logoPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-}
-</style>
+    <!-- LEVEL + XP -->
+    <div class="card">
+      <h3>Your Progress</h3>
 
-<script>
-// Enhanced loading screen with rotating messages
-(function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
-    
-    const messages = [
-        'Unlocking the archives...',
-        'Preparing your journey...',
-        'Keep this a secret...',
-        'Loading forbidden knowledge...',
-        'Initializing consciousness shift...',
-        'Breaking the matrix...'
-    ];
-    
-    let progress = 0;
-    let messageIndex = 0;
-    
-    // Rotate messages
-    const messageInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        loadingText.textContent = messages[messageIndex];
-    }, 800);
-    
-    // Progress bar
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }
-        loadingBar.style.width = progress + '%';
-    }, 200);
-    
-    // Ensure loading completes
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingBar.style.width = '100%';
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }, 500);
-    });
-})();
-</script>
+      <p>Level: <strong id="userLevel">...</strong></p>
+      <p>XP: <strong id="currentXP">0</strong> / <strong id="nextLevelXP">100</strong></p>
 
+      <div class="progress-bar-container">
+        <div id="xpProgressBar" class="progress-bar"></div>
+      </div>
 
-    <nav>
-        <div class="nav-container">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <a href="dashboard.html" class="logo"><img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES</a>
-            <div class="user-menu">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <div class="user-dropdown" id="userDropdown">
-                    <a href="settings.html">⚙️ Settings</a>
-                    <a href="#" id="logoutBtn">🚪 Logout</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+      <p style="margin-top:10px;">XP Progress: <span id="xpProgressText">0 XP</span></p>
+    </div>
 
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.html" class="active">🏠 Dashboard</a></li>
-            <li><a href="courses.html">📚 All Courses</a></li>
-            <li><a href="community.html">💬 Community</a></li>
-            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
-            <li><a href="wins.html">🏆 Wins Board</a></li>
-            <li><a href="settings.html">⚙️ Settings</a></li>
-        </ul>
-    </aside>
+    <!-- STATS -->
+    <div class="card-grid">
 
-    <main class="main-content">
-        <div class="welcome-banner">
-            <h1>Welcome Back, <span id="username">User</span>! 🔥</h1>
-            <p>Continue your journey to mastering the forbidden knowledge</p>
-        </div>
+      <div class="card">
+        <h3>Courses Completed</h3>
+        <p id="coursesCompleted" style="font-size:22px; font-weight:bold;">0</p>
+      </div>
 
-        <div class="xp-section">
-            <div class="xp-header">
-                <div>
-                    <h2 style="color: var(--purple-light); margin-bottom: 0.5rem;">Your Progress</h2>
-                    <p style="color: var(--text-dim);">Keep grinding to level up</p>
-                </div>
-                <div class="xp-level" id="userLevel">Apprentice</div>
-            </div>
-            <div class="xp-progress-container">
-                <div class="xp-progress-bar" id="xpProgressBar" style="width: 0%;"><span id="xpProgressText">0 XP</span></div>
-            </div>
-            <div class="xp-info">
-                <span><span id="currentXP">0</span> XP</span>
-                <span>Next level: <span id="nextLevelXP">100</span> XP</span>
-            </div>
-        </div>
+      <div class="card">
+        <h3>Wins Posted</h3>
+        <p id="winsPosted" style="font-size:22px; font-weight:bold;">0</p>
+      </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="icon">📖</div>
-                <div class="value" id="coursesCompleted">0</div>
-                <div class="label">Courses Completed</div>
-                <div class="progress-bar-container"><div class="progress-bar-fill" id="coursesProgress" style="width: 0%"></div></div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">⏱️</div>
-                <div class="value" id="hoursLearning">0</div>
-                <div class="label">Hours of Learning</div>
-                <div class="progress-bar-container"><div class="progress-bar-fill" id="hoursProgress" style="width: 0%"></div></div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">🔥</div>
-                <div class="value" id="dayStreak">0</div>
-                <div class="label">Day Streak</div>
-                <div class="progress-bar-container"><div class="progress-bar-fill" id="streakProgress" style="width: 0%"></div></div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">🏆</div>
-                <div class="value" id="winsPosted">0</div>
-                <div class="label">Wins Posted</div>
-                <div class="progress-bar-container"><div class="progress-bar-fill" id="winsProgress" style="width: 0%"></div></div>
-            </div>
-        </div>
+      <div class="card">
+        <h3>Calls Attended</h3>
+        <p id="callsAttended" style="font-size:22px; font-weight:bold;">0</p>
+      </div>
 
-        <h2 class="section-title">Quick Actions</h2>
-        <div class="quick-actions">
-            <a href="courses.html" class="action-card"><div class="icon">📚</div><h3>Browse Courses</h3><p>Explore our library of forbidden knowledge</p></a>
-            <a href="community.html" class="action-card"><div class="icon">💬</div><h3>Join Community</h3><p>Connect with fellow truth-seekers</p></a>
-            <a href="live-calls.html" class="action-card"><div class="icon">🎙️</div><h3>Upcoming Calls</h3><p>Join our weekly live Q&A sessions</p></a>
-            <a href="wins.html" class="action-card"><div class="icon">🏆</div><h3>Share Your Wins</h3><p>Celebrate your victories with the brotherhood</p></a>
-        </div>
+    </div>
 
-        <h2 class="section-title">Recent Activity</h2>
-        <div class="activity-list" id="activityList">
-            <div class="activity-item">
-                <div class="activity-icon">🎉</div>
-                <div class="activity-content">
-                    <p>Logged in</p>
-                    <p class="time" id="loginTime">Just now</p>
-                </div>
-            </div>
-        </div>
-    </main>
+  </div>
 
-    <footer>
-        <div class="footer-links">
-            <a href="index.html">Home</a>
-            <a href="Privacy-policy.html">Privacy Policy</a>
-            <a href="terms-of-service.html">Terms of Service</a>
-            <a href="refund-policy.html">Refund Policy</a>
-        </div>
-        <div class="footer-bottom"><p>&copy; 2024 The Arcane Archives. All rights reserved.</p></div>
-    </footer>
+  <!-- FIREBASE + PROTECTION LOGIC -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-    
-
-
-
-
-
-
-
-
-
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-
-    // ⭐ Your Firebase Config (COMPLETE + CORRECT)
+    // 🔥 YOUR FIREBASE CONFIG
     const firebaseConfig = {
-        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-        projectId: "arcane-archives-3b0f5",
-        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-        messagingSenderId: "264237235055",
-        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
-        measurementId: "G-YGPLQHDXMM"
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+      measurementId: "G-YGPLQHDXMM"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // MAIN AUTH + PAYWALL LOGIC
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = "login.html";
-            return;
-        }
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
 
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
+      // Fetch from Firestore 'Users' collection
+      const ref = doc(db, "Users", user.uid);
+      const snap = await getDoc(ref);
 
-        // ❌ NO PAYMENT → send back to pricing
-        if (!userSnap.exists() || userSnap.data().subscriptionStatus !== "active") {
-            alert("🔒 You must complete payment to access The Arcane Archives.");
-            window.location.href = "index.html#pricing";
-            return;
-        }
+      if (!snap.exists()) {
+        alert("Your account is missing data. Please contact support.");
+        return;
+      }
 
-        // ✔️ FULL ACCESS
-        const data = userSnap.data();
+      const data = snap.data();
 
-        document.getElementById("username").textContent =
-            user.displayName || user.email.split("@")[0];
+      // PAYWALL PROTECTION
+      if (data.subscriptionStatus !== "active") {
+        alert("🔒 You must complete your membership payment to access The Arcane Archives.");
+        window.location.href = "index.html#pricing";
+        return;
+      }
 
-        document.getElementById("userLevel").textContent =
-            data.level || "Apprentice";
+      // UPDATE UI
+      document.getElementById("username").textContent =
+        data.Username || user.displayName || user.email.split("@")[0];
 
-        document.getElementById("currentXP").textContent = data.xp || 0;
-        document.getElementById("nextLevelXP").textContent = 100;
+      document.getElementById("userLevel").textContent =
+        data.Level || "Apprentice";
 
-        document.getElementById("xpProgressBar").style.width =
-            `${Math.min((data.xp || 0), 100)}%`;
+      const xp = data.Xp || 0;
+      document.getElementById("currentXP").textContent = xp;
+      document.getElementById("nextLevelXP").textContent = 100;
+      document.getElementById("xpProgressBar").style.width =
+        Math.min(xp, 100) + "%";
+      document.getElementById("xpProgressText").textContent = xp + " XP";
 
-        document.getElementById("xpProgressText").textContent =
-            `${data.xp || 0} XP`;
+      document.getElementById("coursesCompleted").textContent =
+        data.CoursesCompleted || 0;
 
-        document.getElementById("coursesCompleted").textContent =
-            data.coursesCompleted || 0;
+      document.getElementById("winsPosted").textContent =
+        data.WinsPosted || 0;
 
-        document.getElementById("winsPosted").textContent =
-            data.winsPosted || 0;
+      document.getElementById("callsAttended").textContent =
+        data.CallAttended || 0;
 
-        // Avatar letter
-        const avatarEl = document.getElementById("userAvatar");
-        const initial = (user.displayName || user.email)[0].toUpperCase();
-        avatarEl.textContent = initial;
-
-        // Logout
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            });
-        });
+      // AVATAR
+      const avatar = document.getElementById("userAvatar");
+      const initial = (data.Username ||
+        user.displayName ||
+        user.email)[0].toUpperCase();
+      avatar.textContent = initial;
     });
-</script>
 
-
+    // LOGOUT BUTTON
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    });
+  </script>
 </body>
 </html>

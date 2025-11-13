@@ -8,7 +8,7 @@
     body {
       background: #05030b;
       color: #f8f4ff;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -37,9 +37,10 @@
       margin-top: 16px;
       font-weight: 600;
       color: #c2a3ff;
+      min-height: 1.4em;
     }
     .btn {
-      margin-top: 24px;
+      margin-top: 18px;
       display: inline-block;
       padding: 10px 20px;
       border-radius: 999px;
@@ -50,18 +51,29 @@
       cursor: pointer;
       text-decoration: none;
     }
+    .btn-secondary {
+      background: transparent;
+      color: #a67bff;
+      border: 1px solid #a67bff99;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>🔥 Payment Successful</h1>
     <p>Thank you for joining <strong>The Arcane Archives</strong>.</p>
-    <p>We’re just finishing your account activation…</p>
+    <p>We’re finishing your account activation…</p>
 
     <p id="payment-status">Verifying your payment...</p>
 
     <a href="/dashboard.html" class="btn" id="dashboard-link" style="display:none;">
       Go to your Dashboard
+    </a>
+
+    <!-- "Click here to log in" button -->
+    <a href="/login.html" class="btn btn-secondary" id="login-link" style="display:none;">
+      Click here to log in
     </a>
   </div>
 
@@ -70,14 +82,15 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-    // TODO: 🔥 Replace this with your real Firebase config
+    // 🔥 Your Firebase config
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+      measurementId: "G-YGPLQHDXMM"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -86,10 +99,11 @@
 
     const statusEl = document.getElementById("payment-status");
     const dashLink = document.getElementById("dashboard-link");
+    const loginLink = document.getElementById("login-link");
 
     function setStatus(msg) {
       if (statusEl) statusEl.textContent = msg;
-      console.log(msg);
+      console.log("[SUCCESS PAGE]", msg);
     }
 
     // 1) Get session_id from URL
@@ -97,24 +111,46 @@
     const sessionId = params.get("session_id");
 
     if (!sessionId) {
-      setStatus("Missing session ID in URL. If you paid and see this, contact support.");
+      setStatus("Missing session ID in URL. If you were charged and see this, contact support.");
+    } else {
+      // store in case user logs in after
+      try {
+        localStorage.setItem("aa_last_session_id", sessionId);
+      } catch (e) {
+        console.warn("Could not store session id in localStorage", e);
+      }
     }
 
     // 2) Wait for Firebase Auth user
     onAuthStateChanged(auth, async (user) => {
+      // Not logged in? -> show login button with message
       if (!user) {
-        setStatus("Please log in again to complete activation.");
+        setStatus("To complete activation, please log in to your account.");
+        loginLink.style.display = "inline-block";
         return;
       }
 
-      if (!sessionId) return;
+      // Logged in but no sessionId? Use last stored one
+      let sid = sessionId;
+      if (!sid) {
+        try {
+          sid = localStorage.getItem("aa_last_session_id");
+        } catch (e) {
+          console.warn("Could not read session id from storage", e);
+        }
+      }
+
+      if (!sid) {
+        setStatus("No payment session found. If you were charged, contact support.");
+        return;
+      }
 
       try {
-        // 3) Call Netlify verify function to check payment
+        // 3) Call Netlify verify function
         const res = await fetch("/.netlify/functions/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId }),
+          body: JSON.stringify({ sessionId: sid }),
         });
 
         const data = await res.json();
@@ -134,9 +170,9 @@
           return;
         }
 
-        // 4) Mark user as paid in Firestore
+        // 4) Mark user as paid in Firestore (👉 CORRECT COLLECTION: 'Users')
         await setDoc(
-          doc(db, "users", user.uid),
+          doc(db, "Users", user.uid),
           {
             isPaid: true,
             subscriptionStatus: "active",
@@ -149,6 +185,9 @@
         setStatus("Your account has been activated. Welcome to The Arcane Archives 🔮");
         dashLink.style.display = "inline-block";
 
+        try {
+          localStorage.removeItem("aa_last_session_id");
+        } catch (e) {}
       } catch (err) {
         console.error(err);
         setStatus("Unexpected error verifying your payment. If this persists, contact support.");
