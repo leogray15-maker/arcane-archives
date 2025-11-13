@@ -314,80 +314,11 @@
     </footer>
 
     
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    const app = initializeApp({
-        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-        projectId: "arcane-archives-3b0f5",
-        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-        messagingSenderId: "264237235055",
-        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-    });
 
-    const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            // Not logged in
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
-            return;
-        }
 
-        try {
-            // Check Firestore for subscription
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            
-            if (!userDoc.exists()) {
-                // No user document - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.
 
-Redirecting to payment page...');
-                window.location.href = 'index.html#pricing';
-                return;
-            }
-
-            const userData = userDoc.data();
-            
-            if (userData.subscriptionStatus !== 'active') {
-                // No active subscription
-                alert('🔒 Payment required to access The Arcane Archives.
-
-Redirecting to payment page...');
-                window.location.href = 'index.html#pricing';
-                return;
-            }
-
-            // ✅ All good - user has access
-            console.log('✅ Access granted');
-            
-            // Update avatar
-            const username = user.displayName || user.email.split('@')[0];
-            const userAvatarElement = document.getElementById('userAvatar');
-            if (userAvatarElement) {
-                const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
-                userAvatarElement.textContent = avatar;
-                
-                const customAvatar = localStorage.getItem('customAvatarUrl');
-                if (customAvatar) {
-                    userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
-                    userAvatarElement.style.backgroundSize = 'cover';
-                    userAvatarElement.style.backgroundPosition = 'center';
-                    userAvatarElement.textContent = '';
-                }
-            }
-
-        } catch (error) {
-            console.error('Auth error:', error);
-            alert('⚠️ Error verifying subscription. Please try again or contact support.');
-            window.location.href = 'index.html#pricing';
-        }
-    });
-</script>
 
 
 
@@ -411,36 +342,19 @@ Redirecting to payment page...');
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            window.location.href = 'login.html';
             return;
         }
 
         try {
-            // Check Firestore for subscription
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             
-            if (!userDoc.exists()) {
-                // No user document - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.
-
-Redirecting to payment page...');
+            if (!userDoc.exists() || userDoc.data().subscriptionStatus !== 'active') {
+                alert('🔒 Payment required to access The Arcane Archives.');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            const userData = userDoc.data();
-            
-            if (userData.subscriptionStatus !== 'active') {
-                // No active subscription
-                alert('🔒 Payment required to access The Arcane Archives.
-
-Redirecting to payment page...');
-                window.location.href = 'index.html#pricing';
-                return;
-            }
-
-            // ✅ All good - user has access
             console.log('✅ Access granted');
             
             // Update avatar
@@ -461,12 +375,10 @@ Redirecting to payment page...');
 
         } catch (error) {
             console.error('Auth error:', error);
-            alert('⚠️ Error verifying subscription. Please try again or contact support.');
             window.location.href = 'index.html#pricing';
         }
     });
 </script>
-
 
 </body>
 </html>

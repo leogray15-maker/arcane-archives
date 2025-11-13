@@ -338,129 +338,6 @@
     </style>
 </head>
 <body>
-<!-- Loading Screen -->
-<div id="loadingScreen" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    transition: opacity 0.5s, visibility 0.5s;
-">
-    <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: logoPulse 2s ease-in-out infinite;">
-    
-    <div style="width: 300px; max-width: 90%; margin-bottom: 1rem;">
-        <div style="
-            width: 100%;
-            height: 6px;
-            background: rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        ">
-            <div id="loadingBar" style="
-                width: 0%;
-                height: 100%;
-                background: linear-gradient(90deg, #9333ea, #a78bfa);
-                border-radius: 10px;
-                transition: width 0.3s ease;
-            "></div>
-        </div>
-    </div>
-    
-    <div id="loadingText" style="
-        color: #a78bfa;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        min-height: 30px;
-        text-align: center;
-    ">Unlocking the archives...</div>
-</div>
-
-<style>
-@keyframes logoPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-}
-</style>
-
-<script>
-// Enhanced loading screen with rotating messages
-(function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
-    
-    const messages = [
-        'Unlocking the archives...',
-        'Preparing your journey...',
-        'Keep this a secret...',
-        'Loading forbidden knowledge...',
-        'Initializing consciousness shift...',
-        'Breaking the matrix...'
-    ];
-    
-    let progress = 0;
-    let messageIndex = 0;
-    
-    // Rotate messages
-    const messageInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        loadingText.textContent = messages[messageIndex];
-    }, 800);
-    
-    // Progress bar
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }
-        loadingBar.style.width = progress + '%';
-    }, 200);
-    
-    // Ensure loading completes
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingBar.style.width = '100%';
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }, 500);
-    });
-})();
-</script>
-
-
     <nav>
         <div class="nav-container">
             <button class="menu-toggle" id="menuToggle">☰</button>
@@ -502,66 +379,6 @@
             </div>
         </div>
 
-        <!-- Custom Profile Picture Upload -->
-        <div class="settings-section">
-            <h2>🖼️ Custom Profile Picture</h2>
-            
-            <div class="form-group">
-                <label>Upload Custom Photo</label>
-                <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
-                    Upload a photo from your device to use as your profile picture
-                </p>
-                
-                <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                    <!-- Current Avatar Preview -->
-                    <div id="currentAvatarPreview" style="
-                        width: 100px;
-                        height: 100px;
-                        border-radius: 50%;
-                        background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 2rem;
-                        font-weight: 700;
-                        color: white;
-                        background-size: cover;
-                        background-position: center;
-                    ">?</div>
-                    
-                    <div style="flex: 1; min-width: 200px;">
-                        <input 
-                            type="file" 
-                            id="profilePictureInput" 
-                            accept="image/*"
-                            style="display: none;"
-                        >
-                        
-                        <button 
-                            onclick="document.getElementById('profilePictureInput').click()" 
-                            class="btn btn-secondary"
-                            style="margin-bottom: 0.5rem;"
-                        >
-                            📷 Choose Photo
-                        </button>
-                        
-                        <button 
-                            onclick="removeCustomAvatar()" 
-                            class="btn btn-danger"
-                            style="margin-left: 0.5rem; display: none;"
-                            id="removeAvatarBtn"
-                        >
-                            🗑️ Remove
-                        </button>
-                        
-                        <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
-                            Recommended: Square image, at least 200x200px, max 5MB
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="settings-section">
             <h2>Profile Settings</h2>
             <div class="form-group">
@@ -594,165 +411,7 @@
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged, updateEmail, updatePassword, deleteUser } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        let selectedAvatar = '👤';
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                currentUser = user;
-                const username = user.displayName || user.email.split('@')[0];
-                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
-                document.getElementById('username').value = username;
-                document.getElementById('email').value = user.email;
-
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    if (data.displayName) document.getElementById('displayName').value = data.displayName;
-                    if (data.bio) document.getElementById('bio').value = data.bio;
-                    if (data.avatar) {
-                        selectedAvatar = data.avatar;
-                        document.querySelectorAll('.avatar-option').forEach(opt => {
-                            opt.classList.remove('selected');
-                            if (opt.dataset.emoji === data.avatar) opt.classList.add('selected');
-                        });
-                        document.getElementById('userAvatar').textContent = data.avatar;
-                    }
-                }
-            }
-        });
-
-        document.querySelectorAll('.avatar-option').forEach(option => {
-            option.addEventListener('click', () => {
-                document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
-                option.classList.add('selected');
-                selectedAvatar = option.dataset.emoji;
-                document.getElementById('userAvatar').textContent = selectedAvatar;
-            });
-        });
-
-        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
-            if (!currentUser) return;
-            const saveBtn = document.getElementById('saveSettingsBtn');
-            saveBtn.disabled = true;
-            saveBtn.textContent = '💾 Saving...';
-
-            try {
-                await setDoc(doc(db, 'users', currentUser.uid), {
-                    username: currentUser.displayName || currentUser.email.split('@')[0],
-                    email: currentUser.email,
-                    displayName: document.getElementById('displayName').value.trim(),
-                    bio: document.getElementById('bio').value.trim(),
-                    avatar: selectedAvatar,
-                    updatedAt: new Date()
-                }, { merge: true });
-
-                const newEmail = document.getElementById('email').value.trim();
-                if (newEmail && newEmail !== currentUser.email) {
-                    try {
-                        await updateEmail(currentUser, newEmail);
-                        showSuccess('Settings saved! Please verify your new email.');
-                    } catch (emailError) {
-                        if (emailError.code === 'auth/requires-recent-login') {
-                            showError('Please log out and log back in to change your email.');
-                        } else {
-                            showError('Email update failed: ' + emailError.message);
-                        }
-                    }
-                } else {
-                    showSuccess('Settings saved successfully! ✅');
-                }
-
-                localStorage.setItem('userAvatar', selectedAvatar);
-            } catch (error) {
-                showError('Failed to save settings. Please try again.');
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.textContent = '💾 Save Changes';
-            }
-        });
-
-        document.getElementById('changePasswordBtn').addEventListener('click', async () => {
-            const newPassword = prompt('Enter new password (minimum 6 characters):');
-            if (!newPassword || newPassword.length < 6) {
-                showError('Password must be at least 6 characters long.');
-                return;
-            }
-
-            try {
-                await updatePassword(currentUser, newPassword);
-                showSuccess('Password changed successfully! ✅');
-            } catch (error) {
-                if (error.code === 'auth/requires-recent-login') {
-                    showError('Please log out and log back in to change your password.');
-                } else {
-                    showError('Failed to change password: ' + error.message);
-                }
-            }
-        });
-
-        document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
-            if (!confirm('⚠️ WARNING: This will permanently delete your account. Are you sure?')) return;
-            const finalConfirm = prompt('Type "DELETE" to confirm:');
-            if (finalConfirm !== 'DELETE') {
-                showError('Account deletion cancelled.');
-                return;
-            }
-
-            try {
-                await setDoc(doc(db, 'users', currentUser.uid), { deleted: true, deletedAt: new Date() }, { merge: true });
-                await deleteUser(currentUser);
-                alert('Your account has been deleted.');
-                window.location.href = 'index.html';
-            } catch (error) {
-                if (error.code === 'auth/requires-recent-login') {
-                    showError('Please log out and log back in to delete your account.');
-                } else {
-                    showError('Failed to delete account: ' + error.message);
-                }
-            }
-        });
-
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-
-        function showSuccess(message) {
-            const successMsg = document.getElementById('successMessage');
-            successMsg.textContent = message;
-            successMsg.style.display = 'block';
-            setTimeout(() => successMsg.style.display = 'none', 5000);
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        function showError(message) {
-            const errorMsg = document.getElementById('errorMessage');
-            errorMsg.textContent = message;
-            errorMsg.style.display = 'block';
-            setTimeout(() => errorMsg.style.display = 'none', 5000);
-            document.getElementById('successMessage').style.display = 'none';
-        }
-    </script>
+    
 
     <footer>
         <div class="footer-links">
@@ -765,6 +424,8 @@
             <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
         </div>
     </footer>
+
+
 
 
 <script type="module">
@@ -784,42 +445,30 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // CRITICAL: Check authentication and payment status
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in - redirect to login
-            alert('⚠️ Please log in to access The Arcane Archives');
             window.location.href = 'login.html';
             return;
         }
 
         try {
-            // Check if user has active subscription in Firestore
             const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
-
-            // Check subscription status
-            const hasActiveSubscription = userData?.subscriptionStatus === 'active';
-            const subscriptionId = userData?.stripeSubscriptionId;
-
-            if (!hasActiveSubscription || !subscriptionId) {
-                // No active subscription - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.\n\nYou will be redirected to the payment page.');
+            
+            if (!userDoc.exists() || userDoc.data().subscriptionStatus !== 'active') {
+                alert('🔒 Payment required to access The Arcane Archives.');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            // User is authenticated AND has paid - allow access
-            console.log('✅ Access granted - Subscription active');
-
-            // Display user info
+            console.log('✅ Access granted');
+            
+            // Update avatar
             const username = user.displayName || user.email.split('@')[0];
             const userAvatarElement = document.getElementById('userAvatar');
             if (userAvatarElement) {
                 const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
                 userAvatarElement.textContent = avatar;
                 
-                // If custom profile picture exists, use it
                 const customAvatar = localStorage.getItem('customAvatarUrl');
                 if (customAvatar) {
                     userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
@@ -830,116 +479,295 @@
             }
 
         } catch (error) {
-            console.error('Error checking subscription:', error);
-            // If error checking subscription, redirect to payment to be safe
-            alert('⚠️ Error verifying subscription. Please complete payment.');
+            console.error('Auth error:', error);
             window.location.href = 'index.html#pricing';
         }
     });
+</script>
 
-// Profile picture upload handler
-document.getElementById('profilePictureInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        alert('❌ Image too large. Please choose an image under 5MB.');
-        return;
+
+<script>
+    // Menu toggle for mobile
+    document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('sidebar')?.classList.toggle('active');
+    });
+
+    // Avatar selection
+    document.querySelectorAll('.avatar-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            const emoji = this.getAttribute('data-emoji');
+            localStorage.setItem('userAvatar', emoji);
+            const userAvatarElement = document.getElementById('userAvatar');
+            if (userAvatarElement) userAvatarElement.textContent = emoji;
+        });
+    });
+
+    // Profile picture upload
+    const profileInput = document.getElementById('profilePictureInput');
+    if (profileInput) {
+        profileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Image too large. Max 5MB.');
+                return;
+            }
+            
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Please select an image file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageData = event.target.result;
+                localStorage.setItem('customAvatarUrl', imageData);
+                
+                const preview = document.getElementById('currentAvatarPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${imageData})`;
+                    preview.textContent = '';
+                }
+                
+                const removeBtn = document.getElementById('removeAvatarBtn');
+                if (removeBtn) removeBtn.style.display = 'inline-block';
+                
+                const navAvatar = document.getElementById('userAvatar');
+                if (navAvatar) {
+                    navAvatar.style.backgroundImage = `url(${imageData})`;
+                    navAvatar.style.backgroundSize = 'cover';
+                    navAvatar.style.backgroundPosition = 'center';
+                    navAvatar.textContent = '';
+                }
+                
+                alert('✅ Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        });
     }
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-        alert('❌ Please select an image file.');
-        return;
-    }
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(event) {
-        const imageData = event.target.result;
+
+    // Remove custom avatar
+    window.removeCustomAvatar = function() {
+        if (!confirm('Remove custom profile picture?')) return;
         
-        // Save to localStorage
-        localStorage.setItem('customAvatarUrl', imageData);
+        localStorage.removeItem('customAvatarUrl');
         
-        // Update preview
         const preview = document.getElementById('currentAvatarPreview');
-        preview.style.backgroundImage = `url(${imageData})`;
-        preview.textContent = '';
+        if (preview) {
+            const letter = localStorage.getItem('userAvatar') || '?';
+            preview.style.backgroundImage = 'none';
+            preview.textContent = letter;
+        }
         
-        // Show remove button
-        document.getElementById('removeAvatarBtn').style.display = 'inline-block';
+        const removeBtn = document.getElementById('removeAvatarBtn');
+        if (removeBtn) removeBtn.style.display = 'none';
         
-        // Update avatar in nav
         const navAvatar = document.getElementById('userAvatar');
         if (navAvatar) {
-            navAvatar.style.backgroundImage = `url(${imageData})`;
-            navAvatar.style.backgroundSize = 'cover';
-            navAvatar.style.backgroundPosition = 'center';
-            navAvatar.textContent = '';
+            navAvatar.style.backgroundImage = 'none';
+            navAvatar.textContent = localStorage.getItem('userAvatar') || '?';
         }
         
-        // Show success message
-        const successMsg = document.querySelector('.success-message');
-        if (successMsg) {
-            successMsg.textContent = '✅ Profile picture updated successfully!';
-            successMsg.style.display = 'block';
-            setTimeout(() => successMsg.style.display = 'none', 3000);
-        } else {
-            alert('✅ Profile picture updated successfully!');
-        }
-    };
-    
-    reader.readAsDataURL(file);
-});
-
-function removeCustomAvatar() {
-    if (!confirm('Remove custom profile picture?')) return;
-    
-    // Remove from localStorage
-    localStorage.removeItem('customAvatarUrl');
-    
-    // Reset preview to letter
-    const preview = document.getElementById('currentAvatarPreview');
-    const userEmail = auth.currentUser?.email || 'User';
-    const letter = localStorage.getItem('userAvatar') || userEmail.charAt(0).toUpperCase();
-    
-    preview.style.backgroundImage = 'none';
-    preview.textContent = letter;
-    
-    // Hide remove button
-    document.getElementById('removeAvatarBtn').style.display = 'none';
-    
-    // Update nav avatar
-    const navAvatar = document.getElementById('userAvatar');
-    if (navAvatar) {
-        navAvatar.style.backgroundImage = 'none';
-        navAvatar.textContent = letter;
-    }
-    
-    const successMsg = document.querySelector('.success-message');
-    if (successMsg) {
-        successMsg.textContent = '✅ Profile picture removed';
-        successMsg.style.display = 'block';
-        setTimeout(() => successMsg.style.display = 'none', 3000);
-    } else {
         alert('✅ Profile picture removed');
-    }
-}
+    };
 
-// Load custom avatar on page load
-window.addEventListener('load', () => {
-    const customAvatar = localStorage.getItem('customAvatarUrl');
-    const preview = document.getElementById('currentAvatarPreview');
-    
-    if (customAvatar && preview) {
-        preview.style.backgroundImage = `url(${customAvatar})`;
-        preview.textContent = '';
+    // Load custom avatar on page load
+    window.addEventListener('load', () => {
+        const customAvatar = localStorage.getItem('customAvatarUrl');
+        const preview = document.getElementById('currentAvatarPreview');
+        
+        if (customAvatar && preview) {
+            preview.style.backgroundImage = `url(${customAvatar})`;
+            preview.textContent = '';
+            const removeBtn = document.getElementById('removeAvatarBtn');
+            if (removeBtn) removeBtn.style.display = 'inline-block';
+        }
+    });
+</script>
+
+</body>
+</html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+    // Profile picture upload handler
+    document.getElementById('profilePictureInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 5 * 1024 * 1024) {
+            alert('❌ Image too large. Please choose an image under 5MB.');
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            alert('❌ Please select an image file.');
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            const imageData = event.target.result;
+            localStorage.setItem('customAvatarUrl', imageData);
+            
+            const preview = document.getElementById('currentAvatarPreview');
+            preview.style.backgroundImage = `url(${imageData})`;
+            preview.textContent = '';
+            
+            document.getElementById('removeAvatarBtn').style.display = 'inline-block';
+            
+            const navAvatar = document.getElementById('userAvatar');
+            if (navAvatar) {
+                navAvatar.style.backgroundImage = `url(${imageData})`;
+                navAvatar.style.backgroundSize = 'cover';
+                navAvatar.style.backgroundPosition = 'center';
+                navAvatar.textContent = '';
+            }
+            
+            alert('✅ Profile picture updated successfully!');
+        };
+        
+        reader.readAsDataURL(file);
+    });
+
+    window.removeCustomAvatar = function() {
+        if (!confirm('Remove custom profile picture?')) return;
+        
+        localStorage.removeItem('customAvatarUrl');
+        
+        const preview = document.getElementById('currentAvatarPreview');
+        const userEmail = auth.currentUser?.email || 'User';
+        const letter = localStorage.getItem('userAvatar') || userEmail.charAt(0).toUpperCase();
+        
+        preview.style.backgroundImage = 'none';
+        preview.textContent = letter;
+        
+        document.getElementById('removeAvatarBtn').style.display = 'none';
+        
+        const navAvatar = document.getElementById('userAvatar');
+        if (navAvatar) {
+            navAvatar.style.backgroundImage = 'none';
+            navAvatar.textContent = letter;
+        }
+        
+        alert('✅ Profile picture removed');
+    };
+
+    // Load custom avatar on page load
+    window.addEventListener('load', () => {
+        const customAvatar = localStorage.getItem('customAvatarUrl');
+        const preview = document.getElementById('currentAvatarPreview');
+        
+        if (customAvatar && preview) {
+            preview.style.backgroundImage = `url(${customAvatar})`;
+            preview.textContent = '';
+            const removeBtn = document.getElementById('removeAvatarBtn');
+            if (removeBtn) removeBtn.style.display = 'inline-block';
+        }
+    });
+</script>
+
+<script>
+    // Menu toggle for mobile
+    document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('sidebar')?.classList.toggle('active');
+    });
+
+    // Avatar selection
+    document.querySelectorAll('.avatar-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            const emoji = this.getAttribute('data-emoji');
+            localStorage.setItem('userAvatar', emoji);
+            const userAvatarElement = document.getElementById('userAvatar');
+            if (userAvatarElement) userAvatarElement.textContent = emoji;
+        });
+    });
+
+    // Profile picture upload
+    const profileInput = document.getElementById('profilePictureInput');
+    if (profileInput) {
+        profileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Image too large. Max 5MB.');
+                return;
+            }
+            
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Please select an image file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageData = event.target.result;
+                localStorage.setItem('customAvatarUrl', imageData);
+                
+                const preview = document.getElementById('currentAvatarPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${imageData})`;
+                    preview.textContent = '';
+                }
+                
+                const removeBtn = document.getElementById('removeAvatarBtn');
+                if (removeBtn) removeBtn.style.display = 'inline-block';
+                
+                const navAvatar = document.getElementById('userAvatar');
+                if (navAvatar) {
+                    navAvatar.style.backgroundImage = `url(${imageData})`;
+                    navAvatar.style.backgroundSize = 'cover';
+                    navAvatar.style.backgroundPosition = 'center';
+                    navAvatar.textContent = '';
+                }
+                
+                alert('✅ Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Remove custom avatar
+    window.removeCustomAvatar = function() {
+        if (!confirm('Remove custom profile picture?')) return;
+        
+        localStorage.removeItem('customAvatarUrl');
+        
+        const preview = document.getElementById('currentAvatarPreview');
+        if (preview) {
+            const letter = localStorage.getItem('userAvatar') || '?';
+            preview.style.backgroundImage = 'none';
+            preview.textContent = letter;
+        }
+        
         const removeBtn = document.getElementById('removeAvatarBtn');
-        if (removeBtn) removeBtn.style.display = 'inline-block';
-    }
-});
+        if (removeBtn) removeBtn.style.display = 'none';
+        
+        const navAvatar = document.getElementById('userAvatar');
+        if (navAvatar) {
+            navAvatar.style.backgroundImage = 'none';
+            navAvatar.textContent = localStorage.getItem('userAvatar') || '?';
+        }
+        
+        alert('✅ Profile picture removed');
+    };
 
+    // Load custom avatar on page load
+    window.addEventListener('load', () => {
+        const customAvatar = localStorage.getItem('customAvatarUrl');
+        const preview = document.getElementById('currentAvatarPreview');
+        
+        if (customAvatar && preview) {
+            preview.style.backgroundImage = `url(${customAvatar})`;
+            preview.textContent = '';
+            const removeBtn = document.getElementById('removeAvatarBtn');
+            if (removeBtn) removeBtn.style.display = 'inline-block';
+        }
+    });
 </script>
 
 </body>

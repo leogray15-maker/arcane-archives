@@ -421,6 +421,10 @@ Press Enter to send, Shift+Enter for new line"
     </main>
 
     
+
+
+
+
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -440,36 +444,19 @@ Press Enter to send, Shift+Enter for new line"
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            window.location.href = 'login.html';
             return;
         }
 
         try {
-            // Check Firestore for subscription
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             
-            if (!userDoc.exists()) {
-                // No user document - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.
-
-Redirecting to payment page...');
+            if (!userDoc.exists() || userDoc.data().subscriptionStatus !== 'active') {
+                alert('🔒 Payment required to access The Arcane Archives.');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            const userData = userDoc.data();
-            
-            if (userData.subscriptionStatus !== 'active') {
-                // No active subscription
-                alert('🔒 Payment required to access The Arcane Archives.
-
-Redirecting to payment page...');
-                window.location.href = 'index.html#pricing';
-                return;
-            }
-
-            // ✅ All good - user has access
             console.log('✅ Access granted');
             
             // Update avatar
@@ -490,12 +477,10 @@ Redirecting to payment page...');
 
         } catch (error) {
             console.error('Auth error:', error);
-            alert('⚠️ Error verifying subscription. Please try again or contact support.');
             window.location.href = 'index.html#pricing';
         }
     });
 </script>
-
 
 </body>
 </html>
