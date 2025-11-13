@@ -41,7 +41,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: `Webhook Error: ${err.message}` };
   }
 
-  console.log("🔔 Received event:", stripeEvent.type);
+  console.log("📨 Received event:", stripeEvent.type);
 
   try {
     if (stripeEvent.type === "checkout.session.completed") {
@@ -62,7 +62,8 @@ exports.handler = async (event) => {
       } else {
         console.log(`✅ Marking user ${uid} as paid in Firestore`);
 
-        await db.collection("users").doc(uid).set(
+        // CRITICAL FIX: Changed "users" to "Users" (capital U)
+        await db.collection("Users").doc(uid).set(
           {
             isPaid: true,
             subscriptionStatus: "active",

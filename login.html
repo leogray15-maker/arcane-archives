@@ -106,12 +106,17 @@
             margin-bottom: 1rem;
         }
         
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .btn-primary {
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
             color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
         }
@@ -125,7 +130,7 @@
             gap: 0.5rem;
         }
         
-        .btn-google:hover {
+        .btn-google:hover:not(:disabled) {
             background: #f5f5f5;
         }
         
@@ -176,7 +181,17 @@
             font-size: 0.9rem;
         }
         
-        /* FOOTER - NOW BELOW CARD */
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
         footer {
             background: rgba(5, 5, 5, 0.95);
             padding: 1.5rem;
@@ -209,7 +224,6 @@
             font-size: 0.85rem;
         }
         
-        /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
             .main-wrapper {
                 padding: 1rem 0.5rem;
@@ -223,163 +237,10 @@
             .logo-section h1 {
                 font-size: 1.5rem;
             }
-            
-            .logo-section img {
-                width: 60px;
-                height: 60px;
-            }
-            
-            .form-group input {
-                padding: 0.8rem;
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-            
-            .btn {
-                padding: 0.9rem;
-                font-size: 0.95rem;
-            }
-            
-            .footer-links {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 1.5rem 1rem;
-            }
-            
-            .divider::before,
-            .divider::after {
-                width: 35%;
-            }
         }
     </style>
 </head>
 <body>
-<!-- Loading Screen -->
-<div id="loadingScreen" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    transition: opacity 0.5s, visibility 0.5s;
-">
-    <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: logoPulse 2s ease-in-out infinite;">
-    
-    <div style="width: 300px; max-width: 90%; margin-bottom: 1rem;">
-        <div style="
-            width: 100%;
-            height: 6px;
-            background: rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        ">
-            <div id="loadingBar" style="
-                width: 0%;
-                height: 100%;
-                background: linear-gradient(90deg, #9333ea, #a78bfa);
-                border-radius: 10px;
-                transition: width 0.3s ease;
-            "></div>
-        </div>
-    </div>
-    
-    <div id="loadingText" style="
-        color: #a78bfa;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        min-height: 30px;
-        text-align: center;
-    ">Unlocking the archives...</div>
-</div>
-
-<style>
-@keyframes logoPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-}
-</style>
-
-<script>
-// Enhanced loading screen with rotating messages
-(function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
-    
-    const messages = [
-        'Unlocking the archives...',
-        'Preparing your journey...',
-        'Keep this a secret...',
-        'Loading forbidden knowledge...',
-        'Initializing consciousness shift...',
-        'Breaking the matrix...'
-    ];
-    
-    let progress = 0;
-    let messageIndex = 0;
-    
-    // Rotate messages
-    const messageInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        loadingText.textContent = messages[messageIndex];
-    }, 800);
-    
-    // Progress bar
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }
-        loadingBar.style.width = progress + '%';
-    }, 200);
-    
-    // Ensure loading completes
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingBar.style.width = '100%';
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }, 500);
-    });
-})();
-</script>
-
 
     <div class="main-wrapper">
         <div class="login-container">
@@ -390,16 +251,17 @@
             </div>
 
             <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
 
             <div id="loginForm">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="email" placeholder="your@email.com">
+                    <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
                 </div>
                 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="password" placeholder="••••••••">
+                    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
                 </div>
                 
                 <button class="btn btn-primary" id="loginBtn">🔓 Login</button>
@@ -415,17 +277,17 @@
             <div id="signupForm" style="display: none;">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="signupEmail" placeholder="your@email.com">
+                    <input type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email">
                 </div>
                 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="signupPassword" placeholder="••••••••">
+                    <input type="password" id="signupPassword" placeholder="••••••••" autocomplete="new-password">
                 </div>
                 
                 <div class="form-group">
                     <label>Confirm Password</label>
-                    <input type="password" id="confirmPassword" placeholder="••••••••">
+                    <input type="password" id="confirmPassword" placeholder="••••••••" autocomplete="new-password">
                 </div>
                 
                 <button class="btn btn-primary" id="signupBtn">🔓 Create Account</button>
@@ -457,23 +319,37 @@
     </footer>
 
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { 
+            auth, 
+            loginRateLimiter, 
+            handlePostLoginRedirect 
+        } from './auth-guard.js';
+        import { 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider,
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc,
+            getDoc,
+            serverTimestamp 
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const db = getFirestore();
         const provider = new GoogleAuthProvider();
 
         let isLoginMode = true;
+
+        // Check if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                handlePostLoginRedirect() || (window.location.href = 'dashboard.html');
+            }
+        });
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
@@ -482,6 +358,18 @@
             setTimeout(() => errorDiv.style.display = 'none', 5000);
         }
 
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 3000);
+        }
+
+        function disableButtons(disabled) {
+            document.querySelectorAll('.btn').forEach(btn => btn.disabled = disabled);
+        }
+
+        // Toggle between login and signup
         document.getElementById('toggleBtn').addEventListener('click', (e) => {
             e.preventDefault();
             isLoginMode = !isLoginMode;
@@ -494,8 +382,15 @@
             document.getElementById('toggleBtn').addEventListener('click', arguments.callee);
         });
 
+        // LOGIN
         document.getElementById('loginBtn').addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
+            if (!loginRateLimiter.isAllowed()) {
+                const remainingTime = loginRateLimiter.getRemainingTime();
+                showError(`Too many login attempts. Please wait ${Math.ceil(remainingTime / 60)} minutes before trying again.`);
+                return;
+            }
+
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
@@ -503,21 +398,50 @@
                 return;
             }
 
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            disableButtons(true);
+
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = 'dashboard.html';
+                showSuccess('Login successful! Redirecting...');
             } catch (error) {
-                showError(error.message);
+                console.error('Login error:', error);
+                let errorMessage = 'Login failed. Please try again.';
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'No account found with this email.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Incorrect password.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Too many failed attempts. Please try again later.';
+                }
+                
+                showError(errorMessage);
+                disableButtons(false);
             }
         });
 
+        // SIGNUP
         document.getElementById('signupBtn').addEventListener('click', async () => {
-            const email = document.getElementById('signupEmail').value;
+            const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
             if (!email || !password || !confirmPassword) {
                 showError('Please fill all fields');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
                 return;
             }
 
@@ -531,40 +455,96 @@
                 return;
             }
 
+            disableButtons(true);
+
             try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                window.location.href = 'dashboard.html';
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, 'Users', user.uid), {
+                    email: user.email,
+                    Username: user.email.split('@')[0],
+                    subscriptionStatus: 'inactive',
+                    isPaid: false,
+                    Level: 'Apprentice',
+                    Xp: 0,
+                    CoursesCompleted: 0,
+                    WinsPosted: 0,
+                    CallAttended: 0,
+                    createdAt: serverTimestamp()
+                });
+
+                showSuccess('Account created! Redirecting to payment...');
+                setTimeout(() => {
+                    window.location.href = 'index.html#pricing';
+                }, 1500);
             } catch (error) {
-                showError(error.message);
+                console.error('Signup error:', error);
+                let errorMessage = 'Signup failed. Please try again.';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'An account with this email already exists.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Password is too weak. Use at least 6 characters.';
+                }
+                
+                showError(errorMessage);
+                disableButtons(false);
             }
         });
 
-        document.getElementById('googleBtn').addEventListener('click', async () => {
+        // GOOGLE AUTH
+        async function handleGoogleAuth() {
+            disableButtons(true);
+            
             try {
-                await signInWithPopup(auth, provider);
-                window.location.href = 'dashboard.html';
-            } catch (error) {
-                showError(error.message);
-            }
-        });
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
 
-        document.getElementById('googleSignupBtn').addEventListener('click', async () => {
-            try {
-                await signInWithPopup(auth, provider);
-                window.location.href = 'dashboard.html';
+                const userDocRef = doc(db, 'Users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (!userDoc.exists()) {
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        Username: user.displayName || user.email.split('@')[0],
+                        subscriptionStatus: 'inactive',
+                        isPaid: false,
+                        Level: 'Apprentice',
+                        Xp: 0,
+                        CoursesCompleted: 0,
+                        WinsPosted: 0,
+                        CallAttended: 0,
+                        createdAt: serverTimestamp()
+                    });
+
+                    showSuccess('Account created! Redirecting to payment...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html#pricing';
+                    }, 1500);
+                } else {
+                    showSuccess('Login successful! Redirecting...');
+                }
             } catch (error) {
-                showError(error.message);
+                console.error('Google auth error:', error);
+                showError('Google sign-in failed. Please try again.');
+                disableButtons(false);
             }
-        });
+        }
+
+        document.getElementById('googleBtn').addEventListener('click', handleGoogleAuth);
+        document.getElementById('googleSignupBtn').addEventListener('click', handleGoogleAuth);
 
         ['email', 'password'].forEach(id => {
-            document.getElementById(id).addEventListener('keypress', (e) => {
+            document.getElementById(id)?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') document.getElementById('loginBtn').click();
             });
         });
 
         ['signupEmail', 'signupPassword', 'confirmPassword'].forEach(id => {
-            document.getElementById(id).addEventListener('keypress', (e) => {
+            document.getElementById(id)?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') document.getElementById('signupBtn').click();
             });
         });

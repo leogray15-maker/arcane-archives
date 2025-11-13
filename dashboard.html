@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Dashboard | The Arcane Archives</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="icon" href="ArcaneA.png">
   <style>
     body {
       margin: 0;
@@ -16,9 +16,21 @@
     .nav {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       padding: 20px;
       background: #0c071a;
       border-bottom: 1px solid #201735;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .nav-logo {
+      height: 40px;
+      width: auto;
     }
 
     .nav h2 {
@@ -33,6 +45,12 @@
       padding: 8px 16px;
       border-radius: 12px;
       cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .nav button:hover {
+      background: #b29cff;
+      color: #06030f;
     }
 
     .container {
@@ -50,6 +68,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 25px;
+      margin-top: 30px;
     }
 
     .card {
@@ -99,6 +118,59 @@
     .center {
       text-align: center;
     }
+
+    .quick-links {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .quick-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #a67bff, #8b5cf6);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .quick-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(166, 123, 255, 0.4);
+    }
+
+    .subscription-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      color: #4ade80;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .nav h2 {
+        font-size: 16px;
+      }
+      
+      .quick-links {
+        flex-direction: column;
+      }
+      
+      .quick-link {
+        text-align: center;
+      }
+    }
   </style>
 </head>
 
@@ -106,7 +178,10 @@
 
   <!-- NAVIGATION -->
   <div class="nav">
-    <h2>The Arcane Archives</h2>
+    <div class="nav-left">
+      <img src="ArcaneA.png" alt="Logo" class="nav-logo">
+      <h2>The Arcane Archives</h2>
+    </div>
     <button id="logoutBtn">Logout</button>
   </div>
 
@@ -114,14 +189,26 @@
 
     <!-- WELCOME + AVATAR -->
     <div class="center">
-      <div id="userAvatar" class="avatar-circle"></div>
+      <div id="userAvatar" class="avatar-circle">?</div>
       <div class="welcome">
         Welcome back, <span id="username">...</span> 🔮
       </div>
+      <div id="subscriptionBadge" class="subscription-badge" style="display: none;">
+        ✓ Active Member
+      </div>
+    </div>
+
+    <!-- QUICK LINKS -->
+    <div class="quick-links">
+      <a href="courses.html" class="quick-link">📚 Browse Courses</a>
+      <a href="community.html" class="quick-link">💬 Community Chat</a>
+      <a href="live-calls.html" class="quick-link">🎙️ Live Calls</a>
+      <a href="wins.html" class="quick-link">🏆 Share a Win</a>
+      <a href="settings.html" class="quick-link">⚙️ Settings</a>
     </div>
 
     <!-- LEVEL + XP -->
-    <div class="card">
+    <div class="card" style="margin-top: 30px;">
       <h3>Your Progress</h3>
 
       <p>Level: <strong id="userLevel">...</strong></p>
@@ -156,97 +243,52 @@
 
   </div>
 
-  <!-- FIREBASE + PROTECTION LOGIC -->
+  <!-- FIREBASE + PROTECTION LOGIC with CENTRALIZED AUTH -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc
-    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { 
+      protectPage, 
+      updateUserAvatar, 
+      setupLogoutButton 
+    } from './auth-guard.js';
 
-    // 🔥 YOUR FIREBASE CONFIG
-    const firebaseConfig = {
-      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-      projectId: "arcane-archives-3b0f5",
-      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-      messagingSenderId: "264237235055",
-      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
-      measurementId: "G-YGPLQHDXMM"
-    };
+    // Protect this page and handle success
+    protectPage({
+      onSuccess: (user, userData) => {
+        // Update UI with user data
+        document.getElementById("username").textContent =
+          userData.Username || user.displayName || user.email.split("@")[0];
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        document.getElementById("userLevel").textContent =
+          userData.Level || "Apprentice";
 
-    // MAIN AUTH + PAYWALL LOGIC
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
+        const xp = userData.Xp || 0;
+        document.getElementById("currentXP").textContent = xp;
+        document.getElementById("nextLevelXP").textContent = 100;
+        document.getElementById("xpProgressBar").style.width =
+          Math.min(xp, 100) + "%";
+        document.getElementById("xpProgressText").textContent = xp + " XP";
+
+        document.getElementById("coursesCompleted").textContent =
+          userData.CoursesCompleted || 0;
+
+        document.getElementById("winsPosted").textContent =
+          userData.WinsPosted || 0;
+
+        document.getElementById("callsAttended").textContent =
+          userData.CallAttended || 0;
+
+        // Show subscription badge
+        if (userData.subscriptionStatus === 'active') {
+          document.getElementById("subscriptionBadge").style.display = 'inline-block';
+        }
+
+        // Update avatar
+        updateUserAvatar(user, userData);
       }
-
-      // Fetch from Firestore 'Users' collection
-      const ref = doc(db, "Users", user.uid);
-      const snap = await getDoc(ref);
-
-      if (!snap.exists()) {
-        alert("Your account is missing data. Please contact support.");
-        return;
-      }
-
-      const data = snap.data();
-
-      // PAYWALL PROTECTION
-      if (data.subscriptionStatus !== "active") {
-        alert("🔒 You must complete your membership payment to access The Arcane Archives.");
-        window.location.href = "index.html#pricing";
-        return;
-      }
-
-      // UPDATE UI
-      document.getElementById("username").textContent =
-        data.Username || user.displayName || user.email.split("@")[0];
-
-      document.getElementById("userLevel").textContent =
-        data.Level || "Apprentice";
-
-      const xp = data.Xp || 0;
-      document.getElementById("currentXP").textContent = xp;
-      document.getElementById("nextLevelXP").textContent = 100;
-      document.getElementById("xpProgressBar").style.width =
-        Math.min(xp, 100) + "%";
-      document.getElementById("xpProgressText").textContent = xp + " XP";
-
-      document.getElementById("coursesCompleted").textContent =
-        data.CoursesCompleted || 0;
-
-      document.getElementById("winsPosted").textContent =
-        data.WinsPosted || 0;
-
-      document.getElementById("callsAttended").textContent =
-        data.CallAttended || 0;
-
-      // AVATAR
-      const avatar = document.getElementById("userAvatar");
-      const initial = (data.Username ||
-        user.displayName ||
-        user.email)[0].toUpperCase();
-      avatar.textContent = initial;
     });
 
-    // LOGOUT BUTTON
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
-    });
+    // Setup logout button
+    setupLogoutButton();
   </script>
 </body>
 </html>
