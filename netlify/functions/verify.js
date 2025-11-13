@@ -1,59 +1,56 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event) => {
   const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json',
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Content-Type": "application/json",
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
   }
 
-  if (event.httpMethod !== 'POST') {
+  if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
       headers,
-      body: JSON.stringify({ error: 'Method Not Allowed' })
+      body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   }
 
   try {
-    const { sessionId } = JSON.parse(event.body);
+    const { sessionId } = JSON.parse(event.body || "{}");
 
     if (!sessionId) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Session ID is required' })
+        body: JSON.stringify({ error: "Session ID is required" }),
       };
     }
 
-    // Retrieve the checkout session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    // Return session details
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        customer_email: session.customer_details.email,
-        customer: session.customer,
-        subscription: session.subscription,
+        customer_email: session.customer_details?.email || null,
+        customer: session.customer || null,
+        subscription: session.subscription || null,
         payment_status: session.payment_status,
-        status: session.status
+        status: session.status,
       }),
     };
-
   } catch (error) {
-    console.error('Error verifying session:', error);
+    console.error("Error verifying session:", error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ 
-        error: error.message 
+      body: JSON.stringify({
+        error: error.message || "Error verifying session",
       }),
     };
   }

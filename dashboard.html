@@ -324,61 +324,79 @@
 
 
 <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-    const app = initializeApp({
+    // ⭐ Your Firebase Config (COMPLETE + CORRECT)
+    const firebaseConfig = {
         apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
         authDomain: "arcane-archives-3b0f5.firebaseapp.com",
         projectId: "arcane-archives-3b0f5",
         storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
         messagingSenderId: "264237235055",
-        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-    });
+        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+        measurementId: "G-YGPLQHDXMM"
+    };
 
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            window.location.href = 'login.html';
+            window.location.href = "login.html";
             return;
         }
 
-        try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            
-            if (!userDoc.exists() || userDoc.data().subscriptionStatus !== 'active') {
-                alert('🔒 Payment required to access The Arcane Archives.');
-                window.location.href = 'index.html#pricing';
-                return;
-            }
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-            console.log('✅ Access granted');
-            
-            // Update avatar
-            const username = user.displayName || user.email.split('@')[0];
-            const userAvatarElement = document.getElementById('userAvatar');
-            if (userAvatarElement) {
-                const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
-                userAvatarElement.textContent = avatar;
-                
-                const customAvatar = localStorage.getItem('customAvatarUrl');
-                if (customAvatar) {
-                    userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
-                    userAvatarElement.style.backgroundSize = 'cover';
-                    userAvatarElement.style.backgroundPosition = 'center';
-                    userAvatarElement.textContent = '';
-                }
-            }
-
-        } catch (error) {
-            console.error('Auth error:', error);
-            window.location.href = 'index.html#pricing';
+        // ❌ NO PAYMENT → send back to pricing
+        if (!userSnap.exists() || userSnap.data().subscriptionStatus !== "active") {
+            alert("🔒 You must complete payment to access The Arcane Archives.");
+            window.location.href = "index.html#pricing";
+            return;
         }
+
+        // ✔️ FULL ACCESS
+        const data = userSnap.data();
+
+        document.getElementById("username").textContent =
+            user.displayName || user.email.split("@")[0];
+
+        document.getElementById("userLevel").textContent =
+            data.level || "Apprentice";
+
+        document.getElementById("currentXP").textContent = data.xp || 0;
+        document.getElementById("nextLevelXP").textContent = 100;
+
+        document.getElementById("xpProgressBar").style.width =
+            `${Math.min((data.xp || 0), 100)}%`;
+
+        document.getElementById("xpProgressText").textContent =
+            `${data.xp || 0} XP`;
+
+        document.getElementById("coursesCompleted").textContent =
+            data.coursesCompleted || 0;
+
+        document.getElementById("winsPosted").textContent =
+            data.winsPosted || 0;
+
+        // Avatar letter
+        const avatarEl = document.getElementById("userAvatar");
+        const initial = (user.displayName || user.email)[0].toUpperCase();
+        avatarEl.textContent = initial;
+
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        });
     });
 </script>
+
 
 </body>
 </html>

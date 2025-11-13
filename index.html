@@ -940,76 +940,78 @@ if (document.readyState === 'loading') {
 } else {
     setTimeout(animateCounter, 100);
 }
-</script>
+<script src="https://js.stripe.com/v3/"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
+  // ⭐ Your Firebase Config (COMPLETE + CORRECT)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+    projectId: "arcane-archives-3b0f5",
+    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+    messagingSenderId: "264237235055",
+    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+    measurementId: "G-YGPLQHDXMM"
+  };
 
-    <!-- SIMPLIFIED FOOTER -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="index.html">Home</a>
-                <a href="login.html">Login</a>
-                <a href="Privacy-policy.html">Privacy Policy</a>
-                <a href="terms-of-service.html">Terms of Service</a>
-                <a href="refund-policy.html">Refund Policy</a>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    <script src="https://js.stripe.com/v3/"></script>
-    <script>
-        const stripe = Stripe('pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW');
-        
-        async function checkout() {
-            console.log('Starting checkout...');
-            
-            try {
-                console.log('Fetching checkout session...');
-                const response = await fetch('/.netlify/functions/create-checkout-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        priceId: 'price_1SRnIxCXghparoQFb0oQPUes'
-                    }),
-                });
+  const stripe = Stripe(
+    "pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW"
+  );
 
-                console.log('Response status:', response.status);
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Server error:', errorData);
-                    alert('Error: ' + (errorData.error || 'Failed to create checkout session'));
-                    return;
-                }
+  // Make checkout() global for your button
+  window.checkout = async function checkout() {
+    const user = auth.currentUser;
 
-                const session = await response.json();
-                console.log('Session created:', session.id);
-                
-                if (!session.id) {
-                    console.error('No session ID in response:', session);
-                    alert('Error: No session ID received from server');
-                    return;
-                }
-                
-                console.log('Redirecting to Stripe checkout...');
-                const result = await stripe.redirectToCheckout({
-                    sessionId: session.id
-                });
+    if (!user) {
+      alert("Please log in or create an account before subscribing.");
+      window.location.href = "login.html";
+      return;
+    }
 
-                if (result.error) {
-                    console.error('Stripe redirect error:', result.error);
-                    alert(result.error.message);
-                }
-            } catch (error) {
-                console.error('Checkout error:', error);
-                alert('Something went wrong: ' + error.message + '\n\nCheck the browser console for more details.');
-            }
+    try {
+      const response = await fetch(
+        "/.netlify/functions/create-checkout-session",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid: user.uid // Send UID to backend
+          })
         }
-    </script>
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        alert("Error: " + (errorData.error || "Failed to create checkout session"));
+        return;
+      }
+
+      const session = await response.json();
+
+      if (!session.id) {
+        alert("Error: No session ID received from server.");
+        return;
+      }
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id
+      });
+
+      if (result.error) {
+        alert(result.error.message);
+      }
+    } catch (error) {
+      alert("Something went wrong: " + error.message);
+    }
+  };
+</script>
+</body>
+</html>
+
 </body>
 </html>
