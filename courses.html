@@ -989,5 +989,78 @@ footer a:hover {
             <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
         </div>
     </footer>
+
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const app = initializeApp({
+        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+        projectId: "arcane-archives-3b0f5",
+        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+        messagingSenderId: "264237235055",
+        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    });
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // CRITICAL: Check authentication and payment status
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            // Not logged in - redirect to login
+            alert('⚠️ Please log in to access The Arcane Archives');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        try {
+            // Check if user has active subscription in Firestore
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.data();
+
+            // Check subscription status
+            const hasActiveSubscription = userData?.subscriptionStatus === 'active';
+            const subscriptionId = userData?.stripeSubscriptionId;
+
+            if (!hasActiveSubscription || !subscriptionId) {
+                // No active subscription - redirect to payment
+                alert('🔒 Payment required to access The Arcane Archives.\n\nYou will be redirected to the payment page.');
+                window.location.href = 'index.html#pricing';
+                return;
+            }
+
+            // User is authenticated AND has paid - allow access
+            console.log('✅ Access granted - Subscription active');
+
+            // Display user info
+            const username = user.displayName || user.email.split('@')[0];
+            const userAvatarElement = document.getElementById('userAvatar');
+            if (userAvatarElement) {
+                const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+                userAvatarElement.textContent = avatar;
+                
+                // If custom profile picture exists, use it
+                const customAvatar = localStorage.getItem('customAvatarUrl');
+                if (customAvatar) {
+                    userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
+                    userAvatarElement.style.backgroundSize = 'cover';
+                    userAvatarElement.style.backgroundPosition = 'center';
+                    userAvatarElement.textContent = '';
+                }
+            }
+
+        } catch (error) {
+            console.error('Error checking subscription:', error);
+            // If error checking subscription, redirect to payment to be safe
+            alert('⚠️ Error verifying subscription. Please complete payment.');
+            window.location.href = 'index.html#pricing';
+        }
+    });
+</script>
+
 </body>
 </html>
