@@ -420,166 +420,7 @@ Press Enter to send, Shift+Enter for new line"
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        const app = initializeApp({
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        });
-
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        let currentUser = null, currentUsername = '', currentAvatar = '👤';
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                currentUser = user;
-                currentUsername = user.displayName || user.email.split('@')[0];
-                currentAvatar = localStorage.getItem('userAvatar') || '👤';
-                document.getElementById('userAvatar').textContent = currentAvatar;
-                loadMessages();
-            }
-        });
-
-        function loadMessages() {
-            const messagesContainer = document.getElementById('messagesContainer');
-            const q = query(collection(db, 'community'), orderBy('timestamp', 'desc'), limit(100));
-            
-            onSnapshot(q, (snapshot) => {
-                if (snapshot.empty) {
-                    messagesContainer.innerHTML = `
-                        <div class="no-messages">
-                            <div class="no-messages-icon">💬</div>
-                            <h3>No messages yet!</h3>
-                            <p>Be the first to start the conversation.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                messagesContainer.innerHTML = '';
-                const messages = [];
-                snapshot.forEach((doc) => {
-                    messages.push({ id: doc.id, ...doc.data() });
-                });
-
-                // Reverse to show oldest first
-                messages.reverse().forEach((message) => {
-                    const messageEl = createMessageElement(message);
-                    messagesContainer.appendChild(messageEl);
-                });
-
-                // Scroll to bottom
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            });
-        }
-
-        function createMessageElement(message) {
-            const div = document.createElement('div');
-            div.className = 'message';
-            
-            const timestamp = message.timestamp?.toDate() || new Date();
-            const timeAgo = getTimeAgo(timestamp);
-            
-            div.innerHTML = `
-                <div class="message-avatar">${message.avatar || '👤'}</div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="message-username">${message.username}</span>
-                        <span class="message-time">${timeAgo}</span>
-                    </div>
-                    <div class="message-text">${escapeHtml(message.message)}</div>
-                </div>
-            `;
-            
-            return div;
-        }
-
-        async function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-            
-            if (!message) return;
-            
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = true;
-            sendBtn.textContent = '📤 Sending...';
-            
-            try {
-                await addDoc(collection(db, 'community'), {
-                    userId: currentUser.uid,
-                    username: currentUsername,
-                    avatar: currentAvatar,
-                    message: message,
-                    timestamp: serverTimestamp()
-                });
-                
-                messageInput.value = '';
-                sendBtn.textContent = '✅ Sent!';
-                
-                setTimeout(() => {
-                    sendBtn.textContent = '📤 Send';
-                    sendBtn.disabled = false;
-                }, 1000);
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
-                sendBtn.textContent = '📤 Send';
-                sendBtn.disabled = false;
-            }
-        }
-
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-
-        document.getElementById('messageInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return 'just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-            return date.toLocaleDateString();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-    </script>
-
-    <footer>
-        <div class="footer-links">
-            <a href="index.html">Home</a>
-            <a href="Privacy-policy.html">Privacy Policy</a>
-            <a href="terms-of-service.html">Terms of Service</a>
-            <a href="refund-policy.html">Refund Policy</a>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
-        </div>
-    </footer>
-
-
+    
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -597,42 +438,47 @@ Press Enter to send, Shift+Enter for new line"
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // CRITICAL: Check authentication and payment status
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in - redirect to login
-            alert('⚠️ Please log in to access The Arcane Archives');
-            window.location.href = 'login.html';
+            // Not logged in
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return;
         }
 
         try {
-            // Check if user has active subscription in Firestore
+            // Check Firestore for subscription
             const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
+            
+            if (!userDoc.exists()) {
+                // No user document - redirect to payment
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Check subscription status
-            const hasActiveSubscription = userData?.subscriptionStatus === 'active';
-            const subscriptionId = userData?.stripeSubscriptionId;
-
-            if (!hasActiveSubscription || !subscriptionId) {
-                // No active subscription - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.\n\nYou will be redirected to the payment page.');
+Redirecting to payment page...');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            // User is authenticated AND has paid - allow access
-            console.log('✅ Access granted - Subscription active');
+            const userData = userDoc.data();
+            
+            if (userData.subscriptionStatus !== 'active') {
+                // No active subscription
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Display user info
+Redirecting to payment page...');
+                window.location.href = 'index.html#pricing';
+                return;
+            }
+
+            // ✅ All good - user has access
+            console.log('✅ Access granted');
+            
+            // Update avatar
             const username = user.displayName || user.email.split('@')[0];
             const userAvatarElement = document.getElementById('userAvatar');
             if (userAvatarElement) {
                 const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
                 userAvatarElement.textContent = avatar;
                 
-                // If custom profile picture exists, use it
                 const customAvatar = localStorage.getItem('customAvatarUrl');
                 if (customAvatar) {
                     userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
@@ -643,13 +489,13 @@ Press Enter to send, Shift+Enter for new line"
             }
 
         } catch (error) {
-            console.error('Error checking subscription:', error);
-            // If error checking subscription, redirect to payment to be safe
-            alert('⚠️ Error verifying subscription. Please complete payment.');
+            console.error('Auth error:', error);
+            alert('⚠️ Error verifying subscription. Please try again or contact support.');
             window.location.href = 'index.html#pricing';
         }
     });
 </script>
+
 
 </body>
 </html>

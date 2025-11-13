@@ -267,73 +267,7 @@
         </div>
     </footer>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-
-        const app = initializeApp({ apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain: "arcane-archives-3b0f5.firebaseapp.com", projectId: "arcane-archives-3b0f5", storageBucket: "arcane-archives-3b0f5.firebasestorage.app", messagingSenderId: "264237235055", appId: "1:264237235055:web:4a2e5605b0ffb5307f069a" });
-        const auth = getAuth(app);
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                const username = user.displayName || user.email.split('@')[0];
-                const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
-                document.getElementById('userAvatar').textContent = avatar;
-            }
-        });
-
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-
-        function getNextDay(dayOfWeek, hour) {
-            const now = new Date();
-            const result = new Date(now);
-            result.setDate(now.getDate() + ((dayOfWeek + 7 - now.getDay()) % 7 || 7));
-            result.setHours(hour, 0, 0, 0);
-            if (result < now) result.setDate(result.getDate() + 7);
-            return result;
-        }
-
-        function updateCountdown(elementId, targetDate) {
-            const now = new Date();
-            const diff = targetDate - now;
-            
-            if (diff < 0) {
-                document.getElementById(elementId).textContent = 'Call in progress!';
-                return;
-            }
-            
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            let display = '';
-            if (days > 0) display += `${days}d `;
-            display += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            document.getElementById(elementId).textContent = display;
-        }
-
-        const monday8pm = getNextDay(1, 20);
-        const wednesday8pm = getNextDay(3, 20);
-        const friday7pm = getNextDay(5, 19);
-
-        setInterval(() => {
-            updateCountdown('countdown1', monday8pm);
-            updateCountdown('countdown2', wednesday8pm);
-            updateCountdown('countdown3', friday7pm);
-        }, 1000);
-
-        updateCountdown('countdown1', monday8pm);
-        updateCountdown('countdown2', wednesday8pm);
-        updateCountdown('countdown3', friday7pm);
-    </script>
-
-
+    
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -351,42 +285,47 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // CRITICAL: Check authentication and payment status
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in - redirect to login
-            alert('⚠️ Please log in to access The Arcane Archives');
-            window.location.href = 'login.html';
+            // Not logged in
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return;
         }
 
         try {
-            // Check if user has active subscription in Firestore
+            // Check Firestore for subscription
             const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
+            
+            if (!userDoc.exists()) {
+                // No user document - redirect to payment
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Check subscription status
-            const hasActiveSubscription = userData?.subscriptionStatus === 'active';
-            const subscriptionId = userData?.stripeSubscriptionId;
-
-            if (!hasActiveSubscription || !subscriptionId) {
-                // No active subscription - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.\n\nYou will be redirected to the payment page.');
+Redirecting to payment page...');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            // User is authenticated AND has paid - allow access
-            console.log('✅ Access granted - Subscription active');
+            const userData = userDoc.data();
+            
+            if (userData.subscriptionStatus !== 'active') {
+                // No active subscription
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Display user info
+Redirecting to payment page...');
+                window.location.href = 'index.html#pricing';
+                return;
+            }
+
+            // ✅ All good - user has access
+            console.log('✅ Access granted');
+            
+            // Update avatar
             const username = user.displayName || user.email.split('@')[0];
             const userAvatarElement = document.getElementById('userAvatar');
             if (userAvatarElement) {
                 const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
                 userAvatarElement.textContent = avatar;
                 
-                // If custom profile picture exists, use it
                 const customAvatar = localStorage.getItem('customAvatarUrl');
                 if (customAvatar) {
                     userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
@@ -397,13 +336,13 @@
             }
 
         } catch (error) {
-            console.error('Error checking subscription:', error);
-            // If error checking subscription, redirect to payment to be safe
-            alert('⚠️ Error verifying subscription. Please complete payment.');
+            console.error('Auth error:', error);
+            alert('⚠️ Error verifying subscription. Please try again or contact support.');
             window.location.href = 'index.html#pricing';
         }
     });
 </script>
+
 
 </body>
 </html>

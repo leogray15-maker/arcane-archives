@@ -313,117 +313,83 @@
         <div class="footer-bottom"><p>&copy; 2024 The Arcane Archives. All rights reserved.</p></div>
     </footer>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        const app = initializeApp({ apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain: "arcane-archives-3b0f5.firebaseapp.com", projectId: "arcane-archives-3b0f5", storageBucket: "arcane-archives-3b0f5.firebasestorage.app", messagingSenderId: "264237235055", appId: "1:264237235055:web:4a2e5605b0ffb5307f069a" });
+    const app = initializeApp({
+        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+        projectId: "arcane-archives-3b0f5",
+        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+        messagingSenderId: "264237235055",
+        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    });
 
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const loginTime = new Date();
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                const username = user.displayName || user.email.split('@')[0];
-                document.getElementById('username').textContent = username;
-                
-                const storedAvatar = localStorage.getItem('userAvatar');
-                const avatar = storedAvatar || username.charAt(0).toUpperCase();
-                document.getElementById('userAvatar').textContent = avatar;
-                
-                localStorage.setItem('arcane_user', username);
-                localStorage.setItem('arcane_uid', user.uid);
-                localStorage.setItem('arcane_login_time', loginTime.toISOString());
-
-                await loadUserStats(user.uid);
-                updateLoginTime();
-            }
-        });
-
-        async function loadUserStats(uid) {
-            try {
-                const userDoc = await getDoc(doc(db, 'users', uid));
-                let userData = userDoc.exists() ? userDoc.data() : {};
-
-                const xp = userData.xp || 0;
-                const coursesCompleted = userData.coursesCompleted || 0;
-                const hoursLearning = userData.hoursLearning || 0;
-                const dayStreak = userData.dayStreak || 0;
-                const winsPosted = userData.winsPosted || 0;
-
-                const level = Math.floor(xp / 100);
-                const nextLevelXP = (level + 1) * 100;
-                const xpProgress = (xp / nextLevelXP) * 100;
-
-                document.getElementById('currentXP').textContent = xp;
-                document.getElementById('nextLevelXP').textContent = nextLevelXP;
-                document.getElementById('xpProgressBar').style.width = xpProgress + '%';
-                document.getElementById('xpProgressText').textContent = xp + ' XP';
-                document.getElementById('userLevel').textContent = getLevelName(level);
-
-                document.getElementById('coursesCompleted').textContent = coursesCompleted;
-                document.getElementById('hoursLearning').textContent = hoursLearning;
-                document.getElementById('dayStreak').textContent = dayStreak;
-                document.getElementById('winsPosted').textContent = winsPosted;
-
-                document.getElementById('coursesProgress').style.width = Math.min((coursesCompleted / 12) * 100, 100) + '%';
-                document.getElementById('hoursProgress').style.width = Math.min((hoursLearning / 48) * 100, 100) + '%';
-                document.getElementById('streakProgress').style.width = Math.min((dayStreak / 30) * 100, 100) + '%';
-                document.getElementById('winsProgress').style.width = Math.min((winsPosted / 10) * 100, 100) + '%';
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            // Not logged in
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            return;
         }
 
-        function getLevelName(level) {
-            if (level < 1) return '🌱 Apprentice';
-            if (level < 5) return '⚡ Adept';
-            if (level < 10) return '🔮 Archivist';
-            if (level < 20) return '👑 Master';
-            return '🌟 Legend';
-        }
+        try {
+            // Check Firestore for subscription
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            
+            if (!userDoc.exists()) {
+                // No user document - redirect to payment
+                alert('🔒 Payment required to access The Arcane Archives.
 
-        function updateLoginTime() {
-            setInterval(() => {
-                const now = new Date();
-                const diff = now - loginTime;
-                const minutes = Math.floor(diff / 60000);
-                const hours = Math.floor(minutes / 60);
-                
-                let timeText = 'Just now';
-                if (minutes < 1) timeText = 'Just now';
-                else if (minutes < 60) timeText = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-                else timeText = `${hours} hour${hours > 1 ? 's' : ''} ago`;
-                
-                document.getElementById('loginTime').textContent = timeText;
-            }, 30000);
-        }
-
-        document.getElementById('userAvatar').addEventListener('click', () => {
-            document.getElementById('userDropdown').classList.toggle('active');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('active');
+Redirecting to payment page...');
+                window.location.href = 'index.html#pricing';
+                return;
             }
-        });
 
-        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            await signOut(auth);
-            localStorage.clear();
-            window.location.href = 'login.html';
-        });
+            const userData = userDoc.data();
+            
+            if (userData.subscriptionStatus !== 'active') {
+                // No active subscription
+                alert('🔒 Payment required to access The Arcane Archives.
 
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-    </script>
+Redirecting to payment page...');
+                window.location.href = 'index.html#pricing';
+                return;
+            }
+
+            // ✅ All good - user has access
+            console.log('✅ Access granted');
+            
+            // Update avatar
+            const username = user.displayName || user.email.split('@')[0];
+            const userAvatarElement = document.getElementById('userAvatar');
+            if (userAvatarElement) {
+                const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+                userAvatarElement.textContent = avatar;
+                
+                const customAvatar = localStorage.getItem('customAvatarUrl');
+                if (customAvatar) {
+                    userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
+                    userAvatarElement.style.backgroundSize = 'cover';
+                    userAvatarElement.style.backgroundPosition = 'center';
+                    userAvatarElement.textContent = '';
+                }
+            }
+
+        } catch (error) {
+            console.error('Auth error:', error);
+            alert('⚠️ Error verifying subscription. Please try again or contact support.');
+            window.location.href = 'index.html#pricing';
+        }
+    });
+</script>
+
+
 
 
 <script type="module">
@@ -443,42 +409,47 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // CRITICAL: Check authentication and payment status
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in - redirect to login
-            alert('⚠️ Please log in to access The Arcane Archives');
-            window.location.href = 'login.html';
+            // Not logged in
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return;
         }
 
         try {
-            // Check if user has active subscription in Firestore
+            // Check Firestore for subscription
             const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
+            
+            if (!userDoc.exists()) {
+                // No user document - redirect to payment
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Check subscription status
-            const hasActiveSubscription = userData?.subscriptionStatus === 'active';
-            const subscriptionId = userData?.stripeSubscriptionId;
-
-            if (!hasActiveSubscription || !subscriptionId) {
-                // No active subscription - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.\n\nYou will be redirected to the payment page.');
+Redirecting to payment page...');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            // User is authenticated AND has paid - allow access
-            console.log('✅ Access granted - Subscription active');
+            const userData = userDoc.data();
+            
+            if (userData.subscriptionStatus !== 'active') {
+                // No active subscription
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Display user info
+Redirecting to payment page...');
+                window.location.href = 'index.html#pricing';
+                return;
+            }
+
+            // ✅ All good - user has access
+            console.log('✅ Access granted');
+            
+            // Update avatar
             const username = user.displayName || user.email.split('@')[0];
             const userAvatarElement = document.getElementById('userAvatar');
             if (userAvatarElement) {
                 const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
                 userAvatarElement.textContent = avatar;
                 
-                // If custom profile picture exists, use it
                 const customAvatar = localStorage.getItem('customAvatarUrl');
                 if (customAvatar) {
                     userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
@@ -489,13 +460,13 @@
             }
 
         } catch (error) {
-            console.error('Error checking subscription:', error);
-            // If error checking subscription, redirect to payment to be safe
-            alert('⚠️ Error verifying subscription. Please complete payment.');
+            console.error('Auth error:', error);
+            alert('⚠️ Error verifying subscription. Please try again or contact support.');
             window.location.href = 'index.html#pricing';
         }
     });
 </script>
+
 
 </body>
 </html>

@@ -354,156 +354,7 @@ Examples:
             <div class="loading">⏳ Loading wins...</div>
         </div>
     </main>
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, updateDoc, doc, arrayUnion, arrayRemove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        const app = initializeApp({
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        });
-
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        let currentUser = null, currentUsername = '', currentAvatar = '👤';
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                currentUser = user;
-                currentUsername = user.displayName || user.email.split('@')[0];
-                currentAvatar = localStorage.getItem('userAvatar') || '👤';
-                document.getElementById('userAvatar').textContent = currentAvatar;
-                loadWins();
-            }
-        });
-
-        function loadWins() {
-            const winsContainer = document.getElementById('winsContainer');
-            const q = query(collection(db, 'wins'), orderBy('timestamp', 'desc'), limit(50));
-            
-            onSnapshot(q, (snapshot) => {
-                if (snapshot.empty) {
-                    winsContainer.innerHTML = '<div class="loading">🏆 No wins yet! Be the first to post.</div>';
-                    return;
-                }
-
-                winsContainer.innerHTML = '';
-                snapshot.forEach((docSnapshot) => {
-                    const win = docSnapshot.data();
-                    const winCard = document.createElement('div');
-                    winCard.className = 'win-card';
-                    
-                    const timestamp = win.timestamp?.toDate() || new Date();
-                    const timeAgo = getTimeAgo(timestamp);
-                    const likedByUser = win.likedBy?.includes(currentUser.uid) || false;
-                    const likeCount = win.likedBy?.length || 0;
-                    
-                    winCard.innerHTML = `
-                        <div class="win-header">
-                            <div class="win-avatar">${win.avatar || '👤'}</div>
-                            <div>
-                                <div class="win-username">${win.username}</div>
-                                <div class="win-time">${timeAgo}</div>
-                            </div>
-                        </div>
-                        <div class="win-content">${escapeHtml(win.content)}</div>
-                        <button class="like-btn ${likedByUser ? 'liked' : ''}" data-win-id="${docSnapshot.id}">
-                            <span>${likedByUser ? '❤️' : '🤍'}</span>
-                            <span>${likeCount}</span>
-                        </button>
-                    `;
-                    
-                    winCard.querySelector('.like-btn').addEventListener('click', () => toggleLike(docSnapshot.id, likedByUser));
-                    winsContainer.appendChild(winCard);
-                });
-            });
-        }
-
-        document.getElementById('postWinBtn').addEventListener('click', async () => {
-            const winInput = document.getElementById('winInput');
-            const content = winInput.value.trim();
-            if (!content) return alert('Please write your win!');
-            
-            const postBtn = document.getElementById('postWinBtn');
-            postBtn.disabled = true;
-            postBtn.textContent = '📤 Posting...';
-            
-            try {
-                await addDoc(collection(db, 'wins'), {
-                    userId: currentUser.uid,
-                    username: currentUsername,
-                    avatar: currentAvatar,
-                    content: content,
-                    timestamp: serverTimestamp(),
-                    likedBy: []
-                });
-                
-                winInput.value = '';
-                postBtn.textContent = '✅ Posted!';
-                setTimeout(() => {
-                    postBtn.textContent = '📢 Post Win';
-                    postBtn.disabled = false;
-                }, 2000);
-            } catch (error) {
-                alert('Failed to post win. Please try again.');
-                postBtn.textContent = '📢 Post Win';
-                postBtn.disabled = false;
-            }
-        });
-
-        async function toggleLike(winId, currentlyLiked) {
-            try {
-                const winRef = doc(db, 'wins', winId);
-                if (currentlyLiked) {
-                    await updateDoc(winRef, { likedBy: arrayRemove(currentUser.uid) });
-                } else {
-                    await updateDoc(winRef, { likedBy: arrayUnion(currentUser.uid) });
-                }
-            } catch (error) {
-                console.error('Error toggling like:', error);
-            }
-        }
-
-        function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return 'just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-            return date.toLocaleDateString();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-    </script>
-
-    <footer>
-        <div class="footer-links">
-            <a href="index.html">Home</a>
-            <a href="Privacy-policy.html">Privacy Policy</a>
-            <a href="terms-of-service.html">Terms of Service</a>
-            <a href="refund-policy.html">Refund Policy</a>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
-        </div>
-    </footer>
-
-
+    
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -521,42 +372,47 @@ Examples:
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // CRITICAL: Check authentication and payment status
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // Not logged in - redirect to login
-            alert('⚠️ Please log in to access The Arcane Archives');
-            window.location.href = 'login.html';
+            // Not logged in
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return;
         }
 
         try {
-            // Check if user has active subscription in Firestore
+            // Check Firestore for subscription
             const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
+            
+            if (!userDoc.exists()) {
+                // No user document - redirect to payment
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Check subscription status
-            const hasActiveSubscription = userData?.subscriptionStatus === 'active';
-            const subscriptionId = userData?.stripeSubscriptionId;
-
-            if (!hasActiveSubscription || !subscriptionId) {
-                // No active subscription - redirect to payment
-                alert('🔒 Payment required to access The Arcane Archives.\n\nYou will be redirected to the payment page.');
+Redirecting to payment page...');
                 window.location.href = 'index.html#pricing';
                 return;
             }
 
-            // User is authenticated AND has paid - allow access
-            console.log('✅ Access granted - Subscription active');
+            const userData = userDoc.data();
+            
+            if (userData.subscriptionStatus !== 'active') {
+                // No active subscription
+                alert('🔒 Payment required to access The Arcane Archives.
 
-            // Display user info
+Redirecting to payment page...');
+                window.location.href = 'index.html#pricing';
+                return;
+            }
+
+            // ✅ All good - user has access
+            console.log('✅ Access granted');
+            
+            // Update avatar
             const username = user.displayName || user.email.split('@')[0];
             const userAvatarElement = document.getElementById('userAvatar');
             if (userAvatarElement) {
                 const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
                 userAvatarElement.textContent = avatar;
                 
-                // If custom profile picture exists, use it
                 const customAvatar = localStorage.getItem('customAvatarUrl');
                 if (customAvatar) {
                     userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
@@ -567,13 +423,13 @@ Examples:
             }
 
         } catch (error) {
-            console.error('Error checking subscription:', error);
-            // If error checking subscription, redirect to payment to be safe
-            alert('⚠️ Error verifying subscription. Please complete payment.');
+            console.error('Auth error:', error);
+            alert('⚠️ Error verifying subscription. Please try again or contact support.');
             window.location.href = 'index.html#pricing';
         }
     });
 </script>
+
 
 </body>
 </html>
