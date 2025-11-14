@@ -1,19 +1,57 @@
 [build]
-  publish   = "."
   functions = "netlify/functions"
+  publish = "."
 
 [[redirects]]
-  from   = "/*"
-  to     = "/index.html"
+  from = "/*"
+  to = "/index.html"
   status = 200
-  force  = false
+  force = false
 
 [[headers]]
   for = "/*"
   [headers.values]
-    # Allow Stripe, Firebase, Firestore, gstatic etc
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://js.stripe.com https://cdn.jsdelivr.net https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://firestore.googleapis.com https://*.stripe.com https://www.gstatic.com https://apis.google.com; font-src 'self' data:; frame-src https://js.stripe.com https://accounts.google.com https://apis.google.com;"
-"
+    Content-Security-Policy = """
+      default-src 'self';
+      
+      script-src 
+        'self' 
+        'unsafe-inline' 
+        'unsafe-eval'
+        https://www.gstatic.com 
+        https://www.google.com
+        https://apis.google.com
+        https://js.stripe.com 
+        https://cdn.jsdelivr.net;
+
+      style-src 
+        'self' 
+        'unsafe-inline';
+
+      img-src 
+        'self' 
+        data: 
+        https:;
+
+      connect-src 
+        'self'
+        https://*.firebaseapp.com
+        https://*.googleapis.com
+        https://firestore.googleapis.com
+        https://www.gstatic.com
+        https://apis.google.com
+        https://*.stripe.com;
+
+      font-src 
+        'self' 
+        data:;
+
+      frame-src 
+        https://js.stripe.com
+        https://accounts.google.com
+        https://apis.google.com;
+    """
+
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
