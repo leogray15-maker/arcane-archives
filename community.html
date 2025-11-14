@@ -300,16 +300,169 @@ Press Enter to send, Shift+Enter for new line"
 
     <script type="module">
     import { protectPage, updateUserAvatar, setupMobileMenu } from './auth-guard.js';
+    import { 
+        getFirestore, 
+        collection, 
+        addDoc, 
+        query, 
+        orderBy, 
+        limit, 
+        onSnapshot,
+        serverTimestamp 
+    } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+    const db = getFirestore();
+    let currentUser = null;
+    let currentUserData = null;
 
     protectPage({
         onSuccess: (user, userData) => {
             console.log('✅ Access granted');
+            currentUser = user;
+            currentUserData = userData;
             updateUserAvatar(user, userData);
+            loadMessages();
         }
     });
 
     setupMobileMenu();
-</script>
+
+    // Load messages from Firestore
+    function loadMessages() {
+        const messagesContainer = document.getElementById('messagesContainer');
+        
+        const q = query(
+            collection(db, 'community'),
+            orderBy('timestamp', 'desc'),
+            limit(50)
+        );
+
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                messagesContainer.innerHTML = `
+                    <div class="no-messages">
+                        <div class="no-messages-icon">💬</div>
+                        <p>No messages yet. Be the first to start the conversation!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const messages = [];
+            snapshot.forEach((doc) => {
+                messages.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Reverse to show oldest first
+            messages.reverse();
+
+            messagesContainer.innerHTML = messages.map(msg => {
+                const timestamp = msg.timestamp?.toDate();
+                const timeAgo = timestamp ? formatTimeAgo(timestamp) : 'Just now';
+                const username = msg.username || 'Anonymous';
+                const avatar = msg.avatar || username.charAt(0).toUpperCase();
+
+                return `
+                    <div class="message">
+                        <div class="message-avatar">${avatar}</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-username">${username}</span>
+                                <span class="message-time">${timeAgo}</span>
+                            </div>
+                            <div class="message-text">${escapeHtml(msg.message)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Auto-scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, (error) => {
+            console.error('Error loading messages:', error);
+            messagesContainer.innerHTML = `
+                <div class="no-messages">
+                    <div class="no-messages-icon">⚠️</div>
+                    <p>Error loading messages. Please refresh the page.</p>
+                </div>
+            `;
+        });
+    }
+
+    // Send message
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+        if (!currentUser || !currentUserData) {
+            alert('⚠️ Please log in to send messages');
+            return;
+        }
+
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.disabled = true;
+
+        try {
+            const username = currentUserData.Username || currentUser.displayName || currentUser.email.split('@')[0];
+            const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+
+            await addDoc(collection(db, 'community'), {
+                message: message,
+                username: username,
+                avatar: avatar,
+                userId: currentUser.uid,
+                timestamp: serverTimestamp()
+            });
+
+            input.value = '';
+            input.style.height = '60px';
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('⚠️ Error sending message. Please try again.');
+        } finally {
+            sendBtn.disabled = false;
+        }
+    }
+
+    // Send button click
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+
+    // Enter to send (Shift+Enter for new line)
+    document.getElementById('messageInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Auto-resize textarea
+    document.getElementById('messageInput').addEventListener('input', (e) => {
+        e.target.style.height = '60px';
+        e.target.style.height = (e.target.scrollHeight) + 'px';
+    });
+
+    // Format time ago
+    function formatTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        
+        if (seconds < 60) return 'Just now';
+        if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+        if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+        if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+        return date.toLocaleDateString();
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    </script>
 
 </body>
 </html>
