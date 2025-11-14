@@ -234,16 +234,257 @@ Examples:
     </main>
 
     <script type="module">
-    import { protectPage, updateUserAvatar, setupMobileMenu } from './auth-guard.js';
+// wins.html - Complete Script Section
+import { protectPage, updateUserAvatar, setupMobileMenu, db } from './auth-guard.js';
+import { 
+    collection, 
+    addDoc, 
+    query, 
+    orderBy, 
+    limit, 
+    onSnapshot,
+    serverTimestamp,
+    doc,
+    updateDoc,
+    arrayUnion,
+    arrayRemove
+} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-    protectPage({
-        onSuccess: (user, userData) => {
-            console.log('✅ Access granted');
-            updateUserAvatar(user, userData);
+let currentUser = null;
+let currentUserData = null;
+
+protectPage({
+    onSuccess: (user, userData) => {
+        console.log('✅ Wins page - Access granted');
+        console.log('User:', user.uid);
+        console.log('UserData:', userData);
+        console.log('DB:', db);
+        currentUser = user;
+        currentUserData = userData;
+        updateUserAvatar(user, userData);
+        loadWins();
+    },
+    onFailure: (error) => {
+        console.error('❌ Wins page - Access denied:', error);
+        const winsContainer = document.getElementById('winsContainer');
+        if (winsContainer) {
+            winsContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                    <p>⚠️ Access denied: ${error}</p>
+                    <p style="font-size: 0.9rem; margin-top: 1rem;">Please log in to view wins.</p>
+                    <a href="login.html" style="display: inline-block; margin-top: 1rem; padding: 0.8rem 1.5rem; background: var(--purple); color: white; text-decoration: none; border-radius: 8px;">Go to Login</a>
+                </div>
+            `;
         }
-    });
+    }
+});
 
-    setupMobileMenu();
+setupMobileMenu();
+
+// ============================================
+// LOAD WINS FROM FIRESTORE
+// ============================================
+function loadWins() {
+    const winsContainer = document.getElementById('winsContainer');
+    
+    console.log('📥 Loading wins from Firestore...');
+    
+    const q = query(
+        collection(db, 'wins'),
+        orderBy('timestamp', 'desc'),
+        limit(50)
+    );
+
+    onSnapshot(q, (snapshot) => {
+        console.log('📊 Wins snapshot received, size:', snapshot.size);
+        
+        if (snapshot.empty) {
+            winsContainer.innerHTML = `
+                <div style="text-align: center; padding: 4rem 2rem; color: var(--text-dim);">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+                    <p>No wins posted yet. Be the first to share your victory!</p>
+                </div>
+            `;
+            return;
+        }
+
+        winsContainer.innerHTML = '';
+        
+        snapshot.forEach((docSnap) => {
+            const win = { id: docSnap.id, ...docSnap.data() };
+            const winCard = createWinCard(win);
+            winsContainer.appendChild(winCard);
+        });
+        
+        console.log('✅ Wins loaded successfully');
+    }, (error) => {
+        console.error('❌ Error loading wins:', error);
+        winsContainer.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                <p>⚠️ Error loading wins: ${error.message}</p>
+                <p style="font-size: 0.9rem; margin-top: 1rem;">Check browser console for details.</p>
+            </div>
+        `;
+    });
+}
+
+// ============================================
+// CREATE WIN CARD ELEMENT
+// ============================================
+function createWinCard(win) {
+    const card = document.createElement('div');
+    card.className = 'win-card';
+    
+    const timestamp = win.timestamp?.toDate();
+    const timeAgo = timestamp ? formatTimeAgo(timestamp) : 'Just now';
+    const username = win.username || 'Anonymous';
+    const likes = win.likes || [];
+    const likeCount = likes.length;
+    const isLiked = currentUser && likes.includes(currentUser.uid);
+
+    // Check if avatar is a URL (custom picture) or emoji/letter
+    const isCustomPicture = win.avatarUrl && win.avatarUrl.startsWith('data:image');
+    const avatarDisplay = isCustomPicture 
+        ? `<div class="win-avatar" style="background-image: url(${win.avatarUrl}); background-size: cover; background-position: center;"></div>`
+        : `<div class="win-avatar">${escapeHtml(win.avatar || username.charAt(0).toUpperCase())}</div>`;
+
+    card.innerHTML = `
+        <div class="win-header">
+            ${avatarDisplay}
+            <div style="flex: 1;">
+                <div class="win-username">${escapeHtml(username)}</div>
+                <div class="win-time">${timeAgo}</div>
+            </div>
+        </div>
+        <div class="win-content">${escapeHtml(win.content)}</div>
+        <button class="like-btn ${isLiked ? 'liked' : ''}" data-win-id="${win.id}">
+            ${isLiked ? '❤️' : '🤍'} ${likeCount} ${likeCount === 1 ? 'Like' : 'Likes'}
+        </button>
+    `;
+
+    const likeBtn = card.querySelector('.like-btn');
+    likeBtn.addEventListener('click', () => toggleLike(win.id, isLiked));
+
+    return card;
+}
+
+// ============================================
+// POST A NEW WIN
+// ============================================
+async function postWin() {
+    const input = document.getElementById('winInput');
+    const content = input.value.trim();
+
+    if (!content) {
+        alert('⚠️ Please write your win before posting!');
+        return;
+    }
+
+    if (!currentUser || !currentUserData) {
+        alert('⚠️ Please log in to post wins');
+        return;
+    }
+
+    const postBtn = document.getElementById('postWinBtn');
+    postBtn.disabled = true;
+    postBtn.textContent = '📤 Posting...';
+
+    try {
+        console.log('📤 Posting win...');
+        
+        const username = currentUserData.Username || currentUser.displayName || currentUser.email.split('@')[0];
+        const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+
+        await addDoc(collection(db, 'wins'), {
+            content: content,
+            username: username,
+            avatar: avatar,
+            userId: currentUser.uid,
+            timestamp: serverTimestamp(),
+            likes: []
+        });
+
+        console.log('✅ Win posted successfully');
+        input.value = '';
+        alert('🎉 Win posted successfully!');
+
+        // Update user's WinsPosted count
+        try {
+            await updateDoc(doc(db, 'Users', currentUser.uid), {
+                WinsPosted: (currentUserData.WinsPosted || 0) + 1
+            });
+            console.log('✅ Updated user WinsPosted count');
+        } catch (updateError) {
+            console.warn('Could not update WinsPosted count:', updateError);
+        }
+
+    } catch (error) {
+        console.error('❌ Error posting win:', error);
+        alert('⚠️ Error posting win: ' + error.message);
+    } finally {
+        postBtn.disabled = false;
+        postBtn.textContent = '📢 Post Win';
+    }
+}
+
+// ============================================
+// TOGGLE LIKE
+// ============================================
+async function toggleLike(winId, isCurrentlyLiked) {
+    if (!currentUser) {
+        alert('⚠️ Please log in to like wins');
+        return;
+    }
+
+    try {
+        const winRef = doc(db, 'wins', winId);
+        
+        if (isCurrentlyLiked) {
+            await updateDoc(winRef, {
+                likes: arrayRemove(currentUser.uid)
+            });
+            console.log('👎 Unliked win:', winId);
+        } else {
+            await updateDoc(winRef, {
+                likes: arrayUnion(currentUser.uid)
+            });
+            console.log('👍 Liked win:', winId);
+        }
+    } catch (error) {
+        console.error('❌ Error toggling like:', error);
+        alert('⚠️ Error updating like: ' + error.message);
+    }
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+function formatTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+    if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+    return date.toLocaleDateString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+document.getElementById('postWinBtn').addEventListener('click', postWin);
+
+document.getElementById('winInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        postWin();
+    }
+});
 </script>
 
 </body>
