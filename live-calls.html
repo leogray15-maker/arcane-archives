@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community | The Arcane Archives</title>
+    <title>Live Calls | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     <style>
         :root {
@@ -21,8 +21,6 @@
             background-color: var(--bg-dark);
             color: var(--text-light);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         nav {
             position: fixed; top: 0; width: 100%;
@@ -84,144 +82,86 @@
         .main-content {
             margin-left: 250px;
             margin-top: 70px;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 70px);
-        }
-        .page-header {
-            padding: 2rem 3rem 1rem;
-            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+            padding: 3rem;
+            min-height: calc(100vh - 70px);
         }
         .page-header h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             background: linear-gradient(135deg, var(--purple-light), var(--purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
         }
-        .page-header p { color: var(--text-dim); }
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 2rem 3rem;
-            overflow: hidden;
+        .page-header p { color: var(--text-dim); font-size: 1.1rem; margin-bottom: 2rem; }
+        
+        .calls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
         }
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .message {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .message-avatar {
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-        .message-content {
-            flex: 1;
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            padding: 1rem;
-        }
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-        .message-username {
-            font-weight: 700;
-            color: var(--purple-light);
-        }
-        .message-time {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
-        .message-text {
-            color: var(--text-light);
-            line-height: 1.5;
-            white-space: pre-wrap;
-        }
-        .message-input-container {
-            display: flex;
-            gap: 1rem;
-            padding: 1.5rem;
+        
+        .call-card {
             background: rgba(147, 51, 234, 0.05);
             border: 1px solid rgba(147, 51, 234, 0.2);
             border-radius: 15px;
-        }
-        .message-input {
-            flex: 1;
-            padding: 1rem;
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 10px;
-            color: var(--text-light);
-            font-size: 1rem;
-            font-family: inherit;
-            resize: none;
-            min-height: 60px;
-        }
-        .message-input:focus {
-            outline: none;
-            border-color: var(--purple);
-        }
-        .send-btn {
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            align-self: flex-end;
-        }
-        .send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
-        }
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .loading {
-            text-align: center;
             padding: 2rem;
-            color: var(--text-dim);
+            transition: all 0.3s;
         }
-        .no-messages {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-dim);
+        
+        .call-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--purple);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
         }
-        .no-messages-icon {
-            font-size: 4rem;
+        
+        .call-icon {
+            font-size: 3rem;
             margin-bottom: 1rem;
         }
+        
+        .call-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--purple-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .call-time {
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .call-description {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .call-btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .call-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+        }
+        
         @media (max-width: 768px) {
             .sidebar { left: -250px; transition: left 0.3s; }
             .sidebar.active { left: 0; }
-            .main-content { margin-left: 0; }
+            .main-content { margin-left: 0; padding: 2rem 1rem; }
             .menu-toggle { display: block; }
-            .page-header { padding: 1.5rem 1rem 1rem; }
-            .chat-container { padding: 1rem; }
+            .calls-grid {
+                grid-template-columns: 1fr;
+            }
         }
     
         footer {
@@ -229,6 +169,7 @@
             padding: 1.5rem;
             border-top: 1px solid rgba(147, 51, 234, 0.2);
             text-align: center;
+            margin-top: 4rem;
         }
         .footer-links {
             display: flex;
@@ -253,128 +194,6 @@
     </style>
 </head>
 <body>
-<!-- Loading Screen -->
-<div id="loadingScreen" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    transition: opacity 0.5s, visibility 0.5s;
-">
-    <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: logoPulse 2s ease-in-out infinite;">
-    
-    <div style="width: 300px; max-width: 90%; margin-bottom: 1rem;">
-        <div style="
-            width: 100%;
-            height: 6px;
-            background: rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        ">
-            <div id="loadingBar" style="
-                width: 0%;
-                height: 100%;
-                background: linear-gradient(90deg, #9333ea, #a78bfa);
-                border-radius: 10px;
-                transition: width 0.3s ease;
-            "></div>
-        </div>
-    </div>
-    
-    <div id="loadingText" style="
-        color: #a78bfa;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-weight: 600;
-        font-size: 1.1rem;
-        min-height: 30px;
-        text-align: center;
-    ">Unlocking the archives...</div>
-</div>
-
-<style>
-@keyframes logoPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-}
-</style>
-
-<script>
-// Enhanced loading screen with rotating messages
-(function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
-    
-    const messages = [
-        'Unlocking the archives...',
-        'Preparing your journey...',
-        'Keep this a secret...',
-        'Loading forbidden knowledge...',
-        'Initializing consciousness shift...',
-        'Breaking the matrix...'
-    ];
-    
-    let progress = 0;
-    let messageIndex = 0;
-    
-    // Rotate messages
-    const messageInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        loadingText.textContent = messages[messageIndex];
-    }, 800);
-    
-    // Progress bar
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }
-        loadingBar.style.width = progress + '%';
-    }, 200);
-    
-    // Ensure loading completes
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingBar.style.width = '100%';
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }, 500);
-    });
-})();
-</script>
-
 
     <nav>
         <div class="nav-container">
@@ -390,8 +209,8 @@
         <ul class="sidebar-menu">
             <li><a href="dashboard.html">🏠 Dashboard</a></li>
             <li><a href="courses.html">📚 All Courses</a></li>
-            <li><a href="community.html" class="active">💬 Community</a></li>
-            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="community.html">💬 Community</a></li>
+            <li><a href="live-calls.html" class="active">🎙️ Live Calls</a></li>
             <li><a href="wins.html">🏆 Wins Board</a></li>
             <li><a href="settings.html">⚙️ Settings</a></li>
         </ul>
@@ -399,87 +218,64 @@
 
     <main class="main-content">
         <div class="page-header">
-            <h1>💬 Community Chat</h1>
-            <p>Connect with the brotherhood in real-time</p>
+            <h1>🎙️ Live Calls</h1>
+            <p>Join exclusive group calls with the brotherhood</p>
         </div>
 
-        <div class="chat-container">
-            <div class="messages-container" id="messagesContainer">
-                <div class="loading">⏳ Loading messages...</div>
+        <div class="calls-grid">
+            <div class="call-card">
+                <div class="call-icon">🔥</div>
+                <div class="call-title">Weekly Masterclass</div>
+                <div class="call-time">📅 Every Monday at 7 PM EST</div>
+                <div class="call-description">
+                    Deep dive into advanced strategies for business, wealth creation, and personal mastery. Q&A included.
+                </div>
+                <a href="#" class="call-btn">Join Call</a>
             </div>
 
-            <div class="message-input-container">
-                <textarea 
-                    id="messageInput" 
-                    class="message-input" 
-                    placeholder="Share your thoughts with the community...
-Press Enter to send, Shift+Enter for new line"
-                ></textarea>
-                <button id="sendBtn" class="send-btn">📤 Send</button>
+            <div class="call-card">
+                <div class="call-icon">💪</div>
+                <div class="call-title">Accountability Check-In</div>
+                <div class="call-time">📅 Every Wednesday at 6 AM EST</div>
+                <div class="call-description">
+                    Morning accountability call to set intentions and review progress with the brotherhood.
+                </div>
+                <a href="#" class="call-btn">Join Call</a>
+            </div>
+
+            <div class="call-card">
+                <div class="call-icon">🎯</div>
+                <div class="call-title">Friday Focus Session</div>
+                <div class="call-time">📅 Every Friday at 5 PM EST</div>
+                <div class="call-description">
+                    End-of-week review, wins celebration, and planning session for the week ahead.
+                </div>
+                <a href="#" class="call-btn">Join Call</a>
+            </div>
+
+            <div class="call-card">
+                <div class="call-icon">🧠</div>
+                <div class="call-title">Sunday Strategy</div>
+                <div class="call-time">📅 Every Sunday at 8 PM EST</div>
+                <div class="call-description">
+                    Strategic planning session for the upcoming week. Set goals and align with your purpose.
+                </div>
+                <a href="#" class="call-btn">Join Call</a>
             </div>
         </div>
     </main>
 
-    
+    <script type="module">
+    import { protectPage, updateUserAvatar, setupMobileMenu } from './auth-guard.js';
 
-
-
-
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-    const app = initializeApp({
-        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-        projectId: "arcane-archives-3b0f5",
-        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-        messagingSenderId: "264237235055",
-        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-    });
-
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = 'login.html';
-            return;
-        }
-
-        try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            
-            if (!userDoc.exists() || userDoc.data().subscriptionStatus !== 'active') {
-                alert('🔒 Payment required to access The Arcane Archives.');
-                window.location.href = 'index.html#pricing';
-                return;
-            }
-
+    protectPage({
+        onSuccess: (user, userData) => {
             console.log('✅ Access granted');
-            
-            // Update avatar
-            const username = user.displayName || user.email.split('@')[0];
-            const userAvatarElement = document.getElementById('userAvatar');
-            if (userAvatarElement) {
-                const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
-                userAvatarElement.textContent = avatar;
-                
-                const customAvatar = localStorage.getItem('customAvatarUrl');
-                if (customAvatar) {
-                    userAvatarElement.style.backgroundImage = `url(${customAvatar})`;
-                    userAvatarElement.style.backgroundSize = 'cover';
-                    userAvatarElement.style.backgroundPosition = 'center';
-                    userAvatarElement.textContent = '';
-                }
-            }
-
-        } catch (error) {
-            console.error('Auth error:', error);
-            window.location.href = 'index.html#pricing';
+            updateUserAvatar(user, userData);
         }
     });
+
+    setupMobileMenu();
 </script>
 
 </body>

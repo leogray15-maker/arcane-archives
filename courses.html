@@ -203,6 +203,188 @@
             color: var(--purple-light);
         }
 
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-darker);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: var(--purple-light);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: var(--purple);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .lesson-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .lesson-item {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lesson-item:hover {
+            border-color: var(--purple);
+            transform: translateX(5px);
+        }
+
+        .lesson-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: var(--purple);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+
+        .lesson-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .lesson-duration {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* VIDEO PLAYER STYLES */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .video-container iframe,
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .lesson-content {
+            display: none;
+        }
+
+        .lesson-content.active {
+            display: block;
+        }
+
+        .lesson-text {
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-top: 1.5rem;
+        }
+
+        .lesson-text h2 {
+            color: var(--purple-light);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .lesson-text h3 {
+            color: var(--purple-light);
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .lesson-text p {
+            margin-bottom: 1rem;
+        }
+
+        .lesson-text ul, .lesson-text ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .lesson-text li {
+            margin-bottom: 0.5rem;
+        }
+
+        .back-to-lessons {
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid var(--purple);
+            color: var(--purple-light);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .back-to-lessons:hover {
+            background: rgba(147, 51, 234, 0.3);
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 left: -250px;
@@ -224,6 +406,14 @@
 
             .courses-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 1rem;
+            }
+
+            .modal-body {
+                padding: 1rem;
             }
         }
 
@@ -289,80 +479,31 @@
             <p>Master the forbidden arts of business, wealth, and consciousness</p>
         </div>
 
-        <div class="courses-grid">
-            <div class="course-card">
-                <div class="course-icon">💰</div>
-                <div class="course-title">Wealth Mastery</div>
-                <div class="course-description">
-                    Learn the ancient principles of wealth creation and financial abundance that the elite don't want you to know.
-                </div>
-                <div class="course-meta">
-                    <span class="course-badge">12 Lessons</span>
-                    <span class="course-badge">Beginner</span>
-                </div>
-            </div>
+        <div class="courses-grid" id="coursesGrid">
+            <!-- Courses will be dynamically loaded here -->
+        </div>
+    </main>
 
-            <div class="course-card">
-                <div class="course-icon">🧠</div>
-                <div class="course-title">Mind Control</div>
-                <div class="course-description">
-                    Unlock the secrets of influence, persuasion, and psychological mastery to bend reality to your will.
-                </div>
-                <div class="course-meta">
-                    <span class="course-badge">15 Lessons</span>
-                    <span class="course-badge">Advanced</span>
-                </div>
+    <!-- COURSE MODAL -->
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Course Title</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
-
-            <div class="course-card">
-                <div class="course-icon">💪</div>
-                <div class="course-title">Physical Alchemy</div>
-                <div class="course-description">
-                    Transform your body into a weapon through ancient strength training and modern biohacking techniques.
-                </div>
-                <div class="course-meta">
-                    <span class="course-badge">10 Lessons</span>
-                    <span class="course-badge">Intermediate</span>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <div class="course-icon">❤️</div>
-                <div class="course-title">Relationship Mastery</div>
-                <div class="course-description">
-                    Master the art of attraction, connection, and maintaining powerful relationships in all areas of life.
-                </div>
-                <div class="course-meta">
-                    <span class="course-badge">8 Lessons</span>
-                    <span class="course-badge">Beginner</span>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <div class="course-icon">🎯</div>
-                <div class="course-title">Purpose Discovery</div>
-                <div class="course-description">
-                    Discover your true calling and align your life with your highest purpose through ancient wisdom.
-                </div>
-                <div class="course-meta">
-                    <span class="course-badge">6 Lessons</span>
-                    <span class="course-badge">Beginner</span>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <div class="course-icon">⚡</div>
-                <div class="course-title">Energy Mastery</div>
-                <div class="course-description">
-                    Learn to harness, protect, and amplify your personal energy for peak performance in all areas.
-                </div>
-                <div class="course-meta">
-                    <span class="course-badge">14 Lessons</span>
-                    <span class="course-badge">Advanced</span>
+            <div class="modal-body">
+                <!-- Lesson List View -->
+                <div id="lessonListView" class="lesson-list"></div>
+                
+                <!-- Lesson Content View -->
+                <div id="lessonContentView" class="lesson-content">
+                    <button class="back-to-lessons" onclick="showLessonList()">← Back to Lessons</button>
+                    <div id="lessonVideoContainer"></div>
+                    <div id="lessonTextContainer" class="lesson-text"></div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script type="module">
     import { protectPage, updateUserAvatar, setupMobileMenu } from './auth-guard.js';
@@ -375,6 +516,254 @@
     });
 
     setupMobileMenu();
+
+    // COURSE DATA
+    const courses = [
+        {
+            id: 'wealth-mastery',
+            icon: '💰',
+            title: 'Wealth Mastery',
+            description: 'Learn the ancient principles of wealth creation and financial abundance that the elite don\'t want you to know.',
+            lessonsCount: 12,
+            level: 'Beginner',
+            lessons: [
+                {
+                    number: 1,
+                    title: 'The Wealth Mindset',
+                    duration: '15 min',
+                    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Replace with your video
+                    content: `
+                        <h2>Welcome to Wealth Mastery</h2>
+                        <p>In this lesson, we'll explore the fundamental mindset shifts required to create lasting wealth.</p>
+                        
+                        <h3>Key Concepts:</h3>
+                        <ul>
+                            <li>Abundance vs. Scarcity thinking</li>
+                            <li>Money as energy and exchange</li>
+                            <li>Breaking limiting beliefs about wealth</li>
+                            <li>The power of delayed gratification</li>
+                        </ul>
+                        
+                        <h3>Action Steps:</h3>
+                        <ol>
+                            <li>Write down your current beliefs about money</li>
+                            <li>Identify which beliefs are limiting you</li>
+                            <li>Create new empowering beliefs</li>
+                            <li>Practice daily affirmations</li>
+                        </ol>
+                        
+                        <p>Remember: Wealth starts in the mind before it manifests in reality.</p>
+                    `
+                },
+                {
+                    number: 2,
+                    title: 'Multiple Income Streams',
+                    duration: '20 min',
+                    videoUrl: 'https://www.youtube.com/embed/YOUR_VIDEO_ID', // Replace
+                    content: `
+                        <h2>Building Multiple Income Streams</h2>
+                        <p>Never rely on a single source of income. Learn how to diversify your income streams.</p>
+                        
+                        <h3>Types of Income:</h3>
+                        <ul>
+                            <li><strong>Active Income:</strong> Trading time for money</li>
+                            <li><strong>Passive Income:</strong> Money while you sleep</li>
+                            <li><strong>Portfolio Income:</strong> Investments and dividends</li>
+                        </ul>
+                        
+                        <h3>Examples of Income Streams:</h3>
+                        <ol>
+                            <li>Primary job or business</li>
+                            <li>Side hustle or freelancing</li>
+                            <li>Real estate investments</li>
+                            <li>Stock market investments</li>
+                            <li>Digital products or courses</li>
+                            <li>Affiliate marketing</li>
+                        </ol>
+                        
+                        <p>Start with 2-3 streams and expand from there.</p>
+                    `
+                },
+                {
+                    number: 3,
+                    title: 'Investment Fundamentals',
+                    duration: '25 min',
+                    videoUrl: '', // No video, text only
+                    content: `
+                        <h2>Investment Fundamentals</h2>
+                        <p>Understanding how to make your money work for you is the key to building lasting wealth.</p>
+                        
+                        <h3>Core Investment Principles:</h3>
+                        <ul>
+                            <li>Start early - compound interest is your friend</li>
+                            <li>Diversify your portfolio</li>
+                            <li>Think long-term (10+ years)</li>
+                            <li>Invest in what you understand</li>
+                            <li>Keep emotions out of investing</li>
+                        </ul>
+                        
+                        <h3>Investment Vehicles:</h3>
+                        <ol>
+                            <li><strong>Stocks:</strong> Ownership in companies</li>
+                            <li><strong>Bonds:</strong> Lending to governments/corporations</li>
+                            <li><strong>Real Estate:</strong> Physical property investments</li>
+                            <li><strong>Index Funds:</strong> Diversified market exposure</li>
+                            <li><strong>Cryptocurrency:</strong> Digital assets (high risk)</li>
+                        </ol>
+                        
+                        <h3>Getting Started:</h3>
+                        <p>Begin with low-cost index funds if you're new to investing. Invest consistently every month, regardless of market conditions.</p>
+                    `
+                }
+            ]
+        },
+        {
+            id: 'mind-control',
+            icon: '🧠',
+            title: 'Mind Control',
+            description: 'Unlock the secrets of influence, persuasion, and psychological mastery to bend reality to your will.',
+            lessonsCount: 15,
+            level: 'Advanced',
+            lessons: [
+                {
+                    number: 1,
+                    title: 'Psychology of Influence',
+                    duration: '18 min',
+                    videoUrl: 'https://www.youtube.com/embed/YOUR_VIDEO_ID',
+                    content: `
+                        <h2>The Psychology of Influence</h2>
+                        <p>Learn the psychological principles that govern human behavior and decision-making.</p>
+                        
+                        <h3>6 Principles of Influence (Cialdini):</h3>
+                        <ol>
+                            <li><strong>Reciprocity:</strong> People feel obligated to return favors</li>
+                            <li><strong>Commitment:</strong> People stick to what they commit to</li>
+                            <li><strong>Social Proof:</strong> People follow what others do</li>
+                            <li><strong>Authority:</strong> People respect authority figures</li>
+                            <li><strong>Liking:</strong> People say yes to those they like</li>
+                            <li><strong>Scarcity:</strong> People want what's rare or limited</li>
+                        </ol>
+                        
+                        <h3>Practical Applications:</h3>
+                        <ul>
+                            <li>In business negotiations</li>
+                            <li>In marketing and sales</li>
+                            <li>In personal relationships</li>
+                            <li>In leadership and management</li>
+                        </ul>
+                    `
+                }
+            ]
+        },
+        {
+            id: 'physical-alchemy',
+            icon: '💪',
+            title: 'Physical Alchemy',
+            description: 'Transform your body into a weapon through ancient strength training and modern biohacking techniques.',
+            lessonsCount: 10,
+            level: 'Intermediate',
+            lessons: []
+        }
+    ];
+
+    // Render courses
+    function renderCourses() {
+        const grid = document.getElementById('coursesGrid');
+        grid.innerHTML = courses.map(course => `
+            <div class="course-card" onclick="openCourseModal('${course.id}')">
+                <div class="course-icon">${course.icon}</div>
+                <div class="course-title">${course.title}</div>
+                <div class="course-description">${course.description}</div>
+                <div class="course-meta">
+                    <span class="course-badge">${course.lessonsCount} Lessons</span>
+                    <span class="course-badge">${course.level}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Open course modal
+    window.openCourseModal = function(courseId) {
+        const course = courses.find(c => c.id === courseId);
+        if (!course) return;
+
+        document.getElementById('modalTitle').textContent = course.title;
+        
+        // Render lesson list
+        const lessonList = document.getElementById('lessonListView');
+        if (course.lessons.length === 0) {
+            lessonList.innerHTML = '<p style="text-align:center; color: var(--text-dim); padding: 2rem;">Lessons coming soon...</p>';
+        } else {
+            lessonList.innerHTML = course.lessons.map(lesson => `
+                <div class="lesson-item" onclick="openLesson('${courseId}', ${lesson.number})">
+                    <span class="lesson-number">${lesson.number}</span>
+                    <div style="display: inline-block;">
+                        <div class="lesson-title">${lesson.title}</div>
+                        <div class="lesson-duration">⏱️ ${lesson.duration}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('lessonListView').style.display = 'flex';
+        document.getElementById('lessonContentView').classList.remove('active');
+        document.getElementById('courseModal').classList.add('active');
+    };
+
+    // Open specific lesson
+    window.openLesson = function(courseId, lessonNumber) {
+        const course = courses.find(c => c.id === courseId);
+        const lesson = course.lessons.find(l => l.number === lessonNumber);
+        
+        if (!lesson) return;
+
+        // Show video if available
+        const videoContainer = document.getElementById('lessonVideoContainer');
+        if (lesson.videoUrl) {
+            videoContainer.innerHTML = `
+                <div class="video-container">
+                    <iframe 
+                        src="${lesson.videoUrl}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+        } else {
+            videoContainer.innerHTML = '';
+        }
+
+        // Show text content
+        document.getElementById('lessonTextContainer').innerHTML = `
+            <h2>${lesson.title}</h2>
+            ${lesson.content}
+        `;
+
+        document.getElementById('lessonListView').style.display = 'none';
+        document.getElementById('lessonContentView').classList.add('active');
+    };
+
+    // Back to lesson list
+    window.showLessonList = function() {
+        document.getElementById('lessonListView').style.display = 'flex';
+        document.getElementById('lessonContentView').classList.remove('active');
+    };
+
+    // Close modal
+    window.closeModal = function() {
+        document.getElementById('courseModal').classList.remove('active');
+    };
+
+    // Close on outside click
+    document.getElementById('courseModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Initialize
+    renderCourses();
 </script>
 
 </body>
