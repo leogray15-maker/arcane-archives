@@ -1,32 +1,41 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+// netlify/functions/stripe-webhook.js
+
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+const stripe = require("stripe")(stripeSecret || "");
 const admin = require("firebase-admin");
 
 let db;
 
-// Initialise Firebase Admin safely
+// Initialise Firebase Admin using service account JSON
 if (!admin.apps.length) {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!serviceAccountJson) {
+      throw new Error("FIREBASE_SERVICE_ACCOUNT env var is not set");
+    }
+
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
+
     db = admin.firestore();
     console.log("✅ Firebase admin initialised");
   } catch (err) {
     console.error("❌ Failed to init Firebase admin:", err);
   }
-} else {
-  db = admin.firestore();
 }
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+  if (!stripeSecret || !webhookSecret) {
+    console.error("❌ Stripe env vars missing");
+    return { statusCode: 500, body: "Server misconfigured" };
   }
 
-  const sig =
-    event.headers["stripe-signature"] ||
-    event.headers["Stripe-Signature"];
+  const sig = event.headers["stripe-signature"];
 
   let stripeEvent;
 
@@ -34,45 +43,59 @@ exports.handler = async (event) => {
     stripeEvent = stripe.webhooks.constructEvent(
       event.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+      webhookSecret
     );
   } catch (err) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return { statusCode: 400, body: `Webhook Error: ${err.message}` };
   }
 
-  console.log("📨 Received event:", stripeEvent.type);
-
   try {
-    if (stripeEvent.type === "checkout.session.completed") {
-      const session = stripeEvent.data.object;
+    const type = stripeEvent.type;
+    const data = stripeEvent.data.object;
 
-      const uid =
-        session.client_reference_id ||
-        (session.metadata && session.metadata.uid);
-      const customerId = session.customer || null;
-      const subscriptionId = session.subscription || null;
+    console.log("📩 Webhook event received:", type);
 
-      console.log("Session UID:", uid);
+    // Only handle relevant events
+    if (type === "checkout.session.completed" || type === "invoice.payment_succeeded") {
+      let customerId;
+      let subscriptionId;
+      let customerEmail;
 
-      if (!uid) {
-        console.warn("⚠️ No uid on session, skipping Firestore update");
-      } else if (!db) {
-        console.error("⚠️ Firestore not initialised, cannot update user");
-      } else {
-        console.log(`✅ Marking user ${uid} as paid in Firestore`);
+      if (type === "checkout.session.completed") {
+        customerId = data.customer;
+        subscriptionId = data.subscription;
+        customerEmail = data.customer_details?.email || data.customer_email;
+      }
 
-        // CRITICAL FIX: Changed "users" to "Users" (capital U)
-        await db.collection("Users").doc(uid).set(
-          {
-            isPaid: true,
-            subscriptionStatus: "active",
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: subscriptionId,
-            lastPaymentAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
+      if (type === "invoice.payment_succeeded") {
+        customerId = data.customer;
+        subscriptionId = data.subscription;
+        customerEmail = data.customer_email;
+      }
+
+      // If we have Firestore + email, mark user as paid
+      if (db && customerEmail) {
+        console.log("💾 Updating Firestore for customer:", customerEmail);
+
+        // Find user by email - in your setup, you create docs in "Users"
+        const usersRef = db.collection("Users");
+        const snapshot = await usersRef.where("email", "==", customerEmail).get();
+
+        if (!snapshot.empty) {
+          snapshot.forEach(async (docSnap) => {
+            await docSnap.ref.set(
+              {
+                isPaid: true,
+                subscriptionStatus: "active",
+                stripeCustomerId: customerId || null,
+                stripeSubscriptionId: subscriptionId || null,
+                lastPaymentAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+          });
+        }
       }
     }
 

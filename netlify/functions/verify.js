@@ -1,4 +1,8 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+// netlify/functions/verify.js
+
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+
+const stripe = require("stripe")(stripeSecret || "");
 
 exports.handler = async (event) => {
   const headers = {
@@ -20,32 +24,54 @@ exports.handler = async (event) => {
     };
   }
 
+  if (!stripeSecret) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: "Server misconfigured: STRIPE_SECRET_KEY is not set",
+      }),
+    };
+  }
+
   try {
-    const { sessionId } = JSON.parse(event.body || "{}");
+    const body = event.body ? JSON.parse(event.body) : {};
+    const { sessionId } = body;
 
     if (!sessionId) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: "Session ID is required" }),
+        body: JSON.stringify({ error: "sessionId is required" }),
       };
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    console.log("🔍 Verifying Stripe session:", sessionId);
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["customer", "subscription"],
+    });
+
+    const customer = session.customer || session.customer_details || null;
+    const subscription = session.subscription || null;
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        customer_email: session.customer_details?.email || null,
-        customer: session.customer || null,
-        subscription: session.subscription || null,
+        id: session.id,
         payment_status: session.payment_status,
         status: session.status,
+        customer_email:
+          session.customer_details?.email ||
+          customer?.email ||
+          null,
+        customer: customer,
+        subscription: subscription,
       }),
     };
   } catch (error) {
-    console.error("Error verifying session:", error);
+    console.error("❌ Error verifying session:", error);
     return {
       statusCode: 500,
       headers,
