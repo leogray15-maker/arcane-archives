@@ -1,294 +1,573 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dashboard | The Arcane Archives</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="ArcaneA.png">
-  <style>
-    body {
-      margin: 0;
-      background: #06030f;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      color: #eee;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px;
-      background: #0c071a;
-      border-bottom: 1px solid #201735;
-    }
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .nav-logo {
-      height: 40px;
-      width: auto;
-    }
-
-    .nav h2 {
-      margin: 0;
-      color: #b29cff;
-    }
-
-    .nav button {
-      background: transparent;
-      border: 1px solid #b29cff;
-      color: #b29cff;
-      padding: 8px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .nav button:hover {
-      background: #b29cff;
-      color: #06030f;
-    }
-
-    .container {
-      padding: 30px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .welcome {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
-      margin-top: 30px;
-    }
-
-    .card {
-      background: #120a26;
-      padding: 24px;
-      border-radius: 18px;
-      border: 1px solid #2c1d4e;
-      box-shadow: 0 0 20px #00000040;
-    }
-
-    .card h3 {
-      margin-top: 0;
-      color: #cdbaff;
-      margin-bottom: 10px;
-    }
-
-    .progress-bar-container {
-      width: 100%;
-      background: #1b1134;
-      border-radius: 10px;
-      height: 16px;
-      margin-top: 10px;
-    }
-
-    .progress-bar {
-      height: 16px;
-      background: linear-gradient(90deg, #a67bff, #d7c2ff);
-      border-radius: 10px;
-      width: 0%;
-      transition: width 0.5s ease;
-    }
-
-    .avatar-circle {
-      width: 70px;
-      height: 70px;
-      background: #a67bff;
-      color: #06030f;
-      font-size: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
-
-    .center {
-      text-align: center;
-    }
-
-    .quick-links {
-      display: flex;
-      gap: 15px;
-      margin-top: 30px;
-      flex-wrap: wrap;
-    }
-
-    .quick-link {
-      display: inline-block;
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #a67bff, #8b5cf6);
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .quick-link:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(166, 123, 255, 0.4);
-    }
-
-    .subscription-badge {
-      display: inline-block;
-      padding: 6px 12px;
-      background: rgba(34, 197, 94, 0.2);
-      border: 1px solid rgba(34, 197, 94, 0.5);
-      color: #4ade80;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 20px;
-      }
-      
-      .nav h2 {
-        font-size: 16px;
-      }
-      
-      .quick-links {
-        flex-direction: column;
-      }
-      
-      .quick-link {
-        text-align: center;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- NAVIGATION -->
-  <div class="nav">
-    <div class="nav-left">
-      <img src="ArcaneA.png" alt="Logo" class="nav-logo">
-      <h2>The Arcane Archives</h2>
-    </div>
-    <button id="logoutBtn">Logout</button>
-  </div>
-
-  <div class="container">
-
-    <!-- WELCOME + AVATAR -->
-    <div class="center">
-      <div id="userAvatar" class="avatar-circle">?</div>
-      <div class="welcome">
-        Welcome back, <span id="username">...</span> 🔮
-      </div>
-      <div id="subscriptionBadge" class="subscription-badge" style="display: none;">
-        ✓ Active Member
-      </div>
-    </div>
-
-    <!-- QUICK LINKS -->
-    <div class="quick-links">
-      <a href="courses.html" class="quick-link">📚 Browse Courses</a>
-      <a href="community.html" class="quick-link">💬 Community Chat</a>
-      <a href="live-calls.html" class="quick-link">🎙️ Live Calls</a>
-      <a href="wins.html" class="quick-link">🏆 Share a Win</a>
-      <a href="settings.html" class="quick-link">⚙️ Settings</a>
-    </div>
-
-    <!-- LEVEL + XP -->
-    <div class="card" style="margin-top: 30px;">
-      <h3>Your Progress</h3>
-
-      <p>Level: <strong id="userLevel">...</strong></p>
-      <p>XP: <strong id="currentXP">0</strong> / <strong id="nextLevelXP">100</strong></p>
-
-      <div class="progress-bar-container">
-        <div id="xpProgressBar" class="progress-bar"></div>
-      </div>
-
-      <p style="margin-top:10px;">XP Progress: <span id="xpProgressText">0 XP</span></p>
-    </div>
-
-    <!-- STATS -->
-    <div class="card-grid">
-
-      <div class="card">
-        <h3>Courses Completed</h3>
-        <p id="coursesCompleted" style="font-size:22px; font-weight:bold;">0</p>
-      </div>
-
-      <div class="card">
-        <h3>Wins Posted</h3>
-        <p id="winsPosted" style="font-size:22px; font-weight:bold;">0</p>
-      </div>
-
-      <div class="card">
-        <h3>Calls Attended</h3>
-        <p id="callsAttended" style="font-size:22px; font-weight:bold;">0</p>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- FIREBASE + PROTECTION LOGIC with CENTRALIZED AUTH -->
-  <script type="module">
-    import { 
-      protectPage, 
-      updateUserAvatar, 
-      setupLogoutButton 
-    } from './auth-guard.js';
-
-    // Protect this page and handle success
-    protectPage({
-      onSuccess: (user, userData) => {
-        // Update UI with user data
-        document.getElementById("username").textContent =
-          userData.Username || user.displayName || user.email.split("@")[0];
-
-        document.getElementById("userLevel").textContent =
-          userData.Level || "Apprentice";
-
-        const xp = userData.Xp || 0;
-        document.getElementById("currentXP").textContent = xp;
-        document.getElementById("nextLevelXP").textContent = 100;
-        document.getElementById("xpProgressBar").style.width =
-          Math.min(xp, 100) + "%";
-        document.getElementById("xpProgressText").textContent = xp + " XP";
-
-        document.getElementById("coursesCompleted").textContent =
-          userData.CoursesCompleted || 0;
-
-        document.getElementById("winsPosted").textContent =
-          userData.WinsPosted || 0;
-
-        document.getElementById("callsAttended").textContent =
-          userData.CallAttended || 0;
-
-        // Show subscription badge
-        if (userData.subscriptionStatus === 'active') {
-          document.getElementById("subscriptionBadge").style.display = 'inline-block';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
         }
 
-        // Update avatar
-        updateUserAvatar(user, userData);
-      }
-    });
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    // Setup logout button
-    setupLogoutButton();
-  </script>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+        }
+
+        .nav-container {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            color: var(--purple-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: var(--purple);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: var(--bg-darker);
+            border-right: 1px solid rgba(147, 51, 234, 0.2);
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--purple-light);
+        }
+
+        .sidebar-menu a.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            border-left: 3px solid var(--purple);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 3rem;
+            min-height: calc(100vh - 70px);
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .welcome-section {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .welcome-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .welcome-info h2 {
+            font-size: 2rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .subscription-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .quick-link {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .quick-link:hover {
+            transform: translateY(-5px);
+            border-color: var(--purple);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+        }
+
+        .quick-link-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-link-title {
+            font-weight: 700;
+            color: var(--purple-light);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--purple);
+        }
+
+        .stat-card h3 {
+            color: var(--purple-light);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--purple-light), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-card {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        .progress-card h3 {
+            color: var(--purple-light);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .level-badge {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--purple-light);
+        }
+
+        .xp-text {
+            color: var(--text-dim);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple), var(--purple-light));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+                transition: left 0.3s;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 2rem 1rem;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .welcome-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .quick-links {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 1.5rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <a href="dashboard.html" class="logo">
+                <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
+            </a>
+            <div class="nav-right">
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+                <div class="user-avatar" id="userAvatar">?</div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="active">🏠 Dashboard</a></li>
+            <li><a href="courses.html">📚 All Courses</a></li>
+            <li><a href="community.html">💬 Community</a></li>
+            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="wins.html">🏆 Wins Board</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>🏠 Dashboard</h1>
+            <p>Welcome back to The Arcane Archives</p>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-avatar" id="welcomeAvatar">?</div>
+            <div class="welcome-info">
+                <h2>Welcome, <span id="username">...</span> 🔮</h2>
+                <div class="subscription-badge" id="subscriptionBadge" style="display: none;">
+                    ✓ Active Member
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <a href="courses.html" class="quick-link">
+                <div class="quick-link-icon">📚</div>
+                <div class="quick-link-title">Browse Courses</div>
+            </a>
+            <a href="community.html" class="quick-link">
+                <div class="quick-link-icon">💬</div>
+                <div class="quick-link-title">Community Chat</div>
+            </a>
+            <a href="live-calls.html" class="quick-link">
+                <div class="quick-link-icon">🎙️</div>
+                <div class="quick-link-title">Live Calls</div>
+            </a>
+            <a href="wins.html" class="quick-link">
+                <div class="quick-link-icon">🏆</div>
+                <div class="quick-link-title">Share a Win</div>
+            </a>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="progress-card">
+            <h3>Your Progress</h3>
+            <div class="level-info">
+                <div class="level-badge">Level: <span id="userLevel">...</span></div>
+                <div class="xp-text">
+                    <span id="currentXP">0</span> / <span id="nextLevelXP">100</span> XP
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div id="xpProgressBar" class="progress-bar">0%</div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Courses Completed</h3>
+                <div class="stat-value" id="coursesCompleted">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Wins Posted</h3>
+                <div class="stat-value" id="winsPosted">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Calls Attended</h3>
+                <div class="stat-value" id="callsAttended">0</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { 
+            protectPage, 
+            updateUserAvatar, 
+            setupLogoutButton,
+            setupMobileMenu
+        } from './auth-guard.js';
+
+        // Protect this page and handle success
+        protectPage({
+            onSuccess: (user, userData) => {
+                console.log('✅ Dashboard loaded for user:', user.uid);
+                
+                // Update username
+                const username = userData.Username || user.displayName || user.email.split("@")[0];
+                document.getElementById("username").textContent = username;
+
+                // Update avatars
+                updateUserAvatar(user, userData);
+                const welcomeAvatar = document.getElementById("welcomeAvatar");
+                if (welcomeAvatar) {
+                    const customAvatar = localStorage.getItem('customAvatarUrl');
+                    if (customAvatar) {
+                        welcomeAvatar.style.backgroundImage = `url(${customAvatar})`;
+                        welcomeAvatar.style.backgroundSize = 'cover';
+                        welcomeAvatar.style.backgroundPosition = 'center';
+                        welcomeAvatar.textContent = '';
+                    } else {
+                        const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+                        welcomeAvatar.textContent = avatar;
+                    }
+                }
+
+                // Update level and XP
+                const level = userData.Level || "Apprentice";
+                const xp = userData.Xp || 0;
+                const nextLevelXp = 100;
+
+                document.getElementById("userLevel").textContent = level;
+                document.getElementById("currentXP").textContent = xp;
+                document.getElementById("nextLevelXP").textContent = nextLevelXp;
+
+                const progressPercentage = Math.min((xp / nextLevelXp) * 100, 100);
+                const progressBar = document.getElementById("xpProgressBar");
+                progressBar.style.width = progressPercentage + "%";
+                progressBar.textContent = Math.round(progressPercentage) + "%";
+
+                // Update stats
+                document.getElementById("coursesCompleted").textContent = userData.CoursesCompleted || 0;
+                document.getElementById("winsPosted").textContent = userData.WinsPosted || 0;
+                document.getElementById("callsAttended").textContent = userData.CallAttended || 0;
+
+                // Show subscription badge if active
+                if (userData.subscriptionStatus === 'active' || userData.isPaid) {
+                    document.getElementById("subscriptionBadge").style.display = 'inline-block';
+                }
+            }
+        });
+
+        // Setup logout button
+        setupLogoutButton();
+        
+        // Setup mobile menu
+        setupMobileMenu();
+    </script>
 </body>
 </html>

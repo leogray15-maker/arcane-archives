@@ -428,7 +428,7 @@
             }
         });
 
-        // SIGNUP
+        // SIGNUP - NOW WITH ALL FIELDS
         document.getElementById('signupBtn').addEventListener('click', async () => {
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
@@ -461,6 +461,9 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
+                console.log('Creating user document for:', user.uid);
+
+                // 🔥 COMPLETE USER INITIALIZATION WITH ALL FIELDS
                 await setDoc(doc(db, 'Users', user.uid), {
                     email: user.email,
                     Username: user.email.split('@')[0],
@@ -471,8 +474,12 @@
                     CoursesCompleted: 0,
                     WinsPosted: 0,
                     CallAttended: 0,
+                    StripeCustomerId: '',
+                    StripeSubscriptionId: '',
                     createdAt: serverTimestamp()
                 });
+
+                console.log('✅ User document created successfully');
 
                 showSuccess('Account created! Redirecting to payment...');
                 setTimeout(() => {
@@ -495,7 +502,7 @@
             }
         });
 
-        // GOOGLE AUTH
+        // GOOGLE AUTH - NOW WITH ALL FIELDS
         async function handleGoogleAuth() {
             disableButtons(true);
             
@@ -503,10 +510,15 @@
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
 
+                console.log('Google auth for user:', user.uid);
+
                 const userDocRef = doc(db, 'Users', user.uid);
                 const userDoc = await getDoc(userDocRef);
 
                 if (!userDoc.exists()) {
+                    console.log('Creating new user document for Google sign-in');
+
+                    // 🔥 COMPLETE USER INITIALIZATION WITH ALL FIELDS
                     await setDoc(userDocRef, {
                         email: user.email,
                         Username: user.displayName || user.email.split('@')[0],
@@ -517,14 +529,19 @@
                         CoursesCompleted: 0,
                         WinsPosted: 0,
                         CallAttended: 0,
+                        StripeCustomerId: '',
+                        StripeSubscriptionId: '',
                         createdAt: serverTimestamp()
                     });
+
+                    console.log('✅ Google user document created');
 
                     showSuccess('Account created! Redirecting to payment...');
                     setTimeout(() => {
                         window.location.href = 'index.html#pricing';
                     }, 1500);
                 } else {
+                    console.log('Existing user, logging in');
                     showSuccess('Login successful! Redirecting...');
                 }
             } catch (error) {
@@ -537,6 +554,7 @@
         document.getElementById('googleBtn').addEventListener('click', handleGoogleAuth);
         document.getElementById('googleSignupBtn').addEventListener('click', handleGoogleAuth);
 
+        // Enter key support
         ['email', 'password'].forEach(id => {
             document.getElementById(id)?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') document.getElementById('loginBtn').click();
