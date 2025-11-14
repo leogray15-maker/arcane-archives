@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Payment Successful | The Arcane Archives</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.cloudfunctions.net https://*.netlify.app https://api.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;">
   <link rel="icon" href="ArcaneA.png">
   <style>
     body {
@@ -115,13 +116,11 @@
     const errorDetails = document.getElementById("error-details");
 
     function setStatus(msg, isError = false) {
+      console.log("[SUCCESS PAGE]", msg);
       if (statusEl) {
         statusEl.textContent = msg;
-        if (isError) {
-          statusEl.style.color = '#ef4444';
-        }
+        if (isError) statusEl.style.color = '#ef4444';
       }
-      console.log("[SUCCESS PAGE]", msg);
     }
 
     function showError(msg, details = '') {
@@ -157,6 +156,8 @@
         return;
       }
 
+      console.log("✅ User authenticated:", user.uid);
+
       // Get session ID
       let sid = sessionId;
       if (!sid) {
@@ -174,6 +175,7 @@
 
       try {
         setStatus("Verifying payment with Stripe...");
+        console.log("Calling verify function with sessionId:", sid);
 
         // Call Netlify verify function
         const res = await fetch("/.netlify/functions/verify", {
@@ -182,8 +184,10 @@
           body: JSON.stringify({ sessionId: sid }),
         });
 
+        console.log("Verify response status:", res.status);
+
         if (!res.ok) {
-          const errorData = await res.json();
+          const errorData = await res.json().catch(() => ({}));
           console.error("Verify error:", errorData);
           showError(
             "There was an issue verifying your payment.", 
@@ -206,6 +210,7 @@
         }
 
         setStatus("Payment verified! Activating your account...");
+        console.log("Updating Firestore for user:", user.uid);
 
         // Mark user as paid in Firestore - USING "Users" (capital U)
         await setDoc(
@@ -219,13 +224,16 @@
           { merge: true }
         );
 
+        console.log("✅ Firestore updated successfully");
         setStatus("✅ Your account has been activated! Welcome to The Arcane Archives 🔮");
         dashLink.style.display = "inline-block";
 
         // Clear stored session
         try {
           localStorage.removeItem("aa_last_session_id");
-        } catch (e) {}
+        } catch (e) {
+          console.warn("Could not clear session from storage", e);
+        }
 
         // Auto-redirect after 3 seconds
         setTimeout(() => {
@@ -233,7 +241,7 @@
         }, 3000);
 
       } catch (err) {
-        console.error("Error:", err);
+        console.error("❌ Error during activation:", err);
         showError(
           "Unexpected error verifying your payment.", 
           `Error: ${err.message}. Please contact support@arcane-archives.com if this persists.`
