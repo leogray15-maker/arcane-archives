@@ -327,7 +327,9 @@
         import { 
             signInWithEmailAndPassword, 
             createUserWithEmailAndPassword, 
-            signInWithPopup, 
+            signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult, 
             GoogleAuthProvider,
             onAuthStateChanged 
         } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
@@ -341,6 +343,22 @@
 
         const db = getFirestore();
         const provider = new GoogleAuthProvider();
+
+        // Check for redirect result on page load (for popup blocker fallback)
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                console.log('Google Sign-In successful via redirect');
+                showMessage('Sign-in successful! Redirecting...');
+                setTimeout(() => {
+                    const redirectPath = sessionStorage.getItem('aa_redirect_after_login') || 'dashboard.html';
+                    window.location.href = redirectPath;
+                }, 1500);
+            }
+        }).catch((error) => {
+            if (error.code && error.code !== 'auth/popup-closed-by-user') {
+                console.error('Redirect auth error:', error);
+            }
+        });
 
         let isLoginMode = true;
 
@@ -507,7 +525,22 @@
             disableButtons(true);
             
             try {
-                const result = await signInWithPopup(auth, provider);
+                // Try popup first, fallback to redirect if blocked
+                let result;
+                try {
+                    result = await signInWithPopup(auth, provider);
+                } catch (popupError) {
+                    if (popupError.code === 'auth/popup-closed-by-user' || 
+                        popupError.code === 'auth/popup-blocked' ||
+                        popupError.code === 'auth/cancelled-popup-request' ||
+                        popupError.code === 'auth/unauthorized-domain') {
+                        console.log('Popup blocked, using redirect authentication...');
+                        showMessage('Redirecting to Google Sign-In...');
+                        await signInWithRedirect(auth, provider);
+                        return; // Browser will redirect
+                    }
+                    throw popupError;
+                }
                 const user = result.user;
 
                 console.log('Google auth for user:', user.uid);
