@@ -89,12 +89,13 @@ export async function protectPage(options = {}) {
         const hasActiveSubscription = userData.subscriptionStatus === 'active';
         const isPaid = userData.isPaid === true;
 
+        // 🔒 HARD LOCK: if not paid, instantly send to pricing
         if (!hasActiveSubscription && !isPaid) {
-          console.warn('🔒 User has not paid for access');
+          console.warn('🔒 User has not paid for access, redirecting to pricing...');
           
           if (redirectToPricing) {
-            alert('🔒 You need an active subscription to access The Arcane Archives.\n\nClick OK to view pricing.');
-            window.location.href = 'index.html#pricing';
+            // Hard redirect, no alert, no flicker
+            window.location.replace('index.html#pricing');
           }
           
           if (onFailure) onFailure('PAYMENT_REQUIRED');

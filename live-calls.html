@@ -265,17 +265,63 @@
         </div>
     </main>
 
-    <script type="module">
-    import { protectPage, updateUserAvatar, setupMobileMenu } from './auth-guard.js';
+<script type="module">
+import { protectPage, updateUserAvatar, setupMobileMenu, db } from './auth-guard.js';
+import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { awardXP } from './xp-system.js';
 
-    protectPage({
-        onSuccess: (user, userData) => {
-            console.log('✅ Access granted');
-            updateUserAvatar(user, userData);
-        }
-    });
+let currentUser = null;
+let currentUserData = null;
 
+protectPage({
+  onSuccess: (user, userData) => {
+    console.log('✅ Live Calls - Access granted');
+    currentUser = user;
+    currentUserData = userData;
+    updateUserAvatar(user, userData);
     setupMobileMenu();
+    setupCallButtons();
+  }
+});
+
+function setupCallButtons() {
+  const buttons = document.querySelectorAll('.call-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      // If you want to still open the Zoom link in a new tab:
+      const href = btn.getAttribute('href');
+
+      // Record attendance + XP
+      if (!currentUser || !currentUserData) return;
+
+      try {
+        const userRef = doc(db, 'Users', currentUser.uid);
+        const newCalls = (currentUserData.CallAttended || currentUserData.CallsAttended || 0) + 1;
+
+        await updateDoc(userRef, {
+          CallAttended: newCalls
+        });
+
+        currentUserData.CallAttended = newCalls;
+
+        await awardXP(currentUser.uid, 'call_attended');
+
+        console.log('✅ Call attendance recorded + XP');
+
+        if (href && href !== '#') {
+          window.open(href, '_blank');
+        } else {
+          alert('✅ Call attendance recorded. Call link coming soon.');
+        }
+      } catch (err) {
+        console.error('Error recording call attendance:', err);
+        alert('⚠️ Error recording attendance: ' + err.message);
+      }
+
+      e.preventDefault();
+    });
+  });
+}
 </script>
 
 </body>

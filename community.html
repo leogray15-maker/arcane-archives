@@ -298,8 +298,8 @@ Press Enter to send, Shift+Enter for new line"
         </div>
     </main>
 
-    <script type="module">
-// Replace the <script type="module"> section in community.html with this:
+<script type="module">
+// Community Chat + XP
 
 import { protectPage, updateUserAvatar, setupMobileMenu, db } from './auth-guard.js';
 import { 
@@ -311,6 +311,7 @@ import {
     onSnapshot,
     serverTimestamp 
 } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { awardXP } from './xp-system.js';
 
 let currentUser = null;
 let currentUserData = null;
@@ -394,7 +395,7 @@ function loadMessages() {
     });
 }
 
-// Send message
+// Send message + grant XP
 async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
@@ -423,11 +424,14 @@ async function sendMessage() {
         await addDoc(collection(db, 'community'), {
             message: message,
             username: username,
-            avatar: avatar, // Emoji or letter fallback
-            avatarUrl: customAvatarUrl, // Custom picture URL (can be null)
+            avatar: avatar,
+            avatarUrl: customAvatarUrl,
             userId: currentUser.uid,
             timestamp: serverTimestamp()
         });
+
+        // 🔥 Give XP for chatting
+        await awardXP(currentUser.uid, 'community_message');
 
         input.value = '';
         input.style.height = '60px';
@@ -474,7 +478,7 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
-    </script>
+</script>
 
 </body>
 </html>

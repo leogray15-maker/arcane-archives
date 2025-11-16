@@ -233,7 +233,7 @@ Examples:
         </div>
     </main>
 
-    <script type="module">
+<script type="module">
 // wins.html - Complete Script Section
 import { protectPage, updateUserAvatar, setupMobileMenu, db } from './auth-guard.js';
 import { 
@@ -249,6 +249,7 @@ import {
     arrayUnion,
     arrayRemove
 } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { awardXP } from './xp-system.js';
 
 let currentUser = null;
 let currentUserData = null;
@@ -256,9 +257,6 @@ let currentUserData = null;
 protectPage({
     onSuccess: (user, userData) => {
         console.log('✅ Wins page - Access granted');
-        console.log('User:', user.uid);
-        console.log('UserData:', userData);
-        console.log('DB:', db);
         currentUser = user;
         currentUserData = userData;
         updateUserAvatar(user, userData);
@@ -369,7 +367,7 @@ function createWinCard(win) {
 }
 
 // ============================================
-// POST A NEW WIN
+// POST A NEW WIN  +  XP
 // ============================================
 async function postWin() {
     const input = document.getElementById('winInput');
@@ -394,11 +392,13 @@ async function postWin() {
         
         const username = currentUserData.Username || currentUser.displayName || currentUser.email.split('@')[0];
         const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+        const customAvatarUrl = localStorage.getItem('customAvatarUrl') || null;
 
         await addDoc(collection(db, 'wins'), {
             content: content,
             username: username,
             avatar: avatar,
+            avatarUrl: customAvatarUrl,
             userId: currentUser.uid,
             timestamp: serverTimestamp(),
             likes: []
@@ -410,13 +410,18 @@ async function postWin() {
 
         // Update user's WinsPosted count
         try {
+            const newWinsPosted = (currentUserData.WinsPosted || 0) + 1;
             await updateDoc(doc(db, 'Users', currentUser.uid), {
-                WinsPosted: (currentUserData.WinsPosted || 0) + 1
+                WinsPosted: newWinsPosted
             });
+            currentUserData.WinsPosted = newWinsPosted;
             console.log('✅ Updated user WinsPosted count');
         } catch (updateError) {
             console.warn('Could not update WinsPosted count:', updateError);
         }
+
+        // 🔥 Give XP for posting a win
+        await awardXP(currentUser.uid, 'win_posted');
 
     } catch (error) {
         console.error('❌ Error posting win:', error);
@@ -438,26 +443,23 @@ async function toggleLike(winId, isCurrentlyLiked) {
 
     try {
         const winRef = doc(db, 'wins', winId);
-        
+
         if (isCurrentlyLiked) {
             await updateDoc(winRef, {
                 likes: arrayRemove(currentUser.uid)
             });
-            console.log('👎 Unliked win:', winId);
         } else {
             await updateDoc(winRef, {
                 likes: arrayUnion(currentUser.uid)
             });
-            console.log('👍 Liked win:', winId);
         }
     } catch (error) {
-        console.error('❌ Error toggling like:', error);
-        alert('⚠️ Error updating like: ' + error.message);
+        console.error('Error updating like:', error);
     }
 }
 
 // ============================================
-// HELPER FUNCTIONS
+// HELPERS
 // ============================================
 function formatTimeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -475,16 +477,8 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ============================================
-// EVENT LISTENERS
-// ============================================
+// Hook up button
 document.getElementById('postWinBtn').addEventListener('click', postWin);
-
-document.getElementById('winInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        postWin();
-    }
-});
 </script>
 
 </body>
