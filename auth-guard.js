@@ -208,3 +208,17 @@ export const loginRateLimiter = {
     return diff > 0 ? diff : 0;
   }
 };
+// Simple mobile menu helper for pages that import it
+export function setupMobileMenu(
+  toggleId = "menuToggle",
+  menuSelector = ".nav-links"
+) {
+  const toggle = document.getElementById(toggleId);
+  const menu = document.querySelector(menuSelector);
+  if (!toggle || !menu) return;
+
+  toggle.addEventListener("click", () => {
+    menu.classList.toggle("open");
+  });
+}
+

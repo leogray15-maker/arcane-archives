@@ -28,8 +28,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js";
 
 // Configuration
-const ADMIN_EMAIL = "leograybusiness@gmail.com";
-const VAPID_KEY = "BD2Db4LFDMB4ynZPK0TmXHzPf2cG-uhHk9zaQCVejBVIo7S-StCqqUn6DwEx-hfHo2MlJnbLqLcTNFZ8_4PDKvE";
+// 🔑 THIS SHOULD MATCH YOUR FIRESTORE RULES ADMIN EMAIL
+const ADMIN_EMAIL = "leogray15@gmail.com";
+const VAPID_KEY =
+  "BD2Db4LFDMB4ynZPK0TmXHzPf2cG-uhHk9zaQCVejBVIo7S-StCqqUn6DwEx-hfHo2MlJnbLqLcTNFZ8_4PDKvE";
 
 // Global state
 let currentUser = null;
@@ -37,7 +39,7 @@ let isAdmin = false;
 let latestAlertTimestamp = null;
 let isFirstLoad = true;
 
-// Initialize Firebase services
+// Initialize Firebase services from default app
 const storage = getStorage();
 const messaging = getMessaging();
 
@@ -48,22 +50,22 @@ protectPage({
   onSuccess: async (user, userData) => {
     currentUser = user;
     isAdmin = user.email === ADMIN_EMAIL;
-    
+
     console.log("✅ Arcane Alerts access granted");
     console.log("👤 User:", user.email, "| Admin:", isAdmin);
-    
+
     // Show admin form if authorized
     if (isAdmin) {
       const form = document.getElementById("alertForm");
       if (form) form.classList.add("visible");
     }
-    
+
     // Initialize features
     initPushNotifications();
     setupAdminForm();
     loadAlerts();
   },
-  
+
   onFailure: (reason) => {
     console.error("🚫 Access denied:", reason);
     const feed = document.getElementById("alertsFeed");
@@ -95,56 +97,66 @@ protectPage({
 // ==========================================
 async function initPushNotifications() {
   const pushInfo = document.getElementById("pushInfo");
-  
+
   try {
-    // Check browser support
     if (!("serviceWorker" in navigator) || !("Notification" in window)) {
-      updatePushInfo("⚠️ Push notifications not supported in this browser", false);
+      updatePushInfo(
+        "⚠️ Push notifications not supported in this browser",
+        false
+      );
       return;
     }
-    
-    // Register service worker
+
     console.log("📱 Registering service worker...");
-    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    const registration = await navigator.serviceWorker.register(
+      "/firebase-messaging-sw.js"
+    );
     console.log("✅ Service worker registered");
-    
-    // Request permission
+
     const permission = await Notification.requestPermission();
     console.log("🔔 Notification permission:", permission);
-    
+
     if (permission !== "granted") {
-      updatePushInfo("🔕 Notifications blocked. Enable them in browser settings for instant alerts", false);
+      updatePushInfo(
+        "🔕 Notifications blocked. Enable them in browser settings for instant alerts",
+        false
+      );
       return;
     }
-    
-    // Get FCM token
+
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: registration
     });
-    
+
     if (!token) {
       console.warn("⚠️ No FCM token received");
-      updatePushInfo("⚠️ Could not enable notifications. Try refreshing the page", false);
+      updatePushInfo(
+        "⚠️ Could not enable notifications. Try refreshing the page",
+        false
+      );
       return;
     }
-    
+
     console.log("🎯 FCM token received:", token.substring(0, 20) + "...");
-    
-    // Save token to Firestore
+
     await saveUserToken(token);
-    
-    updatePushInfo("✅ Notifications enabled! You'll receive instant Arcane Alerts", true);
-    
-    // Handle foreground messages
+
+    updatePushInfo(
+      "✅ Notifications enabled! You'll receive instant Arcane Alerts",
+      true
+    );
+
     onMessage(messaging, (payload) => {
       console.log("📬 Foreground message:", payload);
       showNewAlertNotification();
     });
-    
   } catch (error) {
     console.error("❌ Push notification error:", error);
-    updatePushInfo("⚠️ Could not enable notifications. Alerts will still appear on this page", false);
+    updatePushInfo(
+      "⚠️ Could not enable notifications. Alerts will still appear on this page",
+      false
+    );
   }
 }
 
@@ -154,7 +166,7 @@ async function saveUserToken(token) {
     await addDoc(tokensRef, {
       uid: currentUser.uid,
       email: currentUser.email,
-      token: token,
+      token,
       createdAt: serverTimestamp(),
       lastUpdated: serverTimestamp()
     });
@@ -166,12 +178,9 @@ async function saveUserToken(token) {
 
 function updatePushInfo(message, isEnabled) {
   const pushInfo = document.getElementById("pushInfo");
-  if (pushInfo) {
-    pushInfo.textContent = message;
-    if (isEnabled) {
-      pushInfo.classList.add("enabled");
-    }
-  }
+  if (!pushInfo) return;
+  pushInfo.textContent = message;
+  if (isEnabled) pushInfo.classList.add("enabled");
 }
 
 // ==========================================
@@ -180,38 +189,36 @@ function updatePushInfo(message, isEnabled) {
 function loadAlerts() {
   const feed = document.getElementById("alertsFeed");
   if (!feed) return;
-  
-  // Create query - get all alerts ordered by timestamp
+
   const alertsQuery = query(
     collection(db, "alerts"),
     orderBy("timestamp", "desc"),
-    limit(50) // Limit to last 50 alerts for performance
+    limit(50)
   );
-  
-  // Listen for real-time updates
+
   const unsubscribe = onSnapshot(
     alertsQuery,
     (snapshot) => {
-      // Clear loading state
       if (isFirstLoad) {
         feed.innerHTML = "";
         isFirstLoad = false;
       }
-      
-      // Check for new alerts
+
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added" && !isFirstLoad) {
           const data = change.doc.data();
-          if (data.timestamp?.toMillis && data.timestamp.toMillis() > (latestAlertTimestamp || 0)) {
+          if (
+            data.timestamp?.toMillis &&
+            data.timestamp.toMillis() > (latestAlertTimestamp || 0)
+          ) {
             showNewAlertNotification();
             latestAlertTimestamp = data.timestamp.toMillis();
           }
         }
       });
-      
-      // Rebuild feed
+
       feed.innerHTML = "";
-      
+
       if (snapshot.empty) {
         feed.innerHTML = `
           <div style="text-align: center; padding: 3rem; color: #a3a3a3;">
@@ -221,19 +228,20 @@ function loadAlerts() {
         `;
         return;
       }
-      
-      // Add each alert
+
       snapshot.forEach((docSnap) => {
         const alertCard = createAlertCard(docSnap.id, docSnap.data());
         feed.appendChild(alertCard);
       });
-      
-      // Update latest timestamp
+
       if (!snapshot.empty) {
         const firstDoc = snapshot.docs[0];
         const data = firstDoc.data();
         if (data.timestamp?.toMillis) {
-          latestAlertTimestamp = Math.max(latestAlertTimestamp || 0, data.timestamp.toMillis());
+          latestAlertTimestamp = Math.max(
+            latestAlertTimestamp || 0,
+            data.timestamp.toMillis()
+          );
         }
       }
     },
@@ -246,8 +254,7 @@ function loadAlerts() {
       `;
     }
   );
-  
-  // Clean up subscription on page unload
+
   window.addEventListener("beforeunload", () => unsubscribe());
 }
 
@@ -258,32 +265,27 @@ function createAlertCard(alertId, data) {
   const div = document.createElement("div");
   div.className = "alert-card";
   div.id = `alert-${alertId}`;
-  
-  // Parse reactions
+
   const reactions = data.reactions || {};
   const fireCount = reactions.fire?.length || 0;
   const bearCount = reactions.bear?.length || 0;
   const eyesCount = reactions.eyes?.length || 0;
-  
-  // Check user reactions
+
   const userId = currentUser?.uid;
   const userReactedFire = userId && reactions.fire?.includes(userId);
   const userReactedBear = userId && reactions.bear?.includes(userId);
   const userReactedEyes = userId && reactions.eyes?.includes(userId);
-  
-  // Format timestamp
+
   const timeString = data.timestamp?.toDate
     ? formatTimeAgo(data.timestamp.toDate())
     : "Just now";
-  
-  // Trade values with defaults
+
   const entry = data.entry || "-";
   const sl = data.sl || "-";
   const tp1 = data.tp1 || "-";
   const tp2 = data.tp2 || "-";
   const tp3 = data.tp3 || "-";
-  
-  // Build HTML
+
   div.innerHTML = `
     <div class="alert-header-line">
       <span class="badge">XAUUSD</span>
@@ -291,11 +293,11 @@ function createAlertCard(alertId, data) {
       <span>•</span>
       <span>${timeString}</span>
     </div>
-    
+
     ${data.imageUrl ? `<img src="${data.imageUrl}" class="alert-image" alt="Chart" loading="lazy">` : ""}
-    
+
     ${data.text ? `<div class="alert-text">${escapeHtml(data.text)}</div>` : ""}
-    
+
     <div class="trade-grid">
       <div class="trade-pill entry">
         <span class="label">Entry</span>
@@ -318,25 +320,24 @@ function createAlertCard(alertId, data) {
         <span class="value">${tp3}</span>
       </div>
     </div>
-    
+
     <div class="alert-reactions">
-      <div class="reaction ${userReactedFire ? 'active' : ''}" data-reaction="fire" data-alert="${alertId}">
+      <div class="reaction ${userReactedFire ? "active" : ""}" data-reaction="fire" data-alert="${alertId}">
         🔥 <span class="count">${fireCount}</span>
       </div>
-      <div class="reaction ${userReactedBear ? 'active' : ''}" data-reaction="bear" data-alert="${alertId}">
+      <div class="reaction ${userReactedBear ? "active" : ""}" data-reaction="bear" data-alert="${alertId}">
         🐻 <span class="count">${bearCount}</span>
       </div>
-      <div class="reaction ${userReactedEyes ? 'active' : ''}" data-reaction="eyes" data-alert="${alertId}">
+      <div class="reaction ${userReactedEyes ? "active" : ""}" data-reaction="eyes" data-alert="${alertId}">
         👀 <span class="count">${eyesCount}</span>
       </div>
     </div>
   `;
-  
-  // Add reaction handlers
+
   div.querySelectorAll(".reaction").forEach((btn) => {
     btn.addEventListener("click", handleReaction);
   });
-  
+
   return div;
 }
 
@@ -348,42 +349,35 @@ async function handleReaction(event) {
     alert("Please log in to react to alerts");
     return;
   }
-  
+
   const button = event.currentTarget;
   const alertId = button.dataset.alert;
   const reactionType = button.dataset.reaction;
-  
-  // Disable button during update
+
   button.style.pointerEvents = "none";
-  
+
   try {
     const alertRef = doc(db, "alerts", alertId);
     const userId = currentUser.uid;
-    
-    // Toggle reaction
     const isActive = button.classList.contains("active");
-    
+
     if (isActive) {
-      // Remove reaction
       await updateDoc(alertRef, {
         [`reactions.${reactionType}`]: arrayRemove(userId)
       });
     } else {
-      // Add reaction and remove from others
       const updates = {
         [`reactions.${reactionType}`]: arrayUnion(userId)
       };
-      
-      // Remove from other reaction types
+
       ["fire", "bear", "eyes"].forEach((type) => {
         if (type !== reactionType) {
           updates[`reactions.${type}`] = arrayRemove(userId);
         }
       });
-      
+
       await updateDoc(alertRef, updates);
     }
-    
   } catch (error) {
     console.error("❌ Error updating reaction:", error);
     alert("Error updating reaction. Please try again.");
@@ -398,9 +392,8 @@ async function handleReaction(event) {
 function setupAdminForm() {
   const btn = document.getElementById("postAlertBtn");
   if (!btn || !isAdmin) return;
-  
+
   btn.addEventListener("click", async () => {
-    // Get form values
     const textEl = document.getElementById("alertText");
     const entryEl = document.getElementById("entryInput");
     const slEl = document.getElementById("slInput");
@@ -408,38 +401,33 @@ function setupAdminForm() {
     const tp2El = document.getElementById("tp2Input");
     const tp3El = document.getElementById("tp3Input");
     const fileEl = document.getElementById("alertImage");
-    
+
     const text = textEl.value.trim();
     const entry = entryEl.value.trim();
     const sl = slEl.value.trim();
     const file = fileEl.files[0];
-    
-    // Validation
+
     if (!text && !entry) {
       alert("Please add analysis or at least an entry price");
       return;
     }
-    
-    // Update button state
+
     btn.disabled = true;
     btn.textContent = "Posting Alert...";
-    
+
     try {
       let imageUrl = null;
-      
-      // Upload image if provided
+
       if (file) {
         console.log("📸 Uploading image...");
         const timestamp = Date.now();
         const fileName = `alerts/${timestamp}_${file.name}`;
         const storageRef = ref(storage, fileName);
-        
         const snapshot = await uploadBytes(storageRef, file);
         imageUrl = await getDownloadURL(snapshot.ref);
         console.log("✅ Image uploaded");
       }
-      
-      // Create alert document
+
       const alertData = {
         text: text || null,
         entry: entry || null,
@@ -457,12 +445,11 @@ function setupAdminForm() {
           eyes: []
         }
       };
-      
+
       console.log("📤 Posting alert...");
-      const docRef = await addDoc(collection(db, "alerts"), alertData);
-      console.log("✅ Alert posted:", docRef.id);
-      
-      // Reset form
+      await addDoc(collection(db, "alerts"), alertData);
+      console.log("✅ Alert posted");
+
       textEl.value = "";
       entryEl.value = "";
       slEl.value = "";
@@ -470,14 +457,12 @@ function setupAdminForm() {
       tp2El.value = "";
       tp3El.value = "";
       fileEl.value = "";
-      
-      // Show success
+
       btn.textContent = "✅ Alert Posted!";
       setTimeout(() => {
         btn.textContent = "Post Arcane Alert";
         btn.disabled = false;
       }, 2000);
-      
     } catch (error) {
       console.error("❌ Error posting alert:", error);
       alert("Error posting alert. Please try again.");
@@ -493,15 +478,13 @@ function setupAdminForm() {
 function showNewAlertNotification() {
   const notif = document.getElementById("newAlertNotification");
   if (!notif) return;
-  
+
   notif.style.display = "block";
   notif.onclick = () => {
     notif.style.display = "none";
-    // Scroll to top to see new alert
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  
-  // Auto-hide after 10 seconds
+
   setTimeout(() => {
     notif.style.display = "none";
   }, 10000);
@@ -515,18 +498,18 @@ function escapeHtml(text) {
 
 function formatTimeAgo(date) {
   const seconds = Math.floor((new Date() - date) / 1000);
-  
+
   if (seconds < 60) return "Just now";
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  
+
   return date.toLocaleDateString();
 }
 
 // Export for debugging
 window.arcaneAlerts = {
-  currentUser,
-  isAdmin,
+  getCurrentUser: () => currentUser,
+  isAdmin: () => isAdmin,
   reload: loadAlerts
 };
