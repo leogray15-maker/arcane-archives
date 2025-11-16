@@ -321,11 +321,10 @@
 <script type="module">
     import { 
         auth, 
+        db,
         loginRateLimiter, 
-        handlePostLoginRedirect,
-        db
+        handlePostLoginRedirect 
     } from './auth-guard.js';
-
     import { 
         signInWithEmailAndPassword, 
         createUserWithEmailAndPassword, 
@@ -335,7 +334,6 @@
         GoogleAuthProvider,
         onAuthStateChanged 
     } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-
     import { 
         doc, 
         setDoc,
@@ -346,13 +344,36 @@
     const provider = new GoogleAuthProvider();
 
     // ==============================
-    // HELPER – ENSURE USER PROFILE
+    // UI HELPERS
     // ==============================
-    async function ensureUserProfile(user) {
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        if (!errorDiv) return;
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => errorDiv.style.display = 'none', 5000);
+    }
+
+    function showSuccess(message) {
+        const successDiv = document.getElementById('successMessage');
+        if (!successDiv) return;
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+        setTimeout(() => successDiv.style.display = 'none', 3000);
+    }
+
+    function disableButtons(disabled) {
+        document.querySelectorAll('.btn').forEach(btn => btn.disabled = disabled);
+    }
+
+    // ==============================
+    // USER PROFILE HELPERS
+    // ==============================
+    async function getOrCreateUserProfile(user) {
         if (!user) return null;
 
-        const userDocRef = doc(db, 'Users', user.uid);
-        const snap = await getDoc(userDocRef);
+        const userRef = doc(db, 'Users', user.uid);
+        const snap = await getDoc(userRef);
 
         if (!snap.exists()) {
             const profile = {
@@ -369,35 +390,38 @@
                 StripeSubscriptionId: '',
                 createdAt: serverTimestamp()
             };
-
-            await setDoc(userDocRef, profile);
-            console.log('✅ User profile created in Firestore');
+            await setDoc(userRef, profile);
+            console.log('✅ Created new user profile in Firestore');
             return { ...profile, _isNew: true };
         }
 
-        console.log('📄 Existing user profile found in Firestore');
+        console.log('📄 Loaded existing user profile from Firestore');
         return { ...snap.data(), _isNew: false };
     }
 
+    function routeAfterAuth(userData) {
+        const hasActiveSubscription = userData?.subscriptionStatus === 'active';
+        const isPaid = userData?.isPaid === true;
+
+        if (!hasActiveSubscription && !isPaid) {
+            // No active sub → always show pricing / join card
+            window.location.href = 'index.html#pricing';
+        } else {
+            // Paid user → go back to intended page or dashboard
+            handlePostLoginRedirect() || (window.location.href = 'dashboard.html');
+        }
+    }
+
     // ==============================
-    // REDIRECT RESULT (GOOGLE)
+    // HANDLE REDIRECT RESULT (GOOGLE FALLBACK)
     // ==============================
     getRedirectResult(auth).then(async (result) => {
         if (result && result.user) {
             console.log('Google Sign-In successful via redirect');
-            const profile = await ensureUserProfile(result.user);
-
+            disableButtons(true);
+            const profile = await getOrCreateUserProfile(result.user);
             showSuccess('Sign-in successful! Redirecting...');
-
-            setTimeout(() => {
-                if (profile?._isNew) {
-                    // Brand-new Google signup → pricing
-                    window.location.href = 'index.html#pricing';
-                } else {
-                    // Existing user → saved page or dashboard
-                    handlePostLoginRedirect() || (window.location.href = 'dashboard.html');
-                }
-            }, 1500);
+            setTimeout(() => routeAfterAuth(profile), 1000);
         }
     }).catch((error) => {
         if (error.code && error.code !== 'auth/popup-closed-by-user') {
@@ -407,61 +431,44 @@
 
     let isLoginMode = true;
 
-    // Already logged in? Go straight to app
-    onAuthStateChanged(auth, (user) => {
+    // ==============================
+    // AUTO-REDIRECT IF ALREADY LOGGED IN
+    // ==============================
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
-            handlePostLoginRedirect() || (window.location.href = 'dashboard.html');
+            const profile = await getOrCreateUserProfile(user);
+            routeAfterAuth(profile);
         }
     });
 
     // ==============================
-    // UI HELPERS
+    // TOGGLE LOGIN / SIGNUP VIEW
     // ==============================
-    function showError(message) {
-        const errorDiv = document.getElementById('errorMessage');
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        setTimeout(() => errorDiv.style.display = 'none', 5000);
-    }
-
-    function showSuccess(message) {
-        const successDiv = document.getElementById('successMessage');
-        successDiv.textContent = message;
-        successDiv.style.display = 'block';
-        setTimeout(() => successDiv.style.display = 'none', 3000);
-    }
-
-    function disableButtons(disabled) {
-        document.querySelectorAll('.btn').forEach(btn => btn.disabled = disabled);
-    }
-
-    // ==============================
-    // TOGGLE LOGIN / SIGNUP
-    // ==============================
-    const toggleBtn = document.getElementById('toggleBtn');
     const toggleText = document.getElementById('toggleText');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
 
-    toggleBtn.addEventListener('click', (e) => {
+    toggleText?.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
         e.preventDefault();
         isLoginMode = !isLoginMode;
 
         if (isLoginMode) {
             loginForm.style.display = 'block';
             signupForm.style.display = 'none';
-            toggleText.innerHTML = `Don't have an account? <a href="#" id="toggleBtn">Sign up</a>`;
+            toggleText.innerHTML = `Don't have an account? <a href="#">Sign up</a>`;
         } else {
             loginForm.style.display = 'none';
             signupForm.style.display = 'block';
-            toggleText.innerHTML = `Already have an account? <a href="#" id="toggleBtn">Log in</a>`;
+            toggleText.innerHTML = `Already have an account? <a href="#">Log in</a>`;
         }
     });
 
     // ==============================
     // EMAIL LOGIN
     // ==============================
-    document.getElementById('loginBtn').addEventListener('click', async () => {
+    document.getElementById('loginBtn')?.addEventListener('click', async () => {
         if (!loginRateLimiter.isAllowed()) {
             const remainingTime = loginRateLimiter.getRemainingTime();
             showError(`Too many login attempts. Please wait ${Math.ceil(remainingTime / 60)} minutes before trying again.`);
@@ -486,12 +493,9 @@
 
         try {
             const cred = await signInWithEmailAndPassword(auth, email, password);
-            await ensureUserProfile(cred.user); // 🔥 make sure Firestore doc exists
-
+            const profile = await getOrCreateUserProfile(cred.user);
             showSuccess('Login successful! Redirecting...');
-            setTimeout(() => {
-                handlePostLoginRedirect() || (window.location.href = 'dashboard.html');
-            }, 1000);
+            setTimeout(() => routeAfterAuth(profile), 800);
         } catch (error) {
             console.error('Login error:', error);
             let errorMessage = 'Login failed. Please try again.';
@@ -514,7 +518,7 @@
     // ==============================
     // EMAIL SIGNUP
     // ==============================
-    document.getElementById('signupBtn').addEventListener('click', async () => {
+    document.getElementById('signupBtn')?.addEventListener('click', async () => {
         const email = document.getElementById('signupEmail').value.trim();
         const password = document.getElementById('signupPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
@@ -544,14 +548,14 @@
 
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
-            await ensureUserProfile(cred.user); // creates full profile
-
+            await getOrCreateUserProfile(cred.user);
             console.log('✅ Email signup user profile created');
 
             showSuccess('Account created! Redirecting to payment...');
             setTimeout(() => {
+                // For brand-new signups we always send to pricing/join card
                 window.location.href = 'index.html#pricing';
-            }, 1500);
+            }, 1200);
         } catch (error) {
             console.error('Signup error:', error);
             let errorMessage = 'Signup failed. Please try again.';
@@ -570,7 +574,7 @@
     });
 
     // ==============================
-    // GOOGLE AUTH (POPUP + FALLBACK)
+    // GOOGLE AUTH (POPUP + REDIRECT FALLBACK)
     // ==============================
     async function handleGoogleAuth() {
         disableButtons(true);
@@ -586,29 +590,25 @@
                     popupError.code === 'auth/cancelled-popup-request' ||
                     popupError.code === 'auth/unauthorized-domain'
                 ) {
-                    console.log('Popup blocked, using redirect authentication.');
-                    showSuccess('Redirecting to Google Sign-In…');
+                    console.log('Popup blocked, using redirect authentication...');
+                    showSuccess('Redirecting to Google Sign-In...');
                     await signInWithRedirect(auth, provider);
-                    return;
+                    return; // Browser will redirect
                 }
                 throw popupError;
             }
 
             const user = result.user;
-            console.log('Google auth for user:', user.uid);
-
-            const profile = await ensureUserProfile(user);
+            const profile = await getOrCreateUserProfile(user);
 
             if (profile._isNew) {
                 showSuccess('Account created! Redirecting to payment...');
                 setTimeout(() => {
                     window.location.href = 'index.html#pricing';
-                }, 1500);
+                }, 1200);
             } else {
                 showSuccess('Login successful! Redirecting...');
-                setTimeout(() => {
-                    handlePostLoginRedirect() || (window.location.href = 'dashboard.html');
-                }, 1000);
+                setTimeout(() => routeAfterAuth(profile), 800);
             }
         } catch (error) {
             console.error('Google auth error:', error);
@@ -617,22 +617,28 @@
         }
     }
 
-    document.getElementById('googleBtn').addEventListener('click', handleGoogleAuth);
-    document.getElementById('googleSignupBtn').addEventListener('click', handleGoogleAuth);
+    document.getElementById('googleBtn')?.addEventListener('click', handleGoogleAuth);
+    document.getElementById('googleSignupBtn')?.addEventListener('click', handleGoogleAuth);
 
     // ==============================
     // ENTER KEY SUPPORT
     // ==============================
     ['email', 'password'].forEach(id => {
-        document.getElementById(id)?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('loginBtn').click();
-        });
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('loginBtn').click();
+            });
+        }
     });
 
     ['signupEmail', 'signupPassword', 'confirmPassword'].forEach(id => {
-        document.getElementById(id)?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('signupBtn').click();
-        });
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('signupBtn').click();
+            });
+        }
     });
 </script>
 
