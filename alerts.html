@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Arcane Alerts | The Arcane Archives</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    .alerts-wrapper {
+      max-width: 1000px;
+      margin: 20px auto 40px;
+      padding: 0 16px;
+      color: #fff;
+    }
+    .alerts-title {
+      font-size: 28px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #b47bff;
+      text-shadow: 0 0 10px #6a00ff;
+    }
+    .alerts-subtitle {
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    .alert-form {
+      background: rgba(10, 10, 20, 0.95);
+      border-radius: 16px;
+      padding: 16px 16px 20px;
+      border: 1px solid #26263b;
+      box-shadow: 0 0 18px rgba(125, 0, 255, 0.35);
+      margin-bottom: 24px;
+      display: none; /* shown only for admin */
+    }
+    .alert-form h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #e5e7eb;
+    }
+    .alert-form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .alert-form label {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .alert-form textarea,
+    .alert-form input {
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #27273a;
+      background: #050510;
+      color: #f9fafb;
+      font-size: 13px;
+    }
+    .alert-form textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .alert-form input[type="file"] {
+      padding: 6px 0;
+      border: none;
+      background: transparent;
+    }
+    .alert-form button {
+      margin-top: 14px;
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #7b2ff7, #c471ed);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .alert-form button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .alerts-feed {
+      margin-top: 10px;
+    }
+    .alert-card {
+      background: rgba(10, 10, 18, 0.95);
+      border-radius: 14px;
+      padding: 14px 14px 12px;
+      border: 1px solid #26263b;
+      box-shadow: 0 0 10px rgba(120, 0, 255, 0.35);
+      margin-bottom: 12px;
+      transition: 0.2s ease;
+    }
+    .alert-card:hover {
+      transform: scale(1.01);
+    }
+    .alert-header-line {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+    .alert-header-line span {
+      color: #facc15;
+    }
+    .alert-text {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .alert-image {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #27273a;
+    }
+
+    .trade-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .trade-pill {
+      background: rgba(17, 24, 39, 0.95);
+      border-radius: 8px;
+      padding: 6px 8px;
+      border: 1px solid #27273a;
+    }
+    .trade-pill span.label {
+      display: block;
+      color: #9ca3af;
+      font-size: 11px;
+    }
+    .trade-pill span.value {
+      color: #e5e7eb;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .alert-time {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .alert-reactions {
+      margin-top: 6px;
+      display: flex;
+      gap: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0.85;
+    }
+    .reaction {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+    .reaction span.count {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .reaction:hover {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+    .reaction-active {
+      text-shadow: 0 0 10px #9d4bff;
+      transform: scale(1.2);
+      opacity: 1;
+    }
+
+    #newAlertNotification {
+      background: #7b2ff7;
+      padding: 8px 12px;
+      text-align: center;
+      border-radius: 10px;
+      margin: 10px 0 6px;
+      display: none;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .tv-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- TradingView Chart -->
+  <div class="tv-container">
+    <div class="tradingview-widget-container">
+      <div id="tradingview_chart"></div>
+    </div>
+  </div>
+
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script>
+    new TradingView.widget({
+      width: "100%",
+      height: 500,
+      symbol: "OANDA:XAUUSD",
+      interval: "15",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      container_id: "tradingview_chart"
+    });
+  </script>
+
+  <!-- ARCANE ALERTS SECTION -->
+  <div class="alerts-wrapper">
+    <h2 class="alerts-title">⚡ Arcane Alerts</h2>
+    <p class="alerts-subtitle">
+      Live XAUUSD ritual setups streamed directly from The Archives.
+    </p>
+
+    <div id="pushInfo" style="font-size:12px;color:#9ca3af;margin-bottom:8px;">
+      Enable notifications in your browser to receive Arcane Alerts instantly.
+    </div>
+
+    <div id="newAlertNotification">New Arcane Alert posted — click to jump 🔮</div>
+
+    <!-- Admin-only posting form -->
+    <div id="alertForm" class="alert-form">
+      <h3>Post New Arcane Alert</h3>
+      <label>
+        Analysis / Commentary
+        <textarea id="alertText" placeholder="Breakdown the setup, liquidity, narrative…"></textarea>
+      </label>
+
+      <div class="alert-form-row">
+        <label>
+          ENTRY
+          <input id="entryInput" type="text" placeholder="e.g. 2350.50" />
+        </label>
+        <label>
+          STOP LOSS
+          <input id="slInput" type="text" placeholder="e.g. 2344.00" />
+        </label>
+      </div>
+
+      <div class="alert-form-row">
+        <label>
+          TAKE PROFIT 1
+          <input id="tp1Input" type="text" placeholder="Optional" />
+        </label>
+        <label>
+          TAKE PROFIT 2
+          <input id="tp2Input" type="text" placeholder="Optional" />
+        </label>
+      </div>
+
+      <div class="alert-form-row">
+        <label>
+          TAKE PROFIT 3
+          <input id="tp3Input" type="text" placeholder="Optional" />
+        </label>
+        <label>
+          Chart Image (optional)
+          <input id="alertImage" type="file" accept="image/*" />
+        </label>
+      </div>
+
+      <button id="postAlertBtn">Post Arcane Alert</button>
+    </div>
+
+    <div id="alertsFeed" class="alerts-feed"></div>
+  </div>
+
+  <script type="module" src="alerts.js"></script>
+</body>
+</html>

@@ -1,8 +1,6 @@
 // ============================================
 // ARCANE ARCHIVES - CENTRALIZED AUTH GUARD
 // ============================================
-// This module provides secure authentication and paywall protection
-// for all protected pages in The Arcane Archives
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
 import { 
@@ -27,12 +25,11 @@ const firebaseConfig = {
   measurementId: "G-YGPLQHDXMM"
 };
 
-// Initialize Firebase
+// Init
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Export auth and db for use in other scripts
 export { auth, db };
 
 // ============================================
@@ -49,7 +46,7 @@ export async function protectPage(options = {}) {
   return new Promise((resolve, reject) => {
     onAuthStateChanged(auth, async (user) => {
       try {
-        // Check if user is authenticated
+        // 1) Not logged in → send to login
         if (!user) {
           console.warn('🚫 No authenticated user detected');
           
@@ -57,7 +54,7 @@ export async function protectPage(options = {}) {
             sessionStorage.setItem('aa_redirect_after_login', window.location.pathname);
             window.location.href = 'login.html';
           }
-          
+
           if (onFailure) onFailure('NOT_AUTHENTICATED');
           reject(new Error('NOT_AUTHENTICATED'));
           return;
@@ -65,20 +62,19 @@ export async function protectPage(options = {}) {
 
         console.log('✅ User authenticated:', user.uid);
 
-        // Fetch user data from Firestore - USING 'Users' (capital U)
+        // 2) Load Firestore profile
         const userDocRef = doc(db, 'Users', user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
           console.error('❌ User document not found in Firestore');
-          alert('⚠️ Your account data is missing. Please log in again.');
+
+          // Treat as unpaid: push to pricing
+          if (redirectToPricing) {
+            window.location.href = 'index.html#pricing';
+          }
 
           if (onFailure) onFailure('USER_DATA_MISSING');
-
-          // Kick them back to login
-          sessionStorage.removeItem('aa_redirect_after_login');
-          window.location.href = 'login.html';
-
           reject(new Error('USER_DATA_MISSING'));
           return;
         }
@@ -90,37 +86,30 @@ export async function protectPage(options = {}) {
           isPaid: userData.isPaid 
         });
 
-        // Verify subscription status
         const hasActiveSubscription = userData.subscriptionStatus === 'active';
         const isPaid = userData.isPaid === true;
 
-        // 🔒 HARD LOCK: if not paid, instantly send to pricing
+        // 3) No active sub → HARD REDIRECT TO PRICING (no popup)
         if (!hasActiveSubscription && !isPaid) {
-          console.warn('🔒 User has not paid for access, redirecting to pricing...');
-          
+          console.warn('🔒 User has not paid for access');
+
           if (redirectToPricing) {
-            // Hard redirect, no alert, no flicker
-            window.location.replace('index.html#pricing');
+            window.location.href = 'index.html#pricing';
           }
-          
+
           if (onFailure) onFailure('PAYMENT_REQUIRED');
           reject(new Error('PAYMENT_REQUIRED'));
           return;
         }
 
-        // Success - User has access
+        // 4) All good
         console.log('✅ Access granted to user:', user.uid);
-        
-        if (onSuccess) {
-          onSuccess(user, userData);
-        }
-        
+        if (onSuccess) onSuccess(user, userData);
         resolve({ user, userData });
 
       } catch (error) {
         console.error('❌ Auth error:', error);
-        alert('⚠️ Error verifying your account. Please refresh the page.');
-        
+
         if (onFailure) onFailure('AUTH_ERROR', error);
         reject(error);
       }
@@ -129,7 +118,7 @@ export async function protectPage(options = {}) {
 }
 
 // ============================================
-// UTILITY FUNCTIONS
+// UTILITIES
 // ============================================
 
 export function updateUserAvatar(user, userData, avatarElementId = 'userAvatar') {
@@ -178,63 +167,3 @@ export function handlePostLoginRedirect() {
     window.location.href = redirectPath;
   }
 }
-
-export function setupMobileMenu() {
-  const menuToggle = document.getElementById('menuToggle');
-  const sidebar = document.getElementById('sidebar');
-  
-  if (menuToggle && sidebar) {
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-    });
-    
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768) {
-        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-          sidebar.classList.remove('active');
-        }
-      }
-    });
-  }
-}
-
-class RateLimiter {
-  constructor(maxAttempts = 5, timeWindow = 300000) {
-    this.maxAttempts = maxAttempts;
-    this.timeWindow = timeWindow;
-    this.attempts = [];
-  }
-
-  isAllowed() {
-    const now = Date.now();
-    this.attempts = this.attempts.filter(time => now - time < this.timeWindow);
-    
-    if (this.attempts.length >= this.maxAttempts) {
-      return false;
-    }
-    
-    this.attempts.push(now);
-    return true;
-  }
-
-  getRemainingTime() {
-    if (this.attempts.length === 0) return 0;
-    const oldestAttempt = Math.min(...this.attempts);
-    const remainingTime = this.timeWindow - (Date.now() - oldestAttempt);
-    return Math.max(0, Math.ceil(remainingTime / 1000));
-  }
-}
-
-export const loginRateLimiter = new RateLimiter();
-
-export default { 
-  protectPage, 
-  updateUserAvatar, 
-  logout, 
-  setupLogoutButton,
-  handlePostLoginRedirect,
-  setupMobileMenu,
-  loginRateLimiter,
-  auth, 
-  db 
-};
