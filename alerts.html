@@ -6,6 +6,19 @@
     <title>Arcane Alerts | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     
+    <!-- FIXED: Proper CSP for TradingView -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com https://*.firebaseio.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.cloudfunctions.net https://*.netlify.app https://s3.tradingview.com https://data.tradingview.com wss://*.tradingview.com https://fcm.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://s3.tradingview.com;
+        img-src 'self' data: https: blob:;
+        font-src 'self' data:;
+        frame-src https://s3.tradingview.com https://www.tradingview.com;
+        worker-src 'self' blob:;
+        child-src https://s3.tradingview.com blob:;
+    ">
+    
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -28,7 +41,6 @@
             min-height: 100vh;
         }
         
-        /* Navigation */
         nav {
             position: fixed;
             top: 0;
@@ -69,7 +81,6 @@
             cursor: pointer;
         }
         
-        /* Main Content */
         .main-content {
             margin-top: 70px;
             padding: 2rem;
@@ -78,7 +89,6 @@
             margin-right: auto;
         }
         
-        /* TradingView Container */
         .tv-container {
             background: rgba(5, 5, 5, 0.5);
             border: 1px solid var(--border-color);
@@ -95,7 +105,6 @@
             overflow: hidden;
         }
         
-        /* Alerts Section */
         .alerts-header {
             margin-bottom: 2rem;
             text-align: center;
@@ -118,7 +127,6 @@
             font-size: 1.1rem;
         }
         
-        /* Push Notification Info */
         #pushInfo {
             background: rgba(147, 51, 234, 0.1);
             border: 1px solid var(--border-color);
@@ -135,8 +143,13 @@
             border-color: rgba(34, 197, 94, 0.3);
             color: #22c55e;
         }
+
+        #pushInfo.error {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
         
-        /* New Alert Notification Banner */
         #newAlertNotification {
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
             padding: 1rem;
@@ -155,7 +168,6 @@
             50% { transform: scale(1.02); }
         }
         
-        /* Admin Form */
         .alert-form {
             background: rgba(147, 51, 234, 0.05);
             border: 1px solid var(--border-color);
@@ -184,7 +196,8 @@
         }
         
         .alert-form textarea,
-        .alert-form input {
+        .alert-form input,
+        .alert-form select {
             width: 100%;
             margin-top: 0.5rem;
             padding: 1rem;
@@ -197,7 +210,8 @@
         }
         
         .alert-form textarea:focus,
-        .alert-form input:focus {
+        .alert-form input:focus,
+        .alert-form select:focus {
             outline: none;
             border-color: var(--purple);
             box-shadow: 0 0 15px rgba(147, 51, 234, 0.3);
@@ -207,6 +221,10 @@
             min-height: 120px;
             resize: vertical;
             font-family: inherit;
+        }
+
+        .alert-form select {
+            cursor: pointer;
         }
         
         .alert-form-row {
@@ -239,7 +257,6 @@
             cursor: not-allowed;
         }
         
-        /* Alerts Feed */
         .alerts-feed { margin-top: 2rem; }
         
         .alert-card {
@@ -332,7 +349,6 @@
         .trade-pill.sl .value { color: #ef4444; }
         .trade-pill.tp .value { color: var(--gold); }
         
-        /* Reactions */
         .alert-reactions {
             display: flex;
             gap: 1.5rem;
@@ -371,7 +387,6 @@
             font-weight: 600;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
             .main-content { padding: 1rem; }
@@ -380,7 +395,6 @@
             .alert-form-row { grid-template-columns: 1fr; }
         }
         
-        /* Loading State */
         .loading {
             text-align: center;
             padding: 3rem;
@@ -400,7 +414,6 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav>
         <div class="nav-container">
             <button class="menu-toggle" id="menuToggle">☰</button>
@@ -411,35 +424,43 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- TradingView Chart -->
         <div class="tv-container">
             <div class="tradingview-widget-container">
                 <div id="tradingview_chart"></div>
             </div>
         </div>
 
-        <!-- Alerts Section -->
         <div class="alerts-header">
             <h1 class="alerts-title">⚡ Arcane Alerts</h1>
-            <p class="alerts-subtitle">Live XAUUSD ritual setups streamed directly from The Archives</p>
+            <p class="alerts-subtitle">Live ritual setups streamed directly from The Archives</p>
         </div>
 
-        <!-- Push Notifications Info -->
         <div id="pushInfo">
             🔔 Enable notifications in your browser to receive Arcane Alerts instantly
         </div>
 
-        <!-- New Alert Banner -->
         <div id="newAlertNotification">
             🔮 New Arcane Alert Posted - Click to View
         </div>
 
-        <!-- Admin Post Form -->
         <div id="alertForm" class="alert-form">
             <h3>📝 Post New Arcane Alert</h3>
             
+            <label>
+                Trading Pair
+                <select id="pairSelect">
+                    <option value="XAUUSD">XAUUSD (Gold)</option>
+                    <option value="XAGUSD">XAGUSD (Silver)</option>
+                    <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                    <option value="US30">US30 (Dow Jones)</option>
+                    <option value="NAS100">NAS100 (Nasdaq)</option>
+                    <option value="SPX500">SPX500 (S&P 500)</option>
+                    <option value="EURUSD">EURUSD</option>
+                    <option value="GBPUSD">GBPUSD</option>
+                </select>
+            </label>
+
             <label>
                 Analysis / Commentary
                 <textarea id="alertText" placeholder="Break down the setup, liquidity zones, market narrative..."></textarea>
@@ -481,13 +502,11 @@
             <button id="postAlertBtn">Post Arcane Alert</button>
         </div>
 
-        <!-- Alerts Feed -->
         <div id="alertsFeed" class="alerts-feed">
             <div class="loading">Loading alerts</div>
         </div>
     </div>
 
-    <!-- TradingView Script -->
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -503,17 +522,14 @@
             toolbar_bg: "#0a0a0a",
             enable_publishing: false,
             hide_side_toolbar: false,
-            allow_symbol_change: false,
+            allow_symbol_change: true,
             container_id: "tradingview_chart",
             studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"]
           });
-        } else {
-          console.error("TradingView failed to load (check CSP)");
         }
       });
     </script>
 
-    <!-- Main Alerts Script -->
     <script type="module" src="alerts.js"></script>
   </body>
 </html>
