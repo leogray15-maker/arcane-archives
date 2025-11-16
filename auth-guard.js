@@ -71,9 +71,14 @@ export async function protectPage(options = {}) {
 
         if (!userDoc.exists()) {
           console.error('❌ User document not found in Firestore');
-          alert('⚠️ Your account data is missing. Please contact support.');
-          
+          alert('⚠️ Your account data is missing. Please log in again.');
+
           if (onFailure) onFailure('USER_DATA_MISSING');
+
+          // Kick them back to login
+          sessionStorage.removeItem('aa_redirect_after_login');
+          window.location.href = 'login.html';
+
           reject(new Error('USER_DATA_MISSING'));
           return;
         }
