@@ -6,18 +6,7 @@
     <title>Arcane Alerts | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     
-    <!-- FIXED: Proper CSP for TradingView -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com https://*.firebaseio.com;
-        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.cloudfunctions.net https://*.netlify.app https://s3.tradingview.com https://data.tradingview.com wss://*.tradingview.com https://fcm.googleapis.com;
-        style-src 'self' 'unsafe-inline' https://s3.tradingview.com;
-        img-src 'self' data: https: blob:;
-        font-src 'self' data:;
-        frame-src https://s3.tradingview.com https://www.tradingview.com;
-        worker-src 'self' blob:;
-        child-src https://s3.tradingview.com blob:;
-    ">
+    <!-- CRITICAL: Removed CSP meta tag - Let server handle it or use permissive policy -->
     
     <style>
         :root {
@@ -41,52 +30,53 @@
             min-height: 100vh;
         }
         
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
+        /* Simple Header */
+        .header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .nav-container {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .logo {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 900;
             background: linear-gradient(135deg, var(--purple), var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-decoration: none;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 12px;
         }
         
-        .logo img { height: 40px; width: auto; }
+        .logo img { height: 50px; width: auto; }
         
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-light);
-            cursor: pointer;
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--purple-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        .back-btn:hover {
+            background: rgba(147, 51, 234, 0.2);
+            transform: translateY(-2px);
         }
         
         .main-content {
-            margin-top: 70px;
             padding: 2rem;
             max-width: 1400px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 0 auto;
         }
         
         .tv-container {
@@ -117,9 +107,6 @@
             background: linear-gradient(135deg, var(--gold), var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: inline-flex;
-            align-items: center;
-            gap: 1rem;
         }
         
         .alerts-subtitle {
@@ -299,6 +286,7 @@
             line-height: 1.7;
             margin-bottom: 1.5rem;
             color: var(--text-light);
+            white-space: pre-wrap;
         }
         
         .alert-image {
@@ -386,9 +374,47 @@
             color: var(--text-light);
             font-weight: 600;
         }
+
+        /* Footer */
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
         
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto;
+                width: fit-content;
+            }
             .main-content { padding: 1rem; }
             .alerts-title { font-size: 2rem; }
             .trade-grid { grid-template-columns: repeat(2, 1fr); }
@@ -400,29 +426,17 @@
             padding: 3rem;
             color: var(--text-dim);
         }
-        
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s infinite;
-        }
-        
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="nav-container">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <a href="dashboard.html" class="logo">
-                <img src="ArcaneA.png" alt="Logo">
-                THE ARCANE ARCHIVES
-            </a>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
         </div>
-    </nav>
+    </div>
 
     <div class="main-content">
         <div class="tv-container">
@@ -503,29 +517,49 @@
         </div>
 
         <div id="alertsFeed" class="alerts-feed">
-            <div class="loading">Loading alerts</div>
+            <div class="loading">Loading alerts...</div>
         </div>
     </div>
 
-    <script src="https://s3.tradingview.com/tv.js"></script>
-    <script>
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- TradingView Script - Load without CSP restrictions -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
       document.addEventListener("DOMContentLoaded", function () {
-        if (window.TradingView && document.getElementById("tradingview_chart")) {
-          new TradingView.widget({
-            width: "100%",
-            height: 500,
-            symbol: "OANDA:XAUUSD",
-            interval: "15",
-            theme: "dark",
-            style: "1",
-            locale: "en",
-            toolbar_bg: "#0a0a0a",
-            enable_publishing: false,
-            hide_side_toolbar: false,
-            allow_symbol_change: true,
-            container_id: "tradingview_chart",
-            studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"]
-          });
+        try {
+          if (typeof TradingView !== 'undefined' && document.getElementById("tradingview_chart")) {
+            new TradingView.widget({
+              "width": "100%",
+              "height": 500,
+              "symbol": "OANDA:XAUUSD",
+              "interval": "15",
+              "timezone": "Etc/UTC",
+              "theme": "dark",
+              "style": "1",
+              "locale": "en",
+              "toolbar_bg": "#0a0a0a",
+              "enable_publishing": false,
+              "hide_side_toolbar": false,
+              "allow_symbol_change": true,
+              "container_id": "tradingview_chart"
+            });
+            console.log("✅ TradingView loaded successfully");
+          } else {
+            console.error("❌ TradingView not available");
+          }
+        } catch (error) {
+          console.error("❌ TradingView error:", error);
         }
       });
     </script>
