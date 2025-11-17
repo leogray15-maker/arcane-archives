@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Courses | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Courses | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png" />
+
     <style>
         :root {
-            --bg-dark: #050509;
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
+            --gold: #fbbf24;
             --text-light: #e5e5e5;
             --text-dim: #a3a3a3;
-            --border-color: rgba(147, 51, 234, 0.35);
+            --border-color: rgba(148, 163, 184, 0.5);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -29,33 +28,46 @@
             min-height: 100vh;
         }
 
-        /* NAVBAR */
-        nav {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(5, 5, 10, 0.95);
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(147, 51, 234, 0.25);
+            transition: all 0.2s;
         }
 
-        .nav-container {
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
+        }
+
+        /* Header */
+        .header {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.7rem;
             font-weight: 800;
-            letter-spacing: 0.06em;
-            font-size: 0.95rem;
-            text-decoration: none;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
             color: var(--text-light);
         }
 
@@ -64,62 +76,22 @@
             width: 32px;
         }
 
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 999px;
-            background: radial-gradient(circle, #a78bfa, #4c1d95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        /* BACK LINK + PAGE CARD LAYOUT */
+        /* Main content */
         .main-content {
-            max-width: 1100px;
-            margin: 2.5rem auto 4rem;
+            max-width: 1200px;
+            margin: 0 auto 4rem;
             padding: 0 1.5rem;
         }
 
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            text-decoration: none;
-            margin-bottom: 1.25rem;
-            transition: color 0.2s, transform 0.2s;
-        }
-
-        .back-link:hover {
-            color: var(--purple-light);
-            transform: translateX(-2px);
-        }
-
         .page-card {
-            background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.16) 0, rgba(15, 23, 42, 0.96) 40%, rgba(3, 7, 18, 0.98) 100%);
-            border-radius: 20px;
-            border: 1px solid rgba(147, 51, 234, 0.45);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85), 0 0 40px rgba(147, 51, 234, 0.25);
             padding: 2rem;
             position: relative;
             overflow: hidden;
-        }
-
-        .page-card::before {
-            content: "";
-            position: absolute;
-            inset: -40%;
-            background:
-                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.18), transparent 55%),
-                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.15), transparent 55%);
-            opacity: 0.6;
-            pointer-events: none;
         }
 
         .page-card-inner {
@@ -127,224 +99,78 @@
             z-index: 1;
         }
 
-        /* HEADER */
-        .page-header {
-            margin-bottom: 2rem;
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
         }
 
         .page-header h1 {
             font-size: 2rem;
-            letter-spacing: 0.04em;
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--purple-light), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .page-header p {
             color: var(--text-dim);
-            font-size: 0.98rem;
+            font-size: 0.96rem;
+            margin-bottom: 1.5rem;
         }
 
-        /* COURSES GRID */
+        /* Courses Grid */
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.6rem;
         }
 
         .course-card {
             background: rgba(15, 23, 42, 0.9);
-            border-radius: 16px;
-            padding: 1.4rem;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            cursor: pointer;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 1.3rem 1.5rem;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s;
         }
 
         .course-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-3px);
             border-color: rgba(147, 51, 234, 0.8);
-            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.9);
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.20), rgba(15, 23, 42, 0.96));
-        }
-
-        .course-icon {
-            font-size: 1.6rem;
+            box-shadow: 0 20px 50px rgba(147, 51, 234, 0.3);
         }
 
         .course-title {
+            font-size: 1.1rem;
             font-weight: 600;
-            font-size: 1.05rem;
+            margin-bottom: 0.4rem;
+            color: var(--purple-light);
         }
 
         .course-description {
-            font-size: 0.92rem;
+            font-size: 0.88rem;
             color: var(--text-dim);
         }
 
-        .course-meta {
-            margin-top: 0.4rem;
-            display: flex;
-            gap: 0.6rem;
-            flex-wrap: wrap;
-        }
-
-        .course-badge {
-            font-size: 0.8rem;
-            padding: 0.25rem 0.55rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            color: var(--text-dim);
-        }
-
-        /* MODAL */
-        .modal {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(3, 7, 18, 0.75);
-            backdrop-filter: blur(10px);
-            z-index: 80;
-        }
-
-        .modal.open {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #020617;
-            border-radius: 18px;
-            border: 1px solid rgba(147, 51, 234, 0.45);
-            max-width: 960px;
-            width: 95%;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid rgba(30, 64, 175, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .modal-title {
-            font-size: 1.1rem;
-        }
-
-        .close-modal {
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            font-size: 1.4rem;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 1rem;
-            padding: 1rem 1.5rem 1.5rem;
-            overflow: hidden;
-        }
-
-        .lesson-list {
-            border-right: 1px solid rgba(30, 64, 175, 0.7);
-            padding-right: 1rem;
-            overflow-y: auto;
-        }
-
-        .lesson-item {
-            padding: 0.6rem 0.5rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 0.2rem;
-            color: var(--text-dim);
-        }
-
-        .lesson-item.active {
-            background: rgba(79, 70, 229, 0.2);
-            color: var(--text-light);
-        }
-
-        .lesson-content {
-            overflow-y: auto;
-        }
-
-        .back-to-lessons {
-            background: rgba(147, 51, 234, 0.2);
-            border: 1px solid var(--purple);
-            color: var(--purple-light);
-            padding: 0.6rem 1.1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-
-        .back-to-lessons:hover {
-            background: rgba(147, 51, 234, 0.3);
-        }
-
-        #lessonVideoContainer {
-            margin-bottom: 1rem;
-        }
-
-        #lessonVideoContainer iframe {
-            width: 100%;
-            min-height: 240px;
-            border-radius: 12px;
-            border: none;
-        }
-
-        .lesson-text h2 {
-            margin-bottom: 0.5rem;
-        }
-
-        .lesson-text h3 {
-            margin-top: 0.75rem;
-            margin-bottom: 0.35rem;
-        }
-
-        .lesson-text p {
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        .lesson-text ul,
-        .lesson-text ol {
-            padding-left: 1.2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .lesson-text li {
-            margin-bottom: 0.3rem;
-        }
-
-        /* FOOTER */
+        /* Footer */
         footer {
-            background: rgba(5, 5, 5, 0.95);
-            padding: 1.5rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            background: rgba(5,5,5,0.95);
+            padding: 2rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.25);
             text-align: center;
-            margin-top: 0;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
             gap: 1.5rem;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
 
@@ -352,7 +178,6 @@
             color: var(--text-dim);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.3s;
         }
 
         .footer-links a:hover {
@@ -364,292 +189,133 @@
             font-size: 0.85rem;
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .courses-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto 0;
+                width: fit-content;
             }
-
-            .modal-body {
-                grid-template-columns: 1fr;
-            }
-
-            .lesson-list {
-                border-right: none;
-                border-bottom: 1px solid rgba(30, 64, 175, 0.7);
-                padding-right: 0;
-                padding-bottom: 0.75rem;
-                margin-bottom: 0.75rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .main-content {
-                margin-top: 1.5rem;
-                padding: 0 1rem 3rem;
-            }
-
-            .page-card {
-                padding: 1.5rem;
-            }
-
-            .courses-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .nav-container {
+            .header {
                 padding-inline: 1rem;
+            }
+            .main-content {
+                padding-inline: 1rem;
+            }
+            .page-card {
+                padding: 1.5rem 1.25rem;
             }
         }
     </style>
 </head>
+
 <body>
 
-    <nav>
-        <div class="nav-container">
-            <a href="dashboard.html" class="logo">
-                <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
-            </a>
-            <div class="user-avatar" id="userAvatar">?</div>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
         </div>
-    </nav>
+    </div>
 
-    <main class="main-content">
-        <a href="dashboard.html" class="back-link">← Back to dashboard</a>
-
+    <div class="main-content">
         <div class="page-card">
             <div class="page-card-inner">
+
                 <div class="page-header">
-                    <h1>📚 All Courses</h1>
-                    <p>Master the forbidden arts of business, wealth, and consciousness.</p>
+                    <div class="page-header-eyebrow">Full Curriculum</div>
+                    <h1>📚 <span>Your Courses</span></h1>
+                    <p>Every piece of knowledge you need to escape the system and build your empire.</p>
                 </div>
 
                 <div class="courses-grid" id="coursesGrid">
-                    <!-- Courses loaded by JS -->
+                    <div style="text-align:center; padding:2rem 0; color:var(--text-dim);">
+                        Loading courses...
+                    </div>
                 </div>
-            </div>
-        </div>
-    </main>
 
-    <!-- COURSE MODAL -->
-    <div id="courseModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Course Title</h2>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <!-- Lesson List View -->
-                <div id="lessonListView" class="lesson-list"></div>
-                
-                <!-- Lesson Content View -->
-                <div id="lessonContentView" class="lesson-content">
-                    <button class="back-to-lessons" onclick="showLessonList()">← Back to Lessons</button>
-                    <div id="lessonVideoContainer"></div>
-                    <div id="lessonTextContainer" class="lesson-text"></div>
-                </div>
             </div>
         </div>
     </div>
 
     <footer>
         <div class="footer-links">
-            <a href="login.html">Login</a>
+            <a href="index.html">Home</a>
             <a href="Privacy-policy.html">Privacy Policy</a>
             <a href="terms-of-service.html">Terms of Service</a>
             <a href="refund-policy.html">Refund Policy</a>
         </div>
         <div class="footer-bottom">
-            &copy; 2024 The Arcane Archives. All rights reserved.
+            © 2024 The Arcane Archives. All rights reserved.
         </div>
     </footer>
 
     <script type="module">
-        import { protectPage, updateUserAvatar } from './auth-guard.js';
+        import { protectPage } from "./auth-guard.js";
 
         protectPage({
-            onSuccess: (user, userData) => {
-                updateUserAvatar(user, userData);
+            onSuccess: (u, d) => loadCourses(),
+            onFailure: () => {
+                document.getElementById("coursesGrid").innerHTML = `
+                <div style="text-align:center; padding:3rem 1rem;">
+                    <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+                    <h3>Access Restricted</h3>
+                    <p style="color:#9ca3af; margin:1rem 0;">
+                        You need an active subscription to view the course library.
+                    </p>
+                    <a href="index.html#pricing" style="
+                        display:inline-block;
+                        padding:0.8rem 1.6rem;
+                        border-radius:999px;
+                        background:linear-gradient(135deg,#9333ea,#7e22ce);
+                        color:white;
+                        text-decoration:none;
+                        font-weight:600;
+                    ">Join The Arcane Archives</a>
+                </div>`;
             }
         });
 
-        // COURSE DATA
-        const courses = [
-            {
-                id: 'wealth-mastery',
-                icon: '💰',
-                title: 'Wealth Mastery',
-                description: 'Learn the ancient principles of wealth creation and financial abundance that the elite don\'t want you to know.',
-                lessonsCount: 12,
-                level: 'Beginner',
-                lessons: [
-                    {
-                        number: 1,
-                        title: 'The Wealth Mindset',
-                        duration: '15 min',
-                        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                        content: `
-                            <h2>Welcome to Wealth Mastery</h2>
-                            <p>In this lesson, we'll explore the fundamental mindset shifts required to create lasting wealth.</p>
-                            
-                            <h3>Key Concepts:</h3>
-                            <ul>
-                                <li>Abundance vs. Scarcity thinking</li>
-                                <li>Money as energy and exchange</li>
-                                <li>Breaking limiting beliefs about wealth</li>
-                                <li>The power of delayed gratification</li>
-                            </ul>
-                            
-                            <h3>Action Steps:</h3>
-                            <ol>
-                                <li>Write down your current beliefs about money</li>
-                                <li>Identify which beliefs are limiting you</li>
-                                <li>Reframe each limiting belief into an empowering one</li>
-                                <li>Set a 90-day wealth goal with clear targets</li>
-                            </ol>
-                        `
-                    }
-                ]
-            },
-            {
-                id: 'mind-hijacking',
-                icon: '🧠',
-                title: 'Mind Hijacking',
-                description: 'Learn how to reprogram your mind, eliminate procrastination, and lock in laser focus.',
-                lessonsCount: 10,
-                level: 'Intermediate',
-                lessons: []
-            },
-            {
-                id: 'copywriting-accelerator',
-                icon: '✍️',
-                title: 'Copywriting Accelerator',
-                description: 'Turn words into money. Learn how to write messages that make people take action.',
-                lessonsCount: 15,
-                level: 'All Levels',
-                lessons: []
-            },
-            {
-                id: 'dating-dynamics',
-                icon: '💘',
-                title: 'Dating Dynamics',
-                description: 'Understand attraction, polarity, and relationship power.',
-                lessonsCount: 8,
-                level: 'Intermediate',
-                lessons: []
-            },
-            {
-                id: 'physical-alchemy',
-                icon: '💪',
-                title: 'Physical Alchemy',
-                description: 'Transform your body into a weapon through strength, diet, and biohacking.',
-                lessonsCount: 10,
-                level: 'Intermediate',
-                lessons: []
-            },
-            {
-                id: 'spiritual-laws',
-                icon: '✨',
-                title: 'Universal Laws',
-                description: 'Master manifestation, cause & effect, and the hidden rules of reality.',
-                lessonsCount: 9,
-                level: 'Advanced',
-                lessons: []
-            }
-        ];
+        function loadCourses() {
+            const list = document.getElementById("coursesGrid");
 
-        // Render courses
-        function renderCourses() {
-            const grid = document.getElementById('coursesGrid');
-            grid.innerHTML = courses.map(course => `
-                <div class="course-card" onclick="openCourseModal('${course.id}')">
-                    <div class="course-icon">${course.icon}</div>
-                    <div class="course-title">${course.title}</div>
-                    <div class="course-description">${course.description}</div>
-                    <div class="course-meta">
-                        <span class="course-badge">${course.lessonsCount} Lessons</span>
-                        <span class="course-badge">${course.level}</span>
+            const courses = [
+                "Productive Isolation",
+                "Top-Performance",
+                "LG Philosophies",
+                "Escape in Hell",
+                "Copywriting Accelerator",
+                "Mind Hijacking",
+                "30-Day Build a Profitable Business",
+                "Make a Product & Print Cash",
+                "Inbound Method",
+                "Entrepreneurship Mastery",
+                "Mindset Mastery",
+                "Biohacking Protocol",
+                "Leadership Protocol",
+                "Rules for Life",
+                "Sales Mastery",
+                "Investing Guide",
+                "Discipline Protocol",
+                "Stoicism Course",
+                "Thinking Course",
+                "Daily Quests",
+                "Trading Mastery",
+                "AI / Human Behaviour Vault"
+            ];
+
+            list.innerHTML = courses.map(c => `
+                <div class="course-card">
+                    <div class="course-title">${c}</div>
+                    <div class="course-description">
+                        Tap to study → Master this → Apply it → Level up.
                     </div>
                 </div>
-            `).join('');
+            `).join("");
         }
-
-        // Modal controls
-        window.openCourseModal = function(courseId) {
-            const course = courses.find(c => c.id === courseId);
-            if (!course) return;
-
-            document.getElementById('modalTitle').textContent = course.title;
-
-            const lessonList = document.getElementById('lessonListView');
-            if (!course.lessons || course.lessons.length === 0) {
-                lessonList.innerHTML = `<p style="color: var(--text-dim); font-size: 0.9rem;">Lessons for this course are coming soon.</p>`;
-                document.getElementById('lessonContentView').style.display = 'none';
-            } else {
-                lessonList.innerHTML = course.lessons.map((lesson, index) => `
-                    <div class="lesson-item ${index === 0 ? 'active' : ''}" data-course-id="${course.id}" data-lesson-number="${lesson.number}">
-                        Lesson ${lesson.number}: ${lesson.title}
-                    </div>
-                `).join('');
-
-                document.getElementById('lessonContentView').style.display = 'block';
-                loadLesson(course, course.lessons[0]);
-            }
-
-            lessonList.addEventListener('click', (e) => {
-                const item = e.target.closest('.lesson-item');
-                if (!item) return;
-
-                const number = parseInt(item.dataset.lessonNumber, 10);
-                const selectedLesson = course.lessons.find(l => l.number === number);
-                if (!selectedLesson) return;
-
-                lessonList.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
-                item.classList.add('active');
-
-                loadLesson(course, selectedLesson);
-            });
-
-            document.getElementById('courseModal').classList.add('open');
-        };
-
-        function loadLesson(course, lesson) {
-            const videoContainer = document.getElementById('lessonVideoContainer');
-            const textContainer = document.getElementById('lessonTextContainer');
-
-            if (lesson.videoUrl) {
-                videoContainer.innerHTML = `<iframe src="${lesson.videoUrl}" allowfullscreen></iframe>`;
-            } else {
-                videoContainer.innerHTML = '';
-            }
-
-            textContainer.innerHTML = lesson.content || `
-                <h2>${lesson.title}</h2>
-                <p>Lesson content will be added soon.</p>
-            `;
-        }
-
-        window.closeModal = function() {
-            document.getElementById('courseModal').classList.remove('open');
-        };
-
-        window.showLessonList = function() {
-            const lessonListView = document.getElementById('lessonListView');
-            const lessonContentView = document.getElementById('lessonContentView');
-
-            lessonListView.style.display = 'block';
-            lessonContentView.style.display = 'block';
-        };
-
-        // Init
-        renderCourses();
-
-        // Close modal on background click
-        document.getElementById('courseModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                closeModal();
-            }
-        });
     </script>
+
 </body>
 </html>
