@@ -1,472 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcane Alerts | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
-    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alerts | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png" />
+
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
-            --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
+            --purple-dark: #7e22ce;
             --gold: #fbbf24;
             --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
-            --border-color: rgba(147, 51, 234, 0.2);
+            --text-dim: #9ca3a3;
+            --border-color: rgba(148,163,184,0.5);
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
+            background: radial-gradient(circle at top, #111827 0%, #02010a 45%, #000000 100%);
             color: var(--text-light);
             min-height: 100vh;
         }
-        
-        .header {
-            padding: 2rem;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo img { height: 50px; width: auto; }
-        
+
         .back-btn {
             position: fixed;
-            top: 2rem;
-            left: 2rem;
-            padding: 0.8rem 1.5rem;
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--purple-light);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            z-index: 100;
+            top:1.5rem;
+            left:1.5rem;
+            z-index:50;
+            padding:0.45rem 1rem;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.4);
+            background:rgba(15,23,42,0.92);
+            font-size:0.85rem;
+            color:var(--text-dim);
+            text-decoration:none;
+            backdrop-filter:blur(12px);
+            transition:0.2s;
         }
-        
         .back-btn:hover {
-            background: rgba(147, 51, 234, 0.2);
-            transform: translateY(-2px);
+            color:var(--purple-light);
+            border-color:rgba(147,51,234,0.8);
+            transform:translateX(-2px);
         }
-        
+
+        .header {
+            max-width:1200px;
+            margin:2.5rem auto 0;
+            padding:0 1.5rem;
+        }
+        .logo {
+            display:flex;
+            align-items:center;
+            gap:0.7rem;
+            font-weight:800;
+            letter-spacing:0.1em;
+            font-size:0.9rem;
+        }
+        .logo img { width:32px; height:32px; }
+
         .main-content {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width:1200px;
+            margin:0 auto 4rem;
+            padding:0 1.5rem;
         }
-        
-        /* TradingView Chart Container - FIXED */
+
+        .page-card {
+            margin-top:1.5rem;
+            background: radial-gradient(circle at top, rgba(147,51,234,0.16), rgba(15,23,42,0.98));
+            border-radius:24px;
+            border:1px solid rgba(148,163,184,0.55);
+            padding:2rem;
+            box-shadow:0 30px 120px rgba(15,23,42,0.9), 0 0 40px rgba(147,51,234,0.28);
+            position:relative;
+            overflow:hidden;
+        }
+        .page-card-inner { position:relative; z-index:1; }
+
+        .page-header-eyebrow {
+            font-size:0.8rem;
+            text-transform:uppercase;
+            color:var(--text-dim);
+            letter-spacing:0.16em;
+            margin-bottom:0.35rem;
+        }
+        .page-header h1 {
+            font-size:2rem;
+            margin-bottom:0.4rem;
+        }
+        .page-header h1 span {
+            background:linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-text-fill-color:transparent;
+            -webkit-background-clip:text;
+        }
+        .page-header p {
+            color:var(--text-dim);
+            font-size:0.95rem;
+        }
+
+        /* TradingView box */
         .tv-container {
-            background: rgba(5, 5, 5, 0.5);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 1rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.1);
-        }
-        
-        .tradingview-widget-container {
-            width: 100%;
-            height: 500px;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+            margin-top:1.5rem;
+            width:100%;
+            height:420px;
         }
 
-        /* Fallback if TradingView fails */
         .chart-fallback {
-            width: 100%;
-            height: 500px;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(0, 0, 0, 0.5));
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
+            display:none;
+            width:100%;
+            height:420px;
+            border-radius:16px;
+            background:rgba(15,23,42,0.95);
+            border:1px solid rgba(148,163,184,0.4);
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            gap:0.6rem;
+            color:var(--text-dim);
         }
 
-        .chart-fallback h3 {
-            color: var(--purple-light);
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        /* Telegram info */
+        .tg-block {
+            margin-top:1rem;
+            font-size:0.85rem;
+            color:var(--text-dim);
+            background:rgba(15,23,42,0.96);
+            border-radius:14px;
+            border:1px solid rgba(148,163,184,0.5);
+            padding:0.8rem 1rem;
         }
 
-        .chart-fallback p {
-            color: var(--text-dim);
-            margin-bottom: 1.5rem;
+        .tg-block a {
+            color:var(--purple-light);
+            text-decoration:none;
+        }
+        .tg-block a:hover {
+            text-decoration:underline;
         }
 
-        .chart-fallback a {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
+        /* Previous Trades card */
+        .trades-card {
+            margin-top:1.5rem;
+            background:rgba(15,23,42,0.96);
+            border-radius:18px;
+            border:1px solid rgba(148,163,184,0.55);
+            padding:1.5rem 1.6rem;
+            box-shadow:0 16px 40px rgba(0,0,0,0.5);
         }
 
-        .chart-fallback a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
-        }
-        
-        .alerts-header {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .alerts-title {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--gold), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .alerts-subtitle {
-            color: var(--text-dim);
-            font-size: 1.1rem;
-        }
-        
-        #pushInfo {
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            font-size: 0.95rem;
-            color: var(--text-dim);
-        }
-        
-        #pushInfo.enabled {
-            background: rgba(34, 197, 94, 0.1);
-            border-color: rgba(34, 197, 94, 0.3);
-            color: #22c55e;
+        .trades-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:0.8rem;
+            margin-bottom:0.8rem;
         }
 
-        #pushInfo.error {
-            background: rgba(251, 191, 36, 0.1);
-            border-color: rgba(251, 191, 36, 0.3);
-            color: #fbbf24;
-        }
-        
-        #newAlertNotification {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            padding: 1rem;
-            text-align: center;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            display: none;
-            cursor: pointer;
-            font-weight: 600;
-            animation: pulse 2s ease-in-out infinite;
-            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        
-        .alert-form {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            display: none;
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.2);
-        }
-        
-        .alert-form.visible { display: block; }
-        
-        .alert-form h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--purple-light);
-        }
-        
-        .alert-form label {
-            display: block;
-            margin-bottom: 1.5rem;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .alert-form textarea,
-        .alert-form input,
-        .alert-form select {
-            width: 100%;
-            margin-top: 0.5rem;
-            padding: 1rem;
-            border-radius: 10px;
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            background: rgba(5, 5, 5, 0.5);
-            color: var(--text-light);
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .alert-form textarea:focus,
-        .alert-form input:focus,
-        .alert-form select:focus {
-            outline: none;
-            border-color: var(--purple);
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.3);
-        }
-        
-        .alert-form textarea {
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
+        .trades-title {
+            font-size:1.05rem;
+            font-weight:600;
+            color:var(--purple-light);
         }
 
-        .alert-form select {
-            cursor: pointer;
+        .trades-subtitle {
+            font-size:0.85rem;
+            color:var(--text-dim);
         }
-        
-        .alert-form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
+
+        .trades-stats {
+            display:flex;
+            flex-wrap:wrap;
+            gap:1rem;
+            margin-top:0.6rem;
+            margin-bottom:0.8rem;
         }
-        
-        .alert-form button {
-            width: 100%;
-            padding: 1.2rem;
-            border-radius: 12px;
-            border: none;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+
+        .trades-stat-item {
+            min-width:100px;
         }
-        
-        .alert-form button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+        .trades-stat-label {
+            font-size:0.8rem;
+            color:var(--text-dim);
         }
-        
-        .alert-form button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .trades-stat-value {
+            font-size:1.1rem;
+            font-weight:600;
         }
-        
-        .alerts-feed { margin-top: 2rem; }
-        
+
+        .trades-table {
+            width:100%;
+            border-collapse:collapse;
+            margin-top:0.4rem;
+            font-size:0.85rem;
+        }
+
+        .trades-table th,
+        .trades-table td {
+            padding:0.45rem 0.3rem;
+            text-align:left;
+        }
+
+        .trades-table thead {
+            border-bottom:1px solid rgba(55,65,81,0.9);
+        }
+
+        .trades-table th {
+            color:var(--text-dim);
+            text-transform:uppercase;
+            letter-spacing:0.08em;
+            font-size:0.75rem;
+        }
+
+        .trades-table tbody tr:nth-child(even) {
+            background:rgba(15,23,42,0.92);
+        }
+
+        .trade-pill-win {
+            font-size:0.75rem;
+            padding:0.15rem 0.45rem;
+            border-radius:999px;
+            border:1px solid rgba(34,197,94,0.7);
+            color:#bbf7d0;
+            background:rgba(22,163,74,0.18);
+        }
+
+        .trade-pill-loss {
+            font-size:0.75rem;
+            padding:0.15rem 0.45rem;
+            border-radius:999px;
+            border:1px solid rgba(248,113,113,0.7);
+            color:#fecaca;
+            background:rgba(127,29,29,0.35);
+        }
+
+        /* Alerts feed */
+        .alerts-list {
+            margin-top:2rem;
+            display:flex;
+            flex-direction:column;
+            gap:1.2rem;
+        }
+
         .alert-card {
-            background: rgba(5, 5, 5, 0.7);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        }
-        
-        .alert-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
-            border-color: var(--purple);
-        }
-        
-        .alert-header-line {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-dim);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .alert-header-line .badge {
-            background: linear-gradient(135deg, var(--gold), #f59e0b);
-            color: var(--bg-dark);
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-weight: 700;
-        }
-        
-        .alert-text {
-            font-size: 1.1rem;
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
-            color: var(--text-light);
-            white-space: pre-wrap;
-        }
-        
-        .alert-image {
-            width: 100%;
-            max-height: 400px;
-            object-fit: cover;
-            border-radius: 15px;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border-color);
-        }
-        
-        .trade-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .trade-pill {
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 0.8rem;
-            transition: all 0.3s;
-        }
-        
-        .trade-pill:hover {
-            background: rgba(147, 51, 234, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .trade-pill .label {
-            display: block;
-            color: var(--text-dim);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.3rem;
-        }
-        
-        .trade-pill .value {
-            color: var(--purple-light);
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        
-        .trade-pill.entry .value { color: #10b981; }
-        .trade-pill.sl .value { color: #ef4444; }
-        .trade-pill.tp .value { color: var(--gold); }
-        
-        .alert-reactions {
-            display: flex;
-            gap: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.1);
-        }
-        
-        .reaction {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1.2rem;
-        }
-        
-        .reaction:hover {
-            background: rgba(147, 51, 234, 0.2);
-            border-color: var(--purple);
-            transform: scale(1.1);
-        }
-        
-        .reaction.active {
-            background: rgba(147, 51, 234, 0.3);
-            border-color: var(--purple);
-            box-shadow: 0 0 15px rgba(147, 51, 234, 0.5);
-        }
-        
-        .reaction .count {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            font-weight: 600;
+            background:rgba(15,23,42,0.94);
+            border-radius:18px;
+            border:1px solid rgba(148,163,184,0.55);
+            padding:1.3rem 1.5rem;
+            box-shadow:0 14px 35px rgba(0,0,0,0.45);
         }
 
         footer {
-            background: rgba(5, 5, 5, 0.95);
-            padding: 2rem;
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-            margin-top: 4rem;
+            background:rgba(5,5,5,0.95);
+            padding:2rem;
+            border-top:1px solid rgba(147,51,234,0.2);
+            text-align:center;
+            margin-top:3rem;
         }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+        footer .footer-links {
+            display:flex;
+            justify-content:center;
+            gap:1.5rem;
+            margin-bottom:1rem;
+            flex-wrap:wrap;
         }
-
-        .footer-links a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s;
+        footer a {
+            color:var(--text-dim);
+            text-decoration:none;
+            font-size:0.9rem;
         }
-
-        .footer-links a:hover {
-            color: var(--purple-light);
-        }
-
+        footer a:hover { color:var(--purple-light); }
         .footer-bottom {
-            color: var(--text-dim);
-            font-size: 0.85rem;
+            color:var(--text-dim);
+            font-size:0.85rem;
         }
-        
-        @media (max-width: 768px) {
+
+        @media (max-width:768px) {
             .back-btn {
-                position: static;
-                display: block;
-                margin: 1rem auto;
-                width: fit-content;
+                position:static;
+                display:block;
+                margin:1rem auto 0;
+                width:fit-content;
             }
-            .main-content { padding: 1rem; }
-            .alerts-title { font-size: 2rem; }
-            .trade-grid { grid-template-columns: repeat(2, 1fr); }
-            .alert-form-row { grid-template-columns: 1fr; }
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-dim);
+            .header {
+                margin-top:1rem;
+                padding-inline:1rem;
+            }
+            .main-content {
+                padding-inline:1rem;
+            }
+            .page-card {
+                padding:1.5rem 1.3rem;
+            }
         }
     </style>
 </head>
+
 <body>
+
     <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
 
     <div class="header">
@@ -477,97 +312,87 @@
     </div>
 
     <div class="main-content">
-        <!-- TradingView Chart - Alternative Implementation -->
-        <div class="tv-container">
-            <div class="tradingview-widget-container">
-                <!-- TradingView Widget BEGIN -->
-                <div class="tradingview-widget-container__widget" id="tradingview_widget"></div>
-                <!-- TradingView Widget END -->
-                
-                <!-- Fallback if TradingView doesn't load -->
-                <div class="chart-fallback" id="chartFallback" style="display: none;">
-                    <h3>📈 Live Chart Unavailable</h3>
-                    <p>View XAUUSD chart on TradingView directly</p>
-                    <a href="https://www.tradingview.com/chart/?symbol=OANDA:XAUUSD" target="_blank" rel="noopener">
-                        Open in TradingView →
-                    </a>
+        <div class="page-card">
+            <div class="page-card-inner">
+
+                <div class="page-header">
+                    <div class="page-header-eyebrow">System Broadcast</div>
+                    <h1>🔔 <span>Alerts</span></h1>
+                    <p>Live market updates, drops, announcements, and important system messages.</p>
                 </div>
+
+                <!-- TradingView -->
+                <div class="tv-container">
+                    <div class="tradingview-widget-container__widget" id="tradingview_widget" style="height:100%; width:100%;"></div>
+
+                    <div class="chart-fallback" id="chartFallback">
+                        <div style="font-size:2rem;">📉</div>
+                        <div>Live chart unavailable</div>
+                        <a href="https://www.tradingview.com/symbols/XAUUSD/" target="_blank" style="
+                            color:var(--purple-light); text-decoration:none; font-size:0.9rem;">
+                            Open on TradingView →
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Telegram info -->
+                <div class="tg-block">
+                    Want instant notifications on your phone? Join the Telegram broadcast:
+                    <a href="https://t.me/leogray2028" target="_blank">@leogray2028</a>
+                </div>
+
+                <!-- Previous Trades Snapshot -->
+                <div class="trades-card">
+                    <div class="trades-header">
+                        <div>
+                            <div class="trades-title">📊 Previous Trades Snapshot</div>
+                            <div class="trades-subtitle">
+                                Quick view of your recent trades – wins, losses, and total pips.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trades-stats">
+                        <div class="trades-stat-item">
+                            <div class="trades-stat-label">Wins</div>
+                            <div class="trades-stat-value" id="tradesWins">0</div>
+                        </div>
+                        <div class="trades-stat-item">
+                            <div class="trades-stat-label">Losses</div>
+                            <div class="trades-stat-value" id="tradesLosses">0</div>
+                        </div>
+                        <div class="trades-stat-item">
+                            <div class="trades-stat-label">Net Pips</div>
+                            <div class="trades-stat-value" id="tradesPips">0</div>
+                        </div>
+                    </div>
+
+                    <table class="trades-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Pair</th>
+                                <th>Direction</th>
+                                <th>Result</th>
+                                <th>Pips</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradesTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align:center;color:var(--text-dim);">
+                                    No trades loaded yet. This card is ready to connect to your trade journal.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Alerts Feed -->
+                <div class="alerts-list" id="alertsContainer">
+                    <div class="alert-card">Loading alerts...</div>
+                </div>
+
             </div>
-        </div>
-
-        <div class="alerts-header">
-            <h1 class="alerts-title">⚡ Arcane Alerts</h1>
-            <p class="alerts-subtitle">Live ritual setups streamed directly from The Archives</p>
-        </div>
-
-        <div id="pushInfo">
-            🔔 Enable notifications in your browser to receive Arcane Alerts instantly
-        </div>
-
-        <div id="newAlertNotification">
-            🔮 New Arcane Alert Posted - Click to View
-        </div>
-
-        <div id="alertForm" class="alert-form">
-            <h3>📝 Post New Arcane Alert</h3>
-            
-            <label>
-                Trading Pair
-                <select id="pairSelect">
-                    <option value="XAUUSD">XAUUSD (Gold)</option>
-                    <option value="XAGUSD">XAGUSD (Silver)</option>
-                    <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-                    <option value="US30">US30 (Dow Jones)</option>
-                    <option value="NAS100">NAS100 (Nasdaq)</option>
-                    <option value="SPX500">SPX500 (S&P 500)</option>
-                    <option value="EURUSD">EURUSD</option>
-                    <option value="GBPUSD">GBPUSD</option>
-                </select>
-            </label>
-
-            <label>
-                Analysis / Commentary
-                <textarea id="alertText" placeholder="Break down the setup, liquidity zones, market narrative..."></textarea>
-            </label>
-
-            <div class="alert-form-row">
-                <label>
-                    Entry Price
-                    <input id="entryInput" type="text" placeholder="e.g., 2350.50">
-                </label>
-                <label>
-                    Stop Loss
-                    <input id="slInput" type="text" placeholder="e.g., 2344.00">
-                </label>
-            </div>
-
-            <div class="alert-form-row">
-                <label>
-                    Take Profit 1
-                    <input id="tp1Input" type="text" placeholder="First target">
-                </label>
-                <label>
-                    Take Profit 2
-                    <input id="tp2Input" type="text" placeholder="Second target">
-                </label>
-            </div>
-
-            <div class="alert-form-row">
-                <label>
-                    Take Profit 3
-                    <input id="tp3Input" type="text" placeholder="Final target">
-                </label>
-                <label>
-                    Chart Image
-                    <input id="alertImage" type="file" accept="image/*">
-                </label>
-            </div>
-
-            <button id="postAlertBtn">Post Arcane Alert</button>
-        </div>
-
-        <div id="alertsFeed" class="alerts-feed">
-            <div class="loading">Loading alerts...</div>
         </div>
     </div>
 
@@ -579,132 +404,38 @@
             <a href="refund-policy.html">Refund Policy</a>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 The Arcane Archives. All rights reserved.</p>
+            © 2024 The Arcane Archives. All rights reserved.
         </div>
     </footer>
 
-    <!-- TradingView Lightweight Charts (No iframe needed!) -->
-<!-- Live XAUUSD Chart -->
-<div id="chart-container" style="
-    width: 100%;
-    height: 400px;
-    margin-top: 20px;
-    border-radius: 12px;
-    background: #050509;
-    border: 1px solid #2f2640;
-    overflow: hidden;
-"></div>
+    <!-- TradingView Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
-<!-- Lightweight Charts library -->
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof TradingView === 'undefined') {
+                const fallback = document.getElementById('chartFallback');
+                if (fallback) fallback.style.display = 'flex';
+                return;
+            }
 
-<script>
-  // 🔑 1) Put your Alpha Vantage API key here
-  // Get a free key from: https://www.alphavantage.co/support/#api-key
-  const ALPHA_VANTAGE_KEY = "YOUR_ALPHA_VANTAGE_KEY";
+            new TradingView.widget({
+                autosize: true,
+                symbol: "OANDA:XAUUSD",
+                interval: "15",
+                timezone: "Etc/UTC",
+                theme: "dark",
+                style: "1",
+                locale: "en",
+                toolbar_bg: "rgba(0,0,0,0.9)",
+                enable_publishing: false,
+                allow_symbol_change: false,
+                container_id: "tradingview_widget"
+            });
+        });
+    </script>
 
-  // ⏱ 2) How often to refresh data (ms)
-  const REFRESH_INTERVAL = 60 * 1000; // 60 seconds
-
-  async function initXauusdChart() {
-    const container = document.getElementById("chart-container");
-    if (!container || !window.LightweightCharts) {
-      console.error("Chart container or LightweightCharts missing");
-      return;
-    }
-
-    // Create chart
-    const chart = LightweightCharts.createChart(container, {
-      width: container.clientWidth,
-      height: 400,
-      layout: {
-        background: { color: "#050509" },
-        textColor: "#d1d1ff",
-      },
-      grid: {
-        vertLines: { color: "#151329" },
-        horzLines: { color: "#151329" },
-      },
-      timeScale: {
-        borderColor: "#2f2640",
-      },
-      rightPriceScale: {
-        borderColor: "#2f2640",
-      },
-      crosshair: {
-        mode: LightweightCharts.CrosshairMode.Normal,
-      },
-    });
-
-    const candleSeries = chart.addCandlestickSeries({
-      upColor: "#00ff99",
-      downColor: "#ff4976",
-      borderUpColor: "#00ff99",
-      borderDownColor: "#ff4976",
-      wickUpColor: "#00ff99",
-      wickDownColor: "#ff4976",
-    });
-
-    // Resize with window
-    window.addEventListener("resize", () => {
-      chart.applyOptions({ width: container.clientWidth });
-    });
-
-    async function loadXauusdData() {
-      try {
-        if (!ALPHA_VANTAGE_KEY || ALPHA_VANTAGE_KEY === "VKQD6FRE0R3GKW5Y") {
-          console.warn("No Alpha Vantage API key set for live data");
-          return;
-        }
-
-        const url =
-          "https://www.alphavantage.co/query" +
-          "?function=FX_INTRADAY" +
-          "&from_symbol=XAU" +
-          "&to_symbol=USD" +
-          "&interval=5min" +
-          "&outputsize=compact" +
-          "&apikey=" +
-          ALPHA_VANTAGE_KEY;
-
-        const res = await fetch(url);
-        const json = await res.json();
-
-        const seriesKey = "Time Series FX (5min)";
-        const seriesData = json[seriesKey];
-
-        if (!seriesData) {
-          console.error("Unexpected Alpha Vantage response:", json);
-          return;
-        }
-
-        const candles = Object.entries(seriesData).map(([time, values]) => ({
-          time: Math.floor(new Date(time).getTime() / 1000),
-          open: parseFloat(values["1. open"]),
-          high: parseFloat(values["2. high"]),
-          low: parseFloat(values["3. low"]),
-          close: parseFloat(values["4. close"]),
-        }));
-
-        // Oldest → newest
-        candles.sort((a, b) => a.time - b.time);
-
-        candleSeries.setData(candles);
-      } catch (err) {
-        console.error("Failed to load XAUUSD data:", err);
-      }
-    }
-
-    // Initial load + refresh loop
-    await loadXauusdData();
-    setInterval(loadXauusdData, REFRESH_INTERVAL);
-  }
-
-  document.addEventListener("DOMContentLoaded", initXauusdChart);
-</script>
-
-<!-- Alerts logic -->
-<script type="module" src="alerts.js"></script>
-
-  </body>
+    <!-- Alerts Logic -->
+    <script type="module" src="alerts.js"></script>
+</body>
 </html>
