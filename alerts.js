@@ -29,8 +29,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js";
 
 // Configuration
-const ADMIN_EMAIL = "leogray2025mapgmail.com"; // Change this to your admin email
-const VAPID_KEY = "BD2Db4LFDMB4ynZPK0TmXHzPf2cG-uhHk9zaQCVejBVIo7S-StCqqUn6DwEx-hfHo2MlJnbLqLcTNFZ8_4PDKvE";
+// 👑 Admin email – only this account sees the "Post Arcane Alert" form
+const ADMIN_EMAIL = "leogray15@gmail.com";
+
+const VAPID_KEY =
+  "BD2Db4LFDMB4ynZPK0TmXHzPf2cG-uhHk9zaQCVejBVIo7S-StCqqUn6DwEx-hfHo2MlJnbLqLcTNFZ8_4PDKvE";
 
 // Global state
 let currentUser = null;
@@ -89,26 +92,34 @@ protectPage({
 });
 
 // ==========================================
-// PUSH NOTIFICATIONS - FIXED
+// PUSH NOTIFICATIONS
 // ==========================================
 async function initPushNotifications() {
   const pushInfo = document.getElementById("pushInfo");
 
   try {
     if (!("serviceWorker" in navigator) || !("Notification" in window)) {
-      updatePushInfo("⚠️ Push notifications not supported in this browser", "error");
+      updatePushInfo(
+        "⚠️ Push notifications not supported in this browser",
+        "error"
+      );
       return;
     }
 
     console.log("📱 Registering service worker...");
-    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    const registration = await navigator.serviceWorker.register(
+      "/firebase-messaging-sw.js"
+    );
     console.log("✅ Service worker registered");
 
     const permission = await Notification.requestPermission();
     console.log("🔔 Notification permission:", permission);
 
     if (permission !== "granted") {
-      updatePushInfo("🔕 Notifications blocked. Enable them in browser settings for instant alerts", "error");
+      updatePushInfo(
+        "🔕 Notifications blocked. Enable them in browser settings for instant alerts",
+        "error"
+      );
       return;
     }
 
@@ -119,7 +130,10 @@ async function initPushNotifications() {
 
     if (!token) {
       console.warn("⚠️ No FCM token received");
-      updatePushInfo("⚠️ Could not enable notifications. Alerts will still appear on this page", "error");
+      updatePushInfo(
+        "⚠️ Could not enable notifications. Alerts will still appear on this page",
+        "error"
+      );
       return;
     }
 
@@ -127,7 +141,10 @@ async function initPushNotifications() {
 
     await saveUserToken(token);
 
-    updatePushInfo("✅ Notifications enabled! You'll receive instant Arcane Alerts", "enabled");
+    updatePushInfo(
+      "✅ Notifications enabled! You'll receive instant Arcane Alerts",
+      "enabled"
+    );
 
     onMessage(messaging, (payload) => {
       console.log("📬 Foreground message:", payload);
@@ -135,7 +152,10 @@ async function initPushNotifications() {
     });
   } catch (error) {
     console.error("❌ Push notification error:", error);
-    updatePushInfo("⚠️ Could not enable notifications. Alerts will still appear on this page", "error");
+    updatePushInfo(
+      "⚠️ Could not enable notifications. Alerts will still appear on this page",
+      "error"
+    );
   }
 }
 
@@ -164,7 +184,7 @@ function updatePushInfo(message, status) {
 }
 
 // ==========================================
-// LOAD & DISPLAY ALERTS - FIXED REACTIONS
+// LOAD & DISPLAY ALERTS
 // ==========================================
 function loadAlerts() {
   const feed = document.getElementById("alertsFeed");
@@ -202,7 +222,7 @@ function loadAlerts() {
       if (snapshot.empty) {
         feed.innerHTML = `
           <div style="text-align: center; padding: 3rem; color: #a3a3a3;">
-            <div style="font-size: 2rem; margin-bottom: 1rem;">🔭</div>
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
             <p>No alerts yet. Check back soon!</p>
           </div>
         `;
@@ -239,7 +259,7 @@ function loadAlerts() {
 }
 
 // ==========================================
-// CREATE ALERT CARD UI - WITH TRADING PAIR
+// CREATE ALERT CARD UI
 // ==========================================
 function createAlertCard(alertId, data) {
   const div = document.createElement("div");
@@ -323,7 +343,7 @@ function createAlertCard(alertId, data) {
 }
 
 // ==========================================
-// HANDLE REACTIONS - FIXED
+// HANDLE REACTIONS
 // ==========================================
 async function handleReaction(event) {
   if (!currentUser) {
@@ -342,17 +362,13 @@ async function handleReaction(event) {
     const alertRef = doc(db, "alerts", alertId);
     const userId = currentUser.uid;
 
-    // Build the update object
     const updates = {};
 
     if (isActive) {
-      // Remove reaction
       updates[`reactions.${reactionType}`] = arrayRemove(userId);
     } else {
-      // Add reaction and remove from others
       updates[`reactions.${reactionType}`] = arrayUnion(userId);
-      
-      // Remove from other reaction types
+
       ["fire", "bear", "eyes"].forEach((type) => {
         if (type !== reactionType) {
           updates[`reactions.${type}`] = arrayRemove(userId);
@@ -362,7 +378,6 @@ async function handleReaction(event) {
 
     await updateDoc(alertRef, updates);
     console.log("✅ Reaction updated successfully");
-
   } catch (error) {
     console.error("❌ Error updating reaction:", error);
     alert("Error updating reaction. Please try again.");
@@ -374,7 +389,7 @@ async function handleReaction(event) {
 }
 
 // ==========================================
-// ADMIN: POST NEW ALERT WITH PAIR SELECTION
+// ADMIN: POST NEW ALERT
 // ==========================================
 function setupAdminForm() {
   const btn = document.getElementById("postAlertBtn");
@@ -440,14 +455,16 @@ function setupAdminForm() {
       const docRef = await addDoc(collection(db, "alerts"), alertData);
       console.log("✅ Alert posted with ID:", docRef.id);
 
-      // Send push notifications via Cloud Function
+      // Try sending push notifications (optional Cloud Function)
       try {
         await sendPushNotifications(pair, text, entry);
       } catch (notifError) {
-        console.error("⚠️ Push notification error (alert still posted):", notifError);
+        console.error(
+          "⚠️ Push notification error (alert still posted):",
+          notifError
+        );
       }
 
-      // Clear form
       pairEl.value = "XAUUSD";
       textEl.value = "";
       entryEl.value = "";
@@ -472,25 +489,25 @@ function setupAdminForm() {
 }
 
 // ==========================================
-// SEND PUSH NOTIFICATIONS VIA CLOUD FUNCTION
+// SEND PUSH NOTIFICATIONS VIA NETLIFY FUNCTION (optional)
 // ==========================================
 async function sendPushNotifications(pair, text, entry) {
   try {
-    const cloudFunctionUrl = "/.netlify/functions/send-notification"; // You'll need to create this
-    
-    const body = text || `New ${pair} setup - Entry: ${entry}`;
-    
+    const cloudFunctionUrl = "/.netlify/functions/send-notification"; // optional
+    const bodyText = text || `New ${pair} setup - Entry: ${entry}`;
+
     const response = await fetch(cloudFunctionUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: `⚡ ARCANE ALERT - ${pair}`,
-        body: body.substring(0, 100) + (body.length > 100 ? "..." : "")
+        body:
+          bodyText.substring(0, 100) + (bodyText.length > 100 ? "..." : "")
       })
     });
 
     if (response.ok) {
-      console.log("✅ Push notifications sent");
+      console.log("✅ Push notifications request sent");
     } else {
       console.warn("⚠️ Push notification function returned error");
     }
@@ -534,6 +551,7 @@ function formatTimeAgo(date) {
   return date.toLocaleDateString();
 }
 
+// Debug helper
 window.arcaneAlerts = {
   getCurrentUser: () => currentUser,
   isAdmin: () => isAdmin,

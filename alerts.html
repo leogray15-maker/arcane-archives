@@ -6,8 +6,6 @@
     <title>Arcane Alerts | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     
-    <!-- CRITICAL: Removed CSP meta tag - Let server handle it or use permissive policy -->
-    
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -30,7 +28,6 @@
             min-height: 100vh;
         }
         
-        /* Simple Header */
         .header {
             padding: 2rem;
             text-align: center;
@@ -52,7 +49,6 @@
         
         .logo img { height: 50px; width: auto; }
         
-        /* Back Button */
         .back-btn {
             position: fixed;
             top: 2rem;
@@ -79,6 +75,7 @@
             margin: 0 auto;
         }
         
+        /* TradingView Chart Container - FIXED */
         .tv-container {
             background: rgba(5, 5, 5, 0.5);
             border: 1px solid var(--border-color);
@@ -93,6 +90,48 @@
             height: 500px;
             border-radius: 10px;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* Fallback if TradingView fails */
+        .chart-fallback {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(0, 0, 0, 0.5));
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .chart-fallback h3 {
+            color: var(--purple-light);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-fallback p {
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-fallback a {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .chart-fallback a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
         }
         
         .alerts-header {
@@ -375,7 +414,6 @@
             font-weight: 600;
         }
 
-        /* Footer */
         footer {
             background: rgba(5, 5, 5, 0.95);
             padding: 2rem;
@@ -439,9 +477,21 @@
     </div>
 
     <div class="main-content">
+        <!-- TradingView Chart - Alternative Implementation -->
         <div class="tv-container">
             <div class="tradingview-widget-container">
-                <div id="tradingview_chart"></div>
+                <!-- TradingView Widget BEGIN -->
+                <div class="tradingview-widget-container__widget" id="tradingview_widget"></div>
+                <!-- TradingView Widget END -->
+                
+                <!-- Fallback if TradingView doesn't load -->
+                <div class="chart-fallback" id="chartFallback" style="display: none;">
+                    <h3>📈 Live Chart Unavailable</h3>
+                    <p>View XAUUSD chart on TradingView directly</p>
+                    <a href="https://www.tradingview.com/chart/?symbol=OANDA:XAUUSD" target="_blank" rel="noopener">
+                        Open in TradingView →
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -533,37 +583,128 @@
         </div>
     </footer>
 
-    <!-- TradingView Script - Load without CSP restrictions -->
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-      document.addEventListener("DOMContentLoaded", function () {
-        try {
-          if (typeof TradingView !== 'undefined' && document.getElementById("tradingview_chart")) {
-            new TradingView.widget({
-              "width": "100%",
-              "height": 500,
-              "symbol": "OANDA:XAUUSD",
-              "interval": "15",
-              "timezone": "Etc/UTC",
-              "theme": "dark",
-              "style": "1",
-              "locale": "en",
-              "toolbar_bg": "#0a0a0a",
-              "enable_publishing": false,
-              "hide_side_toolbar": false,
-              "allow_symbol_change": true,
-              "container_id": "tradingview_chart"
-            });
-            console.log("✅ TradingView loaded successfully");
-          } else {
-            console.error("❌ TradingView not available");
-          }
-        } catch (error) {
-          console.error("❌ TradingView error:", error);
-        }
-      });
-    </script>
+    <!-- TradingView Lightweight Charts (No iframe needed!) -->
+<!-- Live XAUUSD Chart -->
+<div id="chart-container" style="
+    width: 100%;
+    height: 400px;
+    margin-top: 20px;
+    border-radius: 12px;
+    background: #050509;
+    border: 1px solid #2f2640;
+    overflow: hidden;
+"></div>
 
-    <script type="module" src="alerts.js"></script>
+<!-- Lightweight Charts library -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+<script>
+  // 🔑 1) Put your Alpha Vantage API key here
+  // Get a free key from: https://www.alphavantage.co/support/#api-key
+  const ALPHA_VANTAGE_KEY = "YOUR_ALPHA_VANTAGE_KEY";
+
+  // ⏱ 2) How often to refresh data (ms)
+  const REFRESH_INTERVAL = 60 * 1000; // 60 seconds
+
+  async function initXauusdChart() {
+    const container = document.getElementById("chart-container");
+    if (!container || !window.LightweightCharts) {
+      console.error("Chart container or LightweightCharts missing");
+      return;
+    }
+
+    // Create chart
+    const chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: 400,
+      layout: {
+        background: { color: "#050509" },
+        textColor: "#d1d1ff",
+      },
+      grid: {
+        vertLines: { color: "#151329" },
+        horzLines: { color: "#151329" },
+      },
+      timeScale: {
+        borderColor: "#2f2640",
+      },
+      rightPriceScale: {
+        borderColor: "#2f2640",
+      },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+      },
+    });
+
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: "#00ff99",
+      downColor: "#ff4976",
+      borderUpColor: "#00ff99",
+      borderDownColor: "#ff4976",
+      wickUpColor: "#00ff99",
+      wickDownColor: "#ff4976",
+    });
+
+    // Resize with window
+    window.addEventListener("resize", () => {
+      chart.applyOptions({ width: container.clientWidth });
+    });
+
+    async function loadXauusdData() {
+      try {
+        if (!ALPHA_VANTAGE_KEY || ALPHA_VANTAGE_KEY === "VKQD6FRE0R3GKW5Y") {
+          console.warn("No Alpha Vantage API key set for live data");
+          return;
+        }
+
+        const url =
+          "https://www.alphavantage.co/query" +
+          "?function=FX_INTRADAY" +
+          "&from_symbol=XAU" +
+          "&to_symbol=USD" +
+          "&interval=5min" +
+          "&outputsize=compact" +
+          "&apikey=" +
+          ALPHA_VANTAGE_KEY;
+
+        const res = await fetch(url);
+        const json = await res.json();
+
+        const seriesKey = "Time Series FX (5min)";
+        const seriesData = json[seriesKey];
+
+        if (!seriesData) {
+          console.error("Unexpected Alpha Vantage response:", json);
+          return;
+        }
+
+        const candles = Object.entries(seriesData).map(([time, values]) => ({
+          time: Math.floor(new Date(time).getTime() / 1000),
+          open: parseFloat(values["1. open"]),
+          high: parseFloat(values["2. high"]),
+          low: parseFloat(values["3. low"]),
+          close: parseFloat(values["4. close"]),
+        }));
+
+        // Oldest → newest
+        candles.sort((a, b) => a.time - b.time);
+
+        candleSeries.setData(candles);
+      } catch (err) {
+        console.error("Failed to load XAUUSD data:", err);
+      }
+    }
+
+    // Initial load + refresh loop
+    await loadXauusdData();
+    setInterval(loadXauusdData, REFRESH_INTERVAL);
+  }
+
+  document.addEventListener("DOMContentLoaded", initXauusdChart);
+</script>
+
+<!-- Alerts logic -->
+<script type="module" src="alerts.js"></script>
+
   </body>
 </html>

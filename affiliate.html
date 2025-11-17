@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Dashboard | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --green: #22c55e;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+            --border-color: rgba(147, 51, 234, 0.2);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-container {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo img { height: 40px; width: auto; }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: var(--bg-darker);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+        
+        .sidebar-menu { list-style: none; }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--purple-light);
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            border-left: 3px solid var(--purple);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 3rem;
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Dashboard Header */
+        .dashboard-header {
+            margin-bottom: 3rem;
+        }
+        
+        .dashboard-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .dashboard-subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+        
+        /* Earnings Overview */
+        .earnings-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .earnings-card {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(251, 191, 36, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .earnings-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+        }
+        
+        .earnings-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .earnings-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .earnings-change {
+            font-size: 0.9rem;
+            color: var(--green);
+        }
+        
+        .earnings-change.negative {
+            color: #ef4444;
+        }
+        
+        /* Commission Structure */
+        .commission-structure {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .commission-structure h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+        
+        .commission-tiers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .tier-card {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .tier-card.active {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+        
+        .tier-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tier-name {
+            font-weight: 700;
+            color: var(--purple-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .tier-rate {
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .tier-requirement {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+        
+        /* Referrals Table */
+        .referrals-table {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            overflow-x: auto;
+        }
+        
+        .referrals-table h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: rgba(147, 51, 234, 0.1);
+            padding: 1rem;
+            text-align: left;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+        }
+        
+        td {
+            padding: 1rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.1);
+        }
+        
+        tr:hover {
+            background: rgba(147, 51, 234, 0.05);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+        
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--gold);
+        }
+        
+        /* Payout Section */
+        .payout-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .payout-history {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        
+        .payout-history h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+        
+        .payout-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+        }
+        
+        .payout-item:last-child {
+            border-bottom: none;
+        }
+        
+        .request-payout {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(147, 51, 234, 0.05));
+            border: 1px solid var(--gold);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            height: fit-content;
+        }
+        
+        .available-balance {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        
+        .payout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .payout-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.4);
+        }
+        
+        .payout-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .payout-minimum {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+        
+        /* Performance Chart */
+        .performance-chart {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Promotional Materials */
+        .promo-materials {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        
+        .promo-materials h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+        
+        .promo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .promo-card {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .promo-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--purple);
+        }
+        
+        .promo-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { left: -250px; }
+            .main-content { margin-left: 0; padding: 2rem 1rem; }
+            .payout-section { grid-template-columns: 1fr; }
+            .commission-tiers { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <a href="dashboard.html" class="logo">
+                <img src="ArcaneA.png" alt="Logo">
+                THE ARCANE ARCHIVES
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="courses.html">📚 All Courses</a></li>
+            <li><a href="community.html">💬 Community</a></li>
+            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="alerts.html">⚡ Arcane Alerts</a></li>
+            <li><a href="wins.html">🏆 Wins Board</a></li>
+            <li><a href="referral.html">🎁 Referrals</a></li>
+            <li><a href="affiliate.html" class="active">💰 Affiliate Dashboard</a></li>
+            <li><a href="journey.html">🌟 Leo's Journey</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">💰 Affiliate Dashboard</h1>
+            <p class="dashboard-subtitle">Track your commissions and grow your empire</p>
+        </div>
+        
+        <!-- Earnings Overview -->
+        <div class="earnings-overview">
+            <div class="earnings-card">
+                <div class="earnings-label">Total Earnings</div>
+                <div class="earnings-amount" id="totalEarnings">£0</div>
+                <div class="earnings-change">+0% this month</div>
+            </div>
+            
+            <div class="earnings-card">
+                <div class="earnings-label">This Month</div>
+                <div class="earnings-amount" id="monthlyEarnings">£0</div>
+                <div class="earnings-change">+0% vs last month</div>
+            </div>
+            
+            <div class="earnings-card">
+                <div class="earnings-label">Active Referrals</div>
+                <div class="earnings-amount" id="activeCount">0</div>
+                <div class="earnings-change">0 new this week</div>
+            </div>
+            
+            <div class="earnings-card">
+                <div class="earnings-label">Conversion Rate</div>
+                <div class="earnings-amount" id="conversionRate">0%</div>
+                <div class="earnings-change">Industry avg: 2-5%</div>
+            </div>
+        </div>
+        
+        <!-- Commission Structure -->
+        <div class="commission-structure">
+            <h2>📊 Commission Structure</h2>
+            <div class="commission-tiers">
+                <div class="tier-card" id="tier-bronze">
+                    <div class="tier-icon">🥉</div>
+                    <div class="tier-name">Bronze</div>
+                    <div class="tier-rate">30%</div>
+                    <div class="tier-requirement">0-5 sales</div>
+                </div>
+                
+                <div class="tier-card" id="tier-silver">
+                    <div class="tier-icon">🥈</div>
+                    <div class="tier-name">Silver</div>
+                    <div class="tier-rate">40%</div>
+                    <div class="tier-requirement">6-20 sales</div>
+                </div>
+                
+                <div class="tier-card" id="tier-gold">
+                    <div class="tier-icon">🥇</div>
+                    <div class="tier-name">Gold</div>
+                    <div class="tier-rate">50%</div>
+                    <div class="tier-requirement">21-50 sales</div>
+                </div>
+                
+                <div class="tier-card" id="tier-diamond">
+                    <div class="tier-icon">💎</div>
+                    <div class="tier-name">Diamond</div>
+                    <div class="tier-rate">60%</div>
+                    <div class="tier-requirement">50+ sales</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Referrals -->
+        <div class="referrals-table">
+            <h2>📈 Recent Referrals</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Member</th>
+                        <th>Status</th>
+                        <th>Commission</th>
+                        <th>Lifetime Value</th>
+                    </tr>
+                </thead>
+                <tbody id="referralsTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-dim);">
+                            No referrals yet. Share your link to get started!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Payout Section -->
+        <div class="payout-section">
+            <div class="payout-history">
+                <h2>💸 Payout History</h2>
+                <div id="payoutHistory">
+                    <div class="payout-item">
+                        <div>
+                            <div style="font-weight: 600;">No payouts yet</div>
+                            <div style="color: var(--text-dim); font-size: 0.9rem;">
+                                Earn commissions to request payouts
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="request-payout">
+                <h3 style="margin-bottom: 1rem; color: var(--purple-light);">Available Balance</h3>
+                <div class="available-balance" id="availableBalance">£0.00</div>
+                <button class="payout-btn" id="requestPayoutBtn" disabled>
+                    Request Payout
+                </button>
+                <div class="payout-minimum">Minimum payout: £100</div>
+            </div>
+        </div>
+        
+        <!-- Performance Chart -->
+        <div class="performance-chart">
+            <h2 style="margin-bottom: 1.5rem; color: var(--purple-light);">📊 Performance Overview</h2>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Promotional Materials -->
+        <div class="promo-materials">
+            <h2>🎨 Promotional Materials</h2>
+            <div class="promo-grid">
+                <div class="promo-card" onclick="downloadPromo('banners')">
+                    <div class="promo-icon">🖼️</div>
+                    <div style="font-weight: 600;">Banner Pack</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem;">Social media banners</div>
+                </div>
+                
+                <div class="promo-card" onclick="downloadPromo('emails')">
+                    <div class="promo-icon">📧</div>
+                    <div style="font-weight: 600;">Email Templates</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem;">Pre-written sequences</div>
+                </div>
+                
+                <div class="promo-card" onclick="downloadPromo('videos')">
+                    <div class="promo-icon">🎬</div>
+                    <div style="font-weight: 600;">Video Assets</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem;">Promo videos & reels</div>
+                </div>
+                
+                <div class="promo-card" onclick="downloadPromo('copy')">
+                    <div class="promo-icon">✍️</div>
+                    <div style="font-weight: 600;">Ad Copy</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem;">High-converting scripts</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Chart.js for performance chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script type="module">
+        import { protectPage, auth, db } from './auth-guard.js';
+        import { 
+            doc, 
+            getDoc,
+            collection, 
+            query, 
+            where, 
+            onSnapshot,
+            orderBy,
+            serverTimestamp,
+            addDoc
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        
+        let currentUser = null;
+        let affiliateData = {
+            totalEarnings: 0,
+            monthlyEarnings: 0,
+            activeReferrals: 0,
+            totalReferrals: 0,
+            availableBalance: 0,
+            currentTier: 'bronze'
+        };
+        
+        protectPage({
+            onSuccess: async (user, userData) => {
+                currentUser = user;
+                await initializeAffiliateDashboard(user, userData);
+            }
+        });
+        
+        async function initializeAffiliateDashboard(user, userData) {
+            // Load affiliate stats
+            loadAffiliateStats(user.uid);
+            
+            // Load referrals
+            loadReferrals(user.uid);
+            
+            // Load payout history
+            loadPayoutHistory(user.uid);
+            
+            // Initialize chart
+            initPerformanceChart();
+            
+            // Setup payout button
+            setupPayoutButton();
+        }
+        
+        function loadAffiliateStats(userId) {
+            // Listen for referrals and calculate commissions
+            const q = query(
+                collection(db, 'Users'),
+                where('referredBy', '==', userId)
+            );
+            
+            onSnapshot(q, (snapshot) => {
+                let totalEarnings = 0;
+                let monthlyEarnings = 0;
+                let activeCount = 0;
+                
+                const currentMonth = new Date().getMonth();
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.subscriptionStatus === 'active') {
+                        activeCount++;
+                        // Calculate commission based on tier
+                        const commission = calculateCommission(snapshot.size);
+                        totalEarnings += commission;
+                        
+                        // Check if joined this month
+                        if (data.createdAt?.toDate && data.createdAt.toDate().getMonth() === currentMonth) {
+                            monthlyEarnings += commission;
+                        }
+                    }
+                });
+                
+                // Update UI
+                document.getElementById('totalEarnings').textContent = `£${totalEarnings.toFixed(2)}`;
+                document.getElementById('monthlyEarnings').textContent = `£${monthlyEarnings.toFixed(2)}`;
+                document.getElementById('activeCount').textContent = activeCount;
+                
+                const conversionRate = snapshot.size > 0 ? ((activeCount / snapshot.size) * 100).toFixed(1) : 0;
+                document.getElementById('conversionRate').textContent = `${conversionRate}%`;
+                
+                // Update available balance
+                affiliateData.availableBalance = totalEarnings; // Minus paid amounts
+                document.getElementById('availableBalance').textContent = `£${affiliateData.availableBalance.toFixed(2)}`;
+                
+                // Enable payout button if balance >= 100
+                const payoutBtn = document.getElementById('requestPayoutBtn');
+                if (affiliateData.availableBalance >= 100) {
+                    payoutBtn.disabled = false;
+                }
+                
+                // Update tier
+                updateCommissionTier(snapshot.size);
+            });
+        }
+        
+        function calculateCommission(totalSales) {
+            const basePrice = 128; // £128 per month
+            let rate = 0.3; // 30% default
+            
+            if (totalSales >= 50) rate = 0.6;
+            else if (totalSales >= 21) rate = 0.5;
+            else if (totalSales >= 6) rate = 0.4;
+            
+            return basePrice * rate;
+        }
+        
+        function updateCommissionTier(totalSales) {
+            // Remove active class from all tiers
+            document.querySelectorAll('.tier-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Add active class to current tier
+            if (totalSales >= 50) {
+                document.getElementById('tier-diamond').classList.add('active');
+            } else if (totalSales >= 21) {
+                document.getElementById('tier-gold').classList.add('active');
+            } else if (totalSales >= 6) {
+                document.getElementById('tier-silver').classList.add('active');
+            } else {
+                document.getElementById('tier-bronze').classList.add('active');
+            }
+        }
+        
+        function loadReferrals(userId) {
+            const q = query(
+                collection(db, 'Users'),
+                where('referredBy', '==', userId),
+                orderBy('createdAt', 'desc')
+            );
+            
+            onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('referralsTableBody');
+                
+                if (snapshot.empty) {
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = tbody.insertRow();
+                    
+                    const date = data.createdAt?.toDate ? 
+                        data.createdAt.toDate().toLocaleDateString() : 'Recently';
+                    
+                    const status = data.subscriptionStatus === 'active' ? 
+                        '<span class="status-badge status-active">Active</span>' : 
+                        '<span class="status-badge status-pending">Pending</span>';
+                    
+                    const commission = data.subscriptionStatus === 'active' ? 
+                        `£${calculateCommission(snapshot.size).toFixed(2)}` : '£0.00';
+                    
+                    const ltv = data.subscriptionStatus === 'active' ? 
+                        `£${(128 * 3).toFixed(2)}` : '-'; // Assume 3 month average LTV
+                    
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${data.Username || 'Anonymous'}</td>
+                        <td>${status}</td>
+                        <td>${commission}</td>
+                        <td>${ltv}</td>
+                    `;
+                });
+            });
+        }
+        
+        function loadPayoutHistory(userId) {
+            const q = query(
+                collection(db, 'payouts'),
+                where('userId', '==', userId),
+                orderBy('createdAt', 'desc')
+            );
+            
+            onSnapshot(q, (snapshot) => {
+                const historyEl = document.getElementById('payoutHistory');
+                
+                if (snapshot.empty) {
+                    return;
+                }
+                
+                historyEl.innerHTML = '';
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'payout-item';
+                    
+                    const date = data.createdAt?.toDate ? 
+                        data.createdAt.toDate().toLocaleDateString() : 'Recently';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <div style="font-weight: 600;">£${data.amount.toFixed(2)}</div>
+                            <div style="color: var(--text-dim); font-size: 0.9rem;">${date}</div>
+                        </div>
+                        <div class="status-badge status-${data.status}">
+                            ${data.status === 'paid' ? '✅ Paid' : '⏳ Processing'}
+                        </div>
+                    `;
+                    
+                    historyEl.appendChild(item);
+                });
+            });
+        }
+        
+        function initPerformanceChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Earnings (£)',
+                        data: [0, 0, 0, 0, 0, 0], // Would be populated with real data
+                        borderColor: '#9333ea',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(147, 51, 234, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(147, 51, 234, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function setupPayoutButton() {
+            document.getElementById('requestPayoutBtn').addEventListener('click', async () => {
+                if (affiliateData.availableBalance < 100) {
+                    alert('Minimum payout amount is £100');
+                    return;
+                }
+                
+                if (confirm(`Request payout of £${affiliateData.availableBalance.toFixed(2)}?`)) {
+                    try {
+                        await addDoc(collection(db, 'payouts'), {
+                            userId: currentUser.uid,
+                            amount: affiliateData.availableBalance,
+                            status: 'pending',
+                            createdAt: serverTimestamp()
+                        });
+                        
+                        alert('Payout request submitted! You will receive payment within 3-5 business days.');
+                    } catch (error) {
+                        console.error('Error requesting payout:', error);
+                        alert('Error submitting payout request. Please try again.');
+                    }
+                }
+            });
+        }
+        
+        window.downloadPromo = function(type) {
+            alert(`Downloading ${type} pack... (This would download actual promotional materials)`);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referral System | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --green: #22c55e;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+            --border-color: rgba(147, 51, 234, 0.2);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-container {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo img { height: 40px; width: auto; }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: var(--bg-darker);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+        
+        .sidebar-menu { list-style: none; }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--purple-light);
+        }
+        
+        .sidebar-menu a.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            border-left: 3px solid var(--purple);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 3rem;
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Hero Section */
+        .referral-hero {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 3rem;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(251, 191, 36, 0.05));
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .referral-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .referral-hero p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+        }
+        
+        /* Referral Link Box */
+        .referral-link-box {
+            background: rgba(147, 51, 234, 0.05);
+            border: 2px solid var(--purple);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+        }
+        
+        .referral-link-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+        
+        .referral-link-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .referral-link-input input {
+            flex: 1;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--purple-light);
+            font-size: 1.1rem;
+            font-family: monospace;
+        }
+        
+        .copy-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+        }
+        
+        .copy-btn.success {
+            background: linear-gradient(135deg, var(--green), #16a34a);
+        }
+        
+        /* Share Buttons */
+        .share-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .share-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .share-btn:hover {
+            background: rgba(147, 51, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Rewards Grid */
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .reward-card {
+            background: rgba(147, 51, 234, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .reward-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--purple);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+        }
+        
+        .reward-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .reward-title {
+            font-size: 1.3rem;
+            color: var(--purple-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .reward-desc {
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        
+        .reward-value {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            color: var(--bg-dark);
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        /* Referrals List */
+        .referrals-list {
+            background: rgba(5, 5, 5, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        
+        .referrals-list h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+        
+        .referral-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+        }
+        
+        .referral-item:last-child {
+            border-bottom: none;
+        }
+        
+        .referral-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .referral-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .referral-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+        
+        .status-pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--gold);
+        }
+        
+        /* Leaderboard */
+        .leaderboard {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.05), rgba(251, 191, 36, 0.02));
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .leaderboard h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(147, 51, 234, 0.05);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            background: rgba(147, 51, 234, 0.1);
+        }
+        
+        .rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .rank-1 { color: var(--gold); }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { left: -250px; }
+            .main-content { margin-left: 0; padding: 2rem 1rem; }
+            .referral-hero h1 { font-size: 2rem; }
+            .rewards-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <a href="dashboard.html" class="logo">
+                <img src="ArcaneA.png" alt="Logo">
+                THE ARCANE ARCHIVES
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="courses.html">📚 All Courses</a></li>
+            <li><a href="community.html">💬 Community</a></li>
+            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
+            <li><a href="alerts.html">⚡ Arcane Alerts</a></li>
+            <li><a href="wins.html">🏆 Wins Board</a></li>
+            <li><a href="referral.html" class="active">🎁 Referrals</a></li>
+            <li><a href="affiliate.html">💰 Affiliate Dashboard</a></li>
+            <li><a href="journey.html">🌟 Leo's Journey</a></li>
+            <li><a href="settings.html">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <div class="referral-hero">
+            <h1>🎁 Share The Knowledge</h1>
+            <p>Invite your brothers to The Arcane Archives and earn exclusive rewards</p>
+        </div>
+        
+        <!-- Referral Link -->
+        <div class="referral-link-box">
+            <div class="referral-link-label">Your Unique Referral Link</div>
+            <div class="referral-link-input">
+                <input type="text" id="referralLink" readonly value="Loading...">
+                <button class="copy-btn" id="copyBtn" onclick="copyReferralLink()">Copy Link</button>
+            </div>
+            
+            <div class="share-buttons">
+                <a href="#" class="share-btn" id="shareTwitter">
+                    🐦 Share on Twitter
+                </a>
+                <a href="#" class="share-btn" id="shareWhatsapp">
+                    📱 Share on WhatsApp
+                </a>
+                <a href="#" class="share-btn" id="shareTelegram">
+                    ✈️ Share on Telegram
+                </a>
+                <a href="#" class="share-btn" id="shareEmail">
+                    📧 Share via Email
+                </a>
+            </div>
+        </div>
+        
+        <!-- Rewards -->
+        <h2 style="font-size: 2rem; margin-bottom: 2rem; text-align: center;">
+            🏆 Referral Rewards
+        </h2>
+        
+        <div class="rewards-grid">
+            <div class="reward-card">
+                <div class="reward-icon">⚡</div>
+                <div class="reward-title">XP Multiplier</div>
+                <div class="reward-desc">Get 2X XP for 30 days when your referral joins</div>
+                <div class="reward-value">Per Referral</div>
+            </div>
+            
+            <div class="reward-card">
+                <div class="reward-icon">🎖️</div>
+                <div class="reward-title">Exclusive Badge</div>
+                <div class="reward-desc">Unlock the "Brotherhood Builder" badge</div>
+                <div class="reward-value">5 Referrals</div>
+            </div>
+            
+            <div class="reward-card">
+                <div class="reward-icon">🎬</div>
+                <div class="reward-title">Private Content</div>
+                <div class="reward-desc">Access to exclusive Leo Gray masterclass</div>
+                <div class="reward-value">10 Referrals</div>
+            </div>
+            
+            <div class="reward-card">
+                <div class="reward-icon">💎</div>
+                <div class="reward-title">Free Month</div>
+                <div class="reward-desc">Get a full month of membership free</div>
+                <div class="reward-value">20 Referrals</div>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalReferrals">0</div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeReferrals">0</div>
+                <div class="stat-label">Active Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingReferrals">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalXP">0</div>
+                <div class="stat-label">Bonus XP Earned</div>
+            </div>
+        </div>
+        
+        <!-- Your Referrals -->
+        <div class="referrals-list">
+            <h2>👥 Your Referrals</h2>
+            <div id="referralsList">
+                <div class="referral-item">
+                    <div class="referral-info">
+                        <div class="referral-avatar">?</div>
+                        <div>
+                            <div style="font-weight: 600;">No referrals yet</div>
+                            <div style="color: var(--text-dim); font-size: 0.9rem;">Share your link to get started</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <h2>🏆 Top Referrers This Month</h2>
+            <div id="leaderboard">
+                <div class="leaderboard-item">
+                    <span class="rank rank-1">1</span>
+                    <div class="referral-avatar">JD</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">John Doe</div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">42 referrals</div>
+                    </div>
+                    <div class="reward-value">👑</div>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="rank rank-2">2</span>
+                    <div class="referral-avatar">SM</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">Sarah Miller</div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">38 referrals</div>
+                    </div>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="rank rank-3">3</span>
+                    <div class="referral-avatar">MB</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">Mike Brown</div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">35 referrals</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script type="module">
+        import { protectPage, auth, db } from './auth-guard.js';
+        import { 
+            doc, 
+            getDoc, 
+            setDoc, 
+            collection, 
+            query, 
+            where, 
+            onSnapshot,
+            orderBy,
+            limit 
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        
+        let currentUser = null;
+        let referralCode = null;
+        
+        protectPage({
+            onSuccess: async (user, userData) => {
+                currentUser = user;
+                await initializeReferralSystem(user, userData);
+            }
+        });
+        
+        async function initializeReferralSystem(user, userData) {
+            // Generate or get referral code
+            referralCode = userData.referralCode || generateReferralCode(user.uid);
+            
+            // Save referral code if new
+            if (!userData.referralCode) {
+                await setDoc(doc(db, 'Users', user.uid), {
+                    referralCode: referralCode
+                }, { merge: true });
+            }
+            
+            // Set referral link
+            const baseUrl = window.location.origin;
+            const referralLink = `${baseUrl}/index.html?ref=${referralCode}`;
+            document.getElementById('referralLink').value = referralLink;
+            
+            // Setup share links
+            setupShareLinks(referralLink);
+            
+            // Load referral stats
+            loadReferralStats(user.uid);
+            
+            // Load referrals list
+            loadReferralsList(user.uid);
+            
+            // Load leaderboard
+            loadLeaderboard();
+        }
+        
+        function generateReferralCode(uid) {
+            return uid.substring(0, 8).toUpperCase();
+        }
+        
+        function setupShareLinks(link) {
+            const message = "Join me in The Arcane Archives - exclusive knowledge for the chosen few 🔮";
+            
+            document.getElementById('shareTwitter').href = 
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(link)}`;
+            
+            document.getElementById('shareWhatsapp').href = 
+                `https://wa.me/?text=${encodeURIComponent(message + ' ' + link)}`;
+            
+            document.getElementById('shareTelegram').href = 
+                `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`;
+            
+            document.getElementById('shareEmail').href = 
+                `mailto:?subject=${encodeURIComponent('Join The Arcane Archives')}&body=${encodeURIComponent(message + '\n\n' + link)}`;
+        }
+        
+        window.copyReferralLink = function() {
+            const input = document.getElementById('referralLink');
+            const button = document.getElementById('copyBtn');
+            
+            navigator.clipboard.writeText(input.value).then(() => {
+                button.textContent = '✅ Copied!';
+                button.classList.add('success');
+                
+                setTimeout(() => {
+                    button.textContent = 'Copy Link';
+                    button.classList.remove('success');
+                }, 2000);
+            });
+        };
+        
+        function loadReferralStats(userId) {
+            // Listen for referrals
+            const q = query(
+                collection(db, 'Users'),
+                where('referredBy', '==', userId)
+            );
+            
+            onSnapshot(q, (snapshot) => {
+                const total = snapshot.size;
+                let active = 0;
+                let pending = 0;
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.subscriptionStatus === 'active') {
+                        active++;
+                    } else {
+                        pending++;
+                    }
+                });
+                
+                document.getElementById('totalReferrals').textContent = total;
+                document.getElementById('activeReferrals').textContent = active;
+                document.getElementById('pendingReferrals').textContent = pending;
+                document.getElementById('totalXP').textContent = active * 500; // 500 XP per active referral
+            });
+        }
+        
+        function loadReferralsList(userId) {
+            const q = query(
+                collection(db, 'Users'),
+                where('referredBy', '==', userId),
+                orderBy('createdAt', 'desc')
+            );
+            
+            onSnapshot(q, (snapshot) => {
+                const listEl = document.getElementById('referralsList');
+                
+                if (snapshot.empty) {
+                    return; // Keep the "no referrals" message
+                }
+                
+                listEl.innerHTML = '';
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const initial = (data.Username || data.email || 'U')[0].toUpperCase();
+                    const status = data.subscriptionStatus === 'active' ? 'active' : 'pending';
+                    
+                    const item = document.createElement('div');
+                    item.className = 'referral-item';
+                    item.innerHTML = `
+                        <div class="referral-info">
+                            <div class="referral-avatar">${initial}</div>
+                            <div>
+                                <div style="font-weight: 600;">${data.Username || 'New Member'}</div>
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">
+                                    Joined ${formatDate(data.createdAt)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="referral-status status-${status}">
+                            ${status === 'active' ? '✅ Active' : '⏳ Pending'}
+                        </div>
+                    `;
+                    
+                    listEl.appendChild(item);
+                });
+            });
+        }
+        
+        function loadLeaderboard() {
+            // This would aggregate referral counts
+            // For now, showing placeholder data
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Recently';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString();
+        }
+    </script>
+</body>
+</html>
