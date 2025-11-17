@@ -7,13 +7,15 @@
     <link rel="icon" href="ArcaneA.png">
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
+            --gold: #fbbf24;
             --text-light: #e5e5e5;
             --text-dim: #a3a3a3;
+            --border-color: rgba(148, 163, 184, 0.45);
         }
 
         * {
@@ -29,20 +31,14 @@
             min-height: 100vh;
         }
 
-        /* Header / Nav */
+        /* Header */
         .header {
-            padding: 1rem 2rem;
-            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            max-width: 1200px;
+            margin: 1.8rem auto 0;
+            padding: 0 1.5rem;
         }
 
         .header-inner {
-            max-width: 1200px;
-            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -50,77 +46,54 @@
         }
 
         .logo {
-            font-size: 20px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .logo img {
-            height: 40px;
-            width: auto;
-        }
-
-        .header-right {
             display: flex;
             align-items: center;
-            gap: 1rem;
-        }
-
-        .logout-btn {
-            padding: 0.6rem 1.5rem;
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            color: var(--purple-light);
-            border-radius: 999px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
             font-size: 0.9rem;
         }
 
-        .logout-btn:hover {
-            background: rgba(147, 51, 234, 0.2);
-            border-color: var(--purple);
+        .logo img {
+            height: 32px;
+            width: 32px;
         }
 
-        .user-avatar {
-            width: 40px;
-            height: 40px;
+        .logout-btn {
+            padding: 0.6rem 1.3rem;
+            background: rgba(15, 23, 42, 0.95);
             border-radius: 999px;
-            background: radial-gradient(circle, #a78bfa, #4c1d95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-            font-size: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
         }
 
+        .logout-btn:hover {
+            border-color: rgba(147, 51, 234, 0.9);
+            color: var(--purple-light);
+            transform: translateY(-1px);
+        }
+
+        /* Main layout */
         .main-content {
-            padding: 3rem 2rem;
             max-width: 1200px;
-            margin: 0 auto 3rem;
-        }
-
-        /* Glass layout */
-        .main-shell {
-            max-width: 1100px;
-            margin: 0 auto 4rem;
-            padding: 0 0.5rem;
+            margin: 0 auto 3.5rem;
+            padding: 0 1.5rem 0;
         }
 
         .page-card {
-            background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.18), rgba(15, 23, 42, 0.96) 40%, rgba(3, 7, 18, 0.98) 100%);
-            border-radius: 20px;
-            border: 1px solid rgba(147, 51, 234, 0.45);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
-            padding: 2.2rem;
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.18), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            box-shadow:
+                0 30px 120px rgba(15, 23, 42, 0.9),
+                0 0 40px rgba(147, 51, 234, 0.32);
+            padding: 2rem;
             position: relative;
             overflow: hidden;
         }
@@ -130,8 +103,8 @@
             position: absolute;
             inset: -40%;
             background:
-                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.16), transparent 55%),
-                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.15), transparent 55%);
+                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.18), transparent 55%);
             opacity: 0.7;
             pointer-events: none;
         }
@@ -142,202 +115,272 @@
         }
 
         .page-header {
-            margin-bottom: 2.5rem;
-            text-align: center;
+            margin-bottom: 1.6rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.3rem;
         }
 
         .page-header h1 {
-            font-size: 2.3rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--purple));
+            font-size: 2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
         }
 
         .page-header p {
             color: var(--text-dim);
-            font-size: 1rem;
+            font-size: 0.96rem;
         }
 
-        /* Welcome Section */
+        /* Welcome section */
         .welcome-section {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.25);
-            border-radius: 15px;
-            padding: 1.8rem;
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
             gap: 1.5rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .welcome-main {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
         }
 
         .welcome-avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            width: 62px;
+            height: 62px;
+            border-radius: 999px;
+            background: radial-gradient(circle, #a78bfa, #4c1d95);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.4rem;
+            font-size: 1.8rem;
             font-weight: 700;
+            color: #fff;
             flex-shrink: 0;
         }
 
-        .welcome-info h2 {
-            font-size: 1.7rem;
-            margin-bottom: 0.5rem;
+        .welcome-text h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .welcome-text h2 span {
+            color: var(--purple-light);
+        }
+
+        .welcome-text p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
         }
 
         .subscription-badge {
-            display: inline-block;
-            padding: 0.4rem 0.9rem;
-            background: rgba(34, 197, 94, 0.18);
-            border: 1px solid rgba(34, 197, 94, 0.5);
-            color: #4ade80;
+            display: none;
+            margin-top: 0.4rem;
+            font-size: 0.78rem;
+            padding: 0.2rem 0.7rem;
             border-radius: 999px;
+            border: 1px solid rgba(34, 197, 94, 0.75);
+            background: rgba(22, 163, 74, 0.12);
+            color: #bbf7d0;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .welcome-side {
+            background: rgba(15, 23, 42, 0.94);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            padding: 1rem 1.2rem;
             font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        /* Navigation cards */
-        .nav-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 1.6rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .nav-card {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(147, 51, 234, 0.4);
-            border-radius: 18px;
-            padding: 1.7rem;
-            text-decoration: none;
-            color: var(--text-light);
-            transition: all 0.25s;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.4rem;
-        }
-
-        .nav-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--purple);
-            box-shadow: 0 18px 45px rgba(147, 51, 234, 0.5);
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.18), rgba(15, 23, 42, 0.96));
-        }
-
-        .nav-card-icon {
-            font-size: 2rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .nav-card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--purple-light);
-        }
-
-        .nav-card-desc {
             color: var(--text-dim);
+        }
+
+        .welcome-side strong {
+            color: var(--text-light);
+        }
+
+        /* XP / stats */
+        .xp-section {
+            margin-bottom: 1.7rem;
+        }
+
+        .xp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .xp-header-left {
             font-size: 0.9rem;
         }
 
-        /* Progress + Stats */
-        .progress-card {
-            background: rgba(15, 23, 42, 0.9);
-            border-radius: 18px;
-            border: 1px solid rgba(147, 51, 234, 0.35);
-            padding: 1.8rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .progress-title {
+        .xp-header-left span {
+            color: var(--purple-light);
             font-weight: 600;
         }
 
-        .xp-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 999px;
-            border: 1px solid rgba(147, 51, 234, 0.5);
+        .xp-header-right {
             font-size: 0.8rem;
-            color: var(--purple-light);
+            color: var(--text-dim);
         }
 
-        .xp-bar {
+        .xp-bar-track {
             width: 100%;
             height: 10px;
             border-radius: 999px;
             background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(147, 51, 234, 0.35);
+            border: 1px solid rgba(55, 65, 81, 0.9);
             overflow: hidden;
-            margin-bottom: 0.6rem;
+            position: relative;
+            margin-bottom: 0.4rem;
         }
 
-        .xp-bar-inner {
+        .xp-bar-fill {
             height: 100%;
-            width: 0;
-            border-radius: inherit;
-            background: linear-gradient(90deg, var(--purple), #22c55e);
-            transition: width 0.4s ease-out;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--purple), var(--gold));
+            font-size: 0.7rem;
+            text-align: right;
+            padding-right: 0.4rem;
+            line-height: 8px;
+            color: #0b0b0b;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
         }
 
         .xp-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-dim);
+        }
+
+        .xp-meta span {
+            color: var(--purple-light);
+            font-weight: 600;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1.2rem;
         }
 
         .stat-card {
-            background: rgba(15, 23, 42, 0.9);
-            border-radius: 14px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            padding: 1.2rem;
+            background: rgba(15, 23, 42, 0.94);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 1rem 1.1rem;
         }
 
-        .stat-card h3 {
-            font-size: 0.9rem;
+        .stat-label {
+            font-size: 0.8rem;
             color: var(--text-dim);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.25rem;
         }
 
         .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Navigation cards */
+        .nav-section {
+            margin-top: 1.2rem;
+        }
+
+        .nav-heading {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .nav-card {
+            background: rgba(15, 23, 42, 0.96);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 1.1rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(147, 51, 234, 0.9);
+            box-shadow: 0 20px 50px rgba(147, 51, 234, 0.45);
+        }
+
+        .nav-card-icon {
             font-size: 1.6rem;
-            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .nav-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .nav-card-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        @media (max-width: 960px) {
+            .welcome-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                margin-top: 1.2rem;
+                padding-inline: 1rem;
+            }
+
+            .main-content {
+                padding-inline: 1rem;
+            }
+
+            .page-card {
+                padding: 1.5rem 1.3rem;
+            }
         }
 
         /* Footer */
         footer {
             background: rgba(5, 5, 5, 0.95);
-            padding: 1.5rem;
+            padding: 2rem;
             border-top: 1px solid rgba(147, 51, 234, 0.2);
             text-align: center;
-            margin-top: 0;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
             gap: 1.5rem;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
 
@@ -345,7 +388,6 @@
             color: var(--text-dim);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.3s;
         }
 
         .footer-links a:hover {
@@ -356,142 +398,148 @@
             color: var(--text-dim);
             font-size: 0.85rem;
         }
-
-        @media (max-width: 768px) {
-            .header-inner {
-                padding-inline: 0;
-            }
-            .main-content {
-                padding: 2rem 1rem 3rem;
-            }
-            .welcome-section {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="header-inner">
-            <a href="dashboard.html" class="logo">
-                <img src="ArcaneA.png" alt="Arcane Archives Logo">
+            <div class="logo">
+                <img src="ArcaneA.png" alt="Logo">
                 THE ARCANE ARCHIVES
-            </a>
-            <div class="header-right">
-                <button class="logout-btn" id="logoutBtn">Log out</button>
-                <div class="user-avatar" id="headerAvatar">?</div>
             </div>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
         </div>
     </header>
 
     <main class="main-content">
-        <div class="main-shell">
-            <div class="page-card">
-                <div class="page-card-inner">
-                    <div class="page-header">
-                        <h1>🏠 Dashboard</h1>
-                        <p>Welcome back to The Arcane Archives</p>
-                    </div>
+        <div class="page-card">
+            <div class="page-card-inner">
+                <div class="page-header">
+                    <div class="page-header-eyebrow">Control Center</div>
+                    <h1>🏠 <span>Dashboard</span></h1>
+                    <p>
+                        Everything in one place: your level, XP, wins, calls and direct access to every room inside The Arcane Archives.
+                    </p>
+                </div>
 
-                    <!-- Welcome Section -->
-                    <div class="welcome-section">
+                <!-- Welcome + summary -->
+                <section class="welcome-section">
+                    <div class="welcome-main">
                         <div class="welcome-avatar" id="welcomeAvatar">?</div>
-                        <div class="welcome-info">
+                        <div class="welcome-text">
                             <h2>Welcome, <span id="username">...</span> 🔮</h2>
-                            <p style="color: var(--text-dim); margin-bottom: 0.6rem;">
-                                Your personal hub to courses, community, calls and wins.
-                            </p>
-                            <span class="subscription-badge" id="subscriptionBadge" style="display:none;">
-                                ✓ Active Member
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Navigation Cards -->
-                    <section class="nav-cards">
-                        <a href="courses.html" class="nav-card">
-                            <div class="nav-card-icon">📚</div>
-                            <div class="nav-card-title">All Courses</div>
-                            <div class="nav-card-desc">Access every module inside The Arcane Archives.</div>
-                        </a>
-                        <a href="community.html" class="nav-card">
-                            <div class="nav-card-icon">💬</div>
-                            <div class="nav-card-title">Community Chat</div>
-                            <div class="nav-card-desc">Talk to the brotherhood in real time.</div>
-                        </a>
-                        <a href="live-calls.html" class="nav-card">
-                            <div class="nav-card-icon">🎙️</div>
-                            <div class="nav-card-title">Live Calls</div>
-                            <div class="nav-card-desc">Join upcoming calls and watch replays.</div>
-                        </a>
-                        <a href="wins.html" class="nav-card">
-                            <div class="nav-card-icon">🏆</div>
-                            <div class="nav-card-title">Wins Board</div>
-                            <div class="nav-card-desc">Share and celebrate your results.</div>
-                        </a>
-                        <a href="referral.html" class="nav-card">
-                            <div class="nav-card-icon">🟣</div>
-                            <div class="nav-card-title">Referral System</div>
-                            <div class="nav-card-desc">Invite friends & earn XP, badges and rewards.</div>
-                        </a>
-                        <a href="affiliate.html" class="nav-card">
-                            <div class="nav-card-icon">💸</div>
-                            <div class="nav-card-title">Affiliate Dashboard</div>
-                            <div class="nav-card-desc">Track commissions, payouts and referrals.</div>
-                        </a>
-                        <a href="journey.html" class="nav-card">
-                            <div class="nav-card-icon">🧬</div>
-                            <div class="nav-card-title">Leo’s Journey</div>
-                            <div class="nav-card-desc">See the full story behind The Arcane Archives.</div>
-                        </a>
-                        <a href="settings.html" class="nav-card">
-                            <div class="nav-card-icon">⚙️</div>
-                            <div class="nav-card-title">Settings</div>
-                            <div class="nav-card-desc">Edit your profile, avatar & preferences.</div>
-                        </a>
-                    </section>
-
-                    <!-- Progress & Stats -->
-                    <section class="progress-card">
-                        <div class="progress-header">
-                            <div class="progress-title">Your Progress</div>
-                            <div class="xp-badge">
-                                Level <span id="userLevel">Apprentice</span> ·
-                                <span id="currentXP">0</span> XP
+                            <p>Your job now: stack XP, build proof, and move silent.</p>
+                            <div class="subscription-badge" id="subscriptionBadge">
+                                ACTIVE MEMBER
                             </div>
                         </div>
-                        <div class="xp-bar">
-                            <div class="xp-bar-inner" id="xpProgressBar"></div>
-                        </div>
-                        <div class="xp-meta">
-                            <span>Next Level: <span id="nextLevelXP">100</span> XP</span>
-                            <span>Keep stacking wins every day.</span>
-                        </div>
-                    </section>
+                    </div>
+                    <div class="welcome-side">
+                        <strong>Reminder:</strong> This is not a spectator sport.  
+                        The more you show up — on calls, in the community, inside the courses —  
+                        the faster your real life compounds outside the screen.
+                    </div>
+                </section>
 
-                    <section class="stats-grid">
+                <!-- XP + stats -->
+                <section class="xp-section">
+                    <div class="xp-header">
+                        <div class="xp-header-left">
+                            Level: <span id="userLevel">Apprentice</span>
+                        </div>
+                        <div class="xp-header-right">
+                            XP: <span id="currentXP">0</span> / <span id="nextLevelXP">100</span>
+                        </div>
+                    </div>
+                    <div class="xp-bar-track">
+                        <div class="xp-bar-fill" id="xpProgressBar">0%</div>
+                    </div>
+                    <div class="xp-meta">
+                        Keep stacking — every <span>course completed</span>, <span>win posted</span> and <span>call attended</span> moves you up.
+                    </div>
+
+                    <div class="stats-grid">
                         <div class="stat-card">
-                            <h3>Courses Completed</h3>
+                            <div class="stat-label">Courses Completed</div>
                             <div class="stat-value" id="coursesCompleted">0</div>
                         </div>
                         <div class="stat-card">
-                            <h3>Wins Posted</h3>
+                            <div class="stat-label">Wins Posted</div>
                             <div class="stat-value" id="winsPosted">0</div>
                         </div>
                         <div class="stat-card">
-                            <h3>Calls Attended</h3>
+                            <div class="stat-label">Calls Attended</div>
                             <div class="stat-value" id="callsAttended">0</div>
                         </div>
-                    </section>
-                </div>
+                    </div>
+                </section>
+
+                <!-- Navigation -->
+                <section class="nav-section">
+                    <div class="nav-heading">Enter a room:</div>
+                    <div class="nav-grid">
+                        <div class="nav-card" onclick="window.location.href='courses.html'">
+                            <div class="nav-card-icon">📚</div>
+                            <div class="nav-card-title">Courses</div>
+                            <div class="nav-card-desc">Full curriculum on business, trading, mindset & more.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='community.html'">
+                            <div class="nav-card-icon">👥</div>
+                            <div class="nav-card-title">Community</div>
+                            <div class="nav-card-desc">Talk, ask, share and move with the brotherhood.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='wins.html'">
+                            <div class="nav-card-icon">🏆</div>
+                            <div class="nav-card-title">Wins Board</div>
+                            <div class="nav-card-desc">Document proof. Share screenshots, milestones and plays.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='alerts.html'">
+                            <div class="nav-card-icon">🔔</div>
+                            <div class="nav-card-title">Alerts</div>
+                            <div class="nav-card-desc">Important updates, drops, and system announcements.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='live-calls.html'">
+                            <div class="nav-card-icon">🎙️</div>
+                            <div class="nav-card-title">Live Calls</div>
+                            <div class="nav-card-desc">Join strategy, accountability and execution calls in real time.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='journey.html'">
+                            <div class="nav-card-icon">🧬</div>
+                            <div class="nav-card-title">Journey</div>
+                            <div class="nav-card-desc">See the full story and map out your own chapter.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='referral.html'">
+                            <div class="nav-card-icon">🎁</div>
+                            <div class="nav-card-title">Referrals</div>
+                            <div class="nav-card-desc">Invite people in and earn rewards for each active member.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='affiliate.html'">
+                            <div class="nav-card-icon">💰</div>
+                            <div class="nav-card-title">Affiliate</div>
+                            <div class="nav-card-desc">Track your commissions, payouts and promo materials.</div>
+                        </div>
+
+                        <div class="nav-card" onclick="window.location.href='settings.html'">
+                            <div class="nav-card-icon">⚙️</div>
+                            <div class="nav-card-title">Settings</div>
+                            <div class="nav-card-desc">Update your avatar, username, notifications and security.</div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </main>
 
     <footer>
         <div class="footer-links">
-            <a href="login.html">Login</a>
+            <a href="index.html">Home</a>
             <a href="Privacy-policy.html">Privacy Policy</a>
             <a href="terms-of-service.html">Terms of Service</a>
             <a href="refund-policy.html">Refund Policy</a>
@@ -507,64 +555,53 @@
             updateUserAvatar, 
             setupLogoutButton
         } from './auth-guard.js';
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc 
-        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-        import { awardXP } from './xp-system.js';
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
-            measurementId: "G-YGPLQHDXMM"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        function updateXPUI(userData) {
-            const xp = userData?.xp || 0;
-            const nextLevel = userData?.nextLevelXP || 100;
-            const level = userData?.level || "Apprentice";
-
-            document.getElementById('currentXP').textContent = xp;
-            document.getElementById('nextLevelXP').textContent = nextLevel;
-            document.getElementById('userLevel').textContent = level;
-
-            const percentage = Math.min(100, (xp / nextLevel) * 100 || 0);
-            document.getElementById('xpProgressBar').style.width = percentage + "%";
-
-            document.getElementById('coursesCompleted').textContent = userData?.coursesCompleted || 0;
-            document.getElementById('winsPosted').textContent = userData?.winsPosted || 0;
-            document.getElementById('callsAttended').textContent = userData?.callsAttended || 0;
-
-            if (userData?.subscriptionActive) {
-                document.getElementById('subscriptionBadge').style.display = 'inline-block';
-            }
-        }
 
         protectPage({
-            onSuccess: async (user, userData) => {
-                const username = userData?.username || user.displayName || user.email.split("@")[0];
-
+            onSuccess: (user, userData) => {
+                console.log('✅ Dashboard loaded for user:', user.uid);
+                
+                const username = userData.Username || user.displayName || user.email.split("@")[0];
                 document.getElementById("username").textContent = username;
-                updateUserAvatar(user, userData, {
-                    headerAvatarId: 'headerAvatar',
-                    welcomeAvatarId: 'welcomeAvatar'
-                });
-                setupLogoutButton('logoutBtn');
 
-                updateXPUI(userData || {});
+                updateUserAvatar(user, userData);
+                const welcomeAvatar = document.getElementById("welcomeAvatar");
+                if (welcomeAvatar) {
+                    const customAvatar = localStorage.getItem('customAvatarUrl');
+                    if (customAvatar) {
+                        welcomeAvatar.style.backgroundImage = `url(${customAvatar})`;
+                        welcomeAvatar.style.backgroundSize = 'cover';
+                        welcomeAvatar.style.backgroundPosition = 'center';
+                        welcomeAvatar.textContent = '';
+                    } else {
+                        const avatar = localStorage.getItem('userAvatar') || username.charAt(0).toUpperCase();
+                        welcomeAvatar.textContent = avatar;
+                    }
+                }
+
+                const level = userData.Level || "Apprentice";
+                const xp = userData.Xp || 0;
+                const nextLevelXp = 100;
+
+                document.getElementById("userLevel").textContent = level;
+                document.getElementById("currentXP").textContent = xp;
+                document.getElementById("nextLevelXP").textContent = nextLevelXp;
+
+                const progressPercentage = Math.min((xp / nextLevelXp) * 100, 100);
+                const progressBar = document.getElementById("xpProgressBar");
+                progressBar.style.width = progressPercentage + "%";
+                progressBar.textContent = Math.round(progressPercentage) + "%";
+
+                document.getElementById("coursesCompleted").textContent = userData.CoursesCompleted || 0;
+                document.getElementById("winsPosted").textContent = userData.WinsPosted || 0;
+                document.getElementById("callsAttended").textContent = userData.CallAttended || 0;
+
+                if (userData.subscriptionStatus === 'active' || userData.isPaid) {
+                    document.getElementById("subscriptionBadge").style.display = 'inline-block';
+                }
             }
         });
+
+        setupLogoutButton();
     </script>
 </body>
 </html>

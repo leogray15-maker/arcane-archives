@@ -5,633 +5,703 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Affiliate Dashboard | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
-    
+
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
             --gold: #fbbf24;
             --green: #22c55e;
             --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
-            --border-color: rgba(147, 51, 234, 0.2);
+            --text-dim: #9ca3af;
+            --border-color: rgba(148, 163, 184, 0.5);
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
             color: var(--text-light);
             min-height: 100vh;
         }
-        
-        /* Navigation */
-        nav {
+
+        /* Back Button */
+        .back-btn {
             position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .nav-container {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
             align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
         }
-        
+
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
+        }
+
+        /* Header */
+        .header {
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
         .logo {
-            font-size: 20px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
         }
-        
-        .logo img { height: 40px; width: auto; }
-        
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 70px;
-            width: 250px;
-            height: calc(100vh - 70px);
-            background: var(--bg-darker);
-            border-right: 1px solid var(--border-color);
-            padding: 2rem 0;
-            overflow-y: auto;
+
+        .logo img {
+            height: 32px;
+            width: 32px;
         }
-        
-        .sidebar-menu { list-style: none; }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 2rem;
-            color: var(--text-dim);
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-menu a:hover {
-            background: rgba(147, 51, 234, 0.1);
-            color: var(--purple-light);
-        }
-        
-        .sidebar-menu a.active {
-            background: rgba(147, 51, 234, 0.2);
-            color: var(--purple-light);
-            border-left: 3px solid var(--purple);
-        }
-        
-        /* Main Content */
+
+        /* Main layout */
         .main-content {
-            margin-left: 250px;
-            margin-top: 70px;
-            padding: 3rem;
-            min-height: calc(100vh - 70px);
+            max-width: 1200px;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem;
         }
-        
-        /* Dashboard Header */
-        .dashboard-header {
-            margin-bottom: 3rem;
+
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            box-shadow:
+                0 30px 120px rgba(15, 23, 42, 0.9),
+                0 0 40px rgba(147, 51, 234, 0.28);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .dashboard-title {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+
+        .page-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.18), transparent 55%),
+                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.15), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        .dashboard-subtitle {
+
+        .page-header p {
             color: var(--text-dim);
-            font-size: 1.1rem;
+            font-size: 0.96rem;
         }
-        
+
+        /* Affiliate layout */
+        .affiliate-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+            gap: 1.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .affiliate-main,
+        .affiliate-side {
+            display: flex;
+            flex-direction: column;
+            gap: 1.6rem;
+        }
+
+        .section-block {
+            background: rgba(15, 23, 42, 0.92);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            padding: 1.6rem 1.7rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.6rem;
+            color: var(--purple-light);
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 1.1rem;
+        }
+
         /* Earnings Overview */
         .earnings-overview {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
         }
-        
+
         .earnings-card {
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(251, 191, 36, 0.05));
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            transition: all 0.3s;
+            background: radial-gradient(circle at top left,
+                    rgba(147, 51, 234, 0.18),
+                    rgba(15, 23, 42, 0.98));
+            border-radius: 16px;
+            padding: 1.1rem 1.2rem;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s;
         }
-        
+
         .earnings-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(147, 51, 234, 0.35);
         }
-        
+
         .earnings-label {
-            color: var(--text-dim);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
         }
-        
+
         .earnings-amount {
-            font-size: 2.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--gold), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
         }
-        
+
         .earnings-change {
-            font-size: 0.9rem;
-            color: var(--green);
-        }
-        
-        .earnings-change.negative {
-            color: #ef4444;
-        }
-        
-        /* Commission Structure */
-        .commission-structure {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-        }
-        
-        .commission-structure h2 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: var(--purple-light);
-        }
-        
-        .commission-tiers {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .tier-card {
-            background: rgba(5, 5, 5, 0.5);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .tier-card.active {
-            border-color: var(--gold);
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
-        }
-        
-        .tier-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .tier-name {
-            font-weight: 700;
-            color: var(--purple-light);
-            margin-bottom: 0.5rem;
-        }
-        
-        .tier-rate {
-            font-size: 1.5rem;
-            color: var(--gold);
-            margin-bottom: 0.5rem;
-        }
-        
-        .tier-requirement {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--text-dim);
         }
-        
-        /* Referrals Table */
-        .referrals-table {
-            background: rgba(5, 5, 5, 0.5);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            overflow-x: auto;
+
+        /* Commission Tiers */
+        .commission-tiers {
+            margin-top: 0.2rem;
         }
-        
+
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 0.8rem;
+        }
+
+        .tier-card {
+            border-radius: 16px;
+            border: 1px dashed rgba(148, 163, 184, 0.6);
+            padding: 1rem 1.1rem;
+            background: radial-gradient(circle at top,
+                    rgba(15, 23, 42, 0.95),
+                    rgba(15, 23, 42, 0.98));
+            transition: all 0.2s;
+        }
+
+        .tier-card.active {
+            border-style: solid;
+            border-color: rgba(147, 51, 234, 0.9);
+            box-shadow: 0 16px 35px rgba(147, 51, 234, 0.45);
+        }
+
+        .tier-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .tier-name {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .tier-rate {
+            font-size: 0.9rem;
+            color: var(--gold);
+            margin-bottom: 0.2rem;
+        }
+
+        .tier-requirement {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* Referrals table */
         .referrals-table h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+            margin-bottom: 0.9rem;
             color: var(--purple-light);
         }
-        
-        table {
+
+        .referrals-table table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 0.85rem;
         }
-        
-        th {
-            background: rgba(147, 51, 234, 0.1);
-            padding: 1rem;
+
+        .referrals-table th,
+        .referrals-table td {
+            padding: 0.6rem 0.4rem;
             text-align: left;
+        }
+
+        .referrals-table thead {
+            border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+        }
+
+        .referrals-table th {
             color: var(--text-dim);
-            font-weight: 600;
+            font-weight: 500;
             text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
         }
-        
-        td {
-            padding: 1rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.1);
+
+        .referrals-table tbody tr:nth-child(even) {
+            background: rgba(15, 23, 42, 0.9);
         }
-        
-        tr:hover {
-            background: rgba(147, 51, 234, 0.05);
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        
-        .status-active {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--green);
-        }
-        
-        .status-pending {
-            background: rgba(251, 191, 36, 0.2);
-            color: var(--gold);
-        }
-        
-        /* Payout Section */
+
+        /* Payout section */
         .payout-section {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
+            grid-template-columns: minmax(0, 1.2fr);
+            gap: 1.3rem;
         }
-        
-        .payout-history {
-            background: rgba(5, 5, 5, 0.5);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-        }
-        
+
         .payout-history h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+            margin-bottom: 0.8rem;
             color: var(--purple-light);
         }
-        
+
         .payout-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+            padding: 0.7rem 0;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
         }
-        
+
         .payout-item:last-child {
             border-bottom: none;
         }
-        
-        .request-payout {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(147, 51, 234, 0.05));
-            border: 1px solid var(--gold);
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
-            height: fit-content;
-        }
-        
+
         .available-balance {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            color: var(--gold);
-            margin-bottom: 1rem;
+            margin-bottom: 0.4rem;
         }
-        
+
+        .payout-minimum {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.4rem;
+        }
+
         .payout-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--gold), #f59e0b);
-            color: var(--bg-dark);
+            margin-top: 0.5rem;
+            padding: 0.7rem 1.3rem;
+            border-radius: 999px;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 1rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.6);
         }
-        
-        .payout-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.4);
-        }
-        
+
         .payout-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            box-shadow: none;
         }
-        
-        .payout-minimum {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            margin-top: 0.5rem;
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
-        
-        /* Performance Chart */
-        .performance-chart {
-            background: rgba(5, 5, 5, 0.5);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 3rem;
+
+        .status-paid {
+            background: rgba(34, 197, 94, 0.18);
+            border: 1px solid rgba(34, 197, 94, 0.7);
+            color: #bbf7d0;
         }
-        
-        .chart-container {
-            height: 300px;
-            position: relative;
+
+        .status-pending {
+            background: rgba(234, 179, 8, 0.18);
+            border: 1px solid rgba(234, 179, 8, 0.7);
+            color: #facc15;
         }
-        
-        /* Promotional Materials */
-        .promo-materials {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-        }
-        
-        .promo-materials h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+
+        /* Chart */
+        .performance-chart h2 {
+            font-size: 1.05rem;
+            margin-bottom: 0.8rem;
             color: var(--purple-light);
         }
-        
+
+        .chart-container {
+            width: 100%;
+            height: 260px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Promo materials */
+        .promo-materials h2 {
+            font-size: 1.05rem;
+            margin-bottom: 0.6rem;
+            color: var(--purple-light);
+        }
+
         .promo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.9rem;
+            margin-top: 0.6rem;
         }
-        
+
         .promo-card {
-            background: rgba(5, 5, 5, 0.5);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 0.9rem 1rem;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
-        
+
         .promo-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--purple);
+            transform: translateY(-2px);
+            border-color: rgba(147, 51, 234, 0.9);
+            box-shadow: 0 14px 35px rgba(147, 51, 234, 0.4);
         }
-        
+
         .promo-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
         }
-        
-        /* Mobile Responsive */
+
+        .promo-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .promo-text {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 2rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 960px) {
+            .affiliate-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
-            .sidebar { left: -250px; }
-            .main-content { margin-left: 0; padding: 2rem 1rem; }
-            .payout-section { grid-template-columns: 1fr; }
-            .commission-tiers { grid-template-columns: 1fr; }
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto 0;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 1rem;
+                padding-inline: 1rem;
+            }
+
+            .main-content {
+                padding-inline: 1rem;
+            }
+
+            .page-card {
+                padding: 1.5rem 1.3rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <a href="dashboard.html" class="logo">
-                <img src="ArcaneA.png" alt="Logo">
-                THE ARCANE ARCHIVES
-            </a>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
         </div>
-    </nav>
-    
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.html">🏠 Dashboard</a></li>
-            <li><a href="courses.html">📚 All Courses</a></li>
-            <li><a href="community.html">💬 Community</a></li>
-            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
-            <li><a href="alerts.html">⚡ Arcane Alerts</a></li>
-            <li><a href="wins.html">🏆 Wins Board</a></li>
-            <li><a href="referral.html">🎁 Referrals</a></li>
-            <li><a href="affiliate.html" class="active">💰 Affiliate Dashboard</a></li>
-            <li><a href="journey.html">🌟 Leo's Journey</a></li>
-            <li><a href="settings.html">⚙️ Settings</a></li>
-        </ul>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">💰 Affiliate Dashboard</h1>
-            <p class="dashboard-subtitle">Track your commissions and grow your empire</p>
-        </div>
-        
-        <!-- Earnings Overview -->
-        <div class="earnings-overview">
-            <div class="earnings-card">
-                <div class="earnings-label">Total Earnings</div>
-                <div class="earnings-amount" id="totalEarnings">£0</div>
-                <div class="earnings-change">+0% this month</div>
-            </div>
-            
-            <div class="earnings-card">
-                <div class="earnings-label">This Month</div>
-                <div class="earnings-amount" id="monthlyEarnings">£0</div>
-                <div class="earnings-change">+0% vs last month</div>
-            </div>
-            
-            <div class="earnings-card">
-                <div class="earnings-label">Active Referrals</div>
-                <div class="earnings-amount" id="activeCount">0</div>
-                <div class="earnings-change">0 new this week</div>
-            </div>
-            
-            <div class="earnings-card">
-                <div class="earnings-label">Conversion Rate</div>
-                <div class="earnings-amount" id="conversionRate">0%</div>
-                <div class="earnings-change">Industry avg: 2-5%</div>
-            </div>
-        </div>
-        
-        <!-- Commission Structure -->
-        <div class="commission-structure">
-            <h2>📊 Commission Structure</h2>
-            <div class="commission-tiers">
-                <div class="tier-card" id="tier-bronze">
-                    <div class="tier-icon">🥉</div>
-                    <div class="tier-name">Bronze</div>
-                    <div class="tier-rate">30%</div>
-                    <div class="tier-requirement">0-5 sales</div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-card">
+            <div class="page-card-inner">
+                <div class="page-header">
+                    <div class="page-header-eyebrow">Affiliate Program</div>
+                    <h1>💰 <span>Affiliate Earnings</span></h1>
+                    <p>Track your commissions, referrals, tiers, and payout requests.</p>
                 </div>
-                
-                <div class="tier-card" id="tier-silver">
-                    <div class="tier-icon">🥈</div>
-                    <div class="tier-name">Silver</div>
-                    <div class="tier-rate">40%</div>
-                    <div class="tier-requirement">6-20 sales</div>
-                </div>
-                
-                <div class="tier-card" id="tier-gold">
-                    <div class="tier-icon">🥇</div>
-                    <div class="tier-name">Gold</div>
-                    <div class="tier-rate">50%</div>
-                    <div class="tier-requirement">21-50 sales</div>
-                </div>
-                
-                <div class="tier-card" id="tier-diamond">
-                    <div class="tier-icon">💎</div>
-                    <div class="tier-name">Diamond</div>
-                    <div class="tier-rate">60%</div>
-                    <div class="tier-requirement">50+ sales</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Recent Referrals -->
-        <div class="referrals-table">
-            <h2>📈 Recent Referrals</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Member</th>
-                        <th>Status</th>
-                        <th>Commission</th>
-                        <th>Lifetime Value</th>
-                    </tr>
-                </thead>
-                <tbody id="referralsTableBody">
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: var(--text-dim);">
-                            No referrals yet. Share your link to get started!
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Payout Section -->
-        <div class="payout-section">
-            <div class="payout-history">
-                <h2>💸 Payout History</h2>
-                <div id="payoutHistory">
-                    <div class="payout-item">
-                        <div>
-                            <div style="font-weight: 600;">No payouts yet</div>
-                            <div style="color: var(--text-dim); font-size: 0.9rem;">
-                                Earn commissions to request payouts
+
+                <div class="affiliate-layout">
+                    <!-- LEFT: Stats, tiers, referrals -->
+                    <div class="affiliate-main">
+                        <section class="section-block">
+                            <h2 class="section-title">Earnings Overview</h2>
+                            <p class="section-subtitle">These numbers update automatically as your referrals activate.</p>
+
+                            <div class="earnings-overview">
+                                <div class="earnings-card">
+                                    <div class="earnings-label">Total Earnings</div>
+                                    <div class="earnings-amount" id="totalEarnings">£0.00</div>
+                                    <div class="earnings-change">All-time</div>
+                                </div>
+                                <div class="earnings-card">
+                                    <div class="earnings-label">This Month</div>
+                                    <div class="earnings-amount" id="monthlyEarnings">£0.00</div>
+                                    <div class="earnings-change">Current calendar month</div>
+                                </div>
+                                <div class="earnings-card">
+                                    <div class="earnings-label">Active Referrals</div>
+                                    <div class="earnings-amount" id="activeCount">0</div>
+                                    <div class="earnings-change">With active subscriptions</div>
+                                </div>
+                                <div class="earnings-card">
+                                    <div class="earnings-label">Conversion Rate</div>
+                                    <div class="earnings-amount" id="conversionRate">0%</div>
+                                    <div class="earnings-change">Active / total referrals</div>
+                                </div>
                             </div>
-                        </div>
+                        </section>
+
+                        <section class="section-block commission-tiers">
+                            <h2 class="section-title">Commission Tiers</h2>
+                            <p class="section-subtitle">More sales = higher percentage on every referral.</p>
+
+                            <div class="tiers-grid">
+                                <div class="tier-card" id="tier-bronze">
+                                    <div class="tier-icon">🥉</div>
+                                    <div class="tier-name">Bronze</div>
+                                    <div class="tier-rate">30%</div>
+                                    <div class="tier-requirement">0–5 active sales</div>
+                                </div>
+                                <div class="tier-card" id="tier-silver">
+                                    <div class="tier-icon">🥈</div>
+                                    <div class="tier-name">Silver</div>
+                                    <div class="tier-rate">40%</div>
+                                    <div class="tier-requirement">6–20 active sales</div>
+                                </div>
+                                <div class="tier-card" id="tier-gold">
+                                    <div class="tier-icon">🥇</div>
+                                    <div class="tier-name">Gold</div>
+                                    <div class="tier-rate">50%</div>
+                                    <div class="tier-requirement">21–50 active sales</div>
+                                </div>
+                                <div class="tier-card" id="tier-diamond">
+                                    <div class="tier-icon">💎</div>
+                                    <div class="tier-name">Diamond</div>
+                                    <div class="tier-rate">60%</div>
+                                    <div class="tier-requirement">50+ active sales</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="section-block referrals-table">
+                            <h2>📈 Recent Referrals</h2>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Member</th>
+                                        <th>Status</th>
+                                        <th>Commission</th>
+                                        <th>Lifetime Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="referralsTableBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-dim);">
+                                            No referrals yet. Share your link and start bringing people in.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    </div>
+
+                    <!-- RIGHT: Payouts, chart, promo -->
+                    <div class="affiliate-side">
+                        <section class="section-block payout-section">
+                            <div class="payout-history">
+                                <h2>💸 Payout History</h2>
+                                <div id="payoutHistory">
+                                    <div class="payout-item">
+                                        <div>
+                                            <div style="font-weight: 600;">No payouts yet</div>
+                                            <div style="color: var(--text-dim); font-size: 0.9rem;">
+                                                Earn commissions to request your first payout.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="request-payout">
+                                <h3 style="margin-bottom: 0.7rem; color: var(--purple-light);">Available Balance</h3>
+                                <div class="available-balance" id="availableBalance">£0.00</div>
+                                <button class="payout-btn" id="requestPayoutBtn" disabled>
+                                    Request Payout
+                                </button>
+                                <div class="payout-minimum">Minimum payout: £100</div>
+                            </div>
+                        </section>
+
+                        <section class="section-block performance-chart">
+                            <h2>📊 Performance Overview</h2>
+                            <div class="chart-container">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </section>
+
+                        <section class="section-block promo-materials">
+                            <h2>🎨 Promo Materials</h2>
+                            <p class="section-subtitle">Use these to push The Arcane Archives to the right people.</p>
+                            <div class="promo-grid">
+                                <div class="promo-card" onclick="downloadPromo('banners')">
+                                    <div class="promo-icon">🖼️</div>
+                                    <div class="promo-title">Ad Banners</div>
+                                    <div class="promo-text">Pre-made banner creatives for stories, feeds, and headers.</div>
+                                </div>
+                                <div class="promo-card" onclick="downloadPromo('scripts')">
+                                    <div class="promo-icon">🎥</div>
+                                    <div class="promo-title">Video Scripts</div>
+                                    <div class="promo-text">Short scripts & hooks for TikTok, Reels and YouTube shorts.</div>
+                                </div>
+                                <div class="promo-card" onclick="downloadPromo('swipes')">
+                                    <div class="promo-icon">✉️</div>
+                                    <div class="promo-title">DM & Email Swipes</div>
+                                    <div class="promo-text">Plug-and-play messages to send to warm leads.</div>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
-            </div>
-            
-            <div class="request-payout">
-                <h3 style="margin-bottom: 1rem; color: var(--purple-light);">Available Balance</h3>
-                <div class="available-balance" id="availableBalance">£0.00</div>
-                <button class="payout-btn" id="requestPayoutBtn" disabled>
-                    Request Payout
-                </button>
-                <div class="payout-minimum">Minimum payout: £100</div>
+
             </div>
         </div>
-        
-        <!-- Performance Chart -->
-        <div class="performance-chart">
-            <h2 style="margin-bottom: 1.5rem; color: var(--purple-light);">📊 Performance Overview</h2>
-            <div class="chart-container">
-                <canvas id="performanceChart"></canvas>
-            </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
         </div>
-        
-        <!-- Promotional Materials -->
-        <div class="promo-materials">
-            <h2>🎨 Promotional Materials</h2>
-            <div class="promo-grid">
-                <div class="promo-card" onclick="downloadPromo('banners')">
-                    <div class="promo-icon">🖼️</div>
-                    <div style="font-weight: 600;">Banner Pack</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem;">Social media banners</div>
-                </div>
-                
-                <div class="promo-card" onclick="downloadPromo('emails')">
-                    <div class="promo-icon">📧</div>
-                    <div style="font-weight: 600;">Email Templates</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem;">Pre-written sequences</div>
-                </div>
-                
-                <div class="promo-card" onclick="downloadPromo('videos')">
-                    <div class="promo-icon">🎬</div>
-                    <div style="font-weight: 600;">Video Assets</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem;">Promo videos & reels</div>
-                </div>
-                
-                <div class="promo-card" onclick="downloadPromo('copy')">
-                    <div class="promo-icon">✍️</div>
-                    <div style="font-weight: 600;">Ad Copy</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem;">High-converting scripts</div>
-                </div>
-            </div>
+        <div class="footer-bottom">
+            &copy; 2024 The Arcane Archives. All rights reserved.
         </div>
-    </main>
-    
-    <!-- Chart.js for performance chart -->
+    </footer>
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <script type="module">
         import { protectPage, auth, db } from './auth-guard.js';
-        import { 
-            doc, 
+        import {
+            doc,
             getDoc,
-            collection, 
-            query, 
-            where, 
+            collection,
+            query,
+            where,
             onSnapshot,
             orderBy,
             serverTimestamp,
-            addDoc
+            addDoc,
+            limit
         } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-        
+
         let currentUser = null;
-        let affiliateData = {
+
+        const affiliateData = {
             totalEarnings: 0,
             monthlyEarnings: 0,
             activeReferrals: 0,
@@ -639,262 +709,288 @@
             availableBalance: 0,
             currentTier: 'bronze'
         };
-        
+
         protectPage({
             onSuccess: async (user, userData) => {
                 currentUser = user;
-                await initializeAffiliateDashboard(user, userData);
+                await initializeAffiliateDashboard(user);
+            },
+            onFailure: () => {
+                window.location.href = 'login.html';
             }
         });
-        
-        async function initializeAffiliateDashboard(user, userData) {
-            // Load affiliate stats
+
+        async function initializeAffiliateDashboard(user) {
             loadAffiliateStats(user.uid);
-            
-            // Load referrals
             loadReferrals(user.uid);
-            
-            // Load payout history
             loadPayoutHistory(user.uid);
-            
-            // Initialize chart
             initPerformanceChart();
-            
-            // Setup payout button
-            setupPayoutButton();
+            setupPayoutRequest(user.uid);
         }
-        
+
         function loadAffiliateStats(userId) {
-            // Listen for referrals and calculate commissions
+            const usersRef = collection(db, 'Users'); // matches existing schema
             const q = query(
-                collection(db, 'Users'),
+                usersRef,
                 where('referredBy', '==', userId)
             );
-            
-            onSnapshot(q, (snapshot) => {
+
+            onSnapshot(q, snapshot => {
+                const totalSales = snapshot.size;
+                affiliateData.totalReferrals = totalSales;
+
+                let activeCount = 0;
                 let totalEarnings = 0;
                 let monthlyEarnings = 0;
-                let activeCount = 0;
-                
-                const currentMonth = new Date().getMonth();
-                
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
+
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const commissionPerReferral = calculateCommission(totalSales);
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
                     if (data.subscriptionStatus === 'active') {
                         activeCount++;
-                        // Calculate commission based on tier
-                        const commission = calculateCommission(snapshot.size);
-                        totalEarnings += commission;
-                        
-                        // Check if joined this month
-                        if (data.createdAt?.toDate && data.createdAt.toDate().getMonth() === currentMonth) {
-                            monthlyEarnings += commission;
+                        totalEarnings += commissionPerReferral;
+
+                        if (data.createdAt?.toDate &&
+                            data.createdAt.toDate().getMonth() === currentMonth) {
+                            monthlyEarnings += commissionPerReferral;
                         }
                     }
                 });
-                
-                // Update UI
-                document.getElementById('totalEarnings').textContent = `£${totalEarnings.toFixed(2)}`;
-                document.getElementById('monthlyEarnings').textContent = `£${monthlyEarnings.toFixed(2)}`;
-                document.getElementById('activeCount').textContent = activeCount;
-                
-                const conversionRate = snapshot.size > 0 ? ((activeCount / snapshot.size) * 100).toFixed(1) : 0;
-                document.getElementById('conversionRate').textContent = `${conversionRate}%`;
-                
-                // Update available balance
-                affiliateData.availableBalance = totalEarnings; // Minus paid amounts
-                document.getElementById('availableBalance').textContent = `£${affiliateData.availableBalance.toFixed(2)}`;
-                
-                // Enable payout button if balance >= 100
-                const payoutBtn = document.getElementById('requestPayoutBtn');
-                if (affiliateData.availableBalance >= 100) {
-                    payoutBtn.disabled = false;
-                }
-                
-                // Update tier
-                updateCommissionTier(snapshot.size);
+
+                affiliateData.activeReferrals = activeCount;
+                affiliateData.totalEarnings = totalEarnings;
+                affiliateData.monthlyEarnings = monthlyEarnings;
+                affiliateData.availableBalance = totalEarnings; // you could subtract paid amounts later
+
+                const conversionRate = totalSales > 0
+                    ? ((activeCount / totalSales) * 100).toFixed(1)
+                    : '0.0';
+
+                const el = id => document.getElementById(id);
+
+                if (el('totalEarnings')) el('totalEarnings').textContent = `£${totalEarnings.toFixed(2)}`;
+                if (el('monthlyEarnings')) el('monthlyEarnings').textContent = `£${monthlyEarnings.toFixed(2)}`;
+                if (el('activeCount')) el('activeCount').textContent = activeCount;
+                if (el('conversionRate')) el('conversionRate').textContent = `${conversionRate}%`;
+                if (el('availableBalance')) el('availableBalance').textContent = `£${affiliateData.availableBalance.toFixed(2)}`;
+
+                const payoutBtn = el('requestPayoutBtn');
+                if (payoutBtn) payoutBtn.disabled = affiliateData.availableBalance < 100;
+
+                updateCommissionTier(totalSales);
             });
         }
-        
+
         function calculateCommission(totalSales) {
-            const basePrice = 128; // £128 per month
-            let rate = 0.3; // 30% default
-            
+            const basePrice = 128; // base membership price
+            let rate = 0.3;        // 30% default
+
             if (totalSales >= 50) rate = 0.6;
             else if (totalSales >= 21) rate = 0.5;
             else if (totalSales >= 6) rate = 0.4;
-            
+
             return basePrice * rate;
         }
-        
+
         function updateCommissionTier(totalSales) {
-            // Remove active class from all tiers
             document.querySelectorAll('.tier-card').forEach(card => {
                 card.classList.remove('active');
             });
-            
-            // Add active class to current tier
+
+            if (totalSales >= 1) {
+                document.getElementById('tier-bronze')?.classList.add('active');
+            }
+            if (totalSales >= 6) {
+                document.getElementById('tier-silver')?.classList.add('active');
+            }
+            if (totalSales >= 21) {
+                document.getElementById('tier-gold')?.classList.add('active');
+            }
             if (totalSales >= 50) {
-                document.getElementById('tier-diamond').classList.add('active');
-            } else if (totalSales >= 21) {
-                document.getElementById('tier-gold').classList.add('active');
-            } else if (totalSales >= 6) {
-                document.getElementById('tier-silver').classList.add('active');
-            } else {
-                document.getElementById('tier-bronze').classList.add('active');
+                document.getElementById('tier-diamond')?.classList.add('active');
             }
         }
-        
+
         function loadReferrals(userId) {
+            const usersRef = collection(db, 'Users');
             const q = query(
-                collection(db, 'Users'),
+                usersRef,
                 where('referredBy', '==', userId),
-                orderBy('createdAt', 'desc')
+                orderBy('createdAt', 'desc'),
+                limit(20)
             );
-            
-            onSnapshot(q, (snapshot) => {
-                const tbody = document.getElementById('referralsTableBody');
-                
+
+            const tbody = document.getElementById('referralsTableBody');
+            if (!tbody) return;
+
+            onSnapshot(q, snapshot => {
                 if (snapshot.empty) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align:center;color:var(--text-dim);">
+                                No referrals yet. Share your link to get started!
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
-                
+
                 tbody.innerHTML = '';
-                
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const row = tbody.insertRow();
-                    
-                    const date = data.createdAt?.toDate ? 
-                        data.createdAt.toDate().toLocaleDateString() : 'Recently';
-                    
-                    const status = data.subscriptionStatus === 'active' ? 
-                        '<span class="status-badge status-active">Active</span>' : 
-                        '<span class="status-badge status-pending">Pending</span>';
-                    
-                    const commission = data.subscriptionStatus === 'active' ? 
-                        `£${calculateCommission(snapshot.size).toFixed(2)}` : '£0.00';
-                    
-                    const ltv = data.subscriptionStatus === 'active' ? 
-                        `£${(128 * 3).toFixed(2)}` : '-'; // Assume 3 month average LTV
-                    
-                    row.innerHTML = `
-                        <td>${date}</td>
-                        <td>${data.Username || 'Anonymous'}</td>
+
+                const commissionPerReferral = calculateCommission(snapshot.size);
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
+                    const dateStr = created ? created.toLocaleDateString() : 'Recently';
+                    const status = data.subscriptionStatus === 'active' ? 'Active' : 'Pending';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${dateStr}</td>
+                        <td>${data.Username || 'Member'}</td>
                         <td>${status}</td>
-                        <td>${commission}</td>
-                        <td>${ltv}</td>
+                        <td>£${commissionPerReferral.toFixed(2)}</td>
+                        <td>£${commissionPerReferral.toFixed(2)}</td>
                     `;
+                    tbody.appendChild(tr);
                 });
             });
         }
-        
+
         function loadPayoutHistory(userId) {
+            const historyEl = document.getElementById('payoutHistory');
+            if (!historyEl) return;
+
+            const payoutsRef = collection(db, 'payouts');
             const q = query(
-                collection(db, 'payouts'),
+                payoutsRef,
                 where('userId', '==', userId),
-                orderBy('createdAt', 'desc')
+                orderBy('createdAt', 'desc'),
+                limit(10)
             );
-            
-            onSnapshot(q, (snapshot) => {
-                const historyEl = document.getElementById('payoutHistory');
-                
+
+            onSnapshot(q, snapshot => {
                 if (snapshot.empty) {
+                    historyEl.innerHTML = `
+                        <div class="payout-item">
+                            <div>
+                                <div style="font-weight: 600;">No payouts yet</div>
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">
+                                    Earn commissions to request payouts
+                                </div>
+                            </div>
+                        </div>
+                    `;
                     return;
                 }
-                
+
                 historyEl.innerHTML = '';
-                
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const item = document.createElement('div');
-                    item.className = 'payout-item';
-                    
-                    const date = data.createdAt?.toDate ? 
-                        data.createdAt.toDate().toLocaleDateString() : 'Recently';
-                    
-                    item.innerHTML = `
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const created = data.createdAt?.toDate ? data.createdAt.toDate() : null;
+                    const dateStr = created ? created.toLocaleDateString() : 'Recently';
+
+                    const amount = data.amount?.toFixed
+                        ? data.amount.toFixed(2)
+                        : Number(data.amount || 0).toFixed(2);
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'payout-item';
+                    wrapper.innerHTML = `
                         <div>
-                            <div style="font-weight: 600;">£${data.amount.toFixed(2)}</div>
-                            <div style="color: var(--text-dim); font-size: 0.9rem;">${date}</div>
+                            <div style="font-weight: 600;">£${amount}</div>
+                            <div style="color: var(--text-dim); font-size: 0.9rem;">${dateStr}</div>
                         </div>
                         <div class="status-badge status-${data.status}">
                             ${data.status === 'paid' ? '✅ Paid' : '⏳ Processing'}
                         </div>
                     `;
-                    
-                    historyEl.appendChild(item);
+                    historyEl.appendChild(wrapper);
                 });
             });
         }
-        
+
         function initPerformanceChart() {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            
+            const canvas = document.getElementById('performanceChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+
+            const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            const data = [0, 1, 2, 3, 4, 5].map(i => i * 150);
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    labels,
                     datasets: [{
-                        label: 'Earnings (£)',
-                        data: [0, 0, 0, 0, 0, 0], // Would be populated with real data
-                        borderColor: '#9333ea',
-                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                        tension: 0.4
+                        label: 'Estimated Earnings',
+                        data,
+                        borderWidth: 2,
+                        fill: false
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        }
+                        legend: { display: false }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(147, 51, 234, 0.1)'
-                            }
-                        },
                         x: {
-                            grid: {
-                                color: 'rgba(147, 51, 234, 0.1)'
-                            }
+                            ticks: { color: '#9ca3af' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { color: 'rgba(55,65,81,0.5)' }
                         }
                     }
                 }
             });
         }
-        
-        function setupPayoutButton() {
-            document.getElementById('requestPayoutBtn').addEventListener('click', async () => {
+
+        function setupPayoutRequest(userId) {
+            const btn = document.getElementById('requestPayoutBtn');
+            if (!btn) return;
+
+            btn.addEventListener('click', async () => {
                 if (affiliateData.availableBalance < 100) {
-                    alert('Minimum payout amount is £100');
+                    alert('You need at least £100 available to request a payout.');
                     return;
                 }
-                
-                if (confirm(`Request payout of £${affiliateData.availableBalance.toFixed(2)}?`)) {
-                    try {
-                        await addDoc(collection(db, 'payouts'), {
-                            userId: currentUser.uid,
-                            amount: affiliateData.availableBalance,
-                            status: 'pending',
-                            createdAt: serverTimestamp()
-                        });
-                        
-                        alert('Payout request submitted! You will receive payment within 3-5 business days.');
-                    } catch (error) {
-                        console.error('Error requesting payout:', error);
-                        alert('Error submitting payout request. Please try again.');
-                    }
+
+                if (!confirm(`Request payout of £${affiliateData.availableBalance.toFixed(2)}?`)) {
+                    return;
+                }
+
+                try {
+                    const payoutsRef = collection(db, 'payouts');
+                    await addDoc(payoutsRef, {
+                        userId,
+                        amount: affiliateData.availableBalance,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+
+                    affiliateData.availableBalance = 0;
+                    const balEl = document.getElementById('availableBalance');
+                    if (balEl) balEl.textContent = '£0.00';
+                    btn.disabled = true;
+
+                    alert('Payout request submitted! You will receive payment once it is processed.');
+                } catch (err) {
+                    console.error('Error requesting payout:', err);
+                    alert('Error submitting payout request. Please try again.');
                 }
             });
         }
-        
+
         window.downloadPromo = function(type) {
-            alert(`Downloading ${type} pack... (This would download actual promotional materials)`);
+            alert(`Downloading ${type} pack... (here you can plug in real promotional materials)`);
         };
     </script>
 </body>

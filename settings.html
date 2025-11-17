@@ -7,13 +7,16 @@
     <link rel="icon" href="ArcaneA.png">
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
+            --gold: #fbbf24;
             --text-light: #e5e5e5;
             --text-dim: #a3a3a3;
+            --border-color: rgba(148, 163, 184, 0.5);
+            --danger: #ef4444;
         }
 
         * {
@@ -24,273 +27,292 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-dark);
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
             color: var(--text-light);
             min-height: 100vh;
         }
 
-        nav {
+        /* Back Button */
+        .back-btn {
             position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
         }
 
-        .nav-container {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
+        }
+
+        /* Header */
+        .header {
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
         }
 
         .logo {
-            font-size: 20px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+            color: var(--text-light);
         }
 
         .logo img {
-            height: 40px;
-            width: auto;
+            height: 32px;
+            width: 32px;
         }
 
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-light);
-            cursor: pointer;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 70px;
-            width: 250px;
-            height: calc(100vh - 70px);
-            background: var(--bg-darker);
-            border-right: 1px solid rgba(147, 51, 234, 0.2);
-            padding: 2rem 0;
-            overflow-y: auto;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 2rem;
-            color: var(--text-dim);
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .sidebar-menu a:hover {
-            background: rgba(147, 51, 234, 0.1);
-            color: var(--purple-light);
-        }
-
-        .sidebar-menu a.active {
-            background: rgba(147, 51, 234, 0.2);
-            color: var(--purple-light);
-            border-left: 3px solid var(--purple);
-        }
-
+        /* Main layout */
         .main-content {
-            margin-left: 250px;
-            margin-top: 70px;
-            padding: 3rem;
-            min-height: calc(100vh - 70px);
+            max-width: 1200px;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem 0;
+        }
+
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow:
+                0 30px 120px rgba(15, 23, 42, 0.85),
+                0 0 40px rgba(147, 51, 234, 0.25);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.18), transparent 55%),
+                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.15), transparent 55%);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
         }
 
         .page-header {
-            margin-bottom: 3rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
         }
 
         .page-header h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
             background: linear-gradient(135deg, var(--purple-light), var(--purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
         }
 
         .page-header p {
             color: var(--text-dim);
-            font-size: 1.1rem;
+            font-size: 0.96rem;
         }
 
         .settings-container {
-            max-width: 800px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+            gap: 1.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .settings-main,
+        .settings-side {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .setting-section {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 1.5rem 1.6rem;
         }
 
         .setting-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.6rem;
             color: var(--purple-light);
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
+        }
+
+        .setting-section p.subtext {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
         }
 
         .setting-item {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .setting-item label {
             display: block;
-            color: var(--text-light);
-            font-weight: 500;
-            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
         }
 
-        .setting-item input {
+        .setting-item input[type="text"],
+        .setting-item input[type="email"],
+        .setting-item input[type="password"],
+        .setting-item select {
             width: 100%;
-            padding: 0.8rem;
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 8px;
+            padding: 0.65rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.95);
             color: var(--text-light);
-            font-size: 1rem;
-        }
-
-        .setting-item input:focus {
+            font-size: 0.9rem;
             outline: none;
-            border-color: var(--purple);
         }
 
-        .setting-item input:disabled {
-            opacity: 0.5;
+        .setting-item input:focus,
+        .setting-item select:focus {
+            border-color: rgba(147, 51, 234, 0.8);
+            box-shadow: 0 0 0 1px rgba(147, 51, 234, 0.5);
+        }
+
+        .setting-item input[disabled] {
+            opacity: 0.7;
             cursor: not-allowed;
         }
 
+        .btn-row {
+            margin-top: 0.6rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
         .btn {
-            padding: 0.8rem 1.5rem;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 999px;
+            padding: 0.7rem 1.3rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.45);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+        .btn-outline {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid rgba(148, 163, 184, 0.6);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
+            background: rgba(239, 68, 68, 0.08);
+            color: #fecaca;
+            border: 1px solid rgba(248, 113, 113, 0.7);
         }
 
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Avatar */
+        .avatar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        #currentAvatarPreview {
+            width: 56px;
+            height: 56px;
+            border-radius: 999px;
+            background: radial-gradient(circle, #a78bfa, #4c1d95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
         }
 
         .avatar-selection {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
         }
 
         .avatar-option {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
             cursor: pointer;
-            transition: all 0.3s;
-            border: 3px solid transparent;
+            font-size: 1.1rem;
+            transition: all 0.2s;
         }
 
         .avatar-option:hover {
-            transform: scale(1.1);
-            border-color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.9);
+            transform: translateY(-1px);
         }
 
         .avatar-option.selected {
-            border-color: var(--purple);
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
-        }
-
-        .profile-picture-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.2);
-        }
-
-        .profile-picture-preview {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .current-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            font-weight: 700;
-        }
-
-        .upload-instructions {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            border-color: rgba(147, 51, 234, 0.9);
+            box-shadow: 0 0 0 1px rgba(147, 51, 234, 0.6);
         }
 
         .file-input-wrapper {
             position: relative;
             display: inline-block;
+            margin-top: 0.5rem;
         }
 
         .file-input-wrapper input[type="file"] {
@@ -299,80 +321,61 @@
         }
 
         .file-input-label {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.1rem;
+            background: rgba(147, 51, 234, 0.12);
+            border-radius: 999px;
+            border: 1px solid rgba(147, 51, 234, 0.5);
             color: var(--purple-light);
-            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
         }
 
-        .file-input-label:hover {
-            background: rgba(147, 51, 234, 0.2);
-            border-color: var(--purple);
+        /* Toggles / notifications */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.6rem;
         }
 
-        .danger-zone {
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            background: rgba(239, 68, 68, 0.05);
+        .toggle-row span {
+            font-size: 0.9rem;
         }
 
-        .danger-zone h2 {
-            color: #ef4444;
+        .toggle-row small {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: block;
+        }
+
+        .toggle-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--purple);
         }
 
         .warning-text {
-            color: var(--text-dim);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: rgba(248, 113, 113, 0.9);
             margin-bottom: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                left: -250px;
-                transition: left 0.3s;
-            }
-
-            .sidebar.active {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 2rem 1rem;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .avatar-selection {
-                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-            }
-
-            .avatar-option {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-            }
         }
 
         footer {
             background: rgba(5, 5, 5, 0.95);
-            padding: 1.5rem;
+            padding: 2rem;
             border-top: 1px solid rgba(147, 51, 234, 0.2);
             text-align: center;
-            margin-top: 4rem;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
             gap: 1.5rem;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
 
@@ -380,7 +383,6 @@
             color: var(--text-dim);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.3s;
         }
 
         .footer-links a:hover {
@@ -391,289 +393,480 @@
             color: var(--text-dim);
             font-size: 0.85rem;
         }
+
+        @media (max-width: 960px) {
+            .settings-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto 0;
+                width: fit-content;
+            }
+            .header {
+                margin-top: 1rem;
+                padding-inline: 1rem;
+            }
+            .main-content {
+                padding-inline: 1rem;
+            }
+            .page-card {
+                padding: 1.5rem 1.25rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
 
-    <nav>
-        <div class="nav-container">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <a href="dashboard.html" class="logo">
-                <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
-            </a>
-            <div class="user-avatar" id="userAvatar">?</div>
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
         </div>
-    </nav>
+    </div>
 
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.html">🏠 Dashboard</a></li>
-            <li><a href="courses.html">📚 All Courses</a></li>
-            <li><a href="community.html">💬 Community</a></li>
-            <li><a href="live-calls.html">🎙️ Live Calls</a></li>
-            <li><a href="wins.html">🏆 Wins Board</a></li>
-            <li><a href="settings.html" class="active">⚙️ Settings</a></li>
-        </ul>
-    </aside>
-
-    <main class="main-content">
-        <div class="page-header">
-            <h1>⚙️ Settings</h1>
-            <p>Manage your account and preferences</p>
-        </div>
-
-        <div class="settings-container">
-            <!-- Account Information -->
-            <div class="setting-section">
-                <h2>Account Information</h2>
-                
-                <div class="setting-item">
-                    <label>Email</label>
-                    <input type="email" id="userEmail" disabled value="loading...">
+    <div class="main-content">
+        <div class="page-card">
+            <div class="page-card-inner">
+                <div class="page-header">
+                    <div class="page-header-eyebrow">Control Panel</div>
+                    <h1>⚙️ <span>Settings</span></h1>
+                    <p>Edit your identity, avatar, notifications, and security.</p>
                 </div>
 
-                <div class="setting-item">
-                    <label>Username</label>
-                    <input type="text" id="username" placeholder="Your username" value="loading...">
-                </div>
+                <div class="settings-container">
+                    <!-- MAIN COLUMN -->
+                    <div class="settings-main">
+                        <!-- Account -->
+                        <section class="setting-section">
+                            <h2>Account</h2>
+                            <p class="subtext">Basic information tied to your membership.</p>
 
-                <button class="btn btn-primary" id="saveProfileBtn">💾 Save Changes</button>
-            </div>
+                            <div class="setting-item">
+                                <label>Email</label>
+                                <input type="email" id="userEmail" disabled value="loading...">
+                            </div>
 
-            <!-- Avatar Selection -->
-            <div class="setting-section">
-                <h2>Choose Your Avatar</h2>
-                
-                <div class="avatar-selection">
-                    <div class="avatar-option" data-emoji="🔮">🔮</div>
-                    <div class="avatar-option" data-emoji="⚡">⚡</div>
-                    <div class="avatar-option" data-emoji="🔥">🔥</div>
-                    <div class="avatar-option" data-emoji="💎">💎</div>
-                    <div class="avatar-option" data-emoji="🌟">🌟</div>
-                    <div class="avatar-option" data-emoji="🎯">🎯</div>
-                    <div class="avatar-option" data-emoji="👑">👑</div>
-                    <div class="avatar-option" data-emoji="🦁">🦁</div>
-                    <div class="avatar-option" data-emoji="🐺">🐺</div>
-                    <div class="avatar-option" data-emoji="🦅">🦅</div>
-                    <div class="avatar-option" data-emoji="🐉">🐉</div>
-                    <div class="avatar-option" data-emoji="⚔️">⚔️</div>
-                </div>
+                            <div class="setting-item">
+                                <label>Username</label>
+                                <input type="text" id="username" placeholder="Your username" value="loading...">
+                            </div>
 
-                <!-- Profile Picture Upload -->
-                <div class="profile-picture-section">
-                    <h3 style="color: var(--purple-light); margin-bottom: 1rem;">Or Upload a Custom Picture</h3>
-                    
-                    <div class="profile-picture-preview">
-                        <div class="current-avatar" id="currentAvatarPreview">?</div>
-                        <div>
-                            <p style="color: var(--text-light); font-weight: 600; margin-bottom: 0.5rem;">Current Profile Picture</p>
-                            <p class="upload-instructions">Upload a custom profile picture (max 5MB)</p>
-                        </div>
+                            <div class="setting-item">
+                                <label>Subscription Status</label>
+                                <input type="text" id="subscriptionStatus" disabled value="Checking...">
+                            </div>
+
+                            <div class="btn-row">
+                                <button class="btn btn-primary" id="saveProfileBtn">💾 Save Profile</button>
+                            </div>
+                        </section>
+
+                        <!-- Security -->
+                        <section class="setting-section">
+                            <h2>Security</h2>
+                            <p class="subtext">Protect your access to The Arcane Archives.</p>
+
+                            <div class="setting-item">
+                                <label>Password</label>
+                                <p class="subtext">You can trigger a secure password reset link to your email.</p>
+                            </div>
+
+                            <div class="btn-row">
+                                <button class="btn btn-outline" id="resetPasswordBtn">🔐 Send Password Reset Email</button>
+                            </div>
+                        </section>
                     </div>
 
-                    <div class="file-input-wrapper">
-                        <input type="file" id="profilePictureInput" accept="image/*">
-                        <label for="profilePictureInput" class="file-input-label">
-                            📁 Choose Image
-                        </label>
+                    <!-- SIDE COLUMN -->
+                    <div class="settings-side">
+                        <!-- Avatar -->
+                        <section class="setting-section">
+                            <h2>Avatar</h2>
+                            <p class="subtext">Choose your symbol or upload a custom picture.</p>
+
+                            <div class="avatar-wrapper">
+                                <div id="currentAvatarPreview">?</div>
+                                <div style="font-size:0.85rem; color:var(--text-dim);">
+                                    This is how you appear in chat, wins board, and the dashboard.
+                                </div>
+                            </div>
+
+                            <div class="setting-item">
+                                <label>Pick an emoji avatar</label>
+                                <div class="avatar-selection">
+                                    <div class="avatar-option" data-emoji="🔮">🔮</div>
+                                    <div class="avatar-option" data-emoji="⚡">⚡</div>
+                                    <div class="avatar-option" data-emoji="🔥">🔥</div>
+                                    <div class="avatar-option" data-emoji="💎">💎</div>
+                                    <div class="avatar-option" data-emoji="🌟">🌟</div>
+                                    <div class="avatar-option" data-emoji="🎯">🎯</div>
+                                    <div class="avatar-option" data-emoji="👑">👑</div>
+                                    <div class="avatar-option" data-emoji="🦁">🦁</div>
+                                    <div class="avatar-option" data-emoji="🐺">🐺</div>
+                                    <div class="avatar-option" data-emoji="🦅">🦅</div>
+                                    <div class="avatar-option" data-emoji="🐉">🐉</div>
+                                </div>
+                            </div>
+
+                            <div class="setting-item">
+                                <label>Or upload a custom image</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="customAvatarInput" accept="image/*">
+                                    <label for="customAvatarInput" class="file-input-label">
+                                        📁 Choose Image
+                                    </label>
+                                </div>
+
+                                <button class="btn btn-danger" id="removeAvatarBtn" style="margin-left: 0.5rem; display:none;">
+                                    🗑️ Remove Custom Picture
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- Notifications -->
+                        <section class="setting-section">
+                            <h2>Notifications</h2>
+                            <p class="subtext">How you want alerts from The Arcane Archives.</p>
+
+                            <div class="toggle-row">
+                                <div>
+                                    <span>Email updates</span>
+                                    <small>Important account + offer announcements.</small>
+                                </div>
+                                <input type="checkbox" id="emailNotifications">
+                            </div>
+
+                            <div class="toggle-row">
+                                <div>
+                                    <span>Push alerts</span>
+                                    <small>Live calls, drops, and urgent plays.</small>
+                                </div>
+                                <input type="checkbox" id="pushNotifications">
+                            </div>
+
+                            <div class="toggle-row">
+                                <div>
+                                    <span>SMS (future)</span>
+                                    <small>Reserved for high-priority alerts only.</small>
+                                </div>
+                                <input type="checkbox" id="smsNotifications">
+                            </div>
+
+                            <div class="btn-row">
+                                <button class="btn btn-primary" id="saveNotificationsBtn">📩 Save Notification Settings</button>
+                            </div>
+                        </section>
+
+                        <!-- Danger Zone -->
+                        <section class="setting-section">
+                            <h2 style="color:#fecaca;">Danger Zone</h2>
+                            <p class="warning-text">
+                                Once your account is deleted, your progress, wins, and access are gone. This cannot be undone.
+                            </p>
+                            <button class="btn btn-danger" id="deleteAccountBtn">
+                                🗑️ Delete Account
+                            </button>
+                        </section>
                     </div>
-                    
-                    <button class="btn btn-danger" id="removeAvatarBtn" style="margin-left: 1rem; display: none;">
-                        🗑️ Remove Custom Picture
-                    </button>
                 </div>
-            </div>
-
-            <!-- Subscription -->
-            <div class="setting-section">
-                <h2>Subscription</h2>
-                
-                <div class="setting-item">
-                    <label>Status</label>
-                    <input type="text" id="subscriptionStatus" disabled value="loading...">
-                </div>
-
-                <p class="warning-text">
-                    To manage your subscription or update payment methods, please contact support@arcane-archives.com
-                </p>
-            </div>
-
-            <!-- Danger Zone -->
-            <div class="setting-section danger-zone">
-                <h2>⚠️ Danger Zone</h2>
-                
-                <p class="warning-text">
-                    Once you delete your account, there is no going back. This action cannot be undone.
-                </p>
-
-                <button class="btn btn-danger" id="deleteAccountBtn">
-                    🗑️ Delete Account
-                </button>
             </div>
         </div>
-    </main>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2024 The Arcane Archives. All rights reserved.
+        </div>
+    </footer>
 
     <script type="module">
-    import { protectPage, updateUserAvatar, setupMobileMenu, setupLogoutButton, auth } from './auth-guard.js';
-    import { getFirestore, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        import { protectPage, updateUserAvatar, auth } from './auth-guard.js';
+        import { getFirestore, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 
-    const db = getFirestore();
+        const db = getFirestore();
 
-    protectPage({
-        onSuccess: (user, userData) => {
-            console.log('✅ Access granted');
-            updateUserAvatar(user, userData);
-            
-            // Initialize settings page
-            document.getElementById('userEmail').value = user.email;
-            document.getElementById('username').value = userData.Username || user.displayName || user.email.split('@')[0];
-            document.getElementById('subscriptionStatus').value = userData.subscriptionStatus === 'active' ? '✅ Active' : '❌ Inactive';
-            
-            // Set current avatar preview
-            const currentAvatar = document.getElementById('currentAvatarPreview');
-            const customAvatar = localStorage.getItem('customAvatarUrl');
-            if (customAvatar) {
-                currentAvatar.style.backgroundImage = `url(${customAvatar})`;
-                currentAvatar.style.backgroundSize = 'cover';
-                currentAvatar.style.backgroundPosition = 'center';
-                currentAvatar.textContent = '';
-                document.getElementById('removeAvatarBtn').style.display = 'inline-block';
-            } else {
-                const avatar = localStorage.getItem('userAvatar') || userData.Username?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase();
-                currentAvatar.textContent = avatar;
+        let currentUser = null;
+        let currentUserData = null;
+
+        const emailInput = document.getElementById('userEmail');
+        const usernameInput = document.getElementById('username');
+        const subscriptionStatusInput = document.getElementById('subscriptionStatus');
+
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+
+        const avatarPreview = document.getElementById('currentAvatarPreview');
+        const avatarOptions = Array.from(document.querySelectorAll('.avatar-option'));
+        const customAvatarInput = document.getElementById('customAvatarInput');
+        const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+
+        const emailNotif = document.getElementById('emailNotifications');
+        const pushNotif = document.getElementById('pushNotifications');
+        const smsNotif = document.getElementById('smsNotifications');
+        const saveNotificationsBtn = document.getElementById('saveNotificationsBtn');
+
+        protectPage({
+            onSuccess: async (user, userData) => {
+                currentUser = user;
+                currentUserData = userData || {};
+
+                updateUserAvatar(user, userData);
+
+                // Account info
+                if (emailInput) emailInput.value = user.email || '';
+                const username = currentUserData.Username || user.displayName || (user.email ? user.email.split('@')[0] : 'Member');
+                if (usernameInput) usernameInput.value = username;
+
+                const subStatus = currentUserData.subscriptionStatus;
+                if (subscriptionStatusInput) {
+                    if (subStatus === 'active') subscriptionStatusInput.value = '✅ Active';
+                    else if (subStatus === 'cancelled') subscriptionStatusInput.value = '❌ Cancelled';
+                    else subscriptionStatusInput.value = 'Unknown';
+                }
+
+                // Notifications (if stored)
+                if (emailNotif) emailNotif.checked = !!currentUserData.emailNotifications;
+                if (pushNotif) pushNotif.checked = !!currentUserData.pushNotifications;
+                if (smsNotif) smsNotif.checked = !!currentUserData.smsNotifications;
+
+                // Avatar preview (custom or emoji/letter)
+                setupInitialAvatar(user, currentUserData, username);
+                setupAvatarListeners();
+
+                setupButtons();
+            },
+            onFailure: () => {
+                window.location.href = 'login.html';
             }
-        }
-    });
-
-    setupMobileMenu();
-
-    // Save profile changes
-    document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
-        const newUsername = document.getElementById('username').value.trim();
-        
-        if (!newUsername) {
-            alert('❌ Username cannot be empty');
-            return;
-        }
-
-        try {
-            await updateDoc(doc(db, 'Users', auth.currentUser.uid), {
-                Username: newUsername
-            });
-            
-            alert('✅ Profile updated successfully!');
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            alert('❌ Error updating profile. Please try again.');
-        }
-    });
-
-    // Avatar selection
-    document.querySelectorAll('.avatar-option').forEach(option => {
-        option.addEventListener('click', function() {
-            document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
-            this.classList.add('selected');
-            const emoji = this.getAttribute('data-emoji');
-            localStorage.setItem('userAvatar', emoji);
-            
-            const userAvatarElement = document.getElementById('userAvatar');
-            if (userAvatarElement) {
-                userAvatarElement.textContent = emoji;
-                userAvatarElement.style.backgroundImage = 'none';
-            }
-            
-            const currentAvatar = document.getElementById('currentAvatarPreview');
-            currentAvatar.textContent = emoji;
-            currentAvatar.style.backgroundImage = 'none';
-            
-            localStorage.removeItem('customAvatarUrl');
-            document.getElementById('removeAvatarBtn').style.display = 'none';
         });
-    });
 
-    // Profile picture upload
-    document.getElementById('profilePictureInput')?.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (file.size > 5 * 1024 * 1024) {
-            alert('❌ Image too large. Max 5MB.');
-            return;
-        }
-        
-        if (!file.type.startsWith('image/')) {
-            alert('❌ Please select an image file.');
-            return;
-        }
-        
-        const reader = new FileReader();
-        
-        reader.onload = function(event) {
-            const imageData = event.target.result;
-            localStorage.setItem('customAvatarUrl', imageData);
-            
-            const preview = document.getElementById('currentAvatarPreview');
-            preview.style.backgroundImage = `url(${imageData})`;
-            preview.style.backgroundSize = 'cover';
-            preview.style.backgroundPosition = 'center';
-            preview.textContent = '';
-            
-            document.getElementById('removeAvatarBtn').style.display = 'inline-block';
-            
-            const navAvatar = document.getElementById('userAvatar');
-            if (navAvatar) {
-                navAvatar.style.backgroundImage = `url(${imageData})`;
-                navAvatar.style.backgroundSize = 'cover';
-                navAvatar.style.backgroundPosition = 'center';
-                navAvatar.textContent = '';
+        function setupInitialAvatar(user, userData, username) {
+            const customAvatar = localStorage.getItem('customAvatarUrl');
+            if (customAvatar && avatarPreview) {
+                avatarPreview.style.backgroundImage = `url(${customAvatar})`;
+                avatarPreview.style.backgroundSize = 'cover';
+                avatarPreview.style.backgroundPosition = 'center';
+                avatarPreview.textContent = '';
+                if (removeAvatarBtn) removeAvatarBtn.style.display = 'inline-flex';
+            } else if (avatarPreview) {
+                const storedEmoji = localStorage.getItem('userAvatar');
+                if (storedEmoji && storedEmoji.length === 2) {
+                    avatarPreview.textContent = storedEmoji;
+                } else {
+                    const letter = (username || user.email || 'U').charAt(0).toUpperCase();
+                    avatarPreview.textContent = letter;
+                }
             }
-            
-            alert('✅ Profile picture updated successfully!');
-        };
-        
-        reader.readAsDataURL(file);
-    });
 
-    // Remove custom avatar
-    document.getElementById('removeAvatarBtn')?.addEventListener('click', function() {
-        if (!confirm('Remove custom profile picture?')) return;
-        
-        localStorage.removeItem('customAvatarUrl');
-        
-        const preview = document.getElementById('currentAvatarPreview');
-        const userEmail = auth.currentUser?.email || 'User';
-        const letter = localStorage.getItem('userAvatar') || userEmail.charAt(0).toUpperCase();
-        
-        preview.style.backgroundImage = 'none';
-        preview.textContent = letter;
-        
-        document.getElementById('removeAvatarBtn').style.display = 'none';
-        
-        const navAvatar = document.getElementById('userAvatar');
-        if (navAvatar) {
-            navAvatar.style.backgroundImage = 'none';
-            navAvatar.textContent = letter;
-        }
-        
-        alert('✅ Profile picture removed');
-    });
-
-    // Delete account
-    document.getElementById('deleteAccountBtn')?.addEventListener('click', async () => {
-        const confirmation = prompt('⚠️ This action cannot be undone!\n\nType "DELETE" to confirm account deletion:');
-        
-        if (confirmation !== 'DELETE') {
-            alert('Account deletion cancelled.');
-            return;
+            // Mark selected emoji if any
+            const storedEmoji = localStorage.getItem('userAvatar');
+            avatarOptions.forEach(opt => {
+                if (opt.dataset.emoji === storedEmoji) {
+                    opt.classList.add('selected');
+                }
+            });
         }
 
-        try {
-            alert('Please contact support@arcane-archives.com to delete your account. We need to cancel your subscription first.');
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    });
-</script>
+        function setupAvatarListeners() {
+            // Emoji avatar
+            avatarOptions.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    const emoji = opt.dataset.emoji;
+                    localStorage.setItem('userAvatar', emoji);
+                    localStorage.removeItem('customAvatarUrl');
 
+                    avatarOptions.forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+
+                    if (avatarPreview) {
+                        avatarPreview.style.backgroundImage = 'none';
+                        avatarPreview.textContent = emoji;
+                    }
+                    if (removeAvatarBtn) removeAvatarBtn.style.display = 'none';
+
+                    // Update in UI across app
+                    updateUserAvatar(currentUser, {
+                        ...(currentUserData || {}),
+                        Username: usernameInput?.value || '',
+                    });
+                });
+            });
+
+            // Custom avatar upload
+            if (customAvatarInput) {
+                customAvatarInput.addEventListener('change', (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please upload an image file.');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const dataUrl = ev.target.result;
+                        localStorage.setItem('customAvatarUrl', dataUrl);
+                        localStorage.removeItem('userAvatar');
+
+                        avatarOptions.forEach(o => o.classList.remove('selected'));
+
+                        if (avatarPreview) {
+                            avatarPreview.style.backgroundImage = `url(${dataUrl})`;
+                            avatarPreview.style.backgroundSize = 'cover';
+                            avatarPreview.style.backgroundPosition = 'center';
+                            avatarPreview.textContent = '';
+                        }
+                        if (removeAvatarBtn) removeAvatarBtn.style.display = 'inline-flex';
+
+                        updateUserAvatar(currentUser, {
+                            ...(currentUserData || {}),
+                            Username: usernameInput?.value || '',
+                        });
+
+                        alert('✅ Custom avatar applied locally on this device.');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Remove custom avatar
+            if (removeAvatarBtn) {
+                removeAvatarBtn.addEventListener('click', () => {
+                    if (!confirm('Remove custom profile picture and revert to emoji/initial?')) return;
+
+                    localStorage.removeItem('customAvatarUrl');
+                    const storedEmoji = localStorage.getItem('userAvatar');
+                    const base = usernameInput?.value || currentUser?.email || 'U';
+                    const letter = base.charAt(0).toUpperCase();
+
+                    if (avatarPreview) {
+                        avatarPreview.style.backgroundImage = 'none';
+                        avatarPreview.textContent = storedEmoji || letter;
+                    }
+                    removeAvatarBtn.style.display = 'none';
+
+                    updateUserAvatar(currentUser, {
+                        ...(currentUserData || {}),
+                        Username: usernameInput?.value || '',
+                    });
+
+                    alert('✅ Custom avatar removed.');
+                });
+            }
+        }
+
+        function setupButtons() {
+            // Save profile
+            if (saveProfileBtn) {
+                saveProfileBtn.addEventListener('click', async () => {
+                    if (!currentUser) return;
+                    const newUsername = (usernameInput?.value || '').trim();
+                    if (!newUsername) {
+                        alert('Please enter a valid username.');
+                        return;
+                    }
+
+                    saveProfileBtn.disabled = true;
+
+                    try {
+                        const userRef = doc(db, 'users', currentUser.uid);
+                        await updateDoc(userRef, {
+                            Username: newUsername
+                        });
+
+                        currentUserData = {
+                            ...(currentUserData || {}),
+                            Username: newUsername
+                        };
+
+                        updateUserAvatar(currentUser, currentUserData);
+                        alert('✅ Profile saved.');
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error saving profile. Try again.');
+                    } finally {
+                        saveProfileBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Save notifications
+            if (saveNotificationsBtn) {
+                saveNotificationsBtn.addEventListener('click', async () => {
+                    if (!currentUser) return;
+                    saveNotificationsBtn.disabled = true;
+
+                    try {
+                        const userRef = doc(db, 'users', currentUser.uid);
+                        await updateDoc(userRef, {
+                            emailNotifications: !!emailNotif?.checked,
+                            pushNotifications: !!pushNotif?.checked,
+                            smsNotifications: !!smsNotif?.checked,
+                        });
+
+                        alert('✅ Notification preferences saved.');
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error saving notifications. Try again.');
+                    } finally {
+                        saveNotificationsBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Password reset
+            if (resetPasswordBtn) {
+                resetPasswordBtn.addEventListener('click', async () => {
+                    if (!auth.currentUser?.email) {
+                        alert('No email found on this account.');
+                        return;
+                    }
+
+                    resetPasswordBtn.disabled = true;
+
+                    try {
+                        await sendPasswordResetEmail(auth, auth.currentUser.email);
+                        alert('✅ Password reset email sent. Check your inbox.');
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error sending reset email. Try again.');
+                    } finally {
+                        resetPasswordBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Delete account (soft gate to support)
+            const deleteBtn = document.getElementById('deleteAccountBtn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async () => {
+                    const confirmation = prompt(
+                        '⚠️ This action cannot be undone.\n\nType "DELETE" in all caps to confirm you want to request account deletion:'
+                    );
+
+                    if (confirmation !== 'DELETE') {
+                        alert('Account deletion cancelled.');
+                        return;
+                    }
+
+                    alert('Please email support@arcane-archives.com from your login email.\n\nWe need to cancel your subscription and confirm identity before deletion.');
+                });
+            }
+        }
+    </script>
 </body>
 </html>

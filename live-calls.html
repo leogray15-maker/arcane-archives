@@ -5,324 +5,420 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Calls | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
+
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-darker: #050505;
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
+            --gold: #fbbf24;
             --text-light: #e5e5e5;
             --text-dim: #a3a3a3;
+            --border-color: rgba(148, 163, 184, 0.5);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-dark);
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
             color: var(--text-light);
             min-height: 100vh;
         }
-        nav {
-            position: fixed; top: 0; width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
-        }
-        .nav-container {
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-size: 20px; font-weight: 900;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-decoration: none;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .logo img { height: 40px; width: auto; }
-        .user-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 1.2rem;
-        }
-        .menu-toggle {
-            display: none; background: none; border: none;
-            font-size: 1.5rem; color: var(--text-light); cursor: pointer;
-        }
-        .sidebar {
-            position: fixed; left: 0; top: 70px; width: 250px;
-            height: calc(100vh - 70px);
-            background: var(--bg-darker);
-            border-right: 1px solid rgba(147, 51, 234, 0.2);
-            padding: 2rem 0; overflow-y: auto;
-        }
-        .sidebar-menu { list-style: none; }
-        .sidebar-menu a {
-            display: flex; align-items: center; gap: 1rem;
-            padding: 1rem 2rem;
+
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
             color: var(--text-dim);
             text-decoration: none;
-            transition: all 0.3s;
-            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
         }
-        .sidebar-menu a:hover {
-            background: rgba(147, 51, 234, 0.1);
+
+        .back-btn:hover {
             color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
         }
-        .sidebar-menu a.active {
-            background: rgba(147, 51, 234, 0.2);
-            color: var(--purple-light);
-            border-left: 3px solid var(--purple);
+
+        /* Header */
+        .header {
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
         }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .logo img {
+            height: 32px;
+            width: 32px;
+        }
+
+        /* Main layout */
         .main-content {
-            margin-left: 250px;
-            margin-top: 70px;
-            padding: 3rem;
-            min-height: calc(100vh - 70px);
+            max-width: 1200px;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem;
         }
+
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            box-shadow:
+                0 30px 120px rgba(15, 23, 42, 0.9),
+                0 0 40px rgba(147, 51, 234, 0.28);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.18), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
         .page-header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--purple));
+            font-size: 2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
         }
-        .page-header p { color: var(--text-dim); font-size: 1.1rem; margin-bottom: 2rem; }
-        
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 0.96rem;
+            max-width: 640px;
+        }
+
+        /* Calls grid */
         .calls-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.6rem;
+            margin-top: 1.4rem;
         }
-        
+
         .call-card {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 15px;
-            padding: 2rem;
-            transition: all 0.3s;
+            background: rgba(15, 23, 42, 0.94);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            padding: 1.4rem 1.5rem;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        
+
+        .call-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: radial-gradient(circle at top right,
+                    rgba(147, 51, 234, 0.25),
+                    transparent 55%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
         .call-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--purple);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+            transform: translateY(-3px);
+            border-color: rgba(147, 51, 234, 0.9);
+            box-shadow: 0 20px 55px rgba(147, 51, 234, 0.45);
         }
-        
+
+        .call-card:hover::before {
+            opacity: 1;
+        }
+
         .call-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
         }
-        
+
         .call-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--purple-light);
-            margin-bottom: 0.5rem;
-        }
-        
-        .call-time {
-            color: var(--text-dim);
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
-        }
-        
-        .call-description {
-            color: var(--text-light);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-        
-        .call-btn {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
+            font-size: 1.1rem;
             font-weight: 600;
-            transition: all 0.3s;
+            margin-bottom: 0.2rem;
         }
-        
+
+        .call-time {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.7rem;
+        }
+
+        .call-description {
+            font-size: 0.9rem;
+            color: #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        .call-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.6rem 1.3rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.55);
+        }
+
         .call-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+            filter: brightness(1.08);
         }
-        
-        @media (max-width: 768px) {
-            .sidebar { left: -250px; transition: left 0.3s; }
-            .sidebar.active { left: 0; }
-            .main-content { margin-left: 0; padding: 2rem 1rem; }
-            .menu-toggle { display: block; }
-            .calls-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    
+
+        /* Footer */
         footer {
             background: rgba(5, 5, 5, 0.95);
-            padding: 1.5rem;
+            padding: 2rem;
             border-top: 1px solid rgba(147, 51, 234, 0.2);
             text-align: center;
-            margin-top: 4rem;
         }
+
         .footer-links {
             display: flex;
             justify-content: center;
             gap: 1.5rem;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
+
         .footer-links a {
             color: var(--text-dim);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.3s;
         }
+
         .footer-links a:hover {
             color: var(--purple-light);
         }
+
         .footer-bottom {
             color: var(--text-dim);
             font-size: 0.85rem;
         }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto 0;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 1rem;
+                padding-inline: 1rem;
+            }
+
+            .main-content {
+                padding-inline: 1rem;
+            }
+
+            .page-card {
+                padding: 1.5rem 1.3rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
 
-    <nav>
-        <div class="nav-container">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <a href="dashboard.html" class="logo">
-                <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
-            </a>
-            <div class="user-avatar" id="userAvatar">?</div>
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
         </div>
-    </nav>
+    </div>
 
-    <aside class="sidebar" id="sidebar">
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.html">🏠 Dashboard</a></li>
-            <li><a href="courses.html">📚 All Courses</a></li>
-            <li><a href="community.html">💬 Community</a></li>
-            <li><a href="live-calls.html" class="active">🎙️ Live Calls</a></li>
-            <li><a href="wins.html">🏆 Wins Board</a></li>
-            <li><a href="settings.html">⚙️ Settings</a></li>
-        </ul>
-    </aside>
-
-    <main class="main-content">
-        <div class="page-header">
-            <h1>🎙️ Live Calls</h1>
-            <p>Join exclusive group calls with the brotherhood</p>
-        </div>
-
-        <div class="calls-grid">
-            <div class="call-card">
-                <div class="call-icon">🔥</div>
-                <div class="call-title">Weekly Masterclass</div>
-                <div class="call-time">📅 Every Monday at 7 PM EST</div>
-                <div class="call-description">
-                    Deep dive into advanced strategies for business, wealth creation, and personal mastery. Q&A included.
+    <div class="main-content">
+        <div class="page-card">
+            <div class="page-card-inner">
+                <div class="page-header">
+                    <div class="page-header-eyebrow">Live Rooms</div>
+                    <h1>🎙️ <span>Live Calls</span></h1>
+                    <p>
+                        Join the brotherhood in real time — strategy, accountability, and execution-focused calls.
+                        Attendance automatically logs towards your XP.
+                    </p>
                 </div>
-                <a href="#" class="call-btn">Join Call</a>
-            </div>
 
-            <div class="call-card">
-                <div class="call-icon">💪</div>
-                <div class="call-title">Accountability Check-In</div>
-                <div class="call-time">📅 Every Wednesday at 6 AM EST</div>
-                <div class="call-description">
-                    Morning accountability call to set intentions and review progress with the brotherhood.
-                </div>
-                <a href="#" class="call-btn">Join Call</a>
-            </div>
+                <div class="calls-grid">
+                    <div class="call-card">
+                        <div class="call-icon">🔥</div>
+                        <div class="call-title">Weekly Masterclass</div>
+                        <div class="call-time">📅 Every Monday at 7 PM EST</div>
+                        <div class="call-description">
+                            Deep dive into advanced strategies for business, wealth creation, and personal mastery. Q&A included.
+                        </div>
+                        <a href="#" class="call-btn">Join Call</a>
+                    </div>
 
-            <div class="call-card">
-                <div class="call-icon">🎯</div>
-                <div class="call-title">Friday Focus Session</div>
-                <div class="call-time">📅 Every Friday at 5 PM EST</div>
-                <div class="call-description">
-                    End-of-week review, wins celebration, and planning session for the week ahead.
-                </div>
-                <a href="#" class="call-btn">Join Call</a>
-            </div>
+                    <div class="call-card">
+                        <div class="call-icon">💪</div>
+                        <div class="call-title">Accountability Check-In</div>
+                        <div class="call-time">📅 Every Wednesday at 6 AM EST</div>
+                        <div class="call-description">
+                            Morning accountability call to set intentions and review progress with the brotherhood.
+                        </div>
+                        <a href="#" class="call-btn">Join Call</a>
+                    </div>
 
-            <div class="call-card">
-                <div class="call-icon">🧠</div>
-                <div class="call-title">Sunday Strategy</div>
-                <div class="call-time">📅 Every Sunday at 8 PM EST</div>
-                <div class="call-description">
-                    Strategic planning session for the upcoming week. Set goals and align with your purpose.
+                    <div class="call-card">
+                        <div class="call-icon">🎯</div>
+                        <div class="call-title">Friday Focus Session</div>
+                        <div class="call-time">📅 Every Friday at 5 PM EST</div>
+                        <div class="call-description">
+                            End-of-week review, wins celebration, and planning session for the week ahead.
+                        </div>
+                        <a href="#" class="call-btn">Join Call</a>
+                    </div>
+
+                    <div class="call-card">
+                        <div class="call-icon">🧠</div>
+                        <div class="call-title">Sunday Strategy</div>
+                        <div class="call-time">📅 Every Sunday at 8 PM EST</div>
+                        <div class="call-description">
+                            Strategic planning session for the upcoming week. Set goals and align with your purpose.
+                        </div>
+                        <a href="#" class="call-btn">Join Call</a>
+                    </div>
                 </div>
-                <a href="#" class="call-btn">Join Call</a>
+
             </div>
         </div>
-    </main>
+    </div>
 
-<script type="module">
-import { protectPage, updateUserAvatar, setupMobileMenu, db } from './auth-guard.js';
-import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-import { awardXP } from './xp-system.js';
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2024 The Arcane Archives. All rights reserved.
+        </div>
+    </footer>
 
-let currentUser = null;
-let currentUserData = null;
+    <script type="module">
+        import { protectPage, updateUserAvatar, db } from './auth-guard.js';
+        import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        import { awardXP } from './xp-system.js';
 
-protectPage({
-  onSuccess: (user, userData) => {
-    console.log('✅ Live Calls - Access granted');
-    currentUser = user;
-    currentUserData = userData;
-    updateUserAvatar(user, userData);
-    setupMobileMenu();
-    setupCallButtons();
-  }
-});
+        let currentUser = null;
+        let currentUserData = null;
 
-function setupCallButtons() {
-  const buttons = document.querySelectorAll('.call-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      // If you want to still open the Zoom link in a new tab:
-      const href = btn.getAttribute('href');
-
-      // Record attendance + XP
-      if (!currentUser || !currentUserData) return;
-
-      try {
-        const userRef = doc(db, 'Users', currentUser.uid);
-        const newCalls = (currentUserData.CallAttended || currentUserData.CallsAttended || 0) + 1;
-
-        await updateDoc(userRef, {
-          CallAttended: newCalls
+        protectPage({
+            onSuccess: (user, userData) => {
+                console.log('✅ Live Calls - Access granted');
+                currentUser = user;
+                currentUserData = userData;
+                updateUserAvatar(user, userData);
+                setupCallButtons();
+            },
+            onFailure: () => {
+                window.location.href = 'login.html';
+            }
         });
 
-        currentUserData.CallAttended = newCalls;
+        function setupCallButtons() {
+            const buttons = document.querySelectorAll('.call-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const href = btn.getAttribute('href');
 
-        await awardXP(currentUser.uid, 'call_attended');
+                    if (!currentUser || !currentUserData) return;
 
-        console.log('✅ Call attendance recorded + XP');
+                    try {
+                        const userRef = doc(db, 'Users', currentUser.uid);
+                        const newCalls = (currentUserData.CallAttended || currentUserData.CallsAttended || 0) + 1;
 
-        if (href && href !== '#') {
-          window.open(href, '_blank');
-        } else {
-          alert('✅ Call attendance recorded. Call link coming soon.');
+                        await updateDoc(userRef, {
+                            CallAttended: newCalls
+                        });
+
+                        currentUserData.CallAttended = newCalls;
+
+                        await awardXP(currentUser.uid, 'call_attended');
+
+                        console.log('✅ Call attendance recorded + XP');
+
+                        if (href && href !== '#') {
+                            window.open(href, '_blank');
+                        } else {
+                            alert('✅ Call attendance recorded. Call link coming soon.');
+                        }
+                    } catch (err) {
+                        console.error('Error recording call attendance:', err);
+                        alert('⚠️ Error recording attendance: ' + err.message);
+                    }
+
+                    e.preventDefault();
+                });
+            });
         }
-      } catch (err) {
-        console.error('Error recording call attendance:', err);
-        alert('⚠️ Error recording attendance: ' + err.message);
-      }
-
-      e.preventDefault();
-    });
-  });
-}
-</script>
-
+    </script>
 </body>
 </html>
