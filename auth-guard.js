@@ -221,4 +221,3 @@ export function setupMobileMenu(
     menu.classList.toggle("open");
   });
 }
-
