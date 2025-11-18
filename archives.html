@@ -555,17 +555,17 @@
       
       courseLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-          e.preventDefault();
-          
           const courseName = link.textContent.trim();
           const href = link.getAttribute('href');
           
           // Check if the link is a real Notion page URL (starts with https://)
           if (href && href.startsWith('https://')) {
-            // It's a real external link, open it
-            window.open(href, '_blank');
+            // It's a real external link - let it open normally
+            // Don't prevent default, just let the browser handle it
+            return;
           } else {
-            // It's a local file path that doesn't exist - show coming soon
+            // It's a local file path that doesn't exist - prevent navigation and show modal
+            e.preventDefault();
             showCourseModal(courseName);
           }
         });
@@ -573,8 +573,15 @@
     });
 
     function showCourseModal(courseName) {
+      // Remove any existing modals first
+      const existingModal = document.querySelector('.course-modal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+
       // Create modal
       const modal = document.createElement('div');
+      modal.className = 'course-modal';
       modal.style.cssText = `
         position: fixed;
         top: 0;
@@ -589,38 +596,46 @@
         backdrop-filter: blur(8px);
       `;
 
-      modal.innerHTML = `
-        <div style="
-          background: radial-gradient(circle at top, rgba(147, 51, 234, 0.2), rgba(15, 23, 42, 0.98));
-          border: 1px solid rgba(147, 51, 234, 0.6);
-          border-radius: 24px;
-          padding: 2.5rem;
-          max-width: 500px;
-          width: 90%;
-          text-align: center;
-          box-shadow: 0 30px 120px rgba(0, 0, 0, 0.9);
-        ">
-          <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
-          <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: #a78bfa;">Course Access</h2>
-          <p style="color: #e5e5e5; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 600;">${courseName}</p>
-          <p style="color: #a3a3a3; margin-bottom: 2rem; line-height: 1.6;">
-            This course is currently being prepared for the platform. 
-            You'll be notified when it's ready to access.
-          </p>
-          <button onclick="this.closest('div').parentElement.remove()" style="
-            padding: 0.8rem 2rem;
-            background: linear-gradient(135deg, #9333ea, #7e22ce);
-            border: none;
-            border-radius: 999px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-          ">Got it</button>
-        </div>
+      const modalContent = document.createElement('div');
+      modalContent.style.cssText = `
+        background: radial-gradient(circle at top, rgba(147, 51, 234, 0.2), rgba(15, 23, 42, 0.98));
+        border: 1px solid rgba(147, 51, 234, 0.6);
+        border-radius: 24px;
+        padding: 2.5rem;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 30px 120px rgba(0, 0, 0, 0.9);
       `;
 
+      modalContent.innerHTML = `
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+        <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: #a78bfa;">Course Access</h2>
+        <p style="color: #e5e5e5; margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 600;">${courseName}</p>
+        <p style="color: #a3a3a3; margin-bottom: 2rem; line-height: 1.6;">
+          This course is currently being prepared for the platform. 
+          You'll be notified when it's ready to access.
+        </p>
+        <button id="closeModal" style="
+          padding: 0.8rem 2rem;
+          background: linear-gradient(135deg, #9333ea, #7e22ce);
+          border: none;
+          border-radius: 999px;
+          color: white;
+          font-weight: 600;
+          cursor: pointer;
+          font-size: 1rem;
+        ">Got it</button>
+      `;
+
+      modal.appendChild(modalContent);
       document.body.appendChild(modal);
+
+      // Close button handler
+      const closeBtn = document.getElementById('closeModal');
+      closeBtn.addEventListener('click', () => {
+        modal.remove();
+      });
 
       // Close on backdrop click
       modal.addEventListener('click', (e) => {
@@ -628,6 +643,15 @@
           modal.remove();
         }
       });
+
+      // Close on ESC key
+      const escHandler = (e) => {
+        if (e.key === 'Escape') {
+          modal.remove();
+          document.removeEventListener('keydown', escHandler);
+        }
+      };
+      document.addEventListener('keydown', escHandler);
     }
   </script>
 </body>
