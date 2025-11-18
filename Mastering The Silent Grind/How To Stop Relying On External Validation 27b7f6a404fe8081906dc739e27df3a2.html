@@ -1,0 +1,707 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>How To Stop Relying On External Validation.
+</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="27b7f6a4-04fe-8081-906d-c739e27df3a2" class="page sans"><header><h1 class="page-title"><strong>How To Stop Relying On External Validation.</strong><br/></h1><p class="page-description"></p></header><div class="page-body"><p id="27b7f6a4-04fe-805c-9763-e89bba810aa7" class="">This one is inspired by troy, appreciate the submission bro</p><figure id="27b7f6a4-04fe-8077-a4cc-e5db8cdb56af" class="image"><a href="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/9427f26f25d34c5b8074ec7cf5666f44f6bdecf62bd445d7a5bcf850717f5b21"><img src="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/9427f26f25d34c5b8074ec7cf5666f44f6bdecf62bd445d7a5bcf850717f5b21"/></a></figure><p id="27b7f6a4-04fe-80da-a209-cbabcb3cee98" class="">But yeah, straight into it.</p><p id="27b7f6a4-04fe-8049-b04e-cf357f7c0bce" class="">Firstly, let’s get into the meaning of what “relying on the approval of others” actually means.</p><p id="27b7f6a4-04fe-80cf-95b0-d6a6a3420863" class="">And if you want the simple answer.</p><p id="27b7f6a4-04fe-8008-83dc-d7bb3c6ea78c" class="">It’s relying on validation.</p><p id="27b7f6a4-04fe-80a4-925e-eedd00590731" class="">Now this is not a good trait, since it is a lot of what these women do.</p><p id="27b7f6a4-04fe-8088-ba96-e2d49956276d" class="">But in this case, we’re not wearing push up bras and tight leggings so other men could see…</p><p id="27b7f6a4-04fe-8072-aef4-f332704c3799" class="">We’re trying to get a fast car so you can bring girls in.</p><p id="27b7f6a4-04fe-804a-a614-fb125de15c8d" class="">Now, that’s honestly not a bad thing…</p><p id="27b7f6a4-04fe-80b9-add2-ebb48809640a" class="">If you’re striving to get rich because you just want to fuck, good. Use that.</p><p id="27b7f6a4-04fe-806e-bf57-ecaa5f03fde8" class="">But the problem is when you are on the come up…</p><p id="27b7f6a4-04fe-8043-b83d-e1f9c8c23691" class="">We’re trying to keep shit to ourselves.</p><p id="27b7f6a4-04fe-801b-9576-f34657d70414" class="">Keep our goals to ourselves, keep our achievements to ourselves, and keep our ambition secret.</p><p id="27b7f6a4-04fe-8026-b01d-cb7767e6c2ce" class="">Because really, I’ve already made a post about this.</p><p id="27b7f6a4-04fe-80bc-b1a6-ce91b8b4a173" class="">And it was called “the validation trap”</p><p id="27b7f6a4-04fe-8079-8dbd-ff4cdfc07f3c" class="">That was the video that got 3.1 million on tiktok.</p><p id="27b7f6a4-04fe-8082-9fee-ed878d8821e1" class="">And here I’m going to show you why you actually rely on validation of others, and it’s honestly pretty simple…</p><h1 id="27b7f6a4-04fe-8011-b3ac-c6d86eb12df7" class="">You Just Want Others To Have A Higher Perception Of You.</h1><p id="27b7f6a4-04fe-80a6-a5ab-d828a1bc0cb7" class="">You know, it’s weird.</p><p id="27b7f6a4-04fe-80f5-9d0b-f6f5034883a3" class="">in school I weirdly used to fantasise about coming in with the nicest, most expensive jacket.</p><p id="27b7f6a4-04fe-8084-a7db-d35c2a66de5f" class="">Something like a canada goose, moncler, you get it.</p><p id="27b7f6a4-04fe-803a-92e5-e7e3a40ebb26" class="">But I didn’t want the jacket just so I could be warm in my Moncler.</p><p id="27b7f6a4-04fe-80f7-9ac6-dc355fac7de1" class="">No. I wanted others to scan the badge and start saying “yoooooo, he’s got a real moncler”</p><p id="27b7f6a4-04fe-8062-826c-e361e2914f35" class="">I didn’t speak much.</p><p id="27b7f6a4-04fe-80b5-8e0c-da33b1f4f54d" class="">So people had a low perception of me. I was just quiet and shy.</p><p id="27b7f6a4-04fe-8016-a376-fde40c4ed368" class="">But if I came in with a Moncler jacket?</p><p id="27b7f6a4-04fe-805a-9e9b-cb8e2a325494" class="">I’d be getting stares.</p><p id="27b7f6a4-04fe-80da-b28c-fcbbf5cf8c11" class="">Even by the girls. They’d finally bat an eye.</p><p id="27b7f6a4-04fe-809c-a30f-c1c61502897e" class="">But if I didn’t have a knitted badge that scans when you put your phone next to it?</p><p id="27b7f6a4-04fe-80dc-8c17-f7d7684f20c9" class="">I won’t even be noticed.</p><p id="27b7f6a4-04fe-802f-9115-dc32beeb76f6" class="">Now.. of course I didn’t get a moncler jacket.</p><p id="27b7f6a4-04fe-80de-8a28-db2a16a90e35" class="">I was saving my lunch money so I could buy r6 points on siege.</p><p id="27b7f6a4-04fe-807a-8a79-f06d8c45939c" class="">So I’d start looking for fakes that replicate the real thing.</p><p id="27b7f6a4-04fe-805a-959a-f0e6a254c94c" class="">But even then? I couldn’t get it.</p><p id="27b7f6a4-04fe-80dc-af9b-e481b581768d" class="">I was way too broke, and so was my mum.</p><p id="27b7f6a4-04fe-80d4-8169-fd39b36606c2" class="">So I’d get a watch on my birthday. A little Armani one that cost £100.</p><p id="27b7f6a4-04fe-80f0-b487-e4d51e6e4c56" class="">My mum and auntie put £50 together and bought it off a website called “wowcher”</p><p id="27b7f6a4-04fe-8093-9ca4-ebc538c0eb81" class="">it’s blacked out. Sleek. Armani.</p><p id="27b7f6a4-04fe-8013-8bf1-e5fe62321773" class="">It looks expensive.</p><p id="27b7f6a4-04fe-8079-be3f-ec4c3875adc4" class="">I’d roll up my sleeves just above it and put my hands in my pocket so it would stick out.</p><p id="27b7f6a4-04fe-801b-a73c-eae1a1c0531b" class="">Now when I walk past someone. Maybe their eyes will look in my direction.</p><p id="27b7f6a4-04fe-8054-a71d-e899be88c1d2" class="">It’s sleek. It’s blacked out. It’s Armani.</p><p id="27b7f6a4-04fe-8072-9366-f85188c1af91" class="">I got looks. and that was enough to fuel my confidence.</p><p id="27b7f6a4-04fe-80d0-aa2c-d0d58bbb8836" class="">I stopped looking at the floor when walking.</p><p id="27b7f6a4-04fe-808e-b741-d1a57177c0dc" class="">I started to think “yeah they love it, and they finally respect me”</p><p id="27b7f6a4-04fe-808c-ae24-dbfaa8088b31" class="">All because of a clock on my hand that was a certain colour.</p><p id="27b7f6a4-04fe-8052-ad6a-e611cb3308c9" class="">and it had a logo with letters below that spelt “A-r-m-a-n-i”</p><p id="27b7f6a4-04fe-8099-9676-ce74327c0fbb" class="">That was enough to fuel my confidence.</p><p id="27b7f6a4-04fe-8052-aa30-f81c69249393" class="">And really. it worked.</p><p id="27b7f6a4-04fe-80e4-894f-f5208ea1d30e" class="">I was a gamer that didn’t brush his teeth when going to school because I’d wake up 2 minutes before I had to leave.</p><p id="27b7f6a4-04fe-8079-b93b-c5da68d56514" class="">I would repel every girl.</p><p id="27b7f6a4-04fe-80fd-9a1c-c1ec39984aab" class="">But now?</p><p id="27b7f6a4-04fe-80e7-a1bf-c3d3a3a97c82" class="">I started believing everyone saw me as the “quiet rich” kid.</p><p id="27b7f6a4-04fe-80b5-a129-cad43f1d7eca" class="">I started doing skincare, fluffed my hair up, etc.</p><p id="27b7f6a4-04fe-80ca-a364-f14f0e2f34ed" class="">And later on I woke up midday.</p><p id="27b7f6a4-04fe-8070-b89d-e4ef6841717a" class="">and opened snapchat to the groupchat telling me the hot European blue eyed girl with big tits was crying on a school trip because a short cute, petite wasian girl on the same bus as her messaged me.</p><p id="27b7f6a4-04fe-8076-8c64-f543bc67cc3b" class="">I didn&#x27;t go to the trip. it was to a big shopping mall where everyone could go and spend and buy things.</p><p id="27b7f6a4-04fe-8067-ba67-d0fc36d1dfa8" class="">I couldn&#x27;t afford it. It would be embarrassing. I didn&#x27;t go.</p><p id="27b7f6a4-04fe-80d8-8d5f-e9c35bdb02a7" class="">But these were the 2 hottest girls in the year.</p><p id="27b7f6a4-04fe-80c6-a9a1-f063d017b4ed" class="">Honestly... it was a hard pick between the 2.</p><p id="27b7f6a4-04fe-8061-8d23-ee63d65034a7" class="">The blue eyed big tit european was way too frigid and shy, started blushing when she saw me in the corridors. good parents. a wifey type of girl.</p><p id="27b7f6a4-04fe-8006-97c9-d5c4a887aff5" class="">and the other one was cute. insanely fuckable. and a little devil.</p><p id="27b7f6a4-04fe-8072-b9c8-f9eedab06d29" class="">I had the choice, and little future note... I made the wrong one.</p><p id="27b7f6a4-04fe-808d-b85c-e8ffc228babf" class="">But honestly a blessing in disguise. she was a little devil. I&#x27;m pretty sure she still stalks me and checks my ig followers.</p><p id="27b7f6a4-04fe-80d1-917d-d8edd2ed39c8" class="">And the other one? I think she&#x27;s gone into the party scene and became a whore.</p><p id="27b7f6a4-04fe-80f7-bccf-cff23ebbe6af" class="">I don&#x27;t know. it&#x27;s a bit weird knowing that i caused that. But I&#x27;ll probably check her instagram later.</p><p id="27b7f6a4-04fe-80b3-845f-ddb99349c4c4" class="">But the point is. I still had the choice.</p><p id="27b7f6a4-04fe-80c1-b0d5-e63a1a7b42de" class="">But they would not have batted an eye if I didn’t get that watch.</p><p id="27b7f6a4-04fe-80e6-89c5-c35df07b309f" class="">But really. It wasn’t the watch that did it.</p><p id="27b7f6a4-04fe-8026-9bec-f451380c2b9f" class="">It was the belief that they saw me as “that guy”</p><p id="27b7f6a4-04fe-808a-9865-d7f2e27ae245" class="">And I eventually became it.</p><p id="27b7f6a4-04fe-8098-9073-f32768d5a3a2" class="">Hence why the “alchemy of self” works.</p><p id="27b7f6a4-04fe-8079-a367-ffdf172397fc" class="">And after all these years. I realised it.</p><p id="27b7f6a4-04fe-807e-a964-d452bf0da53d" class="">It wasn&#x27;t the external validation that attracted them.</p><p id="27b7f6a4-04fe-80c2-bf19-d03b0360a7e3" class=""><em><strong>It was the internal state of my mind.</strong></em></p><p id="27b7f6a4-04fe-8027-bd51-d33e46954d74" class="">I was looking for approval.</p><p id="27b7f6a4-04fe-8045-8517-d1b266e75008" class="">But back then I saw it as “having a nice watch”</p><p id="27b7f6a4-04fe-8030-9769-d76290127a8c" class="">Or “having a moncler jacket”</p><p id="27b7f6a4-04fe-8089-b1ad-dc1f8122541b" class="">No, I just wanted others to look at it.</p><p id="27b7f6a4-04fe-8008-9dce-cdf880185936" class="">Because they’d only look for one reason. And that’s because they’re surprised.</p><p id="27b7f6a4-04fe-805f-8890-fc442021d4ea" class="">And that little expression on a persons face that conveys “surprised” fuelled my ego.</p><p id="27b7f6a4-04fe-80e6-b6e9-c8acd3aae89a" class="">I started to walk more confident.</p><p id="27b7f6a4-04fe-80c9-86ca-f1c922dcd3a7" class="">I started to believe “yeah, the girls love me now”</p><p id="27b7f6a4-04fe-805f-817f-ed215ca39139" class="">I believed I went from the shy weird kid to the silent rich guy.</p><p id="27b7f6a4-04fe-806e-833d-f2b68fd002d4" class="">All because of a clock on my wrist.</p><p id="27b7f6a4-04fe-8073-b25b-fd4ca2f0cb10" class="">What a world.</p><p id="27b7f6a4-04fe-802b-8157-e267ea0f1e31" class="">I still wear that watch to this day. But now there’s something different about it.</p><p id="27b7f6a4-04fe-8082-a258-eb7eb81c87c9" class="">It’s cracked.</p><p id="27b7f6a4-04fe-80fd-bef1-f11640fb8f15" class="">I dropped it when opening my locker at the gym.</p><p id="27b7f6a4-04fe-80ea-91c2-dc796208a717" class="">I’ve got more than enough money to fix it now. But I won’t.</p><p id="27b7f6a4-04fe-802e-a211-ddc7cddbcf19" class="">All for one reason.</p><p id="27b7f6a4-04fe-80ef-9046-cd1890cd46fe" class="">If I was still in high school and it was cracked. I’d rather not bring it.</p><p id="27b7f6a4-04fe-80e7-bf7e-df4ef4ed5c1f" class="">They won’t even see the Armani logo anymore, it’s shattered.</p><p id="27b7f6a4-04fe-807c-808a-f0cf39d1efe2" class="">“He’s got a cracked watch, he can’t even afford to fix it”</p><p id="27b7f6a4-04fe-8002-a88d-e2330fa452a3" class="">The validation is gone.</p><p id="27b7f6a4-04fe-8094-b11b-cb5eede82fdd" class="">I’d go back to looking at the floor when walking.</p><p id="27b7f6a4-04fe-8057-a94c-d1e9d96e13aa" class="">It brings a meaning to me now, that’s why I won’t fix it.</p><p id="27b7f6a4-04fe-8051-98ab-da9a0f14aace" class="">But now I wear unbranded clean clothes. And a couple bracelets and a shiny chain that looks like rainbows when a flashlight goes on it.</p><p id="27b7f6a4-04fe-80d3-adc4-e055396f7c47" class="">Sometimes they get trapped inside my clothes. no one sees it.</p><p id="27b7f6a4-04fe-8063-b968-d4114ebab41f" class="">but I don’t fix it.</p><p id="27b7f6a4-04fe-80e7-9a46-f31be9d6f443" class="">I don’t need the “external” validation anymore.</p><p id="27b7f6a4-04fe-80b6-9098-f6371372b99c" class="">Because I know that I work harder than anyone else who talks to me.</p><p id="27b7f6a4-04fe-80c5-8b88-dbd402d7f6bc" class="">That brings me internal validation, I don&#x27;t need to rely on a finite source.</p><p id="27b7f6a4-04fe-8042-a4b2-d48c93bc6908" class="">So here.. why are you relying on external validation?</p><p id="27b7f6a4-04fe-80cf-9f55-c89ee0e541a0" class="">Because you don’t feel you give yourself enough.</p><p id="27b7f6a4-04fe-805f-ba3d-c76502612d6f" class="">Here’s a quote from Alex hormozi :</p><p id="27b7f6a4-04fe-809b-9204-cf32518cf179" class=""><em><strong>“Hard work is the point, not the way. You are the output of the hard work you do.”</strong></em></p><p id="27b7f6a4-04fe-803a-9262-cbf34dc66079" class="">You don’t work hard to get that thing you wanted THEN you get the validation from others.</p><p id="27b7f6a4-04fe-8057-99cb-d3cf5d79f309" class="">You work so hard that you can’t help but be confident in yourself because you know that you go to sleep with not even an ounce of work left in you.</p><p id="27b7f6a4-04fe-807c-9207-c05e0165eb9d" class="">The SOLE reason that you rely on external validation is that you don’t actually believe that you are “good enough”</p><p id="27b7f6a4-04fe-8004-82e1-e9e82e209b4b" class="">So you need an external force to actually prove to you that you ARE good enough.</p><p id="27b7f6a4-04fe-8024-b563-ea154637ab3b" class="">So if you want to stop relying on it, then you simply prove to yourself that you are good enough.</p><p id="27b7f6a4-04fe-8061-8fdf-c5c79ba607b9" class="">This doesn’t come from cute affirmations that you do in the mirror. “I am good enough”</p><p id="27b7f6a4-04fe-80d0-8d4e-f89c1702a3b7" class="">You prove it.</p><p id="27b7f6a4-04fe-809b-8619-f2a4e2cd918a" class="">Here’s another quote from Alex hormozi :</p><p id="27b7f6a4-04fe-80f7-9bab-d5d2c168fbdc" class=""><em><strong>“You don’t become confident by shouting affirmations in the mirror, but by having a stack of undeniable proof that you are who you say you are.”</strong></em></p><p id="27b7f6a4-04fe-8031-af8e-d594f7a247f9" class="">A “stack of proof” isn’t a shiny chain, it’s the fact that you KNOW you are actually worthy of respect.</p><p id="27b7f6a4-04fe-8023-9ec7-c6a8ea9307d8" class="">I could sit at home and watch anime all day for a couple months, I’d actually probably enjoy that in a way.</p><p id="27b7f6a4-04fe-800c-8754-e8e4a6fe78af" class="">Then I’d go out with my flashy chain out. My Jordan 4s.</p><p id="27b7f6a4-04fe-8046-b213-e82af643542b" class="">I look rich, but I’d fight the urge not look away when someone looks at me in the eye.</p><p id="27b7f6a4-04fe-805c-b325-ea0b7abcb343" class="">Why? Because I’m not the image I portray to the world.</p><p id="27b7f6a4-04fe-8014-b6a1-f3fdee0e77c0" class="">So, how do you stop relying on the approval of others?</p><p id="27b7f6a4-04fe-80fa-920b-d826631e7a3d" class=""><strong>Start relying on the approval of yourself.</strong></p><p id="27b7f6a4-04fe-800a-be4a-dc1d02b2425a" class="">And how do you do that?</p><p id="27b7f6a4-04fe-80e2-9e7d-c5cfac516849" class="">Really, I got this from locking myself in a room and barely speaking to anyone.</p><p id="27b7f6a4-04fe-8001-8020-d76c628cc8b9" class="">Why? Because if I slacked off in that period, I’d become severely depressed.</p><p id="27b7f6a4-04fe-80f3-8eba-dbcad5de800f" class="">No external validation, and no internal validation.</p><p id="27b7f6a4-04fe-805d-a8af-fcdb589f2d3f" class="">One makes up for the other.</p><p id="27b7f6a4-04fe-8076-b4b3-dcecb8e0847a" class="">But the beauty of internal validation?</p><p id="27b7f6a4-04fe-8060-b224-e1fe1acedc32" class="">It will give you external validation anyway. There’s not a person in this world that doesn’t respect a confident guy.</p><p id="27b7f6a4-04fe-80fd-86fa-fc919434a3ee" class="">So, what do you do?</p><p id="27b7f6a4-04fe-8096-8597-d9d3378e37e7" class=""><strong>Go into a world where there is no other people for a while.</strong></p><p id="27b7f6a4-04fe-8057-90db-e2aea6084435" class="">Really, that’s the key.</p><p id="27b7f6a4-04fe-8024-9cf7-c165c9249e3e" class="">It may sound crazy and borderline weird.</p><p id="27b7f6a4-04fe-80e9-9986-eb60fc55cf97" class="">But really. Imagine you lock yourself out of the world of “external validation”</p><p id="27b7f6a4-04fe-80cc-8961-ef77273e702b" class="">I mean no posting on social media of your “personal life”, because even a small like is “external validation”</p><p id="27b7f6a4-04fe-8062-a389-fcd30bfafe0c" class="">If you lock yourself off from the world…</p><p id="27b7f6a4-04fe-8023-9c9a-c7bbb99057f7" class="">You have no choice but to rely on the internal.</p><p id="27b7f6a4-04fe-80ee-8b1e-c6cb8f5325e8" class="">The winter is perfect for this, you can have an excuse for anything.</p><p id="27b7f6a4-04fe-80ef-b8d0-c4950cfcbcc5" class="">And you don’t do anything but work and more work.</p><p id="27b7f6a4-04fe-80c5-a20f-fbbfe453f960" class="">There is no external validation, so you have to build up your internal.</p><p id="27b7f6a4-04fe-8057-ba05-dc8090aaa12b" class="">Otherwise you&#x27;d probably kill yourself because of your thoughts.</p><p id="27b7f6a4-04fe-8011-ace0-c9cc1e4b57a9" class="">You’ll come out in the summer as a guy who won’t rely on external validation anymore, I promise you.</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

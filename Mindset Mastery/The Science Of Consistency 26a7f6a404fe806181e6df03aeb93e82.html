@@ -1,0 +1,708 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>The Science Of Consistency.
+
+</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="26a7f6a4-04fe-8061-81e6-df03aeb93e82" class="page sans"><header><h1 class="page-title"><strong>The Science Of Consistency.</strong><br/><br/></h1><p class="page-description"></p></header><div class="page-body"><p id="26a7f6a4-04fe-80cc-89a6-e9e88b062093" class="">Over the past six months, my life has been a blur of breakthroughs, big ideas, and exponential progress.</p><p id="26a7f6a4-04fe-8084-bb35-fea19692a45e" class="">I’ve been experimenting with improvement in all areas of my life — mind, body, spirit, business, <em><strong>and things are starting to come together...</strong></em></p><p id="26a7f6a4-04fe-809a-b4b5-ce0a31a2ba51" class="">When I first started doing this shit,  I reached “The Peak Of Mount Stupid” within a year.</p><p id="26a7f6a4-04fe-8096-9ced-f395edbd38f4" class="">this is also known as the &quot;self improvement autist&quot; stage.</p><figure id="26a7f6a4-04fe-804e-966b-c397c288c335" class="image"><a href="https://uploads-ssl.webflow.com/605b6c0e07d13bd783d2a2cd/61e43f94938f2bd52ad4cb56_dunning-kreugar.png"><img src="https://uploads-ssl.webflow.com/605b6c0e07d13bd783d2a2cd/61e43f94938f2bd52ad4cb56_dunning-kreugar.png"/></a></figure><h1 id="26a7f6a4-04fe-8060-a81c-ced5c4c17f82" class=""><em>Dunning Kruger Effect</em></h1><p id="26a7f6a4-04fe-800c-badb-c9f392b231f3" class=""><em>at the start of my journey...</em></p><p id="26a7f6a4-04fe-808d-b6a9-f89ee77181de" class="">I was obsessed with learning and sticking to self improvement, especially excursive.</p><p id="26a7f6a4-04fe-80a7-9169-cad34268f3dc" class="">and I even had the mindset of &quot;ignore girls, self improvement is better&quot;</p><p id="26a7f6a4-04fe-8039-b3db-f273040a4384" class="">I cringe when I look back at it, but i think everyone has had that stage.</p><p id="26a7f6a4-04fe-80f0-8b90-c0af4207509e" class="">I became a self improvement autist.</p><p id="26a7f6a4-04fe-8069-b04b-e33f5bd8d965" class="">The only thing that mattered to me was getting my calories in, bulking until I couldn&#x27;t eat anymore and was on the verge of throwing up.</p><p id="26a7f6a4-04fe-8040-b579-e7d91f0f2879" class="">eating frozen foods from aldi, still frying in seed oils, the only thing that mattered was calories.</p><p id="26a7f6a4-04fe-8025-9fc2-fb163fe4a219" class="">This worked to an extent. I gained quite a bit of muscle and strength.</p><p id="26a7f6a4-04fe-8094-b29b-dd1cacc09214" class="">I went from about 60kg to 83kg in a year. (which mostly was fat... but it did put some size on)</p><p id="26a7f6a4-04fe-80f5-bab3-d13f1dff15bf" class="">— but quickly realized that overdosing on food every night while playing Valorant until 3 AM wasn’t going to work. So I started experimenting.</p><h2 id="26a7f6a4-04fe-802c-8962-d8579b964d0d" class=""><strong>The Optimal (Insert Aspect Of Life Here) Is A Myth</strong></h2><p id="26a7f6a4-04fe-8093-8ec4-f297a950471a" class=""><strong>let&#x27;s use diet as an example.</strong></p><p id="26a7f6a4-04fe-80ef-81c2-e3ab0dcb6935" class="">Over the past year,  I have tried, keto, carnivore, low-carb, high-carb, animal based.</p><p id="26a7f6a4-04fe-80fa-95c2-ce929dc007d7" class="">recently, I became dogmatic about the carnivore diet... kind of thinking that &quot;this is the only way!&quot;</p><p id="26a7f6a4-04fe-80a1-975c-ddd91f4092da" class="">The reason I was so dogmatic is that I was on a spree of elimination. I was optimizing EVERYTHING to make me focus on my business better.</p><p id="26a7f6a4-04fe-807b-948b-c198e9a6aa1f" class="">and my vision was PURELY aligned to that one goal.</p><p id="26a7f6a4-04fe-80fd-b8fb-f87a30611e0a" class="">so obviously, to stick to the carnivore diet I had a strong belief that &quot;carnivore is right&quot;, so I started talking to everyone about it...</p><p id="26a7f6a4-04fe-805d-8a65-c1669d8984e7" class="">Now that I have hit some business success, getting a good amount of members in, I am feeling myself moving from the “Slope Of Enlightenment” to the “Plateau Of Sustainability.”</p><p id="26a7f6a4-04fe-80d2-8fc3-d4a25bd15289" class="">and I realised I&#x27;m probably not gonna just eat beef, salt, water and nothing else for the rest of my life...</p><p id="26a7f6a4-04fe-8098-b200-cce59b1dd367" class="">but I MIGHT do the carnivore diet in these &quot;cycles of intensity&quot; we&#x27;re going to talk about...</p><p id="26a7f6a4-04fe-800c-82c7-f89b3c299b94" class="">but with this lesson, I learnt some overall life lessons.</p><p id="26a7f6a4-04fe-809a-a793-d7bda66f704b" class="">Here are my recent realizations:</p><h2 id="26a7f6a4-04fe-803e-9e45-f91e070368dc" class=""><strong>Balance Is Found Through Cycles Of Intensity</strong></h2><p id="26a7f6a4-04fe-80e8-aad3-f1aff80edfd3" class="">we love to glorify monk mode and intensity.</p><p id="26a7f6a4-04fe-8028-b2d5-f2d3f5d8deb0" class="">I love a good old monk mode when you feel pulled to go all-in...</p><p id="26a7f6a4-04fe-8053-b8f4-c8647a2053ba" class="">laser-focused deep work, getting a years worth of work done in a month, losing sleep because the ideas won’t stop flowing, and riding the wave of dopamine and intrinsic drive</p><p id="26a7f6a4-04fe-8014-9173-ed3b573a5f6e" class="">but <em>sustainability</em> has to be taken into account.</p><p id="26a7f6a4-04fe-801a-89f5-e099fabcc9cc" class="">If you stay in a state of intensity or optimization for too long, you hit a point of diminishing returns on quality of life.</p><figure id="26a7f6a4-04fe-80d3-b009-d4726e4069d3" class="image"><a href="https://uploads-ssl.webflow.com/605b6c0e07d13bd783d2a2cd/61e4401b45d177e7c2858478_optimization-vs-quality-of-life.png"><img src="https://uploads-ssl.webflow.com/605b6c0e07d13bd783d2a2cd/61e4401b45d177e7c2858478_optimization-vs-quality-of-life.png"/></a></figure><p id="26a7f6a4-04fe-80df-9265-f9803986caf9" class="">When I started optimizing too much, <em>life lost it&#x27;s quality of life.</em></p><p id="26a7f6a4-04fe-8080-ba35-e76909dc43c3" class="">Things became stressful. Everything outside of my normal routine was seen as a burden.</p><p id="26a7f6a4-04fe-801b-aa79-dfa4513d0e98" class="">If I didn’t control every little thing about my life, I couldn’t enjoy it for what it is.</p><h1 id="26a7f6a4-04fe-80d6-b5b6-ce5d0b1a8244" class=""><em><strong>here is a part of one of </strong></em><em><strong><a href="https://www.skool.com/silent-wealth-network-3314/classroom/1da4a5bf?md=87e96a7dc15c41279b024e1f8762363d">the philosophies</a></strong></em><em><strong> where I describe how I felt...</strong></em></h1><h1 id="26a7f6a4-04fe-8095-bb4c-c04c58e5161b" class=""></h1><p id="26a7f6a4-04fe-809b-a0d3-c9d1600064cf" class="">&quot;it&#x27;s just a matter of resilience, which. by definition means that you will have to get up when you are struck down.</p><p id="26a7f6a4-04fe-801b-b0d2-d32f6ce1b3f0" class="">and the best soldiers will be classed as resilient, most people view a resilient person as a person who just drives through everything.</p><p id="26a7f6a4-04fe-80a2-bc09-db6210794113" class="">when in reality, the definition is simply standing up after you&#x27;ve been knocked down.</p><p id="26a7f6a4-04fe-807d-a5ba-c66e560b9d9c" class="">and sometimes, you can&#x27;t control this knockdown period.</p><p id="26a7f6a4-04fe-801a-bc93-e580e4d95506" class="">it can last months, especially when you&#x27;ve burnt yourself out working 14 hour days for a while.</p><p id="26a7f6a4-04fe-8004-ba0e-cd814e49f779" class="">the cortisol will build so high that you will go into a state of forced relaxation, but that relaxation will not be relaxing as you will want to get back to work, but you just cannot bring yourself to do it no matter what.</p><p id="26a7f6a4-04fe-80f0-9caf-dc9f60c4b975" class="">and a depressed person is simply a person who doesn&#x27;t fulfill their promises.</p><p id="26a7f6a4-04fe-8003-9353-e04c8fc6a393" class="">I remember just sitting outside in the dark, trying to muster up an idea with my foggy brain, I was way too burnt out to even think.</p><p id="26a7f6a4-04fe-8056-ab49-ea3b8d8b6b18" class="">I&#x27;d just stay outside, sip and spit out water wishing I could just grind some more, but at the same time wishing i could just rest.</p><p id="26a7f6a4-04fe-8021-8f50-c89238f84244" class="">it sounds so weird from an outside perspective.</p><p id="26a7f6a4-04fe-8032-a850-f68ab1544073" class="">my brain was doing so much to tell me that you&#x27;re burnt the fuck out.</p><p id="26a7f6a4-04fe-806e-8871-e393bf20cfaa" class="">waking up at 3am for 2 months straight in the hot summer, no breaks.</p><p id="26a7f6a4-04fe-8004-81ce-d35bddbb1e4d" class="">rendering youtube videos while cooking so I could save the most time.</p><p id="26a7f6a4-04fe-8073-9b9e-f1800a3e1dc4" class="">day in day out, I didn&#x27;t actually give my brain time to think, since all i was doing was working, i even cut out meditation to &quot;focus on work&quot; more.</p><p id="26a7f6a4-04fe-8057-8b22-e931de2afbd6" class="">since my philosophy was &quot;alex hormozi eats sugary cakes before work, why would I meditate?&quot;</p><p id="26a7f6a4-04fe-801c-83a3-e4bc9fe6fcc5" class="">but with this mindset, all you do is literally work and nothing else.</p><p id="26a7f6a4-04fe-808f-8f92-d125f27e2dc3" class="">and with work, your brains neurons are firing and destroying themselves because you&#x27;re doing so much output.</p><p id="26a7f6a4-04fe-8078-93be-dcd964ca7675" class="">so much output, but there&#x27;s no input.</p><p id="26a7f6a4-04fe-80b3-a268-c6e096879201" class="">and by laws of physics, you should know that you always have an equal and opposite reaction to everything.</p><p id="26a7f6a4-04fe-8089-b93b-f271f3ad2c5f" class="">and in this case, it was pure output, no input.</p><p id="26a7f6a4-04fe-8048-988d-fa534da52fbe" class="">my brain was just dehydrated and I&#x27;m not giving it any chance to drink water because I was so much into this &quot;grind no rest&quot; mode.</p><p id="26a7f6a4-04fe-80ed-8f3d-c5333429a7de" class="">but even da vinci wouldn&#x27;t touch his brush after weeks of painting, barely any sleep, barely even eating.</p><p id="26a7f6a4-04fe-8088-8cde-e33627f35092" class="">and you think you could be in this mindset of &quot;all grind no rest&quot; for a long period?</p><p id="26a7f6a4-04fe-80a1-ad04-ea1ea87247df" class="">i respect that you have ambition.</p><p id="26a7f6a4-04fe-8089-9c73-df8a65351340" class="">and it&#x27;s weird how working too hard is a problem for us...</p><p id="26a7f6a4-04fe-80ba-8489-f9cfb4f0d669" class="">but you can&#x27;t separate the ying from the yang.</p><h2 id="26a7f6a4-04fe-8065-b3bb-fcb460565a6e" class=""><em><strong>the moral of this philosophy?</strong></em></h2><p id="26a7f6a4-04fe-802c-bb8c-ebb644ea5bc6" class="">after a while of INSANE over-optimization of your life, the results don&#x27;t start to get better, but they start to have diminishing returns....</p><p id="26a7f6a4-04fe-80ef-985a-dd9345ac1f77" class="">we understand this.</p><p id="26a7f6a4-04fe-80a6-8e19-c986b341efc1" class="">but why don&#x27;t understand why this happens...</p><h1 id="26a7f6a4-04fe-80f6-a890-ca952c785a2c" class=""><em><strong>so, here&#x27;s why...</strong></em></h1><p id="26a7f6a4-04fe-803a-bb33-db6ada841a95" class=""><strong>Trying to perfect every area of your life makes you hate the imperfections.</strong></p><p id="26a7f6a4-04fe-80a8-a899-f1b58020842a" class="">When you do this, you prevent yourself from enjoying the imperfection that is baked into the human condition.</p><p id="26a7f6a4-04fe-801a-99b8-d6e75ccfc67c" class="">Nature is perfect.</p><p id="26a7f6a4-04fe-80ed-9976-d4dfcda11032" class="">Nature Is Nature.</p><p id="26a7f6a4-04fe-8088-994c-cd2e769cba70" class="">Humans were blessed with thought.</p><p id="26a7f6a4-04fe-806e-a9e0-c188d6e89ade" class="">But sometimes thought overcomplicates and misinterprets nature as imperfect.</p><p id="26a7f6a4-04fe-80fd-a3f2-ee98ae39e121" class="">your thought goes into ego, and believes that you should follow the way of society...</p><p id="26a7f6a4-04fe-80dd-93b7-ca219ede76d0" class="">14 hour days for the rest of your life with no breaks — over-optimizing this is not a way to live.</p><p id="26a7f6a4-04fe-80f3-9b0f-ecedb5e1ab88" class="">there&#x27;s a law of nature which I love.</p><p id="26a7f6a4-04fe-80c5-8abf-f37bfec4515c" class="">and that there is no sunrise without sunset.</p><p id="26a7f6a4-04fe-8073-90a1-cdc054aae7ee" class="">there is no ying without yang.</p><p id="26a7f6a4-04fe-808d-b926-c148800dd6f3" class="">there is no light without dark.</p><p id="26a7f6a4-04fe-80ed-af7e-ec4058a025f4" class=""><em><strong>However, these states of intensity and optimization are necessary.</strong></em></p><p id="26a7f6a4-04fe-804d-90be-c32e70b4ff77" class="">think about it... if I didn&#x27;t go through these periods of insane discipline periods, I wouldn&#x27;t even be writing this module.</p><p id="26a7f6a4-04fe-80f2-acb1-f8f557302876" class="">I wouldn&#x27;t know that you NEED hard monk like discipline, AND rest.</p><p id="26a7f6a4-04fe-80ce-a176-fc93318e4c18" class="">I wouldn&#x27;t know how burnout actually feels.</p><p id="26a7f6a4-04fe-80f7-88d3-e6f588405010" class="">I wouldn&#x27;t know how to combat the burnout.</p><p id="26a7f6a4-04fe-8045-bffa-df79c27cf312" class="">All self-improvement stems from awareness.</p><p id="26a7f6a4-04fe-8001-af76-daa76748261b" class="">Awareness is found by diving into the unknown.</p><p id="26a7f6a4-04fe-8083-857b-c2d49db362e8" class="">Y<em>ou cannot improve what you are not aware of.</em></p><p id="26a7f6a4-04fe-80b5-a728-c48066b5c450" class="">you cannot become aware of things you don’t know exist (they exist in the unknown… the uncomfortable…).</p><h1 id="26a7f6a4-04fe-80e8-84fe-e5a606199ce8" class=""><em><strong>However, These &quot;Monk Mode&quot; Cycles Are Needed.</strong></em></h1><p id="26a7f6a4-04fe-80b5-8952-f5cc0e291e3b" class="">When you transition out of these high-intensity states...</p><p id="26a7f6a4-04fe-8010-9215-e515364e0aef" class="">you operate from a higher baseline on whatever you exponentially improved.</p><p id="26a7f6a4-04fe-8001-8039-df60c992b027" class="">Through intensity, you progress quickly.</p><p id="26a7f6a4-04fe-8003-9830-d662f867043c" class=""><em>You gain 1 year of experience in 1 month.</em></p><p id="26a7f6a4-04fe-80b1-8bf8-e7327c9e066c" class="">but obviously, with that comes a price...</p><p id="26a7f6a4-04fe-809e-bbc2-cf06cde4be91" class="">and it&#x27;s the diminishing returns you get after overoptimizing your life for so long...</p><p id="26a7f6a4-04fe-8072-aba0-e31e62e39ce6" class="">you see, this is how it works for me...</p><h1 id="26a7f6a4-04fe-801e-b2f5-fae100ec9538" class="">My Cycle Of Diminishing Returns...</h1><ol type="1" id="26a7f6a4-04fe-80b8-97fa-c89e56144bdf" class="numbered-list" start="1"><li>I start working on something.</li></ol><ol type="1" id="26a7f6a4-04fe-8037-8483-f3d436f694e5" class="numbered-list" start="2"><li>I LOVE the thing I&#x27;m working on.</li></ol><ol type="1" id="26a7f6a4-04fe-80f0-b4b9-c29be864b4b9" class="numbered-list" start="3"><li>All I think about is the thing I&#x27;m working on, getting constant new ideas...</li></ol><ol type="1" id="26a7f6a4-04fe-80d7-a15a-cb7ce23a6644" class="numbered-list" start="4"><li>I work on that project for a certain amount of time.</li></ol><ol type="1" id="26a7f6a4-04fe-8068-b28f-e299d7799d03" class="numbered-list" start="5"><li>I start to lose all drive towards that project, I procrastinate EVERYTHING to get away from it.</li></ol><p id="26a7f6a4-04fe-8026-94ee-c84574c137ad" class="">and that&#x27;s when you know that you have your diminishing returns.</p><p id="26a7f6a4-04fe-80f4-83ae-d211f40d71ee" class="">once again, back to this graph.</p><figure id="26a7f6a4-04fe-80e0-95e2-cbab093ae616" class="image"><a href="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/0c0fdbc78d5b4aaeb22b88ce34f790f893ea0bdcd69542808ede75cb1e60ba98"><img src="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/0c0fdbc78d5b4aaeb22b88ce34f790f893ea0bdcd69542808ede75cb1e60ba98"/></a></figure><p id="26a7f6a4-04fe-809b-bf90-e1f0d4936431" class="">I start something new, and I fall in love with it...</p><p id="26a7f6a4-04fe-8009-9460-fa74e09dd68f" class="">then I start to hate it, and enter the valley of despair.</p><p id="26a7f6a4-04fe-806d-a9b4-cd321cc90cef" class="">then I acknowledge that I entered the valley of despair, or I got &quot;burnt out&quot;</p><p id="26a7f6a4-04fe-80c9-8ad9-e254fb89dcbc" class="">then comes the slope of enlightenment... which comes from knowing that you reached peak of mount stupid at first, and that you&#x27;re in this cycle.</p><p id="26a7f6a4-04fe-8046-8979-d2054102ce36" class="">and there you have sustainability, which leads to consistency.</p><p id="26a7f6a4-04fe-80ee-aa46-eb754b9d5313" class="">but here&#x27;s the main point...</p><p id="26a7f6a4-04fe-8090-85f1-d407955b83e4" class="">this cycle will always happen, but the one thing you CAN change, is that you find out where the point of diminishing returns are.</p><p id="26a7f6a4-04fe-80a9-9c62-f62e3154b12c" class="">and THEN that&#x27;s when you take the rest from the monk mode...</p><p id="26a7f6a4-04fe-8019-aba0-fa26f6c8455e" class="">then after you&#x27;ve rested for long enough, you&#x27;ll have a DRIVE to work again.</p><p id="26a7f6a4-04fe-8085-821f-f277890f05d7" class="">like when you&#x27;re at the holidays, but you just want to go home.</p><p id="26a7f6a4-04fe-8017-8e0f-fba8158b9ba7" class="">you will have that feeling with work.</p><p id="26a7f6a4-04fe-800b-b434-d232ae25450b" class="">and that&#x27;s your mental reset.</p><p id="26a7f6a4-04fe-8039-813c-d5605280cfe3" class="">it&#x27;s like da vinci when he got burnt out from painting for 14 hour days...</p><p id="26a7f6a4-04fe-8077-b525-f6e8dff89861" class="">he didn&#x27;t touch his brush for DAYS...</p><p id="26a7f6a4-04fe-802f-b652-f976095da3f8" class="">and then he started painting again in his &quot;monk mode&quot; season.</p><p id="26a7f6a4-04fe-80ed-aa33-ce7be6235894" class="">everyone experiences this cycle, don&#x27;t think you&#x27;re more disciplined than da vinci.</p><h2 id="26a7f6a4-04fe-80ad-9991-cc61182b0da9" class=""><strong>The Fundamentals (And Your Consistency With Them) Are What Matters.</strong></h2><p id="26a7f6a4-04fe-80c7-83ec-c095ee24d66e" class="">Through my cycle of intensity, I have reached a higher baseline.</p><p id="26a7f6a4-04fe-803b-9ee5-d3a242d2d347" class="">think about this...</p><p id="26a7f6a4-04fe-80d3-9b19-f9ccb72af2e4" class="">I stuck to a diet that consisted of :</p><ul id="26a7f6a4-04fe-80ec-a28e-f119b26d881c" class="bulleted-list"><li style="list-style-type:disc">beef</li></ul><ul id="26a7f6a4-04fe-8092-9956-f04954c38c5c" class="bulleted-list"><li style="list-style-type:disc">salt</li></ul><ul id="26a7f6a4-04fe-809f-a2f2-f0ea785853c4" class="bulleted-list"><li style="list-style-type:disc">water</li></ul><p id="26a7f6a4-04fe-8028-889f-f5f525c11766" class="">for months.</p><p id="26a7f6a4-04fe-80df-8e46-c5c7ff5a9fcc" class="">so now, my &quot;normal&quot; diet when I&#x27;m not in these cycles of intensity will not be undisciplined.</p><p id="26a7f6a4-04fe-80f3-b877-d37ff7ef8cbf" class="">fruit IS the dessert for me.</p><p id="26a7f6a4-04fe-80d7-a14a-fb37907707e3" class="">I will never eat some bullshit food, because these cycles of intensity when I eat only beef upped my standards.</p><p id="26a7f6a4-04fe-80b6-a731-c61385e0dc17" class="">so when I add honey, fruit, and kefir back in.... it feels like I&#x27;m in heaven.</p><p id="26a7f6a4-04fe-8000-878e-e034895ca6b9" class="">so that&#x27;s why I&#x27;m so &quot;disciplined&quot; in my diet, because it takes no discipline.</p><p id="26a7f6a4-04fe-80dc-bae9-eae92a88143a" class="">The fundamentals are what you can fall back on when things get too intense.</p><p id="26a7f6a4-04fe-8050-aba2-d9b1f8de3039" class="">They are the ‘levers’ for making progress.</p><p id="26a7f6a4-04fe-80a2-95fe-f10b0a036c17" class="">When you feel lost, overwhelmed, or directionless in your pursuit of personal and business development, come back to the fundamentals — write them down.</p><p id="26a7f6a4-04fe-8023-b365-f0308ae8f059" class=""><strong>MY health fundamentals are now:</strong></p><ul id="26a7f6a4-04fe-8001-b9e5-e65a2a72d32e" class="bulleted-list"><li style="list-style-type:disc">Eat only meat, dates, raw honey, butter, kefir, black coffee (with who</li></ul><ul id="26a7f6a4-04fe-8080-863d-e23a64058ac0" class="bulleted-list"><li style="list-style-type:disc">Gym 7x a week (when I have nothing to train, I go sauna)</li></ul><ul id="26a7f6a4-04fe-8021-8aba-fe736a60338b" class="bulleted-list"><li style="list-style-type:disc">Walking once a day within the length of the daily quest.</li></ul><ul id="26a7f6a4-04fe-80ec-9511-d87fc85e919b" class="bulleted-list"><li style="list-style-type:disc">Eat meat Until failure, eat some butter stuffed dates with raw honey as a dessert.</li></ul><ul id="26a7f6a4-04fe-8055-8067-f62b74c269e7" class="bulleted-list"><li style="list-style-type:disc">Cold plunge every morning just before sunrise.</li></ul><p id="26a7f6a4-04fe-8046-b599-c04ddfe1179f" class="">you know... normal people will see this and think I&#x27;m so disciplined.</p><p id="26a7f6a4-04fe-8039-aafd-ee29c1e5e920" class="">but honestly, I kind of see this as a treat.</p><p id="26a7f6a4-04fe-8015-af8f-f3999bc1baf4" class="">butter stuffed dates with raw honey? that&#x27;s like ice cream.</p><p id="26a7f6a4-04fe-806c-95b4-c629819d25bb" class="">cold plunge every morning just before sunrise? the birds chirping and the dark blue sky is beautiful.</p><p id="26a7f6a4-04fe-80a1-8216-d5486f6241a2" class="">gym 7x a week? it&#x27;s just harder for me to NOT go gym, it&#x27;s literally a fundamental.</p><p id="26a7f6a4-04fe-800c-8852-c56ea703fd08" class="">i&#x27;ve not missed a day of gym willingly in like 2 years, it&#x27;s just not an occurrence.</p><p id="26a7f6a4-04fe-8011-9a4a-cb9ac0c8497d" class="">and it&#x27;s not like I can&#x27;t be social with this...</p><p id="26a7f6a4-04fe-802d-9376-f7d140d48bce" class="">this doesn&#x27;t take up my whole day...</p><p id="26a7f6a4-04fe-80c0-9c77-e28f22d46190" class="">i mean it&#x27;s just a cold plunge, walk, gym.</p><p id="26a7f6a4-04fe-805e-ba8e-c5fb8ac77656" class="">that&#x27;s my normal &quot;baseline&quot; that I will fall back to in health.</p><h1 id="26a7f6a4-04fe-8011-b2e5-eee6ca0d4089" class=""><em><strong>BUT HERE&#x27;S THE THING...</strong></em></h1><p id="26a7f6a4-04fe-80f4-b6bb-d04170edccea" class="">as you have a &quot;intensity cycle&quot; when you go monk mode.</p><p id="26a7f6a4-04fe-8024-bed4-d78d12509c37" class="">there will also be an &quot;intensity cycle&quot; when you rest.</p><p id="26a7f6a4-04fe-80ca-b01b-ebc03c9d76cd" class="">an example of this is travelling.</p><p id="26a7f6a4-04fe-809d-ae63-e037755db6e0" class="">When traveling, I’m not missing out on commonly demonized foods like pasta, bread, and other carb sources.</p><p id="26a7f6a4-04fe-80ac-ad3c-eb7781b35c2a" class="">I shit on grains often because I know that you shouldn&#x27;t eat them, but do you think I wont eat pasta if I&#x27;m on a holiday in italy?</p><p id="26a7f6a4-04fe-8044-8ca5-cc0f302347c6" class="">This is the beauty of these “Cycles Of Intensity.”</p><p id="26a7f6a4-04fe-8045-ab32-e0933a691c28" class="">you have cycles of extreme discipline.</p><p id="26a7f6a4-04fe-80a7-885f-d81af13b61b0" class="">you have cycles of extreme rest.</p><p id="26a7f6a4-04fe-8099-9c75-d2ec1c49029d" class="">and you have your normal baseline.</p><p id="26a7f6a4-04fe-8036-acf7-f5ab691cc6b3" class="">it all depends on what &quot;season&quot; you&#x27;re currently in...</p><p id="26a7f6a4-04fe-8027-b73e-fc40df9e7abf" class="">if you want to make HUGE progress in the gym.</p><p id="26a7f6a4-04fe-809f-be0a-fb790c5862ba" class="">then you go into a &quot;cycle of intensity&quot; in the gym.</p><p id="26a7f6a4-04fe-806d-8c02-fc3ddc4e59d5" class="">and you optimise everything in your life for the gym, until you start to get diminishing returns..</p><p id="26a7f6a4-04fe-80a4-bf3a-f4ea523c603b" class=""><em><strong>you make 1 year of progress in 3 months in the gym... then you start to get diminishing returns... rest.</strong></em></p><p id="26a7f6a4-04fe-809d-91cb-db4f17107b87" class=""><em><strong>fall back to the &quot;standards&quot; you have.</strong></em></p><p id="26a7f6a4-04fe-80a4-93dc-c937896bbd44" class=""><em><strong>then you repeat again.</strong></em></p><p id="26a7f6a4-04fe-80fe-964d-e3c484a7f4ed" class="">if you want to make HUGE progress in business...</p><p id="26a7f6a4-04fe-8065-8ab3-faf9f391b5aa" class="">then you go into a &quot;cycle of intensity&quot; in business.</p><p id="26a7f6a4-04fe-80d9-9d44-fceadd5a79cc" class=""><em><strong>you 5x your whole income in one month... then you start to get diminished returns... rest.</strong></em></p><p id="26a7f6a4-04fe-8090-8337-fa3ec112fcec" class=""><em><strong>then you fall back to the &quot;standards&quot; you have.</strong></em></p><p id="26a7f6a4-04fe-8086-9774-d3b23ac8b7d4" class="">then you repeat again.</p><p id="26a7f6a4-04fe-80ce-9fd6-c3798bd6b604" class="">This does not eliminate the merit of a disciplined lifestyle.</p><p id="26a7f6a4-04fe-8069-a792-d55f09753b70" class="">This IS a disciplined lifestyle.</p><p id="26a7f6a4-04fe-80da-a75c-ebc9d2a53bd8" class="">This is why intensity is needed to find balance.</p><p id="26a7f6a4-04fe-8023-bc1b-c2cb71546d10" class="">you might be scared and not making any progress for multiple years because you&#x27;re afraid to go all in.</p><p id="26a7f6a4-04fe-8042-b41c-e4597080482c" class="">but that&#x27;s just avoiding the &quot;cycle of intensity&quot; which will make you the progress.</p><p id="26a7f6a4-04fe-8043-98ec-e4baedd0a42f" class="">the only reason you&#x27;re scared is because you experienced diminishing returns and possible <em><strong>burnout...</strong></em></p><p id="26a7f6a4-04fe-806f-8a73-cb006a42ad91" class=""><em><strong>and your mind keeps on reminding you of that one time you burnt out.</strong></em></p><p id="26a7f6a4-04fe-8079-9df7-f7329dcffdc8" class=""><em><strong>this is why you go into a &quot;forced state of relaxation&quot; when you are burnt out.</strong></em></p><p id="26a7f6a4-04fe-80dc-8c8a-f3e5c803f354" class=""><em><strong>because your brain will do anything to get away from the work.</strong></em></p><h2 id="26a7f6a4-04fe-803c-9a95-e267fd05efb6" class=""><strong>Life Is A Series Of Science Experiments</strong></h2><p id="26a7f6a4-04fe-80e6-b45c-d6b4d7f3104c" class="">I have been speaking in terms of health mostly here… but this applies to all areas of life.</p><p id="26a7f6a4-04fe-80e4-8d6a-c6475e7c733e" class="">Life is about experimentation. Learning what you like and don’t like. Seeing what works and what doesn’t.</p><p id="26a7f6a4-04fe-8033-8017-d6e525768672" class="">Slowly making small upgrades in the traits, skills, and wisdom that your character holds.</p><p id="26a7f6a4-04fe-8080-91ad-dd1874728d40" class="">These small boosts in experience and upgrades lead to massive results in the game of life.</p><p id="26a7f6a4-04fe-80b7-ac49-e7ea12ea8f97" class="">For me, I switched businesses like 5 times before I found this one.</p><p id="26a7f6a4-04fe-804b-b357-ffcb42a63396" class="">smma, dropshipping, affiliate marketing, youtube channel, then writing...</p><p id="26a7f6a4-04fe-803d-9e69-c2e093679813" class="">I went into a HUGE smma cycle of intensity, sending out cold emails.</p><p id="26a7f6a4-04fe-8067-83a5-eafc19b25ca5" class="">that was my first experiment, and the first sales call left me traumatised.</p><p id="26a7f6a4-04fe-80eb-a806-c94f7ada8d6e" class="">then same thing happened with dropshipping, youtube...</p><p id="26a7f6a4-04fe-807f-a820-dbe485ab260d" class="">and none of them stuck with me.</p><p id="26a7f6a4-04fe-80d0-8ff9-cf5dc92c50f5" class=""><em><strong>but guess what?</strong></em></p><p id="26a7f6a4-04fe-8079-9743-e3396958212d" class="">I wouldn&#x27;t have know that if I didn&#x27;t go all in on them.</p><p id="26a7f6a4-04fe-80ed-b12b-d30552e1bc21" class="">If you have no idea what to pursue — your life’s work, your purpose, your passions — <strong>you must start experimenting</strong>. You need to throw shit at a wall and see what sticks. <em>You need to try enough things in a high intensity state.</em></p><p id="26a7f6a4-04fe-803e-98b7-f8ae53190ac9" class="">but if you&#x27;re strugging rn and you&#x27;re in a rut.</p><p id="26a7f6a4-04fe-80b9-8e3e-c89e29a447ab" class="">when you haven&#x27;t even been &quot;burnt out&quot;</p><p id="26a7f6a4-04fe-8002-ad2c-d0e00cd7521d" class="">you&#x27;re probably still in stage 1, you are stuck in the trap of cheap dopamine.</p><p id="26a7f6a4-04fe-80ed-a278-f0645be76c31" class="">but don&#x27;t worry, that&#x27;s what this network is made to get you out of.</p><p id="26a7f6a4-04fe-80c1-ad72-dac110877970" class="">so, do you start experimenting? You treat all areas of your life as a science project.</p><figure id="26a7f6a4-04fe-808d-a3bf-e07f9f66aac8" class="image"><a href="https://uploads-ssl.webflow.com/605b6c0e07d13bd783d2a2cd/61e4405a33e8a312980a59d0_scientific-method.jpeg"><img src="https://uploads-ssl.webflow.com/605b6c0e07d13bd783d2a2cd/61e4405a33e8a312980a59d0_scientific-method.jpeg"/></a></figure><h1 id="26a7f6a4-04fe-8088-b5c3-f4a5a70c398c" class=""><em>The Scientific Method</em></h1><p id="26a7f6a4-04fe-8000-98d7-fc6aa1f4e0ea" class="">Your body is a project. Your health is a project. Your relationships are a project. Your business is a project. All of these have more projects embedded in them.</p><p id="26a7f6a4-04fe-801f-be60-fb2cbd7c724e" class="">The “Project Mindset” is powerful.</p><p id="26a7f6a4-04fe-8095-91c8-f59b79cb9137" class="">Projects imply a desired outcome (improvement), steps to completion (goals and metrics), and actions that will move you closer to completion (priorities).</p><p id="26a7f6a4-04fe-80f2-9715-d2e321a481ff" class="">They also imply failure. Not all experiments are successful.</p><p id="26a7f6a4-04fe-8021-a489-e920dc8fc02c" class="">When you think of this as a project, it is easier to detach from the outcome.</p><p id="26a7f6a4-04fe-80d2-a939-fa0b73fc3436" class="">You see failure as a chance to iterate and improve.</p><p id="26a7f6a4-04fe-8095-b0a5-fc833e18a0dc" class="">Failure is feedback on what to improve. Looping back to awareness — <em>you cannot improve what you are not aware of.</em></p><p id="26a7f6a4-04fe-805f-8cfe-cd1c9f1c1c16" class="">You need to come into your experiments with an open and curious mind. This will give room for questioning. Curiosity is fueled by questions. Question:</p><p id="26a7f6a4-04fe-801a-b2f2-f1a0fa77a012" class="">What would life look like if I tried this thing I’ve never tried before?</p><p id="26a7f6a4-04fe-8009-b70a-ea42fdd2bd47" class="">the point of life IS to experiment (not In a gay way, but if you&#x27;re into that, go on)</p><p id="26a7f6a4-04fe-80c6-a347-d375b892f9c1" class="">You will naturally feel the pull to dive into the unknown. If you don’t, keep asking questions until you feel energized. That is your call to adventure. A call to become an explorer of the unknown. A call to start actualizing your potential.</p><h2 id="26a7f6a4-04fe-8085-b7ae-fa0fcb5d6f2e" class=""><strong>The Meaning Of Life Is To Pass Down Your Experiences</strong></h2><p id="26a7f6a4-04fe-80b0-952e-e9e0250043fe" class="">Experiments = experience.</p><p id="26a7f6a4-04fe-80cd-87fc-c68d90618bbf" class="">how do you think I started this business?</p><p id="26a7f6a4-04fe-80a6-b15b-c02168a8d6be" class="">I got all my life lessons from past &quot;cycles of intensity&quot;</p><p id="26a7f6a4-04fe-80d2-8a96-c3ccb7c07b6a" class="">if you do not pursue cycles of intensity, you will make no progress in any area of life.</p><p id="26a7f6a4-04fe-80f5-96ee-dfb22cbb64f8" class="">Experimentation is how you find what works for you.</p><p id="26a7f6a4-04fe-8029-bff2-e5c21001bc4d" class="">Experimentation is how you form your personal health, wealth, and relationships philosophy</p><p id="26a7f6a4-04fe-801b-85bb-f6831f3b0e4b" class="">allowing you to pass down your lessons and make money doing so (this is arguably the meaning of life)</p><p id="26a7f6a4-04fe-80af-a535-ee9f1f3e7122" class="">Experimentation is how you form your life philosophy. The mindset that you look at life with.</p><p id="26a7f6a4-04fe-80f8-a4c6-fad9d0278a84" class="">Since we talk a lot about business here</p><p id="26a7f6a4-04fe-80d7-95e1-fe2b0ce3a345" class="">this ties in perfectly. Business...</p><p id="26a7f6a4-04fe-80bf-9c19-eacac38bf613" class="">in our case online business is your vessel for pursuing your life’s work.</p><p id="26a7f6a4-04fe-8001-bdc3-f4d1a9a137bd" class="">Your life’s work consists of pursuing your interests (experiments), becoming a niche of one (understanding how to market, sell, and distribute), and packaging up your experiences in a way that the end-user can digest and implement.</p><p id="26a7f6a4-04fe-8057-abcc-d8a6a1b44149" class="">Money is a byproduct of your irreplaceable value.</p><p id="26a7f6a4-04fe-80dc-a75d-df0899c05e2e" class="">and this is LITERALLY the system we have lined out in the inbound method.</p><ul id="26a7f6a4-04fe-80ba-a4d9-d14638995f18" class="bulleted-list"><li style="list-style-type:disc">you start with a topic you want to go into a deep &quot;cycle of intensity&quot; with. (literally can be anything)</li></ul><ul id="26a7f6a4-04fe-805e-80bc-f8ea813c2faa" class="bulleted-list"><li style="list-style-type:disc">you learn, learn, learn, you fall in love with the topic.</li></ul><ul id="26a7f6a4-04fe-8089-a994-ef2a4b148220" class="bulleted-list"><li style="list-style-type:disc">naturally, you will get SO much knowledge on the topic because you just loved exploring it.</li></ul><ul id="26a7f6a4-04fe-80ca-969e-d3d84ddcb62e" class="bulleted-list"><li style="list-style-type:disc">you master the certain topic (literally, can be anything, sleep, diet, mindset, productivity, lucid dreaming, literally ANYTHING.)</li></ul><ul id="26a7f6a4-04fe-807f-8542-fdf7e779339c" class="bulleted-list"><li style="list-style-type:disc">you teach the topic to others in the lens of passion from you, you educate people.</li></ul><p id="26a7f6a4-04fe-80dc-a1b1-de2a097bfa20" class="">this is the life path to gain eternal wisdom, and fulfilment.</p><p id="26a7f6a4-04fe-8087-a611-e024dd9cb74d" class="">you&#x27;re adventuring into different cycles of intensity to make money.</p><p id="26a7f6a4-04fe-80cf-ba2e-cc7cc54d7b14" class="">so, that&#x27;s the moral of the story.</p><p id="26a7f6a4-04fe-80a1-b3bc-d8961d53dd1c" class="">you need cycles of deep intensity.</p><p id="26a7f6a4-04fe-8016-b754-c83053a03bc5" class="">you need cycles of deep rest.</p><p id="26a7f6a4-04fe-805c-bd3e-c617ec1443ed" class="">and most importantly, you need a certain baseline you fall back to.</p><p id="26a7f6a4-04fe-804a-8dcc-e3fe58b1cac8" class="">REMEMBER, the most important part of this... is probably knowing how burnout works.</p><figure id="26a7f6a4-04fe-8045-9742-cc2b2df546bf" class="image"><a href="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/258c642d33a6453091a14ed3b8b7219e1e617611324f44c1b4400b402b2b77d6"><img src="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/258c642d33a6453091a14ed3b8b7219e1e617611324f44c1b4400b402b2b77d6"/></a></figure><p id="26a7f6a4-04fe-8087-91c2-d48a2116041d" class="">you will work, work, work until you start to get diminishing returns...</p><p id="26a7f6a4-04fe-801c-8614-fa192bd350c2" class="">and then you go into a rest, or to your baseline.</p><p id="26a7f6a4-04fe-80a4-96d6-cf0378203f04" class="">that&#x27;s when the this effect comes into play...</p><p id="26a7f6a4-04fe-80d3-8a58-dccab9a4bd54" class="">you reach slope of enlightenment, and there you will reach the plateu of constant progress.</p><figure id="26a7f6a4-04fe-8045-9443-d0978180c10f" class="image"><a href="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/499c9fb5b87841fb8bab624a61b9862f20d53d5fdfe04935bcaa2154d32a1233"><img src="https://assets.skool.com/f/a0219e65cbee4df5bd7c52c65fcc1d99/499c9fb5b87841fb8bab624a61b9862f20d53d5fdfe04935bcaa2154d32a1233"/></a></figure><p id="26a7f6a4-04fe-80e4-a430-ee81a7f8aab1" class="">this is the science of consistency.</p><p id="26a7f6a4-04fe-80c6-b4d5-db201c6e09fc" class="">hope you learnt something.</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
