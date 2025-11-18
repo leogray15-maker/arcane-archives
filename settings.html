@@ -1,683 +1,449 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Settings | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
+    <link rel="icon" href="ArcaneA.png" />
+
+    <!-- 🔒 Protect Settings (must be logged in + subscribed) -->
+    <script type="module">
+        import { protectPage } from "./auth-guard.js";
+        protectPage({ requireSubscription: true });
+    </script>
+
     <style>
         :root {
             --bg-dark: #02010a;
             --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
-            --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
-            --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
-            --border-color: rgba(148, 163, 184, 0.5);
-            --danger: #ef4444;
+            --purple-bright: #c084fc;
+            --purple-glow: rgba(147, 51, 234, 0.28);
+            --text-light: #e5e7eb;
+            --text-dim: #9ca3af;
+            --border-subtle: rgba(148, 163, 184, 0.35);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui;
             background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
             color: var(--text-light);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Back Button */
+        /* Back button */
         .back-btn {
             position: fixed;
-            top: 1.5rem;
-            left: 1.5rem;
-            z-index: 40;
-            padding: 0.4rem 0.9rem;
+            top: 1.2rem;
+            left: 1.3rem;
             border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148,163,184,.4);
+            background: rgba(15,23,42,.9);
             color: var(--text-dim);
+            padding: .38rem .9rem;
             text-decoration: none;
-            font-size: 0.85rem;
+            font-size: .85rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: .4rem;
             backdrop-filter: blur(12px);
-            transition: all 0.2s ease;
+            z-index: 999;
+            transition: .25s;
         }
+
+        .back-btn::before { content: "←"; }
 
         .back-btn:hover {
             color: var(--purple-light);
-            border-color: rgba(147, 51, 234, 0.8);
-            transform: translateX(-2px);
+            border-color: var(--purple-light);
+            transform: translateY(-1px);
         }
 
         /* Header */
         .header {
             max-width: 1200px;
-            margin: 2.5rem auto 0;
-            padding: 1.5rem 1.5rem 0.5rem;
+            padding: 4rem 1.5rem 1.2rem;
+            margin: 0 auto;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.7rem;
+            gap: .7rem;
             font-weight: 800;
-            letter-spacing: 0.1em;
-            font-size: 0.9rem;
-            color: var(--text-light);
+            letter-spacing: .1em;
         }
 
-        .logo img {
-            height: 32px;
-            width: 32px;
-        }
+        .logo img { width: 32px; height: 32px; }
 
-        /* Main layout */
+        /* Main */
         .main-content {
             max-width: 1200px;
-            margin: 0 auto 4rem;
-            padding: 0 1.5rem 0;
+            margin: 0 auto;
+            padding: 1rem 1.5rem 4rem;
+            flex: 1;
         }
 
-        .page-card {
-            margin-top: 1.5rem;
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
-            border-radius: 24px;
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            box-shadow:
-                0 30px 120px rgba(15, 23, 42, 0.85),
-                0 0 40px rgba(147, 51, 234, 0.25);
-            padding: 2rem;
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: .3rem;
+        }
+
+        .page-title span {
+            background: linear-gradient(130deg, #fbbf24, #a855f7, #22c55e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .page-sub {
+            font-size: .95rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            max-width: 32rem;
+        }
+
+        /* Settings layout */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr);
+            gap: 1.4rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            padding: 1.4rem 1.6rem;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,.6);
         }
 
-        .page-card::before {
+        .card::before {
             content: "";
             position: absolute;
-            inset: -40%;
-            background:
-                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.18), transparent 55%),
-                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.15), transparent 55%);
-            opacity: 0.6;
-            pointer-events: none;
+            inset: -50%;
+            background: radial-gradient(circle at top, var(--purple-glow), transparent 60%);
+            opacity: .2;
+            transition: .25s;
         }
 
-        .page-card-inner {
-            position: relative;
-            z-index: 1;
-        }
+        .card:hover::before { opacity: .3; }
 
-        .page-header {
-            margin-bottom: 1.8rem;
-        }
-
-        .page-header-eyebrow {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
-            color: var(--text-dim);
-            margin-bottom: 0.35rem;
-        }
-
-        .page-header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .page-header h1 span {
-            background: linear-gradient(135deg, var(--purple-light), var(--purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .page-header p {
-            color: var(--text-dim);
-            font-size: 0.96rem;
-        }
-
-        .settings-container {
-            display: grid;
-            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-            gap: 1.8rem;
-            margin-top: 1.5rem;
-        }
-
-        .settings-main,
-        .settings-side {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .setting-section {
-            background: rgba(15, 23, 42, 0.95);
-            border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            padding: 1.5rem 1.6rem;
-        }
-
-        .setting-section h2 {
+        .card h2 {
             font-size: 1.1rem;
-            margin-bottom: 0.6rem;
-            color: var(--purple-light);
+            margin-bottom: .25rem;
         }
 
-        .setting-section p.subtext {
-            font-size: 0.85rem;
+        .card p {
+            font-size: .85rem;
             color: var(--text-dim);
             margin-bottom: 1rem;
         }
 
-        .setting-item {
-            margin-bottom: 1rem;
-        }
-
-        .setting-item label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            margin-bottom: 0.35rem;
-        }
-
-        .setting-item input[type="text"],
-        .setting-item input[type="email"],
-        .setting-item input[type="password"],
-        .setting-item select {
-            width: 100%;
-            padding: 0.65rem 0.8rem;
-            border-radius: 10px;
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            background: rgba(15, 23, 42, 0.95);
-            color: var(--text-light);
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        .setting-item input:focus,
-        .setting-item select:focus {
-            border-color: rgba(147, 51, 234, 0.8);
-            box-shadow: 0 0 0 1px rgba(147, 51, 234, 0.5);
-        }
-
-        .setting-item input[disabled] {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .btn-row {
-            margin-top: 0.6rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 999px;
-            padding: 0.7rem 1.3rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: #fff;
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.45);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text-dim);
-            border: 1px solid rgba(148, 163, 184, 0.6);
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.08);
-            color: #fecaca;
-            border: 1px solid rgba(248, 113, 113, 0.7);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* Avatar */
-        .avatar-wrapper {
+        /* Avatar section */
+        .avatar-row {
             display: flex;
             align-items: center;
             gap: 1rem;
             margin-bottom: 1rem;
         }
 
-        #currentAvatarPreview {
-            width: 56px;
-            height: 56px;
-            border-radius: 999px;
-            background: radial-gradient(circle, #a78bfa, #4c1d95);
+        .avatar-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 1px solid var(--purple-light);
+            object-fit: cover;
+        }
+
+        .avatar-actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #fff;
-            flex-shrink: 0;
+            flex-direction: column;
+            gap: .4rem;
         }
 
-        .avatar-selection {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
+        .small-label {
+            font-size: .76rem;
+            color: var(--text-dim);
         }
 
-        .avatar-option {
-            width: 36px;
-            height: 36px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.2s;
+        .file-input {
+            font-size: .8rem;
+            color: var(--text-dim);
         }
 
-        .avatar-option:hover {
-            border-color: rgba(147, 51, 234, 0.9);
-            transform: translateY(-1px);
+        /* Form fields */
+        .field {
+            margin-bottom: .9rem;
         }
 
-        .avatar-option.selected {
-            border-color: rgba(147, 51, 234, 0.9);
-            box-shadow: 0 0 0 1px rgba(147, 51, 234, 0.6);
+        .field label {
+            display: block;
+            font-size: .8rem;
+            color: var(--text-dim);
+            margin-bottom: .25rem;
         }
 
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-top: 0.5rem;
+        .field input[type="text"],
+        .field input[type="email"] {
+            width: 100%;
+            padding: .6rem .8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,.45);
+            background: rgba(15,23,42,.96);
+            color: var(--text-light);
+            font-size: .88rem;
+            outline: none;
         }
 
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            left: -9999px;
+        .field input[type="text"]:focus,
+        .field input[type="email"]:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 1px var(--purple-light);
         }
 
-        .file-input-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.55rem 1.1rem;
-            background: rgba(147, 51, 234, 0.12);
-            border-radius: 999px;
-            border: 1px solid rgba(147, 51, 234, 0.5);
-            color: var(--purple-light);
-            font-size: 0.85rem;
-            cursor: pointer;
+        .field input[readonly] {
+            opacity: .7;
+            cursor: not-allowed;
         }
 
-        /* Toggles / notifications */
+        /* Toggles */
         .toggle-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.75rem;
-            margin-bottom: 0.6rem;
+            gap: .8rem;
+            padding: .5rem 0;
         }
 
-        .toggle-row span {
-            font-size: 0.9rem;
+        .toggle-label {
+            font-size: .86rem;
         }
 
-        .toggle-row small {
-            font-size: 0.75rem;
+        .toggle-desc {
+            font-size: .78rem;
             color: var(--text-dim);
-            display: block;
         }
 
-        .toggle-row input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--purple);
+        .toggle {
+            position: relative;
+            width: 42px;
+            height: 22px;
         }
 
-        .warning-text {
-            font-size: 0.85rem;
-            color: rgba(248, 113, 113, 0.9);
-            margin-bottom: 1rem;
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(31,41,55,1);
+            border-radius: 999px;
+            transition: .2s;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            top: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .2s;
+        }
+
+        .toggle input:checked + .slider {
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+        }
+
+        .toggle input:checked + .slider::before {
+            transform: translateX(18px);
+        }
+
+        /* Save button + status */
+        .card-footer {
+            margin-top: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .8rem;
+        }
+
+        .save-btn {
+            border-radius: 999px;
+            border: none;
+            padding: .65rem 1.4rem;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: #f9fafb;
+            cursor: pointer;
+            font-size: .88rem;
+            box-shadow: 0 18px 40px rgba(79,70,229,.4);
+            transition: .25s;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 45px rgba(79,70,229,.6);
+        }
+
+        .status-text {
+            font-size: .8rem;
+            color: var(--text-dim);
+        }
+
+        .status-success { color: #22c55e; }
+        .status-error { color: #f97316; }
 
         footer {
-            background: rgba(5, 5, 5, 0.95);
-            padding: 2rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.2);
-            text-align: center;
+            border-top: 1px solid rgba(31,41,55,.9);
+            background: radial-gradient(circle at top, rgba(15,23,42,.98), #020617 55%, #000 100%);
+            padding: 1.4rem 1.5rem 1.5rem;
+        }
+
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex; flex-direction: column; gap: .75rem;
         }
 
         .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+            display: flex; flex-wrap: wrap;
+            gap: .9rem 1.4rem;
+            font-size: .82rem;
         }
 
-        .footer-links a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
+        .footer-links a { color: var(--text-dim); text-decoration: none; }
+        .footer-links a:hover { color: var(--purple-light); }
 
-        .footer-links a:hover {
-            color: var(--purple-light);
-        }
-
-        .footer-bottom {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
+        .footer-bottom { color: var(--text-dim); font-size: .85rem; }
 
         @media (max-width: 960px) {
-            .settings-container {
+            .settings-grid {
                 grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
-            .back-btn {
-                position: static;
-                display: block;
-                margin: 1rem auto 0;
-                width: fit-content;
-            }
-            .header {
-                margin-top: 1rem;
-                padding-inline: 1rem;
-            }
-            .main-content {
-                padding-inline: 1rem;
-            }
-            .page-card {
-                padding: 1.5rem 1.25rem;
-            }
+            .back-btn { position: static; margin: 1rem auto 0; }
+            .header { padding-top: 1rem; }
         }
-    
-        /* Mobile optimization & Footer fix */
-        footer {
-            margin-top: 3rem;
-            width: 100%;
-        }
-
-        @media (max-width: 768px) {
-            .back-btn {
-                position: static !important;
-                display: block;
-                margin: 1rem auto !important;
-                width: fit-content;
-            }
-
-            .header {
-                margin-top: 1rem;
-                padding: 1rem;
-            }
-
-            .logo {
-                font-size: 0.8rem;
-                justify-content: center;
-            }
-
-            .logo img {
-                height: 28px;
-                width: 28px;
-            }
-
-            .main-content {
-                padding: 0 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .page-card {
-                padding: 1.5rem 1rem;
-                margin-top: 1rem;
-            }
-
-            .page-header h1 {
-                font-size: 1.6rem !important;
-            }
-
-            .page-header-eyebrow {
-                font-size: 0.75rem;
-            }
-
-            .page-header p {
-                font-size: 0.9rem;
-            }
-
-            .calls-grid,
-            .wins-grid,
-            .affiliate-grid,
-            .journey-timeline {
-                grid-template-columns: 1fr !important;
-                gap: 1.2rem;
-            }
-
-            footer {
-                padding: 1.5rem 1rem;
-                margin-top: 2rem;
-            }
-
-            .footer-links {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: center;
-            }
-
-            /* Chat specific */
-            .chat-container {
-                padding: 1rem 0.8rem;
-            }
-
-            .message-input-container {
-                padding: 0.8rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-card {
-                padding: 1.2rem 0.8rem;
-            }
-
-            .page-header h1 {
-                font-size: 1.4rem !important;
-            }
-
-            .call-card,
-            .win-card,
-            .affiliate-card,
-            .timeline-item {
-                padding: 1rem !important;
-            }
-        }
-
     </style>
+
+    <link rel="stylesheet" href="../notion-arcane.css" />
+    <script type="module" src="../notion-protect.js"></script>
 </head>
+
 <body>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
 
-    <div class="header">
-        <div class="logo">
-            <img src="ArcaneA.png" alt="Logo">
-            THE ARCANE ARCHIVES
-        </div>
+<a href="dashboard.html" class="back-btn">Back</a>
+
+<div class="header">
+    <div class="logo">
+        <img src="ArcaneA.png" />
+        THE ARCANE ARCHIVES
     </div>
+</div>
 
-    <div class="main-content">
-        <div class="page-card">
-            <div class="page-card-inner">
-                <div class="page-header">
-                    <div class="page-header-eyebrow">Control Panel</div>
-                    <h1>⚙️ <span>Settings</span></h1>
-                    <p>Edit your identity, avatar, notifications, and security.</p>
-                </div>
+<div class="main-content">
+    <h1 class="page-title">Account <span>Settings</span></h1>
+    <p class="page-sub">
+        Update how you appear inside the Arcane Archives and what you get notified about.
+        Changes here sync across the whole platform.
+    </p>
 
-                <div class="settings-container">
-                    <!-- MAIN COLUMN -->
-                    <div class="settings-main">
-                        <!-- Account -->
-                        <section class="setting-section">
-                            <h2>Account</h2>
-                            <p class="subtext">Basic information tied to your membership.</p>
+    <div class="settings-grid">
 
-                            <div class="setting-item">
-                                <label>Email</label>
-                                <input type="email" id="userEmail" disabled value="loading...">
-                            </div>
+        <!-- LEFT: Profile -->
+        <div class="card">
+            <h2>Profile</h2>
+            <p>Choose how your name and avatar appear to other members.</p>
 
-                            <div class="setting-item">
-                                <label>Username</label>
-                                <input type="text" id="username" placeholder="Your username" value="loading...">
-                            </div>
-
-                            <div class="setting-item">
-                                <label>Subscription Status</label>
-                                <input type="text" id="subscriptionStatus" disabled value="Checking...">
-                            </div>
-
-                            <div class="btn-row">
-                                <button class="btn btn-primary" id="saveProfileBtn">💾 Save Profile</button>
-                            </div>
-                        </section>
-
-                        <!-- Security -->
-                        <section class="setting-section">
-                            <h2>Security</h2>
-                            <p class="subtext">Protect your access to The Arcane Archives.</p>
-
-                            <div class="setting-item">
-                                <label>Password</label>
-                                <p class="subtext">You can trigger a secure password reset link to your email.</p>
-                            </div>
-
-                            <div class="btn-row">
-                                <button class="btn btn-outline" id="resetPasswordBtn">🔐 Send Password Reset Email</button>
-                            </div>
-                        </section>
-                    </div>
-
-                    <!-- SIDE COLUMN -->
-                    <div class="settings-side">
-                        <!-- Avatar -->
-                        <section class="setting-section">
-                            <h2>Avatar</h2>
-                            <p class="subtext">Choose your symbol or upload a custom picture.</p>
-
-                            <div class="avatar-wrapper">
-                                <div id="currentAvatarPreview">?</div>
-                                <div style="font-size:0.85rem; color:var(--text-dim);">
-                                    This is how you appear in chat, wins board, and the dashboard.
-                                </div>
-                            </div>
-
-                            <div class="setting-item">
-                                <label>Pick an emoji avatar</label>
-                                <div class="avatar-selection">
-                                    <div class="avatar-option" data-emoji="🔮">🔮</div>
-                                    <div class="avatar-option" data-emoji="⚡">⚡</div>
-                                    <div class="avatar-option" data-emoji="🔥">🔥</div>
-                                    <div class="avatar-option" data-emoji="💎">💎</div>
-                                    <div class="avatar-option" data-emoji="🌟">🌟</div>
-                                    <div class="avatar-option" data-emoji="🎯">🎯</div>
-                                    <div class="avatar-option" data-emoji="👑">👑</div>
-                                    <div class="avatar-option" data-emoji="🦁">🦁</div>
-                                    <div class="avatar-option" data-emoji="🐺">🐺</div>
-                                    <div class="avatar-option" data-emoji="🦅">🦅</div>
-                                    <div class="avatar-option" data-emoji="🐉">🐉</div>
-                                </div>
-                            </div>
-
-                            <div class="setting-item">
-                                <label>Or upload a custom image</label>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="customAvatarInput" accept="image/*">
-                                    <label for="customAvatarInput" class="file-input-label">
-                                        📁 Choose Image
-                                    </label>
-                                </div>
-
-                                <button class="btn btn-danger" id="removeAvatarBtn" style="margin-left: 0.5rem; display:none;">
-                                    🗑️ Remove Custom Picture
-                                </button>
-                            </div>
-                        </section>
-
-                        <!-- Notifications -->
-                        <section class="setting-section">
-                            <h2>Notifications</h2>
-                            <p class="subtext">How you want alerts from The Arcane Archives.</p>
-
-                            <div class="toggle-row">
-                                <div>
-                                    <span>Email updates</span>
-                                    <small>Important account + offer announcements.</small>
-                                </div>
-                                <input type="checkbox" id="emailNotifications">
-                            </div>
-
-                            <div class="toggle-row">
-                                <div>
-                                    <span>Push alerts</span>
-                                    <small>Live calls, drops, and urgent plays.</small>
-                                </div>
-                                <input type="checkbox" id="pushNotifications">
-                            </div>
-
-                            <div class="toggle-row">
-                                <div>
-                                    <span>SMS (future)</span>
-                                    <small>Reserved for high-priority alerts only.</small>
-                                </div>
-                                <input type="checkbox" id="smsNotifications">
-                            </div>
-
-                            <div class="btn-row">
-                                <button class="btn btn-primary" id="saveNotificationsBtn">📩 Save Notification Settings</button>
-                            </div>
-                        </section>
-
-                        <!-- Danger Zone -->
-                        <section class="setting-section">
-                            <h2 style="color:#fecaca;">Danger Zone</h2>
-                            <p class="warning-text">
-                                Once your account is deleted, your progress, wins, and access are gone. This cannot be undone.
-                            </p>
-                            <button class="btn btn-danger" id="deleteAccountBtn">
-                                🗑️ Delete Account
-                            </button>
-                        </section>
-                    </div>
+            <div class="avatar-row">
+                <img id="avatarPreview" class="avatar-preview" src="default-avatar.png" alt="Avatar" />
+                <div class="avatar-actions">
+                    <span class="small-label">Upload a new avatar (square works best)</span>
+                    <input id="avatarInput" class="file-input" type="file" accept="image/*" />
                 </div>
             </div>
-        </div>
-    </div>
 
-    <footer>
+            <div class="field">
+                <label for="usernameInput">Display Name</label>
+                <input id="usernameInput" type="text" placeholder="How you appear in chat, wins, etc." />
+            </div>
+
+            <div class="field">
+                <label for="emailInput">Email</label>
+                <input id="emailInput" type="email" readonly />
+            </div>
+
+            <div class="card-footer">
+                <button id="saveProfileBtn" class="save-btn" type="button">Save Profile</button>
+                <span id="profileStatus" class="status-text">Unsaved changes</span>
+            </div>
+        </div>
+
+        <!-- RIGHT: Notifications -->
+        <div class="card">
+            <h2>Notifications</h2>
+            <p>Control how The Arcane Archives taps you on the shoulder.</p>
+
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">Email Alerts</div>
+                    <div class="toggle-desc">Major updates, billing, big announcements.</div>
+                </div>
+                <label class="toggle">
+                    <input id="emailAlertsToggle" type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">Market Broadcasts</div>
+                    <div class="toggle-desc">High-signal alerts and session reminders.</div>
+                </div>
+                <label class="toggle">
+                    <input id="marketAlertsToggle" type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">New Course Drops</div>
+                    <div class="toggle-desc">When a new course unlocks inside the vault.</div>
+                </div>
+                <label class="toggle">
+                    <input id="courseAlertsToggle" type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="card-footer">
+                <button id="saveNotifyBtn" class="save-btn" type="button">Save Notifications</button>
+                <span id="notifyStatus" class="status-text">Unsaved changes</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <div class="footer-inner">
         <div class="footer-links">
             <a href="index.html">Home</a>
             <a href="Privacy-policy.html">Privacy Policy</a>
@@ -685,286 +451,141 @@
             <a href="refund-policy.html">Refund Policy</a>
         </div>
         <div class="footer-bottom">
-            &copy; 2024 The Arcane Archives. All rights reserved.
+            © 2024 The Arcane Archives. All rights reserved.
         </div>
-    </footer>
+    </div>
+</footer>
 
-    <script type="module">
-        import { protectPage, updateUserAvatar, auth } from './auth-guard.js';
-        import { getFirestore, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-        import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+<!-- Settings Logic -->
+<script type="module">
+    import { auth, db } from "./auth-guard.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-        const db = getFirestore();
+    const usernameInput = document.getElementById("usernameInput");
+    const emailInput = document.getElementById("emailInput");
+    const avatarInput = document.getElementById("avatarInput");
+    const avatarPreview = document.getElementById("avatarPreview");
 
-        let currentUser = null;
-        let currentUserData = null;
+    const emailAlertsToggle = document.getElementById("emailAlertsToggle");
+    const marketAlertsToggle = document.getElementById("marketAlertsToggle");
+    const courseAlertsToggle = document.getElementById("courseAlertsToggle");
 
-        const emailInput = document.getElementById('userEmail');
-        const usernameInput = document.getElementById('username');
-        const subscriptionStatusInput = document.getElementById('subscriptionStatus');
+    const profileStatus = document.getElementById("profileStatus");
+    const notifyStatus = document.getElementById("notifyStatus");
 
-        const saveProfileBtn = document.getElementById('saveProfileBtn');
-        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    const saveProfileBtn = document.getElementById("saveProfileBtn");
+    const saveNotifyBtn = document.getElementById("saveNotifyBtn");
 
-        const avatarPreview = document.getElementById('currentAvatarPreview');
-        const avatarOptions = Array.from(document.querySelectorAll('.avatar-option'));
-        const customAvatarInput = document.getElementById('customAvatarInput');
-        const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+    let currentUser = null;
+    let currentAvatarUrl = "default-avatar.png";
+    let newAvatarDataUrl = null;
 
-        const emailNotif = document.getElementById('emailNotifications');
-        const pushNotif = document.getElementById('pushNotifications');
-        const smsNotif = document.getElementById('smsNotifications');
-        const saveNotificationsBtn = document.getElementById('saveNotificationsBtn');
+    function setProfileStatus(msg, type = "") {
+        profileStatus.textContent = msg;
+        profileStatus.classList.remove("status-success", "status-error");
+        if (type === "success") profileStatus.classList.add("status-success");
+        if (type === "error") profileStatus.classList.add("status-error");
+    }
 
-        protectPage({
-            onSuccess: async (user, userData) => {
-                currentUser = user;
-                currentUserData = userData || {};
+    function setNotifyStatus(msg, type = "") {
+        notifyStatus.textContent = msg;
+        notifyStatus.classList.remove("status-success", "status-error");
+        if (type === "success") notifyStatus.classList.add("status-success");
+        if (type === "error") notifyStatus.classList.add("status-error");
+    }
 
-                updateUserAvatar(user, userData);
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) return;
+        currentUser = user;
 
-                // Account info
-                if (emailInput) emailInput.value = user.email || '';
-                const username = currentUserData.Username || user.displayName || (user.email ? user.email.split('@')[0] : 'Member');
-                if (usernameInput) usernameInput.value = username;
+        emailInput.value = user.email || "";
 
-                const subStatus = currentUserData.subscriptionStatus;
-                if (subscriptionStatusInput) {
-                    if (subStatus === 'active') subscriptionStatusInput.value = '✅ Active';
-                    else if (subStatus === 'cancelled') subscriptionStatusInput.value = '❌ Cancelled';
-                    else subscriptionStatusInput.value = 'Unknown';
-                }
+        const userDocRef = doc(db, "Users", user.uid);
+        const snap = await getDoc(userDocRef);
 
-                // Notifications (if stored)
-                if (emailNotif) emailNotif.checked = !!currentUserData.emailNotifications;
-                if (pushNotif) pushNotif.checked = !!currentUserData.pushNotifications;
-                if (smsNotif) smsNotif.checked = !!currentUserData.smsNotifications;
+        let data = {};
+        if (snap.exists()) data = snap.data();
 
-                // Avatar preview (custom or emoji/letter)
-                setupInitialAvatar(user, currentUserData, username);
-                setupAvatarListeners();
+        // Username
+        usernameInput.value = data.Username || "Member";
 
-                setupButtons();
-            },
-            onFailure: () => {
-                window.location.href = 'login.html';
-            }
-        });
+        // Avatar
+        const localAvatar = localStorage.getItem("customAvatarUrl");
+        currentAvatarUrl = localAvatar || data.avatar || "default-avatar.png";
+        avatarPreview.src = currentAvatarUrl;
 
-        function setupInitialAvatar(user, userData, username) {
-            const customAvatar = localStorage.getItem('customAvatarUrl');
-            if (customAvatar && avatarPreview) {
-                avatarPreview.style.backgroundImage = `url(${customAvatar})`;
-                avatarPreview.style.backgroundSize = 'cover';
-                avatarPreview.style.backgroundPosition = 'center';
-                avatarPreview.textContent = '';
-                if (removeAvatarBtn) removeAvatarBtn.style.display = 'inline-flex';
-            } else if (avatarPreview) {
-                const storedEmoji = localStorage.getItem('userAvatar');
-                if (storedEmoji && storedEmoji.length === 2) {
-                    avatarPreview.textContent = storedEmoji;
-                } else {
-                    const letter = (username || user.email || 'U').charAt(0).toUpperCase();
-                    avatarPreview.textContent = letter;
-                }
-            }
+        // Notifications
+        emailAlertsToggle.checked = !!data.emailAlerts;
+        marketAlertsToggle.checked = !!data.marketAlerts;
+        courseAlertsToggle.checked = !!data.courseAlerts;
 
-            // Mark selected emoji if any
-            const storedEmoji = localStorage.getItem('userAvatar');
-            avatarOptions.forEach(opt => {
-                if (opt.dataset.emoji === storedEmoji) {
-                    opt.classList.add('selected');
-                }
-            });
+        setProfileStatus("Loaded from your account");
+        setNotifyStatus("Loaded from your account");
+    });
+
+    avatarInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            newAvatarDataUrl = ev.target.result;
+            avatarPreview.src = newAvatarDataUrl;
+            setProfileStatus("Avatar updated — click Save Profile to apply");
+        };
+        reader.readAsDataURL(file);
+    });
+
+    saveProfileBtn.addEventListener("click", async () => {
+        if (!currentUser) return;
+
+        const username = usernameInput.value.trim() || "Member";
+        const finalAvatar = newAvatarDataUrl || currentAvatarUrl || "default-avatar.png";
+
+        try {
+            await setDoc(
+                doc(db, "Users", currentUser.uid),
+                {
+                    Username: username,
+                    avatar: finalAvatar
+                },
+                { merge: true }
+            );
+
+            // Local cache for all pages
+            localStorage.setItem("customAvatarUrl", finalAvatar);
+
+            currentAvatarUrl = finalAvatar;
+            newAvatarDataUrl = null;
+
+            setProfileStatus("Profile saved across all pages", "success");
+        } catch (err) {
+            console.error(err);
+            setProfileStatus("Error saving profile", "error");
         }
+    });
 
-        function setupAvatarListeners() {
-            // Emoji avatar
-            avatarOptions.forEach(opt => {
-                opt.addEventListener('click', () => {
-                    const emoji = opt.dataset.emoji;
-                    localStorage.setItem('userAvatar', emoji);
-                    localStorage.removeItem('customAvatarUrl');
+    saveNotifyBtn.addEventListener("click", async () => {
+        if (!currentUser) return;
 
-                    avatarOptions.forEach(o => o.classList.remove('selected'));
-                    opt.classList.add('selected');
+        try {
+            await setDoc(
+                doc(db, "Users", currentUser.uid),
+                {
+                    emailAlerts: emailAlertsToggle.checked,
+                    marketAlerts: marketAlertsToggle.checked,
+                    courseAlerts: courseAlertsToggle.checked
+                },
+                { merge: true }
+            );
 
-                    if (avatarPreview) {
-                        avatarPreview.style.backgroundImage = 'none';
-                        avatarPreview.textContent = emoji;
-                    }
-                    if (removeAvatarBtn) removeAvatarBtn.style.display = 'none';
-
-                    // Update in UI across app
-                    updateUserAvatar(currentUser, {
-                        ...(currentUserData || {}),
-                        Username: usernameInput?.value || '',
-                    });
-                });
-            });
-
-            // Custom avatar upload
-            if (customAvatarInput) {
-                customAvatarInput.addEventListener('change', (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please upload an image file.');
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        const dataUrl = ev.target.result;
-                        localStorage.setItem('customAvatarUrl', dataUrl);
-                        localStorage.removeItem('userAvatar');
-
-                        avatarOptions.forEach(o => o.classList.remove('selected'));
-
-                        if (avatarPreview) {
-                            avatarPreview.style.backgroundImage = `url(${dataUrl})`;
-                            avatarPreview.style.backgroundSize = 'cover';
-                            avatarPreview.style.backgroundPosition = 'center';
-                            avatarPreview.textContent = '';
-                        }
-                        if (removeAvatarBtn) removeAvatarBtn.style.display = 'inline-flex';
-
-                        updateUserAvatar(currentUser, {
-                            ...(currentUserData || {}),
-                            Username: usernameInput?.value || '',
-                        });
-
-                        alert('✅ Custom avatar applied locally on this device.');
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            // Remove custom avatar
-            if (removeAvatarBtn) {
-                removeAvatarBtn.addEventListener('click', () => {
-                    if (!confirm('Remove custom profile picture and revert to emoji/initial?')) return;
-
-                    localStorage.removeItem('customAvatarUrl');
-                    const storedEmoji = localStorage.getItem('userAvatar');
-                    const base = usernameInput?.value || currentUser?.email || 'U';
-                    const letter = base.charAt(0).toUpperCase();
-
-                    if (avatarPreview) {
-                        avatarPreview.style.backgroundImage = 'none';
-                        avatarPreview.textContent = storedEmoji || letter;
-                    }
-                    removeAvatarBtn.style.display = 'none';
-
-                    updateUserAvatar(currentUser, {
-                        ...(currentUserData || {}),
-                        Username: usernameInput?.value || '',
-                    });
-
-                    alert('✅ Custom avatar removed.');
-                });
-            }
+            setNotifyStatus("Notification preferences saved", "success");
+        } catch (err) {
+            console.error(err);
+            setNotifyStatus("Error saving notifications", "error");
         }
+    });
+</script>
 
-        function setupButtons() {
-            // Save profile
-            if (saveProfileBtn) {
-                saveProfileBtn.addEventListener('click', async () => {
-                    if (!currentUser) return;
-                    const newUsername = (usernameInput?.value || '').trim();
-                    if (!newUsername) {
-                        alert('Please enter a valid username.');
-                        return;
-                    }
-
-                    saveProfileBtn.disabled = true;
-
-                    try {
-                        const userRef = doc(db, 'Users', currentUser.uid);
-                        await updateDoc(userRef, {
-                            Username: newUsername
-                        });
-
-                        currentUserData = {
-                            ...(currentUserData || {}),
-                            Username: newUsername
-                        };
-
-                        updateUserAvatar(currentUser, currentUserData);
-                        alert('✅ Profile saved.');
-                    } catch (err) {
-                        console.error(err);
-                        alert('Error saving profile. Try again.');
-                    } finally {
-                        saveProfileBtn.disabled = false;
-                    }
-                });
-            }
-
-            // Save notifications
-            if (saveNotificationsBtn) {
-                saveNotificationsBtn.addEventListener('click', async () => {
-                    if (!currentUser) return;
-                    saveNotificationsBtn.disabled = true;
-
-                    try {
-                        const userRef = doc(db, 'Users', currentUser.uid);
-                        await updateDoc(userRef, {
-                            emailNotifications: !!emailNotif?.checked,
-                            pushNotifications: !!pushNotif?.checked,
-                            smsNotifications: !!smsNotif?.checked,
-                        });
-
-                        alert('✅ Notification preferences saved.');
-                    } catch (err) {
-                        console.error(err);
-                        alert('Error saving notifications. Try again.');
-                    } finally {
-                        saveNotificationsBtn.disabled = false;
-                    }
-                });
-            }
-
-            // Password reset
-            if (resetPasswordBtn) {
-                resetPasswordBtn.addEventListener('click', async () => {
-                    if (!auth.currentUser?.email) {
-                        alert('No email found on this account.');
-                        return;
-                    }
-
-                    resetPasswordBtn.disabled = true;
-
-                    try {
-                        await sendPasswordResetEmail(auth, auth.currentUser.email);
-                        alert('✅ Password reset email sent. Check your inbox.');
-                    } catch (err) {
-                        console.error(err);
-                        alert('Error sending reset email. Try again.');
-                    } finally {
-                        resetPasswordBtn.disabled = false;
-                    }
-                });
-            }
-
-            // Delete account (soft gate to support)
-            const deleteBtn = document.getElementById('deleteAccountBtn');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', async () => {
-                    const confirmation = prompt(
-                        '⚠️ This action cannot be undone.\n\nType "DELETE" in all caps to confirm you want to request account deletion:'
-                    );
-
-                    if (confirmation !== 'DELETE') {
-                        alert('Account deletion cancelled.');
-                        return;
-                    }
-
-                    alert('Please email support@arcane-archives.com from your login email.\n\nWe need to cancel your subscription and confirm identity before deletion.');
-                });
-            }
-        }
-    </script>
 </body>
 </html>
