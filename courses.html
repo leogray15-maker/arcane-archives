@@ -1,321 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Courses | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --bg-card: rgba(15, 23, 42, 0.96);
+      --purple: #9333ea;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --text-light: #e5e5e5;
+      --text-dim: #a3a3a3;
+      --border-color: rgba(148, 163, 184, 0.5);
+    }
 
-    <style>
-        :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
-            --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
-            --border-color: rgba(148, 163, 184, 0.5);
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-        }
+    /* Back Button */
+    .back-btn {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 40;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+    .back-btn:hover {
+      color: var(--purple-light);
+      border-color: rgba(147, 51, 234, 0.8);
+      transform: translateX(-2px);
+    }
 
-        /* Back Button */
-        .back-btn {
-            position: fixed;
-            top: 1.5rem;
-            left: 1.5rem;
-            z-index: 40;
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            backdrop-filter: blur(12px);
-            transition: all 0.2s;
-        }
+    /* Header */
+    .header {
+      max-width: 1200px;
+      margin: 2.5rem auto 0;
+      padding: 1.5rem 1.5rem 0.5rem;
+    }
 
-        .back-btn:hover {
-            color: var(--purple-light);
-            border-color: rgba(147, 51, 234, 0.8);
-            transform: translateX(-2px);
-        }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
 
-        /* Header */
-        .header {
-            max-width: 1200px;
-            margin: 2.5rem auto 0;
-            padding: 1.5rem 1.5rem 0.5rem;
-        }
+    .logo img {
+      height: 32px;
+      width: 32px;
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
+    /* Main content */
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto 4rem;
+      padding: 0 1.5rem;
+    }
 
-        .logo img {
-            height: 32px;
-            width: 32px;
-        }
+    .page-card {
+      margin-top: 1.5rem;
+      background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85), 0 0 40px rgba(147, 51, 234, 0.25);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-        /* Main content */
-        .main-content {
-            max-width: 1200px;
-            margin: 0 auto 4rem;
-            padding: 0 1.5rem;
-        }
+    .course-header-eyebrow {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-dim);
+      margin-bottom: 0.35rem;
+    }
 
-        .page-card {
-            margin-top: 1.5rem;
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
-            border-radius: 24px;
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85), 0 0 40px rgba(147, 51, 234, 0.25);
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
+    .course-header h1 {
+      font-size: 1.9rem;
+      margin-bottom: 0.3rem;
+    }
 
-        .page-card-inner {
-            position: relative;
-            z-index: 1;
-        }
+    .course-header h1 span {
+      background: linear-gradient(135deg, var(--purple-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        .page-header-eyebrow {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
-            color: var(--text-dim);
-            margin-bottom: 0.35rem;
-        }
+    .course-header-meta {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-bottom: 0.6rem;
+    }
 
-        .page-header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.4rem;
-        }
+    .course-description {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      margin-bottom: 1.2rem;
+    }
 
-        .page-header h1 span {
-            background: linear-gradient(135deg, var(--purple-light), var(--purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    /* Layout: sidebar lessons + main content */
+    .course-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.6fr);
+      gap: 1.5rem;
+    }
 
-        .page-header p {
-            color: var(--text-dim);
-            font-size: 0.96rem;
-            margin-bottom: 1.5rem;
-        }
+    @media (max-width: 900px) {
+      .course-layout {
+        grid-template-columns: 1fr;
+      }
+    }
 
-        /* Courses Grid */
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.6rem;
-        }
+    /* Lessons list */
+    .lesson-list-card {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 1rem 1.1rem;
+      max-height: 460px;
+      overflow-y: auto;
+    }
 
-        .course-card {
-            background: rgba(15, 23, 42, 0.9);
-            border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            padding: 1.3rem 1.5rem;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
-            transition: all 0.2s;
-        }
+    .lesson-list-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--purple-light);
+    }
 
-        .course-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(147, 51, 234, 0.8);
-            box-shadow: 0 20px 50px rgba(147, 51, 234, 0.3);
-        }
+    .lesson-item {
+      border-radius: 12px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      padding: 0.55rem 0.7rem;
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
 
-        .course-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.4rem;
-            color: var(--purple-light);
-        }
+    .lesson-item:hover {
+      border-color: rgba(147, 51, 234, 0.9);
+      background: rgba(17, 24, 39, 0.95);
+    }
 
-        .course-description {
-            font-size: 0.88rem;
-            color: var(--text-dim);
-        }
+    .lesson-item.active {
+      border-color: rgba(147, 51, 234, 1);
+      background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    }
 
-        /* Footer */
-        footer {
-            background: rgba(5,5,5,0.95);
-            padding: 2rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.25);
-            text-align: center;
-        }
+    .lesson-title {
+      color: var(--text-light);
+      margin-right: 0.5rem;
+    }
 
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
+    .lesson-meta {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
 
-        .footer-links a {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
+    /* Video + content */
+    .course-main {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
 
-        .footer-links a:hover {
-            color: var(--purple-light);
-        }
+    .course-video {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: #000;
+      display: none;
+    }
 
-        .footer-bottom {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
+    .course-video iframe {
+      width: 100%;
+      height: 360px;
+      display: block;
+    }
 
-        @media (max-width: 768px) {
-            .back-btn {
-                position: static;
-                display: block;
-                margin: 1rem auto 0;
-                width: fit-content;
-            }
-            .header {
-                padding-inline: 1rem;
-            }
-            .main-content {
-                padding-inline: 1rem;
-            }
-            .page-card {
-                padding: 1.5rem 1.25rem;
-            }
-        }
-    </style>
+    .course-section {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 1.3rem 1.4rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .course-section h2 {
+      font-size: 1.05rem;
+      margin-bottom: 0.4rem;
+      color: var(--purple-light);
+    }
+
+    .course-section p,
+    .course-section li {
+      color: var(--text-light);
+    }
+
+    .course-section ul {
+      padding-left: 1.2rem;
+      margin-top: 0.4rem;
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(5, 5, 5, 0.95);
+      padding: 2rem;
+      border-top: 1px solid rgba(147, 51, 234, 0.25);
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .footer-links a:hover {
+      color: var(--purple-light);
+    }
+
+    .footer-bottom {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 
 <body>
+  <a href="courses.html" class="back-btn">← Back to Courses</a>
 
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
-
-    <div class="header">
-        <div class="logo">
-            <img src="ArcaneA.png" alt="Logo">
-            THE ARCANE ARCHIVES
-        </div>
+  <div class="header">
+    <div class="logo">
+      <img src="ArcaneA.png" alt="Logo" />
+      THE ARCANE ARCHIVES
     </div>
+  </div>
 
-    <div class="main-content">
-        <div class="page-card">
-            <div class="page-card-inner">
+  <main class="main-content">
+    <div class="page-card" id="courseCard">
+      <div class="course-header">
+        <div class="course-header-eyebrow" id="courseTag">Course</div>
+        <h1><span id="courseTitle">Loading...</span></h1>
+        <div class="course-header-meta" id="courseMeta"></div>
+        <p class="course-description" id="courseDescription"></p>
+      </div>
 
-                <div class="page-header">
-                    <div class="page-header-eyebrow">Full Curriculum</div>
-                    <h1>📚 <span>Your Courses</span></h1>
-                    <p>Every piece of knowledge you need to escape the system and build your empire.</p>
-                </div>
-
-                <div class="courses-grid" id="coursesGrid">
-                    <div style="text-align:center; padding:2rem 0; color:var(--text-dim);">
-                        Loading courses...
-                    </div>
-                </div>
-
+      <div class="course-layout">
+        <!-- Sidebar: lessons -->
+        <aside class="lesson-list-card">
+          <div class="lesson-list-title">Modules</div>
+          <div id="lessonList">
+            <div style="font-size:0.85rem;color:var(--text-dim);margin-top:0.5rem;">
+              Loading lessons...
             </div>
-        </div>
+          </div>
+        </aside>
+
+        <!-- Main: video + content -->
+        <section class="course-main">
+          <div class="course-video" id="courseVideoWrapper">
+            <iframe
+              id="courseVideoFrame"
+              src=""
+              title="Course Video"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+
+          <!-- Text content – you can customise per course later if you want separate files -->
+          <div class="course-section" id="courseContent">
+            <h2>Course Content</h2>
+            <p>
+              This is the main content area for your course. You can keep this generic (for all
+              courses) or later create separate HTML files per course and paste your Notion text
+              directly here.
+            </p>
+            <p style="margin-top:0.6rem;">
+              For now, focus on getting:
+            </p>
+            <ul>
+              <li>Course meta in Firestore (<code>courses</code> collection)</li>
+              <li>Lesson list + video URLs in Firestore (<code>lessons</code> collection)</li>
+              <li>Then replace this text with your real modules from Notion.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
     </div>
+  </main>
 
-    <footer>
-        <div class="footer-links">
-            <a href="index.html">Home</a>
-            <a href="Privacy-policy.html">Privacy Policy</a>
-            <a href="terms-of-service.html">Terms of Service</a>
-            <a href="refund-policy.html">Refund Policy</a>
+  <footer>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="Privacy-policy.html">Privacy Policy</a>
+      <a href="terms-of-service.html">Terms of Service</a>
+      <a href="refund-policy.html">Refund Policy</a>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2024 The Arcane Archives. All rights reserved.
+    </div>
+  </footer>
+
+  <script type="module">
+    import { protectPage, db } from "./auth-guard.js";
+    import {
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      orderBy,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    protectPage({
+      onSuccess: () => initCoursePage(),
+      onFailure: () => {
+        window.location.href = "login.html";
+      }
+    });
+
+    async function initCoursePage() {
+      const params = new URLSearchParams(window.location.search);
+      const courseId = params.get("courseId");
+
+      if (!courseId) {
+        document.getElementById("courseTitle").textContent = "Course not found";
+        document.getElementById("courseDescription").textContent =
+          "No courseId provided in URL.";
+        return;
+      }
+
+      await loadCourse(courseId);
+      await loadLessons(courseId);
+    }
+
+    async function loadCourse(courseId) {
+      const titleEl = document.getElementById("courseTitle");
+      const descEl = document.getElementById("courseDescription");
+      const tagEl = document.getElementById("courseTag");
+      const metaEl = document.getElementById("courseMeta");
+
+      try {
+        const courseRef = doc(db, "courses", courseId);
+        const snap = await getDoc(courseRef);
+
+        if (!snap.exists()) {
+          titleEl.textContent = "Course not found";
+          descEl.textContent = "This course does not exist or has been removed.";
+          return;
+        }
+
+        const data = snap.data();
+        document.title = (data.title || "Course") + " | The Arcane Archives";
+
+        titleEl.textContent = data.title || "Untitled Course";
+        descEl.textContent = data.description || "";
+        tagEl.textContent = data.tag ? `Course · ${data.tag}` : "Course";
+
+        const difficulty = data.difficulty || "All Levels";
+        metaEl.textContent = `${difficulty} · ${data.slug || courseId}`;
+      } catch (err) {
+        console.error("Error loading course:", err);
+        titleEl.textContent = "Error loading course";
+        descEl.textContent = err.message || "";
+      }
+    }
+
+    async function loadLessons(courseId) {
+      const listEl = document.getElementById("lessonList");
+      const videoWrapper = document.getElementById("courseVideoWrapper");
+      const videoFrame = document.getElementById("courseVideoFrame");
+
+      listEl.innerHTML = `
+        <div style="font-size:0.85rem;color:var(--text-dim);margin-top:0.5rem;">
+          Loading lessons...
         </div>
-        <div class="footer-bottom">
-            © 2024 The Arcane Archives. All rights reserved.
-        </div>
-    </footer>
+      `;
 
-    <script type="module">
-        import { protectPage } from "./auth-guard.js";
+      try {
+        const lessonsRef = collection(db, "lessons");
+        const q = query(
+          lessonsRef,
+          where("courseId", "==", courseId),
+          orderBy("order", "asc")
+        );
 
-        protectPage({
-            onSuccess: (u, d) => loadCourses(),
-            onFailure: () => {
-                document.getElementById("coursesGrid").innerHTML = `
-                <div style="text-align:center; padding:3rem 1rem;">
-                    <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
-                    <h3>Access Restricted</h3>
-                    <p style="color:#9ca3af; margin:1rem 0;">
-                        You need an active subscription to view the course library.
-                    </p>
-                    <a href="index.html#pricing" style="
-                        display:inline-block;
-                        padding:0.8rem 1.6rem;
-                        border-radius:999px;
-                        background:linear-gradient(135deg,#9333ea,#7e22ce);
-                        color:white;
-                        text-decoration:none;
-                        font-weight:600;
-                    ">Join The Arcane Archives</a>
-                </div>`;
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          listEl.innerHTML = `
+            <div style="font-size:0.85rem;color:var(--text-dim);margin-top:0.5rem;">
+              No lessons found yet for this course. Add lesson docs in the <strong>lessons</strong> collection.
+            </div>
+          `;
+          videoWrapper.style.display = "none";
+          return;
+        }
+
+        listEl.innerHTML = "";
+        let firstVideoUrl = null;
+        let firstLessonItem = null;
+
+        snapshot.forEach((docSnap, index) => {
+          const data = docSnap.data();
+
+          const item = document.createElement("div");
+          item.className = "lesson-item";
+          item.dataset.lessonId = docSnap.id;
+          if (data.videoUrl) {
+            item.dataset.videoUrl = data.videoUrl;
+          }
+
+          const typeLabel = data.type || "Lesson";
+          const mins = data.estMinutes ? `${data.estMinutes} min` : "";
+
+          item.innerHTML = `
+            <div class="lesson-title">${index + 1}. ${data.title || "Untitled"}</div>
+            <div class="lesson-meta">${typeLabel}${mins ? " · " + mins : ""}</div>
+          `;
+
+          item.addEventListener("click", () => {
+            const videoUrl = item.dataset.videoUrl;
+            const all = listEl.querySelectorAll(".lesson-item");
+            all.forEach(el => el.classList.remove("active"));
+            item.classList.add("active");
+
+            if (videoUrl) {
+              videoFrame.src = videoUrl;
+              videoWrapper.style.display = "block";
+            } else {
+              // No video for this lesson
+              videoFrame.src = "";
+              videoWrapper.style.display = "none";
             }
+          });
+
+          listEl.appendChild(item);
+
+          if (!firstVideoUrl && data.videoUrl) {
+            firstVideoUrl = data.videoUrl;
+            firstLessonItem = item;
+          }
         });
 
-        function loadCourses() {
-            const list = document.getElementById("coursesGrid");
-
-            const courses = [
-                "Productive Isolation",
-                "Top-Performance",
-                "LG Philosophies",
-                "Escape in Hell",
-                "Copywriting Accelerator",
-                "Mind Hijacking",
-                "30-Day Build a Profitable Business",
-                "Make a Product & Print Cash",
-                "Inbound Method",
-                "Entrepreneurship Mastery",
-                "Mindset Mastery",
-                "Biohacking Protocol",
-                "Leadership Protocol",
-                "Rules for Life",
-                "Sales Mastery",
-                "Investing Guide",
-                "Discipline Protocol",
-                "Stoicism Course",
-                "Thinking Course",
-                "Daily Quests",
-                "Trading Mastery",
-                "AI / Human Behaviour Vault"
-            ];
-
-            list.innerHTML = courses.map(c => `
-                <div class="course-card">
-                    <div class="course-title">${c}</div>
-                    <div class="course-description">
-                        Tap to study → Master this → Apply it → Level up.
-                    </div>
-                </div>
-            `).join("");
+        // Auto-select first video lesson if exists
+        if (firstVideoUrl && firstLessonItem) {
+          firstLessonItem.classList.add("active");
+          videoFrame.src = firstVideoUrl;
+          videoWrapper.style.display = "block";
+        } else {
+          videoWrapper.style.display = "none";
         }
-    </script>
 
+      } catch (err) {
+        console.error("Error loading lessons:", err);
+        listEl.innerHTML = `
+          <div style="font-size:0.85rem;color:#fca5a5;margin-top:0.5rem;">
+            Error loading lessons: ${err.message}
+          </div>
+        `;
+        videoWrapper.style.display = "none";
+      }
+    }
+  </script>
 </body>
 </html>
