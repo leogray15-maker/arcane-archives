@@ -1,398 +1,588 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wins | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png" />
-
-    <!-- 🔒 Protect Wins Page (paid + logged in) -->
-    <script type="module">
-        import { protectPage } from "./auth-guard.js";
-        protectPage({ requireSubscription: true });
-    </script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wins Board | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
     <style>
         :root {
             --bg-dark: #02010a;
             --bg-card: rgba(15, 23, 42, 0.96);
             --purple: #9333ea;
+            --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
-            --purple-glow: rgba(147, 51, 234, 0.28);
-            --text-light: #e5e7eb;
-            --text-dim: #9ca3af;
-            --border-subtle: rgba(148, 163, 184, 0.35);
-            --green: #22c55e;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+            --border-color: rgba(148, 163, 184, 0.5);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
             color: var(--text-light);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* Back button */
         .back-btn {
             position: fixed;
-            top: 1.2rem;
-            left: 1.3rem;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
             border-radius: 999px;
-            border: 1px solid rgba(148,163,184,.4);
-            background: rgba(15,23,42,.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
             color: var(--text-dim);
-            padding: .38rem .9rem;
             text-decoration: none;
-            font-size: .85rem;
+            font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
-            gap: .4rem;
+            gap: 0.4rem;
             backdrop-filter: blur(12px);
-            z-index: 999;
-            transition: .25s;
+            transition: all 0.2s ease;
         }
-
-        .back-btn::before { content: "←"; }
 
         .back-btn:hover {
             color: var(--purple-light);
-            border-color: var(--purple-light);
-            transform: translateY(-1px);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
         }
 
-        /* Header */
         .header {
             max-width: 1200px;
-            padding: 4rem 1.5rem 1.2rem;
-            margin: 0 auto;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: .7rem;
+            gap: 0.7rem;
             font-weight: 800;
-            letter-spacing: .1em;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+            color: var(--text-light);
         }
 
-        .logo img { width: 32px; height: 32px; }
+        .logo img {
+            height: 32px;
+            width: 32px;
+        }
 
-        /* Main */
         .main-content {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 1.5rem 4rem;
-            flex: 1;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem 0;
         }
 
-        .page-title {
-            font-size: 2rem;
-            margin-bottom: .3rem;
-        }
-
-        .page-title span {
-            background: linear-gradient(130deg, #fbbf24, #a855f7, #22c55e);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .page-sub {
-            font-size: .95rem;
-            color: var(--text-dim);
-            margin-bottom: 1.8rem;
-            max-width: 32rem;
-        }
-
-        /* Layout */
-        .wins-layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-            gap: 1.6rem;
-        }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 20px;
-            border: 1px solid var(--border-subtle);
-            padding: 1.4rem 1.6rem;
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow:
+                0 30px 120px rgba(15, 23, 42, 0.85),
+                0 0 40px rgba(147, 51, 234, 0.25);
+            padding: 2rem;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 24px 80px rgba(0,0,0,.6);
         }
 
-        .card::before {
+        .page-card::before {
             content: "";
             position: absolute;
-            inset: -50%;
-            background: radial-gradient(circle at top, var(--purple-glow), transparent 60%);
-            opacity: .2;
-            transition: .25s;
+            inset: -40%;
+            background:
+                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.18), transparent 55%),
+                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.15), transparent 55%);
+            opacity: 0.6;
+            pointer-events: none;
         }
 
-        .card:hover::before { opacity: .3; }
-
-        .card h2 {
-            font-size: 1.1rem;
-            margin-bottom: .25rem;
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
         }
 
-        .card p.card-sub {
-            font-size: .85rem;
+        .page-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 0.96rem;
+        }
+
+        .wins-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .wins-meta {
+            background: rgba(15, 23, 42, 0.92);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 1.4rem 1.5rem;
+        }
+
+        .wins-meta h2 {
+            font-size: 1rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .wins-meta p {
+            font-size: 0.88rem;
             color: var(--text-dim);
             margin-bottom: 1rem;
         }
 
-        /* Wins feed */
-        .wins-feed {
-            max-height: 520px;
-            overflow-y: auto;
+        .wins-stat {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.25rem;
+        }
+
+        .wins-highlight {
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(34, 197, 94, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .wins-highlight strong {
+            font-size: 1.2rem;
+        }
+
+        .wins-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            padding-right: .3rem;
+            max-height: 650px;
+        }
+
+        .wins-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .wins-header-left h2 {
+            font-size: 1.1rem;
+        }
+
+        .wins-header-left p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .wins-header-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            color: var(--text-dim);
+        }
+
+        .wins-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            border-radius: 14px;
+            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.98), rgba(3, 7, 18, 1));
+            border: 1px solid rgba(15, 23, 42, 0.9);
         }
 
         .win-item {
-            background: rgba(17,24,39,.9);
-            border-radius: 16px;
-            border: 1px solid rgba(55,65,81,.85);
-            padding: 1rem 1.1rem;
-            animation: fadeUp .3s ease forwards;
+            margin-bottom: 1rem;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.8);
         }
 
-        @keyframes fadeUp {
-            from { opacity:0; transform:translateY(8px); }
-            to { opacity:1; transform:translateY(0); }
+        .win-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
 
         .win-header {
             display: flex;
             align-items: center;
-            gap: .7rem;
-            margin-bottom: .4rem;
+            gap: 0.6rem;
+            margin-bottom: 0.25rem;
         }
 
         .win-avatar {
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid var(--purple-light);
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: radial-gradient(circle, #a78bfa, #4c1d95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
-        .win-author {
-            font-size: .87rem;
+        .win-username {
+            font-size: 0.9rem;
             font-weight: 600;
-            color: var(--purple-light);
         }
 
-        .win-time {
-            font-size: .75rem;
+        .win-meta {
+            font-size: 0.75rem;
             color: var(--text-dim);
         }
 
-        .win-content {
-            margin-top: .2rem;
-            font-size: .9rem;
-            line-height: 1.4rem;
+        .win-text {
+            font-size: 0.9rem;
+            color: #e5e7eb;
+            margin-top: 0.3rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
-        .win-footer {
-            margin-top: .5rem;
+        .win-actions {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: .8rem;
+            gap: 0.75rem;
+            margin-top: 0.4rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
         }
 
         .like-btn {
+            border: none;
+            background: none;
+            color: inherit;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: .25rem;
-            border: none;
-            border-radius: 999px;
-            padding: .22rem .7rem;
-            font-size: .78rem;
-            cursor: pointer;
-            background: rgba(31,41,55,.95);
-            color: var(--text-dim);
-            transition: .2s;
-        }
-
-        .like-btn span.heart {
-            font-size: .9rem;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            padding: 0;
         }
 
         .like-btn.liked {
-            background: rgba(22,163,74,.18);
-            color: var(--green);
-            border: 1px solid rgba(34,197,94,.8);
+            color: var(--purple-light);
         }
 
-        .like-btn:hover {
-            transform: translateY(-1px);
+        .wins-input-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.75rem;
+            align-items: flex-end;
         }
 
-        /* Post win */
-        .field {
-            margin-bottom: 1rem;
-        }
-
-        .field label {
-            display: block;
-            font-size: .8rem;
-            color: var(--text-dim);
-            margin-bottom: .25rem;
-        }
-
-        .field textarea {
+        .wins-input-row textarea {
             width: 100%;
-            min-height: 90px;
+            min-height: 60px;
+            max-height: 120px;
             resize: vertical;
-            padding: .7rem .9rem;
+            padding: 0.75rem 0.9rem;
+            background: rgba(15, 23, 42, 0.9);
             border-radius: 12px;
-            border: 1px solid rgba(148,163,184,.45);
-            background: rgba(15,23,42,.96);
+            border: 1px solid rgba(55, 65, 81, 0.9);
             color: var(--text-light);
-            font-size: .88rem;
+            font-size: 0.9rem;
             outline: none;
         }
 
-        .field textarea:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 1px var(--purple-light);
+        .wins-input-row textarea::placeholder {
+            color: rgba(148, 163, 184, 0.9);
         }
 
-        .hint-text {
-            font-size: .78rem;
-            color: var(--text-dim);
+        .wins-input-row textarea:focus {
+            border-color: rgba(147, 51, 234, 0.8);
+            box-shadow: 0 0 0 1px rgba(147, 51, 234, 0.6);
         }
 
         .post-btn {
-            border-radius: 999px;
             border: none;
-            padding: .65rem 1.4rem;
-            background: linear-gradient(135deg, #a855f7, #6366f1);
-            color: #f9fafb;
+            border-radius: 999px;
+            padding: 0.7rem 1.4rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            font-size: .88rem;
-            box-shadow: 0 18px 40px rgba(79,70,229,.45);
-            transition: .25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.45);
+            white-space: nowrap;
         }
 
-        .post-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 22px 45px rgba(79,70,229,.65);
+        .post-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
-        .status-text {
-            font-size: .8rem;
+        .wins-footnote {
+            margin-top: 0.5rem;
+            font-size: 0.78rem;
             color: var(--text-dim);
-            margin-left: .6rem;
         }
 
-        .status-success { color: var(--green); }
-        .status-error { color: #f97316; }
-
-        /* Footer */
         footer {
-            border-top: 1px solid rgba(31,41,55,.9);
-            background: radial-gradient(circle at top, rgba(15,23,42,.98), #020617 55%, #000 100%);
-            padding: 1.4rem 1.5rem 1.5rem;
-        }
-
-        .footer-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: flex; flex-direction: column; gap: .75rem;
+            background: rgba(5, 5, 5, 0.95);
+            padding: 2rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
         }
 
         .footer-links {
-            display: flex; flex-wrap: wrap;
-            gap: .9rem 1.4rem;
-            font-size: .82rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
 
-        .footer-links a { color: var(--text-dim); text-decoration: none; }
-        .footer-links a:hover { color: var(--purple-light); }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
 
-        .footer-bottom { color: var(--text-dim); font-size: .85rem; }
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
 
-        @media (max-width: 960px) {
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
             .wins-layout {
                 grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
-            .back-btn { position: static; margin: 1rem auto 0; }
-            .header { padding-top: 1rem; }
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto 0;
+                width: fit-content;
+            }
+            .header {
+                margin-top: 1rem;
+                padding-inline: 1rem;
+            }
+            .main-content {
+                padding-inline: 1rem;
+            }
+            .page-card {
+                padding: 1.5rem 1.25rem;
+            }
         }
+    
+        /* Mobile optimization & Footer fix */
+        footer {
+            margin-top: 3rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static !important;
+                display: block;
+                margin: 1rem auto !important;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 1rem;
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 0.8rem;
+                justify-content: center;
+            }
+
+            .logo img {
+                height: 28px;
+                width: 28px;
+            }
+
+            .main-content {
+                padding: 0 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .page-card {
+                padding: 1.5rem 1rem;
+                margin-top: 1rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.6rem !important;
+            }
+
+            .page-header-eyebrow {
+                font-size: 0.75rem;
+            }
+
+            .page-header p {
+                font-size: 0.9rem;
+            }
+
+            .calls-grid,
+            .wins-grid,
+            .affiliate-grid,
+            .journey-timeline {
+                grid-template-columns: 1fr !important;
+                gap: 1.2rem;
+            }
+
+            footer {
+                padding: 1.5rem 1rem;
+                margin-top: 2rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            /* Chat specific */
+            .chat-container {
+                padding: 1rem 0.8rem;
+            }
+
+            .message-input-container {
+                padding: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-card {
+                padding: 1.2rem 0.8rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.4rem !important;
+            }
+
+            .call-card,
+            .win-card,
+            .affiliate-card,
+            .timeline-item {
+                padding: 1rem !important;
+            }
+        }
+
     </style>
-
-    <link rel="stylesheet" href="../notion-arcane.css" />
-    <script type="module" src="../notion-protect.js"></script>
 </head>
-
 <body>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
 
-<a href="dashboard.html" class="back-btn">Back</a>
-
-<div class="header">
-    <div class="logo">
-        <img src="ArcaneA.png" />
-        THE ARCANE ARCHIVES
-    </div>
-</div>
-
-<div class="main-content">
-    <h1 class="page-title">Post Your <span>Wins</span></h1>
-    <p class="page-sub">
-        Trades, business moves, mental shifts, gym progress—log it here.
-        Small or big, the win is that you’re moving.
-    </p>
-
-    <div class="wins-layout">
-        <!-- LEFT: Feed -->
-        <div class="card">
-            <h2>Community Wins</h2>
-            <p class="card-sub">Real proof of work from inside the Archives.</p>
-
-            <div id="winsFeed" class="wins-feed">
-                <!-- wins will render here -->
-            </div>
-        </div>
-
-        <!-- RIGHT: New win -->
-        <div class="card">
-            <h2>Post a Win</h2>
-            <p class="card-sub">
-                Doesn’t need to be huge. The point is logging momentum and keeping receipts.
-            </p>
-
-            <div class="field">
-                <label for="winContent">What did you win at today?</label>
-                <textarea id="winContent" placeholder="Example: Closed +3R on gold, finished lesson 4, went gym after a bad day, etc."></textarea>
-            </div>
-            <p class="hint-text">
-                Keep it raw and honest. You’re building a track record of becoming a different person.
-            </p>
-
-            <div style="margin-top: 1rem; display:flex; align-items:center;">
-                <button class="post-btn" type="button" onclick="postWin()">Post Win</button>
-                <span id="winStatus" class="status-text">Unsaved</span>
-            </div>
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
         </div>
     </div>
-</div>
 
-<footer>
-    <div class="footer-inner">
+    <div class="main-content">
+        <div class="page-card">
+            <div class="page-card-inner">
+                <div class="page-header">
+                    <div class="page-header-eyebrow">Proof of Work</div>
+                    <h1>🏆 <span>Wins Board</span></h1>
+                    <p>Stack your receipts. Every trade, client, habit, and breakthrough belongs here.</p>
+                </div>
+
+                <div class="wins-layout">
+                    <aside class="wins-meta">
+                        <h2>Why this matters</h2>
+                        <p>Most people forget their own proof. This board keeps you locked in, confident, and dangerous.</p>
+
+                        <div class="wins-stat">🔄 Momentum is built by stacking small wins daily.</div>
+                        <div class="wins-stat">📸 Screenshots & numbers > vague motivation.</div>
+
+                        <div class="wins-highlight">
+                            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.14em; color:rgba(226,232,240,0.9); margin-bottom:0.35rem;">
+                                PUBLIC SCOREBOARD
+                            </div>
+                            <div>
+                                Log everything – 1% improvements, deposits, payouts, PRs, wins in business & life.
+                            </div>
+                        </div>
+                    </aside>
+
+                    <section class="wins-card">
+                        <div class="wins-header">
+                            <div class="wins-header-left">
+                                <h2>Latest Wins</h2>
+                                <p>Share the number, the context, and the lesson.</p>
+                            </div>
+                            <div class="wins-header-tag">Auto-updating board</div>
+                        </div>
+
+                        <div id="winsList" class="wins-list">
+                            <div style="text-align:center; color:var(--text-dim); padding:2rem 1rem; font-size:0.9rem;">
+                                Loading the wins…
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="wins-input-row">
+                                <textarea id="winInput" placeholder="E.g. +3.4R on XAUUSD London session, closed early but stuck to stop. Lesson: trust the plan."></textarea>
+                                <button id="postWinBtn" class="post-btn">
+                                    ✚ Post Win
+                                </button>
+                            </div>
+                            <div class="wins-footnote">
+                                Be specific: pair / business context, numbers, and the main lesson.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
         <div class="footer-links">
             <a href="index.html">Home</a>
             <a href="Privacy-policy.html">Privacy Policy</a>
@@ -400,175 +590,199 @@
             <a href="refund-policy.html">Refund Policy</a>
         </div>
         <div class="footer-bottom">
-            © 2024 The Arcane Archives. All rights reserved.
+            &copy; 2024 The Arcane Archives. All rights reserved.
         </div>
-    </div>
-</footer>
+    </footer>
 
-<!-- Wins Logic -->
-<script type="module">
-    import { auth, db } from "./auth-guard.js";
-    import {
-        collection,
-        addDoc,
-        serverTimestamp,
-        query,
-        orderBy,
-        onSnapshot,
-        updateDoc,
-        doc,
-        arrayUnion,
-        arrayRemove,
-        getDoc
-    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    <script type="module">
+        import { 
+            protectPage,
+            db 
+        } from './auth-guard.js';
+        import { 
+            collection, 
+            addDoc, 
+            serverTimestamp, 
+            query, 
+            orderBy, 
+            onSnapshot, 
+            updateDoc,
+            doc
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-    const winsFeed = document.getElementById("winsFeed");
-    const winContent = document.getElementById("winContent");
-    const winStatus = document.getElementById("winStatus");
+        const winsList = document.getElementById('winsList');
+        const winInput = document.getElementById('winInput');
+        const postWinBtn = document.getElementById('postWinBtn');
 
-    let currentUser = null;
-    let currentProfile = {
-        username: "Member",
-        avatar: "default-avatar.png"
-    };
+        let currentUser = null;
+        let currentUserData = null;
 
-    function setWinStatus(msg, type = "") {
-        winStatus.textContent = msg;
-        winStatus.classList.remove("status-success", "status-error");
-        if (type === "success") winStatus.classList.add("status-success");
-        if (type === "error") winStatus.classList.add("status-error");
-    }
+        protectPage({
+            onSuccess: (user, userData) => {
+                currentUser = user;
+                currentUserData = userData;
+                initWinsBoard();
+            },
+            onFailure: () => {
+                if (winsList) {
+                    winsList.innerHTML = `
+                        <div style="text-align:center; padding:3rem 1rem;">
+                            <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
+                            <h3 style="margin-bottom:0.5rem;">Access restricted</h3>
+                            <p style="color:#9ca3af; margin-bottom:1.5rem;">
+                                You need an active subscription to view and post wins.
+                            </p>
+                            <a href="index.html#pricing" style="
+                                display:inline-block;
+                                padding:0.8rem 1.6rem;
+                                border-radius:999px;
+                                background:linear-gradient(135deg,#9333ea,#7e22ce);
+                                color:white;
+                                text-decoration:none;
+                                font-weight:600;
+                            ">Join The Arcane Archives</a>
+                        </div>
+                    `;
+                }
+                if (postWinBtn) postWinBtn.disabled = true;
+            }
+        });
 
-    auth.onAuthStateChanged(async (user) => {
-        if (!user) return;
-        currentUser = user;
-
-        const userDoc = await getDoc(doc(db, "Users", user.uid));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            currentProfile.username = data.Username || "Member";
-            currentProfile.avatar =
-                localStorage.getItem("customAvatarUrl") ||
-                data.avatar ||
-                "default-avatar.png";
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
         }
 
-        // Load wins
-        const q = query(
-            collection(db, "wins"),
-            orderBy("timestamp", "desc")
-        );
+        function renderWin(docSnap) {
+            const data = docSnap.data();
+            const username = data.username || 'Member';
+            const avatarChar = (data.avatarLetter || username.charAt(0) || '?').toUpperCase();
+            const timestamp = data.timestamp?.toDate 
+                ? data.timestamp.toDate().toLocaleString()
+                : 'Just now';
+            const likes = Array.isArray(data.likedBy) ? data.likedBy.length : 0;
+            const userLiked = currentUser && Array.isArray(data.likedBy) && data.likedBy.includes(currentUser.uid);
 
-        onSnapshot(q, (snapshot) => {
-            winsFeed.innerHTML = "";
-            snapshot.forEach((docSnap) => {
-                const w = docSnap.data();
-                const winId = docSnap.id;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'win-item';
+            wrapper.dataset.id = docSnap.id;
 
-                const wrap = document.createElement("div");
-                wrap.className = "win-item";
+            wrapper.innerHTML = `
+                <div class="win-header">
+                    <div class="win-avatar">${avatarChar}</div>
+                    <div>
+                        <div class="win-username">${username}</div>
+                        <div class="win-meta">${timestamp}</div>
+                    </div>
+                </div>
+                <div class="win-text">${escapeHtml(data.content || '')}</div>
+                <div class="win-actions">
+                    <button class="like-btn ${userLiked ? 'liked' : ''}" data-role="like-btn">
+                        🔥 <span>${likes}</span>
+                    </button>
+                    <span>Logged from: ${data.context || 'Win board'}</span>
+                </div>
+            `;
 
-                const ts = w.timestamp?.toDate
-                    ? w.timestamp.toDate()
-                    : new Date();
+            const likeBtn = wrapper.querySelector('[data-role="like-btn"]');
+            likeBtn?.addEventListener('click', () => toggleLike(docSnap.id, data));
 
-                const timeStr = ts.toLocaleString("en-GB", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    day: "2-digit",
-                    month: "short"
-                });
+            return wrapper;
+        }
 
-                const likes = w.likes || 0;
-                const likedBy = w.likedBy || [];
-                const isLiked = currentUser && likedBy.includes(currentUser.uid);
+        function initWinsBoard() {
+            if (!winsList) return;
 
-                wrap.innerHTML = `
-                    <div class="win-header">
-                        <img class="win-avatar" src="${w.avatar || "default-avatar.png"}" />
-                        <div>
-                            <div class="win-author">${w.username || "Member"}</div>
-                            <div class="win-time">${timeStr}</div>
+            const q = query(
+                collection(db, 'wins'),
+                orderBy('timestamp', 'desc')
+            );
+
+            onSnapshot(q, (snapshot) => {
+                winsList.innerHTML = '';
+                if (snapshot.empty) {
+                    winsList.innerHTML = `
+                        <div style="text-align:center; color:#9ca3af; padding:2.5rem 1rem;">
+                            No wins posted yet. Log your first one.
                         </div>
-                    </div>
-                    <div class="win-content">${w.content || ""}</div>
-                    <div class="win-footer">
-                        <button class="like-btn ${isLiked ? "liked" : ""}" data-id="${winId}">
-                            <span class="heart">${isLiked ? "💚" : "🤍"}</span>
-                            <span>${likes} like${likes === 1 ? "" : "s"}</span>
-                        </button>
-                        <span>Posted from inside the Archives</span>
-                    </div>
-                `;
-
-                winsFeed.appendChild(wrap);
-            });
-
-            attachLikeListeners();
-        });
-    });
-
-    function attachLikeListeners() {
-        const buttons = winsFeed.querySelectorAll(".like-btn");
-        buttons.forEach((btn) => {
-            btn.onclick = async () => {
-                if (!currentUser) return;
-                const id = btn.getAttribute("data-id");
-                const winRef = doc(db, "wins", id);
-                const snap = await getDoc(winRef);
-                if (!snap.exists()) return;
-                const data = snap.data();
-                const likedBy = data.likedBy || [];
-                const likes = data.likes || 0;
-
-                let newLikes = likes;
-                let updatedLikedBy;
-
-                if (likedBy.includes(currentUser.uid)) {
-                    // unlike
-                    newLikes = Math.max(0, likes - 1);
-                    updatedLikedBy = arrayRemove(currentUser.uid);
-                } else {
-                    // like
-                    newLikes = likes + 1;
-                    updatedLikedBy = arrayUnion(currentUser.uid);
+                    `;
+                    return;
                 }
 
-                await updateDoc(winRef, {
-                    likes: newLikes,
-                    likedBy: updatedLikedBy
+                const fragment = document.createDocumentFragment();
+                snapshot.forEach(docSnap => {
+                    fragment.appendChild(renderWin(docSnap));
                 });
-            };
-        });
-    }
-
-    window.postWin = async function () {
-        if (!currentUser) return;
-        const text = winContent.value.trim();
-        if (!text) {
-            setWinStatus("Write something first", "error");
-            return;
-        }
-
-        try {
-            await addDoc(collection(db, "wins"), {
-                userId: currentUser.uid,
-                username: currentProfile.username,
-                content: text,
-                likes: 0,
-                likedBy: [],
-                timestamp: serverTimestamp(),
-                avatar: currentProfile.avatar
+                winsList.appendChild(fragment);
             });
 
-            winContent.value = "";
-            setWinStatus("Posted", "success");
-        } catch (err) {
-            console.error(err);
-            setWinStatus("Error posting win", "error");
+            if (postWinBtn && winInput) {
+                postWinBtn.addEventListener('click', postWin);
+                winInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        postWin();
+                    }
+                });
+            }
         }
-    };
-</script>
 
+        async function postWin() {
+            if (!winInput || !postWinBtn || !currentUser) return;
+
+            const text = winInput.value.trim();
+            if (!text) return;
+
+            postWinBtn.disabled = true;
+
+            try {
+                const username = currentUserData?.Username || currentUser.email.split('@')[0];
+                const avatarLetter = localStorage.getItem('userAvatar') || username.charAt(0);
+
+                await addDoc(collection(db, 'wins'), {
+                    userId: currentUser.uid,
+                    username,
+                    content: text,
+                    avatarLetter,
+                    likes: 0,
+                    likedBy: [],
+                    context: 'wins-board',
+                    timestamp: serverTimestamp()
+                });
+
+                winInput.value = '';
+            } catch (error) {
+                console.error('Error posting win:', error);
+                alert('Could not post win. Try again.');
+            } finally {
+                postWinBtn.disabled = false;
+            }
+        }
+
+        async function toggleLike(winId, data) {
+            if (!currentUser) return;
+
+            try {
+                const docRef = doc(db, 'wins', winId);
+                const likedBy = Array.isArray(data.likedBy) ? [...data.likedBy] : [];
+                const idx = likedBy.indexOf(currentUser.uid);
+
+                if (idx === -1) {
+                    likedBy.push(currentUser.uid);
+                } else {
+                    likedBy.splice(idx, 1);
+                }
+
+                await updateDoc(docRef, {
+                    likedBy,
+                    likes: likedBy.length
+                });
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+    </script>
 </body>
 </html>
