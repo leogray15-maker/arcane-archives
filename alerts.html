@@ -21,11 +21,17 @@
 
         * { margin:0; padding:0; box-sizing:border-box; }
 
+        html {
+            min-height: 100vh;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: radial-gradient(circle at top, #111827 0%, #02010a 45%, #000000 100%);
             color: var(--text-light);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .back-btn {
@@ -66,8 +72,9 @@
 
         .main-content {
             max-width:1200px;
-            margin:0 auto 4rem;
-            padding:0 1.5rem;
+            margin:0 auto;
+            padding:0 1.5rem 4rem;
+            flex: 1;
         }
 
         .page-card {
@@ -97,6 +104,7 @@
             background:linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-text-fill-color:transparent;
             -webkit-background-clip:text;
+            background-clip:text;
         }
         .page-header p {
             color:var(--text-dim);
@@ -108,6 +116,7 @@
             margin-top:1.5rem;
             width:100%;
             height:420px;
+            position: relative;
         }
 
         .chart-fallback {
@@ -183,6 +192,12 @@
             font-weight:600;
         }
 
+        .trades-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .trades-table {
             width:100%;
             border-collapse:collapse;
@@ -191,8 +206,9 @@
         }
         .trades-table th,
         .trades-table td {
-            padding:0.45rem 0.3rem;
+            padding:0.45rem 0.5rem;
             text-align:left;
+            white-space: nowrap;
         }
         .trades-table thead {
             border-bottom:1px solid rgba(55,65,81,0.9);
@@ -213,6 +229,7 @@
             border:1px solid rgba(34,197,94,0.7);
             color:#bbf7d0;
             background:rgba(22,163,74,0.18);
+            display: inline-block;
         }
         .trade-pill-loss {
             font-size:0.75rem;
@@ -221,6 +238,7 @@
             border:1px solid rgba(248,113,113,0.7);
             color:#fecaca;
             background:rgba(127,29,29,0.35);
+            display: inline-block;
         }
 
         /* Admin Trade Idea Form */
@@ -230,7 +248,7 @@
             border-radius:18px;
             border:1px solid rgba(148,163,184,0.55);
             padding:1.4rem 1.5rem;
-            display:none; /* only visible when JS adds .visible */
+            display:none;
         }
         .alert-form.visible {
             display:block;
@@ -295,6 +313,7 @@
             align-items:center;
             gap:0.8rem;
             margin-top:0.6rem;
+            flex-wrap: wrap;
         }
         .alert-form-note {
             font-size:0.8rem;
@@ -310,11 +329,17 @@
             font-weight:600;
             cursor:pointer;
             box-shadow:0 10px 25px rgba(147,51,234,0.55);
+            transition: all 0.2s;
+        }
+        .alert-form button:hover {
+            transform: translateY(-2px);
+            box-shadow:0 15px 30px rgba(147,51,234,0.65);
         }
         .alert-form button:disabled {
             opacity:0.6;
             cursor:not-allowed;
             box-shadow:none;
+            transform: none;
         }
 
         /* Alerts feed */
@@ -337,7 +362,8 @@
             padding:2rem;
             border-top:1px solid rgba(147,51,234,0.2);
             text-align:center;
-            margin-top:3rem;
+            margin-top: auto;
+            width: 100%;
         }
         footer .footer-links {
             display:flex;
@@ -357,42 +383,18 @@
             font-size:0.85rem;
         }
 
-        @media (max-width:768px) {
-            .back-btn {
-                position:static;
-                display:block;
-                margin:1rem auto 0;
-                width:fit-content;
-            }
-            .header {
-                margin-top:1rem;
-                padding-inline:1rem;
-            }
-            .main-content {
-                padding-inline:1rem;
-            }
-            .page-card {
-                padding:1.5rem 1.3rem;
-            }
-        }
-    
-        /* Mobile optimization & Footer fix */
-        footer {
-            margin-top: 3rem;
-            width: 100%;
-        }
-
+        /* Mobile optimization */
         @media (max-width: 768px) {
             .back-btn {
                 position: static !important;
                 display: block;
-                margin: 1rem auto !important;
+                margin: 1rem auto 0 !important;
                 width: fit-content;
             }
 
             .header {
                 margin-top: 1rem;
-                padding: 1rem;
+                padding: 0 1rem;
             }
 
             .logo {
@@ -406,8 +408,7 @@
             }
 
             .main-content {
-                padding: 0 1rem;
-                margin-bottom: 2rem;
+                padding: 0 1rem 2rem;
             }
 
             .page-card {
@@ -416,7 +417,7 @@
             }
 
             .page-header h1 {
-                font-size: 1.6rem !important;
+                font-size: 1.6rem;
             }
 
             .page-header-eyebrow {
@@ -427,17 +428,75 @@
                 font-size: 0.9rem;
             }
 
-            .calls-grid,
-            .wins-grid,
-            .affiliate-grid,
-            .journey-timeline {
-                grid-template-columns: 1fr !important;
-                gap: 1.2rem;
+            .tv-container {
+                height: 300px;
+            }
+
+            .chart-fallback {
+                height: 300px;
+            }
+
+            .tg-block {
+                font-size: 0.8rem;
+                padding: 0.7rem 0.8rem;
+            }
+
+            .trades-card {
+                padding: 1.2rem 1rem;
+            }
+
+            .trades-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .trades-title {
+                font-size: 1rem;
+            }
+
+            .trades-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .trades-stats {
+                gap: 0.8rem;
+            }
+
+            .trades-stat-item {
+                min-width: 80px;
+            }
+
+            .trades-table {
+                font-size: 0.8rem;
+            }
+
+            .trades-table th,
+            .trades-table td {
+                padding: 0.4rem 0.3rem;
+            }
+
+            .alert-form {
+                padding: 1.2rem 1rem;
+            }
+
+            .alert-form-grid {
+                grid-template-columns: 1fr;
+                gap: 0.6rem;
+            }
+
+            .alert-form-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            .alert-form button {
+                width: 100%;
             }
 
             footer {
                 padding: 1.5rem 1rem;
-                margin-top: 2rem;
             }
 
             .footer-links {
@@ -445,31 +504,40 @@
                 gap: 1rem;
                 align-items: center;
             }
-
-            /* Chat specific */
-            .chat-container {
-                padding: 1rem 0.8rem;
-            }
-
-            .message-input-container {
-                padding: 0.8rem;
-            }
         }
 
         @media (max-width: 480px) {
             .page-card {
                 padding: 1.2rem 0.8rem;
+                border-radius: 18px;
             }
 
             .page-header h1 {
-                font-size: 1.4rem !important;
+                font-size: 1.4rem;
             }
 
-            .call-card,
-            .win-card,
-            .affiliate-card,
-            .timeline-item {
-                padding: 1rem !important;
+            .tv-container {
+                height: 250px;
+            }
+
+            .chart-fallback {
+                height: 250px;
+            }
+
+            .trades-card {
+                padding: 1rem 0.8rem;
+            }
+
+            .trades-table {
+                font-size: 0.75rem;
+            }
+
+            .alert-form {
+                padding: 1rem 0.8rem;
+            }
+
+            .alert-card {
+                padding: 1rem;
             }
         }
 
@@ -501,7 +569,7 @@
 
                 <!-- TradingView -->
                 <div class="tv-container">
-                    <div class="tradingview-widget-container__widget" id="tradingview_widget" style="height:100%; width:100%;"></div>
+                    <div id="tradingview_widget" style="height:100%; width:100%;"></div>
 
                     <div class="chart-fallback" id="chartFallback">
                         <div style="font-size:2rem;">📉</div>
@@ -545,24 +613,26 @@
                         </div>
                     </div>
 
-                    <table class="trades-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Pair</th>
-                                <th>Direction</th>
-                                <th>Result</th>
-                                <th>Pips</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tradesTableBody">
-                            <tr>
-                                <td colspan="5" style="text-align:center;color:var(--text-dim);">
-                                    No trades loaded yet. This card is ready to connect to your trade journal.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="trades-table-wrapper">
+                        <table class="trades-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Pair</th>
+                                    <th>Direction</th>
+                                    <th>Result</th>
+                                    <th>Pips</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradesTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center;color:var(--text-dim);">
+                                        No trades loaded yet. This card is ready to connect to your trade journal.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Admin: New Trade Idea Form (only shown if ADMIN_EMAIL is logged in) -->
@@ -617,7 +687,7 @@
 
                     <div class="alert-form-footer">
                         <div class="alert-form-note">
-                            Logged in as admin email: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f19d949e96839088c0c4b1969c90989ddf929e9c">[email&#160;protected]</a></strong>.<br>
+                            Logged in as admin email: <strong>leo@arcanearchives.com</strong>.<br>
                             Only you can see and use this form.
                         </div>
                         <button id="postAlertBtn" type="button">Post Trade Idea</button>
@@ -646,23 +716,47 @@
     </footer>
 
     <!-- TradingView Script -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Check if TradingView is loaded
             if (typeof TradingView === 'undefined') {
+                console.error('TradingView library failed to load');
                 const fallback = document.getElementById('chartFallback');
                 if (fallback) fallback.style.display = 'flex';
                 return;
             }
 
-            new TradingView.widget({
-                autosize: true,
-                symbol: "OANDA:XAUUSD",
-                interval: "15",
-                timezone: "Etc/UTC",
-                theme: "dark",
-                style: "1",
-                locale: "en",
-                toolbar_bg: "rgba(0,0,0,0.9)",
-                enable_publishing: false,
+            try {
+                // Initialize TradingView widget
+                new TradingView.widget({
+                    container_id: "tradingview_widget",
+                    autosize: true,
+                    symbol: "OANDA:XAUUSD",
+                    interval: "15",
+                    timezone: "Etc/UTC",
+                    theme: "dark",
+                    style: "1",
+                    locale: "en",
+                    toolbar_bg: "rgba(0,0,0,0.9)",
+                    enable_publishing: false,
+                    hide_side_toolbar: false,
+                    allow_symbol_change: true,
+                    studies: [],
+                    show_popup_button: true,
+                    popup_width: "1000",
+                    popup_height: "650"
+                });
+                
+                console.log('TradingView widget initialized successfully');
+            } catch (error) {
+                console.error('Error initializing TradingView widget:', error);
+                const fallback = document.getElementById('chartFallback');
+                if (fallback) fallback.style.display = 'flex';
+            }
+        });
+    </script>
+
+</body>
+</html>
