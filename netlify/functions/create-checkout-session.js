@@ -1,14 +1,6 @@
 // netlify/functions/create-checkout-session.js
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
-const priceIdEnv   = process.env.STRIPE_PRICE_ID;
-
-// Guard: if secret key missing, fail clearly
-if (!stripeSecret) {
-  console.error("❌ STRIPE_SECRET_KEY is not set in environment");
-}
-
-const stripe = require("stripe")(stripeSecret || "");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 
 exports.handler = async (event) => {
   const headers = {
@@ -32,7 +24,9 @@ exports.handler = async (event) => {
   }
 
   try {
-    if (!stripeSecret) {
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("❌ STRIPE_SECRET_KEY is not set");
       return {
         statusCode: 500,
         headers,
@@ -43,27 +37,23 @@ exports.handler = async (event) => {
     }
 
     const body = event.body ? JSON.parse(event.body) : {};
-    // allow optional override, but default to env
-    const priceId = body.priceId || priceIdEnv || "price_1SRnIxCXghparoQFb0oQPUes";
+    
+    // Price ID - allow override or use env var or default
+    const priceId = body.priceId || 
+                    process.env.STRIPE_PRICE_ID || 
+                    "price_1SRnIxCXghparoQFb0oQPUes";
 
-    if (!priceId) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          error: "Server misconfigured: STRIPE_PRICE_ID is not set",
-        }),
-      };
-    }
+    // Determine base URL
+    const baseUrl = process.env.URL ||
+                    process.env.DEPLOY_PRIME_URL ||
+                    process.env.DEPLOY_URL ||
+                    "https://arcanearchives.netlify.app";
 
-    const baseUrl =
-      process.env.URL ||
-      process.env.DEPLOY_PRIME_URL ||
-      process.env.DEPLOY_URL ||
-      "https://arcanearchives.netlify.app";
+    console.log("🧾 Creating checkout session");
+    console.log("   Price ID:", priceId);
+    console.log("   Base URL:", baseUrl);
 
-    console.log("🧾 Creating checkout session with price:", priceId);
-
+    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -77,6 +67,11 @@ exports.handler = async (event) => {
       billing_address_collection: "required",
       success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/#pricing`,
+      
+      // Additional metadata for better tracking
+      metadata: {
+        source: "arcane_archives",
+      },
     });
 
     console.log("✅ Checkout session created:", session.id);
@@ -84,7 +79,10 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ id: session.id }),
+      body: JSON.stringify({ 
+        id: session.id,
+        url: session.url 
+      }),
     };
   } catch (error) {
     console.error("🔥 Stripe checkout error:", error);

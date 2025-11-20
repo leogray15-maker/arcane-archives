@@ -422,12 +422,22 @@
         const hasActiveSubscription = userData?.subscriptionStatus === 'active';
         const isPaid = userData?.isPaid === true;
 
+        console.log('🔍 Routing user:', { hasActiveSubscription, isPaid, userData });
+
         if (!hasActiveSubscription && !isPaid) {
             // No active sub → always show pricing / join card
+            console.log('➡️ Unpaid user → pricing');
             window.location.href = 'index.html#pricing';
         } else {
             // Paid user → go back to intended page or dashboard
-            if (!handlePostLoginRedirect()) {
+            const redirectPath = sessionStorage.getItem('aa_redirect_after_login');
+            
+            if (redirectPath && redirectPath !== '/login.html' && redirectPath !== 'login.html') {
+                console.log('➡️ Redirecting to saved path:', redirectPath);
+                sessionStorage.removeItem('aa_redirect_after_login');
+                window.location.href = redirectPath;
+            } else {
+                console.log('➡️ Paid user → dashboard');
                 window.location.href = 'dashboard.html';
             }
         }
