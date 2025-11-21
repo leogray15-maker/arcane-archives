@@ -1,0 +1,464 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   The Blame Bias.
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="2747f6a4-04fe-8046-b7ba-d18118b43120">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      The Blame Bias.
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <p class="" id="2747f6a4-04fe-8026-978f-f16fcaeba888">
+     we want to learn from mistakes.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8023-a9a5-c0e5830d1520">
+     why?
+    </h1>
+    <p class="" id="2747f6a4-04fe-8024-929c-c57105d0d862">
+     because we never want to experience that same shit again.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-80c2-a54d-e90e4baec7c6">
+     but why?
+    </h1>
+    <p class="" id="2747f6a4-04fe-80d9-99a8-dea50e63061a">
+     to tell the truth.
+    </p>
+    <p class="" id="2747f6a4-04fe-8059-91be-ede56c505e6a">
+     we don’t like to look closely at what we did wrong.
+    </p>
+    <p class="" id="2747f6a4-04fe-80ba-b0b6-fb0b27f635b4">
+     our inspection is limited when it comes to ourselves.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8097-9896-e1e6896d55ee">
+     BUT WHY?
+    </h1>
+    <p class="" id="2747f6a4-04fe-8092-89c0-ea960f9fbae4">
+     we don’t like to be wrong.
+    </p>
+    <p class="" id="2747f6a4-04fe-8018-b13d-fd9dc9b1c98e">
+     being wrong might mean we got kicked out the tribe.
+    </p>
+    <p class="" id="2747f6a4-04fe-8065-b486-c13148b81e30">
+     which means… death.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-808b-9648-e71e85b279a9">
+    </h1>
+    <h1 class="" id="2747f6a4-04fe-8027-98f8-e698252fe1f0">
+     WE WANT TO AVOID PAIN.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8077-a761-e0814f158164">
+     I said this before, we're wired for that.
+    </p>
+    <p class="" id="2747f6a4-04fe-8075-89af-df1963eff9da">
+     which means naturally…
+    </p>
+    <p class="" id="2747f6a4-04fe-80dc-a74f-ee140620f19a">
+     what are we going to do?
+    </p>
+    <p class="" id="2747f6a4-04fe-8080-936d-d1c22d0c6a11">
+     blame other things.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-80a2-9c96-e9a991253a77">
+     IN A GAME.
+    </h1>
+    <p class="" id="2747f6a4-04fe-80fe-8437-ecaf6d27f809">
+     when you died in a game of fornite or some shit.
+    </p>
+    <p class="" id="2747f6a4-04fe-80b8-987d-e2dad602fe6a">
+     you’re gonna blame it on lag.
+    </p>
+    <p class="" id="2747f6a4-04fe-803f-af9f-d3b97974000e">
+     “if only I had enough mats”
+    </p>
+    <p class="" id="2747f6a4-04fe-80db-8c04-da99b753009b">
+     “If only I had a better shotgun”
+    </p>
+    <p class="" id="2747f6a4-04fe-80c5-921f-d4820da3a297">
+     “if only I had a better landing spot”
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8027-808d-cd1e1d414a31">
+     IT’S NEVER YOUR FAULT
+    </h1>
+    <p class="" id="2747f6a4-04fe-802b-b16a-e6c0966986df">
+     it’s never…
+    </p>
+    <p class="" id="2747f6a4-04fe-80a7-89c6-e8b07157191b">
+     “I should’ve got more mats”
+    </p>
+    <p class="" id="2747f6a4-04fe-80b6-a221-e584cc865857">
+     “I should’ve tried to find a better shotgun”
+    </p>
+    <p class="" id="2747f6a4-04fe-80d4-a200-db48d30bdb82">
+     “I should have chose a better landing spot”
+    </p>
+    <h1 class="" id="2747f6a4-04fe-80f9-96af-f40a5e63c3be">
+     UNLESS YOU TRAIN TO GET RID OF THIS BIAS.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8077-ae0e-cb6d0d152b3a">
+     it will not go away.
+    </p>
+    <p class="" id="2747f6a4-04fe-8076-bbb9-df284f078aee">
+     and the way to train it.
+    </p>
+    <p class="" id="2747f6a4-04fe-80b3-a8b9-f68eabb09c28">
+     is obviously, to practice.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8027-a46c-e1fa620ad826">
+     LEARN FROM YOUR FAILURES, ACCEPT YOU ARE NOT PERFECT.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8059-b088-dcc45e655952">
+     you will always make mistakes.
+    </p>
+    <p class="" id="2747f6a4-04fe-8080-b153-c9c42f0b82a3">
+     and there’s no point blaming something else.
+    </p>
+    <p class="" id="2747f6a4-04fe-8010-84fb-c1cc0e073971">
+     <em>
+      <strong>
+       ever.
+      </strong>
+     </em>
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8043-b9d8-c55abd15352e">
+     IF YOU DO.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8067-8901-e2eaf836b1db">
+     you’re retarded.
+    </p>
+    <p class="" id="2747f6a4-04fe-80f0-943b-d6fa4d5dfed3">
+     you just missed a chance to improve.
+    </p>
+    <p class="" id="2747f6a4-04fe-804c-bb12-c8d053f022ea">
+     if only you’d drop the ego.
+    </p>
+    <p class="" id="2747f6a4-04fe-809c-8579-c33abf023f88">
+     and make a change.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-80a3-916f-dcd4555252da">
+    </h1>
+    <h1 class="" id="2747f6a4-04fe-8020-93f1-d2fbf5e02fac">
+     MORAL FOR THE BLAME BIAS.
+    </h1>
+    <p class="" id="2747f6a4-04fe-80ad-a550-fcf009f100cf">
+     never blame anything.
+    </p>
+    <p class="" id="2747f6a4-04fe-80c7-b7e5-d0900d714c6f">
+     if you blame something.
+    </p>
+    <p class="" id="2747f6a4-04fe-8028-a4b3-f9a008b13c43">
+     you’ve just missed a chance to improve on something.
+    </p>
+    <p class="" id="2747f6a4-04fe-80c0-a281-fe3113915f1e">
+     just because you couldn’t handle the fact that you did something wrong.
+    </p>
+    <p class="" id="2747f6a4-04fe-80c6-80c7-dd74b88fd5d1">
+     pussy, own up like a man.
+    </p>
+    <p class="" id="2747f6a4-04fe-8009-8617-e0a15413b47e">
+     and improve.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8035-a789-d4d15803fe89">
+    </h1>
+    <h1 class="" id="2747f6a4-04fe-80d0-8c8e-d3f4743b5714">
+     IMPROVE YOUR LIFE WITH THIS.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8000-ad94-e59fac20ee3f">
+     the first step to anything.
+    </p>
+    <p class="" id="2747f6a4-04fe-8015-a9e8-e67d32eeea3b">
+     is first responsibility.
+    </p>
+    <p class="" id="2747f6a4-04fe-8055-830a-f0bb699e4f2f">
+     then dropping the ego.
+    </p>
+    <p class="" id="2747f6a4-04fe-803f-b322-ea98ccfcf2f4">
+     that’s how you change your life.
+    </p>
+    <p class="" id="2747f6a4-04fe-80c3-84e7-ed48bdac445b">
+     practice this.
+    </p>
+    <p class="" id="2747f6a4-04fe-80a4-93a7-e0704c0c6326">
+     and thank me later.
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

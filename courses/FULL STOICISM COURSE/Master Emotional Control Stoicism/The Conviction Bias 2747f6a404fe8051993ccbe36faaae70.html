@@ -1,0 +1,457 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   The Conviction Bias.
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="2747f6a4-04fe-8051-993c-cbe36faaae70">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      The Conviction Bias.
+     </strong>
+     <br/>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <p class="" id="2747f6a4-04fe-80e4-81e4-ec38475e86c4">
+     The Conviction Bias Is Simple.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8047-9cb6-eb0585eb50ba">
+     IT’S ALL ABOUT TONE.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8069-99ef-f7097af6fd34">
+     imagine there are 2 salesmen.
+    </p>
+    <p class="" id="2747f6a4-04fe-808b-a526-e781fa051d8f">
+     One Who Is Extremely Extroverted.
+    </p>
+    <p class="" id="2747f6a4-04fe-808f-a496-c2f8f3946445">
+     One Who Is Extremely Introverted.
+    </p>
+    <p class="" id="2747f6a4-04fe-8000-a7fc-d3e82d644f0d">
+     and they’re both selling you a vacuum cleaner.
+    </p>
+    <p class="" id="2747f6a4-04fe-80d4-899f-d15a6fd91aac">
+     but with their personalities.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8011-b8f9-e92e71963dfc">
+     Extroverted salesmen.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8051-8120-ceb1a405ae71">
+     he’s selling a shitty cheap vacuum cleaner.
+    </p>
+    <p class="" id="2747f6a4-04fe-8062-b60d-fb288c58a205">
+     but this salesmen STRONGLY believes that this vacuum cleaner is amazing. because of his confirmation bias.
+    </p>
+    <p class="" id="2747f6a4-04fe-80e1-bd60-d39d27c52dd5">
+     he ONLY looked at the 5 star reviews.
+    </p>
+    <p class="" id="2747f6a4-04fe-8077-aebb-d7f975dffb45">
+     When he speaks to a customer, his conviction is evident in his tone.
+    </p>
+    <p class="" id="2747f6a4-04fe-8083-ae45-fd5781ba1bc0">
+     body language, choice of words.
+    </p>
+    <p class="" id="2747f6a4-04fe-8060-8738-ccf8e8ebd421">
+     He speaks about the features with confidence.
+    </p>
+    <p class="" id="2747f6a4-04fe-8041-8ed8-e890726541ab">
+     its powerful suction, advanced filtration system, long battery life and shit.
+    </p>
+    <p class="" id="2747f6a4-04fe-80fc-a43f-c998cc6661b9">
+     he shares his personal stories with it, how he uses it himself and loves it.
+    </p>
+    <p class="" id="2747f6a4-04fe-808e-89f9-c245306ae2d4">
+     His enthusiasm is contagious.
+    </p>
+    <p class="" id="2747f6a4-04fe-8034-a4e6-f867d3b57fe7">
+     which makes the customer feel more assured about the product’s quality and effectiveness.
+    </p>
+    <p class="" id="2747f6a4-04fe-80e6-b6e0-c7342f8bcd2a">
+     this conviction makes the customer buy.
+    </p>
+    <p class="" id="2747f6a4-04fe-809d-b2a8-c6d51f6b9484">
+     with NO doubts.
+    </p>
+    <p class="" id="2747f6a4-04fe-8079-ace3-dfd25b7be8ba">
+     it could be the shittest vacuum cleaner ever, but the customer won’t know.
+    </p>
+    <p class="" id="2747f6a4-04fe-8037-b3c8-f7d0f4bec22e">
+     he gets the sale, he's convinced them.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8060-865c-f3b6f6011ae8">
+     Introverted salesman.
+    </h1>
+    <p class="" id="2747f6a4-04fe-80f2-b72c-f9e074098d41">
+     he’s selling one of the BEST vacuum cleaners in the world
+    </p>
+    <p class="" id="2747f6a4-04fe-80ed-ab55-e10d3d11bd0f">
+     but one thing has changed.
+    </p>
+    <p class="" id="2747f6a4-04fe-805d-9d2e-fbfd33c35662">
+     he’s less convinced about the vacuum cleaner’s quality, because of his confirmation bias.
+    </p>
+    <p class="" id="2747f6a4-04fe-80a8-97a5-f2a69bc18526">
+     he skipped to the 1 star reviews and ONLY looked at them.
+    </p>
+    <p class="" id="2747f6a4-04fe-80f7-8616-effe7b40824d">
+     approaches the same customer.
+    </p>
+    <p class="" id="2747f6a4-04fe-806e-ad81-facc868d4204">
+     His lack of conviction is apparent in his hesitant speech, lack of eye contact.
+    </p>
+    <p class="" id="2747f6a4-04fe-803e-968f-c6b6697a3d27">
+     and less animated body language.
+    </p>
+    <p class="" id="2747f6a4-04fe-80ff-9643-db7634b7d63b">
+     he goes through the product's features in a monotone voice
+    </p>
+    <p class="" id="2747f6a4-04fe-8026-a607-fbf5bcc5e14f">
+     and without any personal stories or enthusiasm.
+    </p>
+    <p class="" id="2747f6a4-04fe-8027-b59b-da17e573eef3">
+     the customer asks him about any flaws.
+    </p>
+    <p class="" id="2747f6a4-04fe-807f-a133-e7544401ac8f">
+     he remembers one of the 1 star reviews.
+    </p>
+    <p class="" id="2747f6a4-04fe-80ae-8699-e2b27a5288e8">
+     “Some customers have mentioned that the battery life isn’t as long as expected.”
+    </p>
+    <p class="" id="2747f6a4-04fe-803e-aba8-e9810d52e943">
+     His lack of confidence makes the customer feel shitty about the product.
+    </p>
+    <p class="" id="2747f6a4-04fe-8021-bf7d-df83e80cc27c">
+     even though it’s the best one in the world.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-8084-9847-e18b9ce4395a">
+    </h1>
+    <h1 class="" id="2747f6a4-04fe-8036-81d5-df43f55e8e77">
+     THE MORAL OF THE CONVICTION BIAS.
+    </h1>
+    <p class="" id="2747f6a4-04fe-80dd-8116-d8ab3b64bdad">
+     if someone is enthusiastic about an idea.
+    </p>
+    <p class="" id="2747f6a4-04fe-8039-a398-c462b3eee8b7">
+     you are WAY more likely to believe them.
+    </p>
+    <p class="" id="2747f6a4-04fe-80ec-9c26-f32dfe63e4bb">
+     and believe that their decision is right.
+    </p>
+    <p class="" id="2747f6a4-04fe-806a-8094-e49f2ac1bc02">
+     we’re tribal creatures, we’ll follow along.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-80a6-acd8-d6eec1228c03">
+     THE MESSAGE.
+    </h1>
+    <p class="" id="2747f6a4-04fe-804a-aa8c-c5612bada548">
+     don’t trust anything, especially not leaders.
+    </p>
+    <p class="" id="2747f6a4-04fe-80bc-ba76-f7bca06b4f48">
+     if they word something in a certain way.
+    </p>
+    <p class="" id="2747f6a4-04fe-8092-84db-d94d7f6dffff">
+     in a nice enthusiastic tone.
+    </p>
+    <p class="" id="2747f6a4-04fe-80ea-9237-d4df12c7da74">
+     Tate did this AMAZINGLY.
+    </p>
+    <p class="" id="2747f6a4-04fe-809c-af8a-d29d73b0db25">
+     and blew up everywhere.
+    </p>
+    <p class="" id="2747f6a4-04fe-8032-bf3f-e72a45648ada">
+     but look beyond that, and look into the details.
+    </p>
+    <h1 class="" id="2747f6a4-04fe-80a5-9c56-c7190198f3b4">
+     USE THIS FOR YOURSELF.
+    </h1>
+    <p class="" id="2747f6a4-04fe-8018-b3f2-d13e3a413dda">
+     NEVER be shy about your product, or anything.
+    </p>
+    <p class="" id="2747f6a4-04fe-80b4-93d3-dd08fc2f7161">
+     or if you go up to a girl, don’t be shy.
+    </p>
+    <p class="" id="2747f6a4-04fe-800b-819e-f4b713451027">
+     it’s way more likely to convert the sale.
+    </p>
+    <p class="" id="2747f6a4-04fe-80fa-a4cd-cf717f895aef">
+     as seen in the example.
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>
