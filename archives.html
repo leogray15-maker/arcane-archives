@@ -284,6 +284,26 @@
       gap: 0.3rem;
     }
 
+    /* Loading State */
+    .loading {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(147, 51, 234, 0.2);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Empty State */
     .empty-state {
       text-align: center;
@@ -418,8 +438,14 @@
       </div>
     </div>
 
+    <!-- Loading State -->
+    <div class="loading" id="loadingState">
+      <div class="loading-spinner"></div>
+      <p>Loading your courses...</p>
+    </div>
+
     <!-- Courses Grid -->
-    <div class="courses-grid" id="coursesGrid">
+    <div class="courses-grid" id="coursesGrid" style="display: none;">
       <!-- Courses will be inserted here by JavaScript -->
     </div>
 
@@ -436,7 +462,7 @@
       <a href="dashboard.html">Dashboard</a>
       <a href="alerts.html">Trade Alerts</a>
       <a href="community.html">Community</a>
-      <a href="profile.html">Profile</a>
+      <a href="settings.html">Settings</a>
     </div>
     <div class="footer-bottom">
       © 2024 The Arcane Archives. All rights reserved.
@@ -457,9 +483,8 @@
       }
     });
 
-    // Course data structure
-    // Add your courses here
-    const courses = [
+    // All your courses - UPDATE THIS ARRAY as you add courses
+    let courses = [
       {
         id: 1,
         icon: "🧠",
@@ -468,23 +493,74 @@
         category: "mindset",
         lessons: 15,
         duration: "5h",
-        path: "courses/Mind-HiJacking.html"
-      }
-      // Add more courses as you export and process them from Notion
-      // Example template:
+        path: "courses/Mind-HiJacking/Mind-HiJacking.html"
+      },
+      // ADD MORE COURSES HERE AS YOU PROCESS THEM
+      // Template:
       // {
       //   id: 2,
       //   icon: "📈",
-      //   title: "Your Course Name",
-      //   description: "Course description here",
-      //   category: "trading", // Options: trading, business, mindset, strategy
-      //   lessons: 24,
+      //   title: "Advanced Trading Strategy",
+      //   description: "Learn advanced market analysis and risk management",
+      //   category: "trading",
+      //   lessons: 20,
       //   duration: "8h",
-      //   path: "courses/Your-Course.html"
+      //   path: "courses/Advanced-Trading/index.html"
       // }
     ];
 
-    function initArchives() {
+    async function loadCoursesFromManifest() {
+      // Try to load course manifest if it exists
+      try {
+        const response = await fetch('/courses/course-manifest.json');
+        if (response.ok) {
+          const manifest = await response.json();
+          console.log("📋 Loaded course manifest:", manifest.length, "courses");
+          
+          // Convert manifest to course format
+          const manifestCourses = manifest.map((course, index) => ({
+            id: index + 100,
+            icon: course.icon || "📚",
+            title: course.title,
+            description: course.description || "Complete course content from Notion",
+            category: detectCategory(course.title),
+            lessons: course.lessons || 0,
+            duration: estimateDuration(course.lessons),
+            path: course.path
+          }));
+          
+          // Merge with manual courses
+          courses = [...courses, ...manifestCourses];
+          console.log("✅ Total courses loaded:", courses.length);
+        }
+      } catch (err) {
+        console.log("ℹ️  No manifest found, using manual course list");
+      }
+    }
+
+    function detectCategory(title) {
+      const lower = title.toLowerCase();
+      if (lower.includes('trading') || lower.includes('market') || lower.includes('chart')) return 'trading';
+      if (lower.includes('business') || lower.includes('money') || lower.includes('sales')) return 'business';
+      if (lower.includes('mind') || lower.includes('psychology') || lower.includes('mental')) return 'mindset';
+      if (lower.includes('strategy') || lower.includes('plan') || lower.includes('system')) return 'strategy';
+      return 'mindset'; // default
+    }
+
+    function estimateDuration(lessons) {
+      if (!lessons) return '2h';
+      const hours = Math.ceil(lessons * 0.3);
+      return `${hours}h`;
+    }
+
+    async function initArchives() {
+      // Load courses from manifest
+      await loadCoursesFromManifest();
+      
+      // Hide loading, show grid
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('coursesGrid').style.display = 'grid';
+      
       renderCourses(courses);
       setupSearch();
       setupFilters();
@@ -493,6 +569,9 @@
     function renderCourses(coursesToRender) {
       const grid = document.getElementById("coursesGrid");
       const emptyState = document.getElementById("emptyState");
+      const loadingState = document.getElementById("loadingState");
+
+      loadingState.style.display = 'none';
 
       if (coursesToRender.length === 0) {
         grid.style.display = "none";

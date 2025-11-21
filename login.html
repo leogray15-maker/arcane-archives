@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+
+        .logo-section h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-section p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(148, 163, 184, 0.3);
+        }
+
+        .divider span {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .google-btn:hover {
+            border-color: var(--purple-light);
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .forgot-password a {
+            color: var(--purple-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .forgot-password a:hover {
+            color: var(--gold);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .signup-link a {
+            color: var(--purple-light);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            color: var(--gold);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-home a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: color 0.2s;
+        }
+
+        .back-home a:hover {
+            color: var(--purple-light);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .logo-section h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-group input,
+            .login-btn,
+            .google-btn {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <img src="ArcaneA.png" alt="The Arcane Archives">
+            <h1>Welcome Back</h1>
+            <p>Log in to access The Arcane Archives</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="your@email.com"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                Log In
+            </button>
+        </form>
+
+        <div class="forgot-password">
+            <a href="#" id="forgotPasswordLink">Forgot password?</a>
+        </div>
+
+        <div class="divider">
+            <span>OR</span>
+        </div>
+
+        <button class="google-btn" id="googleLoginBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+        </button>
+
+        <div class="signup-link">
+            Don't have an account? <a href="index.html#pricing">Sign Up</a>
+        </div>
+
+        <div class="back-home">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword,
+            GoogleAuthProvider,
+            signInWithPopup,
+            sendPasswordResetEmail,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc,
+            setDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        import { loginRateLimiter } from "./auth-guard.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+            measurementId: "G-YGPLQHDXMM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById("loginForm");
+        const loginBtn = document.getElementById("loginBtn");
+        const googleLoginBtn = document.getElementById("googleLoginBtn");
+        const errorMessage = document.getElementById("errorMessage");
+        const successMessage = document.getElementById("successMessage");
+        const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+
+        // Check if user is already logged in
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("✅ User already logged in:", user.email);
+                
+                // Check if they have paid
+                const userRef = doc(db, "Users", user.uid);
+                const userSnap = await getDoc(userRef);
+                
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+                    
+                    if (isPaid) {
+                        // Check for redirect
+                        const redirect = sessionStorage.getItem("aa_redirect_after_login");
+                        if (redirect) {
+                            sessionStorage.removeItem("aa_redirect_after_login");
+                            window.location.href = redirect;
+                        } else {
+                            window.location.href = "dashboard.html";
+                        }
+                    } else {
+                        // Paid user but no subscription - redirect to pricing
+                        window.location.href = "index.html#pricing";
+                    }
+                }
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = "block";
+            successMessage.style.display = "none";
+            setTimeout(() => {
+                errorMessage.style.display = "none";
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = "block";
+            errorMessage.style.display = "none";
+        }
+
+        // Email/Password Login
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Check rate limit
+            if (!loginRateLimiter.isAllowed()) {
+                const remainingMs = loginRateLimiter.getRemainingTime();
+                const remainingMin = Math.ceil(remainingMs / 60000);
+                showError(`Too many login attempts. Please try again in ${remainingMin} minutes.`);
+                return;
+            }
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            if (!email || !password) {
+                showError("Please enter both email and password");
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = "Logging in...";
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                console.log("✅ Login successful:", user.email);
+
+                // Ensure user profile exists
+                await ensureUserProfile(user);
+
+                // Check subscription status
+                const userRef = doc(db, "Users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+
+                    if (isPaid) {
+                        showSuccess("✅ Login successful! Redirecting...");
+                        
+                        setTimeout(() => {
+                            const redirect = sessionStorage.getItem("aa_redirect_after_login");
+                            if (redirect) {
+                                sessionStorage.removeItem("aa_redirect_after_login");
+                                window.location.href = redirect;
+                            } else {
+                                window.location.href = "dashboard.html";
+                            }
+                        }, 1000);
+                    } else {
+                        showError("Please complete your subscription to access the archives");
+                        setTimeout(() => {
+                            window.location.href = "index.html#pricing";
+                        }, 2000);
+                    }
+                } else {
+                    showError("User profile not found. Please contact support.");
+                }
+
+            } catch (error) {
+                console.error("❌ Login error:", error);
+                
+                let errorMsg = "Login failed. Please try again.";
+                
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    errorMsg = "Invalid email or password";
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMsg = "No account found with this email";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = "Invalid email address";
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMsg = "Too many failed attempts. Please reset your password or try again later.";
+                }
+                
+                showError(errorMsg);
+                
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Log In";
+            }
+        });
+
+        // Google Login
+        googleLoginBtn.addEventListener("click", async () => {
+            googleLoginBtn.disabled = true;
+            googleLoginBtn.textContent = "Signing in with Google...";
+
+            try {
+                const provider = new GoogleAuthProvider();
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                console.log("✅ Google login successful:", user.email);
+
+                // Ensure user profile exists
+                await ensureUserProfile(user);
+
+                // Check subscription
+                const userRef = doc(db, "Users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+
+                    if (isPaid) {
+                        showSuccess("✅ Login successful! Redirecting...");
+                        setTimeout(() => {
+                            window.location.href = "dashboard.html";
+                        }, 1000);
+                    } else {
+                        window.location.href = "index.html#pricing";
+                    }
+                }
+
+            } catch (error) {
+                console.error("❌ Google login error:", error);
+                showError("Google sign-in failed. Please try again.");
+                googleLoginBtn.disabled = false;
+                googleLoginBtn.textContent = "Continue with Google";
+            }
+        });
+
+        // Forgot Password
+        forgotPasswordLink.addEventListener("click", async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById("email").value.trim();
+            
+            if (!email) {
+                showError("Please enter your email address first");
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showSuccess("Password reset email sent! Check your inbox.");
+            } catch (error) {
+                console.error("❌ Password reset error:", error);
+                showError("Failed to send reset email. Please check your email address.");
+            }
+        });
+
+        // Helper function to ensure user profile exists
+        async function ensureUserProfile(user) {
+            const userRef = doc(db, "Users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                const username = user.displayName || user.email.split("@")[0];
+                
+                await setDoc(userRef, {
+                    Username: username,
+                    Email: user.email,
+                    Xp: 0,
+                    Level: "Apprentice",
+                    WinsPosted: 0,
+                    CallAttended: 0,
+                    CoursesCompleted: 0,
+                    subscriptionStatus: "none",
+                    isPaid: false,
+                    stripeCustomerId: null,
+                    joinedAt: serverTimestamp()
+                });
+
+                console.log("🔥 New user profile created:", username);
+            }
+        }
+    </script>
+</body>
+</html>
