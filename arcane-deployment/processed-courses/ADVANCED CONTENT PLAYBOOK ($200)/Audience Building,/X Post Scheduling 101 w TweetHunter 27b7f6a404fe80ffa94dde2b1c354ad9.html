@@ -1,0 +1,428 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   X Post Scheduling 101 w/ TweetHunter.
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="27b7f6a4-04fe-80ff-a94d-de2b1c354ad9">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      X Post Scheduling 101 w/ TweetHunter.
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <figure class="image" id="27b7f6a4-04fe-8098-85e8-e89c995fe391">
+     <a href="https://app.circle.so/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBCS0I4UFFJPSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--23d10626a7cf247d7d64919c2c0e6ac0245ea729/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDRG9MWm05eWJXRjBTU0lJY0c1bkJqb0dSVlE2RkhKbGMybDZaVjkwYjE5c2FXMXBkRnNITUdrQzBBSTZDbk5oZG1WeWV3WTZDbk4wY21sd1ZBPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--8b7c669ea3580f834793183d5344b75a84c8070d/ab7.png">
+      <img src="https://app.circle.so/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBCS0I4UFFJPSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--23d10626a7cf247d7d64919c2c0e6ac0245ea729/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdDRG9MWm05eWJXRjBTU0lJY0c1bkJqb0dSVlE2RkhKbGMybDZaVjkwYjE5c2FXMXBkRnNITUdrQzBBSTZDbk5oZG1WeWV3WTZDbk4wY21sd1ZBPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--8b7c669ea3580f834793183d5344b75a84c8070d/ab7.png"/>
+     </a>
+    </figure>
+    <p class="" id="27b7f6a4-04fe-8064-a6b9-c565f3ce54f8">
+     The best tool you can invest in
+     <em>
+      <strong>
+       at any stage of X
+      </strong>
+     </em>
+     is a post scheduler.
+    </p>
+    <p class="" id="27b7f6a4-04fe-806f-8182-c40a548e1431">
+     The best post scheduler you can use is
+     <strong>
+      <a href="http://tweethunter.io/?via=joey">
+       TweetHunter
+      </a>
+     </strong>
+     . It has the best features, the best user interface, and the best support. It's an investment, but it's 100% worth it,
+     <em>
+      especially
+     </em>
+     if you're new to X.
+    </p>
+    <p class="" id="27b7f6a4-04fe-802f-ba89-f57207e733a8">
+     Why? Because it's a pain in the butt to post content manually. Having to go post on X manually multiple times every single day is one of the main reasons why people get burnt out, give up, and quit.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8079-9361-ec50ee39acdc">
+     With TweetHunter, you can schedule content in advance, so you can sleep, do your other work, and go on vacation without having to worry about posts being posted.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8010-abd2-c9106cc3e4fb">
+     I've recorded a video running through the best way to use TweetHunter below - but here are the most important things you should know as you get started:
+    </p>
+    <h3 class="" id="27b7f6a4-04fe-80fc-a790-e2f97b88a944">
+     <strong>
+      Setting up your schedule
+     </strong>
+    </h3>
+    <p class="" id="27b7f6a4-04fe-8066-b683-f0e1915f3096">
+     The best time to post posts, if you're targeting a Western audience, is 7am to 12pm Eastern Time.
+    </p>
+    <p class="" id="27b7f6a4-04fe-806d-beec-dbf6448dc614">
+     You can set up your post schedule by going to
+     <strong>
+      My Queue -&gt; Edit Queue (top right)
+     </strong>
+     and deleting/adding time slots from there.
+    </p>
+    <p class="" id="27b7f6a4-04fe-801a-8b5f-c280878c74be">
+     Here's my current schedule:
+    </p>
+    <figure class="image" id="27b7f6a4-04fe-803b-bbe6-fcd25ffe1c40">
+     <a href="https://assets.circle.so/ejb1l2vnn8n6o4akrp72sedkopm2">
+      <img src="https://assets.circle.so/ejb1l2vnn8n6o4akrp72sedkopm2"/>
+     </a>
+    </figure>
+    <p class="" id="27b7f6a4-04fe-8051-89f7-fff16d0966b8">
+     The "Make my schedule more natural" button randomly adds or subtracts 1-5 minutes from your time slots to make them look more natural and less automated.
+    </p>
+    <p class="" id="27b7f6a4-04fe-80cb-acc6-face06156fa6">
+     So why did I pick those times? I based them off the times Dan Koe and Dakota Robertson post most days. You can pick the times that feel right to you.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8001-a115-c9e705b6bfd2">
+     But there's one important factor to consider when you're creating your schedule:
+    </p>
+    <h3 class="" id="27b7f6a4-04fe-8085-b3e7-c356cf957068">
+     <strong>
+      Auto-reposting
+     </strong>
+    </h3>
+    <p class="" id="27b7f6a4-04fe-80f2-89c0-e31782d5143b">
+     Another one of the benefits of TweetHunter is the ability to automatically repost your posts X times every Y hours. I asked Dan right before writing this article and he told me
+     <strong>
+      reposting 2 times every 6 hours
+     </strong>
+     is optimal.
+    </p>
+    <p class="" id="27b7f6a4-04fe-80ca-a2c0-cceb26c591ed">
+     So, if you post 3 times a day, you should separate your posts enough so you have something going out or being reposted every 2 hours or so.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8043-89f5-c063dcf3f1a4">
+     For example:
+    </p>
+    <p class="" id="27b7f6a4-04fe-808a-be3a-c2571c43b027">
+     Post 1 posted at 8am
+    </p>
+    <p class="" id="27b7f6a4-04fe-80db-a9ab-cbe2a936eb72">
+     Post 2 posted at 10am
+    </p>
+    <p class="" id="27b7f6a4-04fe-802c-af02-d47d92395ba3">
+     Post 3 posted at 12pm
+    </p>
+    <p class="" id="27b7f6a4-04fe-80fa-9f4b-febeee45b7e4">
+     Post 1 reposted at 2pm
+    </p>
+    <p class="" id="27b7f6a4-04fe-8001-b797-ce1ce545512a">
+     Post 2 reposted at 4pm
+    </p>
+    <p class="" id="27b7f6a4-04fe-8060-98ee-f05a40d166ef">
+     Post 3 reposted at 6pm
+    </p>
+    <p class="" id="27b7f6a4-04fe-8049-af64-fa565aa202bd">
+     and so on...
+    </p>
+    <p class="" id="27b7f6a4-04fe-80dd-aafb-c9f6dfbc9205">
+     But that's not all a scheduling tool can do for you. Here's another awesome benefit you can use to grow your email list:
+    </p>
+    <h3 class="" id="27b7f6a4-04fe-800b-89a3-fc8d8ea75178">
+     <strong>
+      Auto-DM campaigns
+     </strong>
+    </h3>
+    <p class="" id="27b7f6a4-04fe-804c-b133-d37d99dbe538">
+     You can use TweetHunter to automatically send your lead magnet to everyone who interacts with your post in the ways you choose (liking, reposting, or commenting).
+    </p>
+    <p class="" id="27b7f6a4-04fe-8073-9438-ee409aab69e0">
+     I've seen this help people get hundreds of email subscribers from a single post.
+     <strong>
+      <a href="https://community.kortex.co/c/social-media/lead-magnet-ideation-creation-and-promotion">
+       Check out this article
+      </a>
+     </strong>
+     to learn about creating a lead magnet, promoting it, and sending an auto-dm campaign with TweetHunter.
+    </p>
+    <p class="" id="27b7f6a4-04fe-806a-8a4e-d38cb622fe2c">
+     You can sign up for your own TweetHunter account
+     <strong>
+      <a href="http://tweethunter.io/?via=joey">
+       here
+      </a>
+     </strong>
+     . Last but not least, here's a quick video showing how I make the most of my own post scheduling:
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

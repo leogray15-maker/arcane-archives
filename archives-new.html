@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Arcane Archives | Library</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --purple: #9333ea;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --text-light: #e5e5e5;
+      --text-dim: #a3a3a3;
+      --border-color: rgba(148, 163, 184, 0.5);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      font-size: 1rem;
+    }
+
+    .logo img {
+      height: 36px;
+      width: 36px;
+    }
+
+    .back-btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      color: var(--purple-light);
+      border-color: rgba(147, 51, 234, 0.8);
+      transform: translateX(-2px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 1rem;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--purple-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Search & Filter Bar */
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.8rem 1rem 0.8rem 2.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text-light);
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 1.1rem;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.6rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      color: var(--purple-light);
+      border-color: rgba(147, 51, 234, 0.6);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: white;
+      border-color: var(--purple);
+    }
+
+    /* Course Grid */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .course-card {
+      background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .course-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--purple), var(--gold));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .course-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(147, 51, 234, 0.3);
+      border-color: rgba(147, 51, 234, 0.8);
+    }
+
+    .course-card:hover::before {
+      opacity: 1;
+    }
+
+    .course-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .course-category {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .category-trading {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .category-business {
+      background: rgba(147, 51, 234, 0.15);
+      color: var(--purple-light);
+      border: 1px solid rgba(147, 51, 234, 0.3);
+    }
+
+    .category-mindset {
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .category-strategy {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .course-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+    }
+
+    .course-description {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .course-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      align-items: center;
+    }
+
+    .course-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-dim);
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(5, 5, 5, 0.95);
+      padding: 2rem;
+      border-top: 1px solid rgba(147, 51, 234, 0.25);
+      text-align: center;
+      margin-top: 4rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--purple-light);
+    }
+
+    .footer-bottom {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .container {
+        padding: 1rem;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .filter-buttons {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .course-card {
+        padding: 1.2rem;
+      }
+
+      .course-title {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <img src="ArcaneA.png" alt="Arcane Archives" />
+      <span>THE ARCANE ARCHIVES</span>
+    </div>
+    <a href="dashboard.html" class="back-btn">
+      ← Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero">
+      <h1>📚 The Archives</h1>
+      <p>Your complete trading education library. Master markets, mindset, and money.</p>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="controls">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Search courses..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="trading">Trading</button>
+        <button class="filter-btn" data-filter="business">Business</button>
+        <button class="filter-btn" data-filter="mindset">Mindset</button>
+        <button class="filter-btn" data-filter="strategy">Strategy</button>
+      </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div class="courses-grid" id="coursesGrid">
+      <!-- Courses will be inserted here by JavaScript -->
+    </div>
+
+    <!-- Empty State (hidden by default) -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <h3>No courses found</h3>
+      <p>Try adjusting your search or filter</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="alerts.html">Trade Alerts</a>
+      <a href="community.html">Community</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="footer-bottom">
+      © 2024 The Arcane Archives. All rights reserved.
+    </div>
+  </footer>
+
+  <script type="module">
+    import { protectPage } from "./auth-guard.js";
+
+    // Protect this page
+    protectPage({
+      onSuccess: (user, userData) => {
+        console.log("✅ Archives access granted");
+        initArchives();
+      },
+      onFailure: () => {
+        window.location.href = "login.html";
+      }
+    });
+
+    // Course data structure
+    // Add your courses here
+    const courses = [
+      {
+        id: 1,
+        icon: "🧠",
+        title: "Mind HiJacking",
+        description: "Master the psychology of persuasion and influence - understand cognitive biases and social engineering techniques",
+        category: "mindset",
+        lessons: 15,
+        duration: "5h",
+        path: "courses/Mind-HiJacking.html"
+      }
+      // Add more courses as you export and process them from Notion
+      // Example template:
+      // {
+      //   id: 2,
+      //   icon: "📈",
+      //   title: "Your Course Name",
+      //   description: "Course description here",
+      //   category: "trading", // Options: trading, business, mindset, strategy
+      //   lessons: 24,
+      //   duration: "8h",
+      //   path: "courses/Your-Course.html"
+      // }
+    ];
+
+    function initArchives() {
+      renderCourses(courses);
+      setupSearch();
+      setupFilters();
+    }
+
+    function renderCourses(coursesToRender) {
+      const grid = document.getElementById("coursesGrid");
+      const emptyState = document.getElementById("emptyState");
+
+      if (coursesToRender.length === 0) {
+        grid.style.display = "none";
+        emptyState.style.display = "block";
+        return;
+      }
+
+      grid.style.display = "grid";
+      emptyState.style.display = "none";
+
+      grid.innerHTML = coursesToRender.map(course => `
+        <div class="course-card" onclick="window.location.href='${course.path}'">
+          <span class="course-icon">${course.icon}</span>
+          <span class="course-category category-${course.category}">${course.category}</span>
+          <h3 class="course-title">${course.title}</h3>
+          <p class="course-description">${course.description}</p>
+          <div class="course-meta">
+            <span>📖 ${course.lessons} lessons</span>
+            <span>⏱️ ${course.duration}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function setupSearch() {
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.toLowerCase();
+        const activeFilter = document.querySelector(".filter-btn.active").dataset.filter;
+        
+        let filtered = courses;
+        
+        // Apply category filter
+        if (activeFilter !== "all") {
+          filtered = filtered.filter(c => c.category === activeFilter);
+        }
+        
+        // Apply search
+        if (query) {
+          filtered = filtered.filter(c => 
+            c.title.toLowerCase().includes(query) ||
+            c.description.toLowerCase().includes(query)
+          );
+        }
+        
+        renderCourses(filtered);
+      });
+    }
+
+    function setupFilters() {
+      const filterBtns = document.querySelectorAll(".filter-btn");
+      filterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          // Update active state
+          filterBtns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          
+          // Filter courses
+          const filter = btn.dataset.filter;
+          const searchQuery = document.getElementById("searchInput").value.toLowerCase();
+          
+          let filtered = filter === "all" 
+            ? courses 
+            : courses.filter(c => c.category === filter);
+          
+          // Apply search if present
+          if (searchQuery) {
+            filtered = filtered.filter(c => 
+              c.title.toLowerCase().includes(searchQuery) ||
+              c.description.toLowerCase().includes(searchQuery)
+            );
+          }
+          
+          renderCourses(filtered);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

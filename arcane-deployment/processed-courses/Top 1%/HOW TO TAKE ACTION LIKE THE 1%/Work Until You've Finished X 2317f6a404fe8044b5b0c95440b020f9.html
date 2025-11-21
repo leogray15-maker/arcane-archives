@@ -1,0 +1,358 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   Work Until You've Finished "X"
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="2317f6a4-04fe-8044-b5b0-c95440b020f9">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      Work Until You've Finished "X"
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <p class="" id="2317f6a4-04fe-80d3-9d60-cfb0fc811b58">
+     So... here’s a quick one I learnt from Alex hormozi and other top achievers.
+    </p>
+    <p class="" id="2317f6a4-04fe-8012-8fda-f37e04377fd9">
+     None of them set out a specific “work timer” for their work block.
+    </p>
+    <p class="" id="2317f6a4-04fe-807a-a7c3-dad7936b8d91">
+     What they do is say “I will work until I’ve finished x”
+    </p>
+    <p class="" id="2317f6a4-04fe-8017-bcd4-e9906846a9cd">
+     So for example…
+    </p>
+    <p class="" id="2317f6a4-04fe-8001-a7f9-f9ba13f28273">
+     When you sit down to work…
+     <em>
+      <strong>
+       don’t
+      </strong>
+     </em>
+     put a 90 minute timer…
+    </p>
+    <p class="" id="2317f6a4-04fe-80fd-b785-e5d87a44432b">
+     Just tell yourself that you will work until you’ve finished “x”
+    </p>
+    <p class="" id="2317f6a4-04fe-802f-b1c7-e9dd6ff90c51">
+     For me it will be something like “work until you’ve finished an email, telegram message, tiktok post, a course module and a tweet”
+    </p>
+    <p class="" id="2317f6a4-04fe-806e-9f40-e99be2a8ac89">
+     then my second work block of the day can be something like "work until course is finished"
+    </p>
+    <p class="" id="2317f6a4-04fe-8080-ba59-e1daf37f3445">
+     since imagine this...
+    </p>
+    <p class="" id="2317f6a4-04fe-8071-bfa2-e68387b32bfc">
+     I'm working on a course... I finished a module and can think to myself "how much more do I actually do?" since I didn't give myself a proper goal to work towards.
+    </p>
+    <p class="" id="2317f6a4-04fe-805b-8ef9-f182b1d9a625">
+     but when I've just outlined a clear thing I want to achieve... I will just go forward without even thinking.
+    </p>
+    <p class="" id="2317f6a4-04fe-809d-a151-cebf5860a088">
+     Then after you’ve done this task and completed it.. you can actually rest and shut off.
+    </p>
+    <p class="" id="2317f6a4-04fe-803a-bc9d-f5ae7f76b36e">
+     because you had a clear goal… and you’ve accomplished it.
+    </p>
+    <p class="" id="2317f6a4-04fe-802f-b8b0-f2c9df3168a8">
+     Now for your NEXT work block, you can set yourself another task to complete.
+    </p>
+    <p class="" id="2317f6a4-04fe-8033-ae71-f2ee4899f7de">
+     This is just a little tool that will give you some clarity when you’re actually working.
+    </p>
+    <p class="" id="2317f6a4-04fe-809b-955f-ec4d844c4eb2">
+     Since when you “Eat the frog” and then you start working… you don’t even know what you’re actually working towards IN that work block.
+    </p>
+    <p class="" id="2317f6a4-04fe-80f7-b93b-fb587e031833">
+     So you should instead set a goal inside that work block for something you’re going to achieve.. and then you can move on with your day.
+    </p>
+    <p class="" id="2317f6a4-04fe-804b-a34e-f676ff58b020">
+     This will increase productivity because you actually know what needs to be done… and it will make you more efficient since working with an end goal always brings more speed.
+    </p>
+    <p class="" id="2317f6a4-04fe-809f-b329-ef9403d6bfbd">
+     AND it will give you some peace of mind when you’ve finished that activity.
+    </p>
+    <p class="" id="2317f6a4-04fe-807f-96cd-c73e539e4a41">
+     Keep it in mind, just a little mental model from what I’ve learnt studying high performers
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

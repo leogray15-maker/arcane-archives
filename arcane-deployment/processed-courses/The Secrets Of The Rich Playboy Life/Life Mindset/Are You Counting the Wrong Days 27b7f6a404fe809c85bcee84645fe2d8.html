@@ -1,0 +1,537 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   Are You Counting the Wrong Days?
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="27b7f6a4-04fe-809c-85bc-ee84645fe2d8">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      Are You Counting the Wrong Days?
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <h1 class="" id="27b7f6a4-04fe-80bc-9a4e-d4fdaf8163a1">
+     Are You Counting the Wrong Days? (December 31, 2012)
+    </h1>
+    <h3 class="" id="27b7f6a4-04fe-8016-aabd-c778b596f1e2">
+     Count the reps, forget the result.
+    </h3>
+    <figure class="image" id="27b7f6a4-04fe-80c0-a828-db91d7df49ff">
+     <a href="https://substackcdn.com/image/fetch/w_36,h_36,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F73d50962-7aef-4412-8f85-a983ee0a0c96_225x225.png">
+      <img src="https://substackcdn.com/image/fetch/w_36,h_36,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F73d50962-7aef-4412-8f85-a983ee0a0c96_225x225.png"/>
+     </a>
+    </figure>
+    <figure class="image" id="27b7f6a4-04fe-808e-8399-cece70389472">
+     <a href="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F93ac9052-e8d4-4324-9e5c-53c8e86873e6_1456x816.png">
+      <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F93ac9052-e8d4-4324-9e5c-53c8e86873e6_1456x816.png"/>
+     </a>
+    </figure>
+    <p class="" id="27b7f6a4-04fe-8069-afd4-ed048983f68f">
+     <em>
+      You may delay, but time will not. -Benjamin Franklin
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-800e-bd9f-e90e7c78f949">
+     Most people have a terrible habit.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8049-b2e3-e5503810fef7">
+     We count the wrong days.
+    </p>
+    <p class="" id="27b7f6a4-04fe-80eb-b0a5-faa8fdbbb046">
+     We like to remember the first time:
+    </p>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-804b-a695-e73575de2747">
+     <li style="list-style-type:disc">
+      we got laid.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-8090-9f93-f5c05218738a">
+     <li style="list-style-type:disc">
+      the first time we bench-pressed 200lbs.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-80b8-83e6-e3a1cc237484">
+     <li style="list-style-type:disc">
+      the first time we got a sizable bonus check.
+     </li>
+    </ul>
+    <p class="" id="27b7f6a4-04fe-80c8-8eed-e0f1f76b835e">
+     These days are not important.
+    </p>
+    <blockquote class="" id="27b7f6a4-04fe-804d-9c8e-daf816d6f075">
+     “We are what we repeatedly do. Excellence, therefore, is not an act, but a habit” – Aristotle
+    </blockquote>
+    <p class="" id="27b7f6a4-04fe-80fb-ab6f-c8781bf716dd">
+     Since we are approaching a New Year soon let’s create a new habit.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8042-a252-d1adf30ec11c">
+     <em>
+      <strong>
+       Start counting the days that matter. The ones where you go through extreme pain and hardship.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-80fb-8822-f2222b5d1afc">
+     We all have similar goals:
+    </p>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-8069-bc53-cd20de5afb62">
+     <li style="list-style-type:disc">
+      get better-looking girls.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-801b-b54c-c5ac889a48be">
+     <li style="list-style-type:disc">
+      make more money.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-80ce-aac6-dea5d734735a">
+     <li style="list-style-type:disc">
+      get in better shape.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27b7f6a4-04fe-80d1-bc16-c9bc26fefac4">
+     <li style="list-style-type:disc">
+      have more memorable experiences.
+     </li>
+    </ul>
+    <p class="" id="27b7f6a4-04fe-802a-93b1-e82a1120b3e0">
+     Instead of tracking our progress by remembering a milestone, track your progress based on
+     <strong>
+      what you gave up
+     </strong>
+     .
+    </p>
+    <p class="" id="27b7f6a4-04fe-80c7-9211-d78ab68d6c45">
+     For those of you that work on Wall Street, the days you’re going to count include the days where you suffer from
+     <em>
+      the banker twitch
+     </em>
+     .
+    </p>
+    <p class="" id="27b7f6a4-04fe-8047-9b7c-ff4441f9bc27">
+     Your eyes lose control, you have not slept for 48 hours and you’re overdosing on cocaine, yerba mate, Adderall, and Lord knows what else.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8099-babb-dc09471590fe">
+     Instead of quitting or complaining?
+     <em>
+      <strong>
+       You get work done.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-8058-ad89-c3898af34120">
+     Not only do you get everything done, you still go to the gym and
+     <strong>
+      work out
+     </strong>
+     for 30 minutes or you do pushups underneath your desk.
+    </p>
+    <p class="" id="27b7f6a4-04fe-80b6-aab6-e2c58d96d869">
+     Not to mention that you use all your meal allowance to buy
+     <strong>
+      healthy food
+     </strong>
+     because you know that repetition is the key to excellence.
+    </p>
+    <p class="" id="27b7f6a4-04fe-80c5-8a6f-c9365d49d2a9">
+     To top it off, when everything settles down, you continue to show up with a positive attitude every day…
+     <em>
+      <strong>
+       Maybe this guy deserves a promotion.
+      </strong>
+     </em>
+    </p>
+    <hr id="27b7f6a4-04fe-806a-8253-ddf8e1901ee8"/>
+    <p class="" id="27b7f6a4-04fe-80ee-b241-c13ffbc6b0c5">
+     If you want to get those coveted “six-pack abs”, instead of taking body fat measurements of your stomach or doing a few crunches every day (which do not help much), how about you count
+     <strong>
+      the cumulative hours
+     </strong>
+     you spent working out in the gym?
+    </p>
+    <p class="" id="27b7f6a4-04fe-8002-8292-d051c6967855">
+     Anyone can go into the gym after New Year’s, running on a higher level of dopamine and adrenaline to “make a change this year”…
+    </p>
+    <p class="" id="27b7f6a4-04fe-8086-a4aa-c48800df0f59">
+     Why weren’t you in the gym on New Year’s Eve?
+    </p>
+    <p class="" id="27b7f6a4-04fe-80d1-97db-cc09741ae435">
+     Why weren’t you in the gym on your birthday?
+    </p>
+    <p class="" id="27b7f6a4-04fe-800e-8a2b-e5e1d8026871">
+     Why weren’t you at the gym on Saint Patricks Day?
+    </p>
+    <p class="" id="27b7f6a4-04fe-806c-8823-e584695102b9">
+     Why weren’t you at the gym on your week-long vacation?
+    </p>
+    <p class="" id="27b7f6a4-04fe-80b1-a1fc-da2e2861033f">
+     <em>
+      <strong>
+       Those are the days that matter.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-8004-8025-ca5958902253">
+     It sounds cheesy and lame, but
+     <strong>
+      real success is built when no one is looking
+     </strong>
+     .
+    </p>
+    <p class="" id="27b7f6a4-04fe-800a-8f58-e7e61a479e8c">
+     If you take a break when everyone else is taking a break… be prepared to end up just like everyone else.
+     <em>
+      <strong>
+       Average.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-8068-bfbd-e788a0f043e1">
+     All a distant memory. Instead, start counting the number of times you talked to an 8 or a 9.
+    </p>
+    <p class="" id="27b7f6a4-04fe-80bb-83fa-f6a2a941d6de">
+     <em>
+      <strong>
+       Did you let an 8 walk by and not say anything? Bad Move.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-80da-b2b9-ca6f29e3279a">
+     Start counting the days where you
+     <strong>
+      open every single
+     </strong>
+     8+ you see
+     <em>
+      <strong>
+       regardless
+      </strong>
+     </em>
+     of the situation.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8020-9509-ecca2db193a5">
+     If you want to get better-looking girls, you’re going to go back to work.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8068-8365-cad1d9a0f58b">
+     Finally, the biggest hurdle for men…
+     <strong>
+      money
+     </strong>
+     .
+    </p>
+    <p class="" id="27b7f6a4-04fe-8068-b6e1-c9e588ac77a6">
+     Everyone wants more, but what are you giving up to get it?
+    </p>
+    <p class="" id="27b7f6a4-04fe-80a8-a86a-f1772cb0b8eb">
+     Are you wasting your time doing a job that pays near minimum wage when you could be working on a new cash flow… yesterday?
+    </p>
+    <p class="" id="27b7f6a4-04fe-8048-906f-c1aa60fde3a8">
+     Are you hoping for a raise or a bonus instead of spending every second you can be trying to add value to your company?
+    </p>
+    <p class="" id="27b7f6a4-04fe-8072-bc41-ed790383c902">
+     <em>
+      <strong>
+       If you add up the days you worked yourself to death, you’ll find a direct correlation to your income.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27b7f6a4-04fe-80a9-8667-fad91caf366e">
+     Don’t get us wrong, you may have to go through months or even years before you see that correlation pick up, but when it does
+     <strong>
+      you won’t regret it
+     </strong>
+     .
+    </p>
+    <p class="" id="27b7f6a4-04fe-800d-b1b5-f977c56024bf">
+     With that said, review your last year correctly.
+    </p>
+    <p class="" id="27b7f6a4-04fe-8096-bdb7-ede081ced7a1">
+     How many counted?
+    </p>
+    <p class="" id="27b7f6a4-04fe-8043-bce3-e2a3b48445ee">
+     <em>
+      <strong>
+       How about today.
+      </strong>
+     </em>
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

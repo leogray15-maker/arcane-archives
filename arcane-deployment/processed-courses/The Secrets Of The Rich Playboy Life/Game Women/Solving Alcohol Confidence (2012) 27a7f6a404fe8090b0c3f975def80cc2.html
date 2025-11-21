@@ -1,0 +1,516 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   Solving Alcohol "Confidence" (2012)
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="27a7f6a4-04fe-8090-b0c3-f975def80cc2">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      Solving Alcohol "Confidence" (2012)
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <h3 class="" id="27a7f6a4-04fe-80c8-93c9-c549dfa20796">
+     you can be drunk without poisoning yourself
+    </h3>
+    <figure class="image" id="27a7f6a4-04fe-80a6-8cb3-da174f95b57d">
+     <a href="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa18b0a7c-0b7c-4083-80da-c9601b6f4400_1456x1048.png">
+      <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa18b0a7c-0b7c-4083-80da-c9601b6f4400_1456x1048.png"/>
+     </a>
+    </figure>
+    <p class="" id="27a7f6a4-04fe-80cf-9918-e64fb5b4298e">
+     Reading time:
+     <strong>
+      2 minutes
+     </strong>
+     .
+    </p>
+    <p class="" id="27a7f6a4-04fe-804a-85e8-fbcfa73def7e">
+     <em>
+      WSPArchive: It amazes us how smart 2012-2014 WSP was. The posts from back then really hit different. See for yourself.
+     </em>
+    </p>
+    <hr id="27a7f6a4-04fe-8061-b677-ee78b562aa43"/>
+    <h1 class="" id="27a7f6a4-04fe-800a-850a-c1e67e899393">
+    </h1>
+    <p class="" id="27a7f6a4-04fe-80eb-977a-fc4bc2322c15">
+     Previously we wrote about the simple drinks you should keep in your home
+    </p>
+    <p class="" id="27a7f6a4-04fe-801a-bc16-ced8ba60b842">
+     More importantly, many men out there rely on the effects of alcohol. This is
+     <em>
+      <strong>
+       liquid courage
+      </strong>
+     </em>
+     . It’s not real.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80a5-95c7-d4e272bc6f3b">
+     While we can drown on and on about the “effects” of alcohol such as “lower inhibition, lower motor skills and smiles to the brain” its important to take a serious look at what alcohol does to the brain itself.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80a8-9d42-e7dd6d2ce046">
+     First a quick look at our brain:
+    </p>
+    <h1 class="" id="27a7f6a4-04fe-80b6-a451-fcddb9bf2115">
+     <strong>
+      The Brain:
+     </strong>
+    </h1>
+    <p class="" id="27a7f6a4-04fe-80b1-94d6-dd49f091f573">
+     To prevent delving into the physiological elements of the brain this will be a simple split. There are two functions.
+    </p>
+    <ol class="numbered-list" id="27a7f6a4-04fe-80f0-ad48-cc461f45ba0f" start="1" type="1">
+     <li>
+      Reptilian
+     </li>
+    </ol>
+    <ol class="numbered-list" id="27a7f6a4-04fe-80a1-bea3-dac82c836060" start="2" type="1">
+     <li>
+      Cognitive
+     </li>
+    </ol>
+    <h2 class="" id="27a7f6a4-04fe-801c-a01a-e9a4529beed6">
+     1. Reptilian
+    </h2>
+    <p class="" id="27a7f6a4-04fe-80a1-aa95-f2146fd44718">
+     This piece of the brain is for survival. Your heart is beating. You’re breathing. You’re blinking.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80fd-82df-f12bef9fc43c">
+     This is the natural work of your Reptilian brain, you don’t need to think of these signals, your body simply sends them.
+    </p>
+    <h2 class="" id="27a7f6a4-04fe-80cc-b972-d1e167ff5e6f">
+     2. Cognitive
+    </h2>
+    <p class="" id="27a7f6a4-04fe-8087-8aed-cab552c6f4f7">
+     This piece of the brain is deep thought, logic and processing.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8005-9cee-dd7e5a662d63">
+     You’re reading these words, you can forcefully make your breaths larger and smaller, you can forcefully blink and close your eyes.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80cb-806d-ff7ed1ee3000">
+     Effectively, it is
+     <strong>
+      the logical processing piece
+     </strong>
+     of the brain.
+    </p>
+    <p class="" id="27a7f6a4-04fe-804e-8c0d-cbb23b01e1fc">
+     Now for the important part, what happens when alcohol is introduced?
+    </p>
+    <p class="" id="27a7f6a4-04fe-8067-82a6-e80b753024e5">
+     We’re all human, and the reptilian brain will be chosen over the cognitive. Alcohol is introduced and suddenly you’re “losing” inhibitions.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8009-9d41-c62b24cae158">
+     What is really going on?
+    </p>
+    <p class="" id="27a7f6a4-04fe-805c-85b8-c7f203888fdc">
+     <strong>
+      Your reptilian brain is coming out
+     </strong>
+     .
+    </p>
+    <p class="" id="27a7f6a4-04fe-806f-9d73-f6c631874802">
+     Alcohol is a type of poison, changing our blood circulation.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80dd-bc71-d528040c6ad9">
+     Our brain is the most important part of our body and it knows: when there is limited oxygen flow?
+     <em>
+      <strong>
+       Shut down the cognitive brain first and choose the reptilian brain for survival.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="27a7f6a4-04fe-8022-b4b3-cd9185ce75f1">
+     Given that this site is up to give actionable steps, what does this all mean for those that feel alcohol gives them
+     <strong>
+      an edge
+     </strong>
+     ?
+    </p>
+    <p class="" id="27a7f6a4-04fe-808f-ab14-c785a9a43db5">
+     It means you can mentally turn on your reptilian brain and much like
+     <strong>
+      everything else in life - it takes a significant amount of work
+     </strong>
+     , below are the steps that should be taken to see how you “act and feel” when you’re drunk.
+    </p>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-80a9-8487-ece68677b64a">
+     <li style="list-style-type:disc">
+      Get a video recorder and flip it on
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-80a0-a59c-cb064b71a3cd">
+     <li style="list-style-type:disc">
+      Drink 2-3 strong drinks of your favorite alcohol with music blasting, walk around
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-8050-b73b-f4966bdeb132">
+     <li style="list-style-type:disc">
+      Call a few friends up listen to your tone, record it and limit the call to just a few minutes
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-805b-bede-f0706b224a9e">
+     <li style="list-style-type:disc">
+      Practice a few dance moves (no one is looking but you anyway)
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-8087-9a1d-c9c4663051b8">
+     <li style="list-style-type:disc">
+      Shut off the camera and feel free to head out, your body will want to anyway
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-80e4-aaf7-ca38527088f7">
+     <li style="list-style-type:disc">
+      Repeat the above steps next week … dead sober at the exact same time
+     </li>
+    </ul>
+    <p class="" id="27a7f6a4-04fe-80a8-b74c-dc2caa1c1708">
+     Here’s the cognitive part, compare the videos side by side. Your voice. Your walk. Your arm positioning. Your smile. Your dance moves.
+    </p>
+    <h2 class="" id="27a7f6a4-04fe-8035-ba93-f928fab0659c">
+     <em>
+      <strong>
+       You now have the solution.
+      </strong>
+     </em>
+    </h2>
+    <p class="" id="27a7f6a4-04fe-806e-a14d-fa4765a84bee">
+     As previously mentioned, cognitively intelligent people have a tough time learning “game” as they are unable to physically bring up their reptilian hind brains, their logical side is strong and must look for something concrete.
+    </p>
+    <p class="" id="27a7f6a4-04fe-807c-bc3c-c418da2257d0">
+     This forces the cognitively intelligent to generally rely on booze to get them through, but
+     <strong>
+      it is in fact unnecessary
+     </strong>
+     .
+    </p>
+    <p class="" id="27a7f6a4-04fe-80c1-ad0f-cbb9644c41dc">
+     Instead we can build ourselves up by using our own cognitive brain to force body language, tone and positioning upon ourselves.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80ee-8b3b-c1bd1c55c19d">
+     Use your logical side to analyze every detail and replicate those details, it will feel extremely awkward but over time your entire body and mind will act as if… you’re in a relaxed drunken state without any of the negative effects. Mind blowing.
+    </p>
+    <hr id="27a7f6a4-04fe-80fe-9934-c626b1e02db2"/>
+    <h1 class="" id="27a7f6a4-04fe-800b-94d9-ced226b3ddc8">
+     <strong>
+      Conclusion
+     </strong>
+    </h1>
+    <p class="" id="27a7f6a4-04fe-8038-bbf9-cebac40da906">
+     Instead of
+     <strong>
+     </strong>
+     spending too much time trying to figure out exactly how the brain works, it makes more sense
+     <strong>
+      to accept the principles of your brain
+     </strong>
+     .
+    </p>
+    <p class="" id="27a7f6a4-04fe-800c-ae15-d46b2a74af51">
+     In addition, if further proof is needed that all of the changes in tone, voice, body movement is needed. Look no further than actors and musicians.
+    </p>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-80ff-ada0-d76a9918208e">
+     <li style="list-style-type:disc">
+      Put on metallic music you “feel different”
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-8005-88a0-e1ca621f0716">
+     <li style="list-style-type:disc">
+      Watch a horror movie you “feel different”
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="27a7f6a4-04fe-8096-9e9e-ecbba86db45c">
+     <li style="list-style-type:disc">
+      Listen to XYZ… you “feel different”
+     </li>
+    </ul>
+    <p class="" id="27a7f6a4-04fe-80ac-8614-f30f446401eb">
+     Notably, all of this is technically just noise and fake movements from characters on an electronic screen, nevertheless
+     <strong>
+     </strong>
+     every man
+     <strong>
+      must learn to control his mind
+     </strong>
+     :
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

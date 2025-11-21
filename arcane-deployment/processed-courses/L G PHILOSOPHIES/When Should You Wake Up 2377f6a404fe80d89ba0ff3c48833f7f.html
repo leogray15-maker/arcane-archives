@@ -1,0 +1,447 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   When Should You Wake Up?
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="2377f6a4-04fe-80d8-9ba0-ff3c48833f7f">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      When Should You Wake Up?
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <p class="" id="2377f6a4-04fe-803a-8ab5-d6c9ad39a3a9">
+     <em>
+      <strong>
+       don't hit the snooze, here's why...
+      </strong>
+     </em>
+    </p>
+    <p class="" id="2377f6a4-04fe-80d3-a36a-e1892bed9977">
+     i always get asked "what time do you wake up?"
+    </p>
+    <p class="" id="2377f6a4-04fe-8006-bb8c-f5d403ce9f4b">
+     the answer is always going to be a time when nobody else is awake.
+    </p>
+    <p class="" id="2377f6a4-04fe-80b0-bf40-f15298677701">
+     most people will do this lifestyle of "digital nomads" and "wifi money" so they can do whatever they want.
+    </p>
+    <p class="" id="2377f6a4-04fe-80da-9fe9-ee9737dfe23f">
+     they can wake up at 1pm... write a couple tweets and be free making 10k/Month magically...
+    </p>
+    <p class="" id="2377f6a4-04fe-802c-a966-f894fb0a3dd6">
+     well, that's not the case.
+    </p>
+    <p class="" id="2377f6a4-04fe-808b-be24-f8ed42a5d115">
+     but let's be real, you're probably past that stage now, you know that this life is a grind.
+    </p>
+    <p class="" id="2377f6a4-04fe-809c-a820-faa116e595f7">
+     so, let me tell you my philosophy on times you should arise.
+    </p>
+    <p class="" id="2377f6a4-04fe-804a-8aa1-ebfd1c781b53">
+     here are the 3 non negotiables for me.
+    </p>
+    <ul class="bulleted-list" id="2377f6a4-04fe-809e-9ed7-fada790a9114">
+     <li style="list-style-type:disc">
+      wake up when everyone is sleeping.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="2377f6a4-04fe-80b8-b59c-ce1af14157d2">
+     <li style="list-style-type:disc">
+      eat the frog.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="2377f6a4-04fe-80d4-9eca-f539ac174f5c">
+     <li style="list-style-type:disc">
+      wake up when it's dark (optional, but not optional for me)
+     </li>
+    </ul>
+    <p class="" id="2377f6a4-04fe-80ab-b748-ce28bbe286df">
+     and the main one here is "eat the frog"
+    </p>
+    <p class="" id="2377f6a4-04fe-8045-8d0f-ca2cd859c126">
+     you see, here's a philosophy.
+    </p>
+    <p class="" id="2377f6a4-04fe-80bb-b880-c04a7ac987f3">
+     imagine you had to eat one living frog in your day.
+    </p>
+    <p class="" id="2377f6a4-04fe-80a4-a8f9-e7de07584f34">
+     what time would you eat it?
+    </p>
+    <p class="" id="2377f6a4-04fe-80c1-9241-db7c2393f998">
+     the smart people would have said first thing in the morning, since you can wash it down and get it over with.
+    </p>
+    <p class="" id="2377f6a4-04fe-802c-ba6d-cf0f594096bb">
+     the retards will leave it to the end of their day.
+    </p>
+    <p class="" id="2377f6a4-04fe-80bd-b705-e6d0abf726d0">
+     after school, after the 9-5.
+    </p>
+    <p class="" id="2377f6a4-04fe-805d-9858-c1e190470633">
+     then they'll spend their whole day dreading that frog.
+    </p>
+    <p class="" id="2377f6a4-04fe-80fb-895e-f0ed2ca87a58">
+     eating breakfast, almost gagging at the thought of having to eat that frog later.
+    </p>
+    <p class="" id="2377f6a4-04fe-8081-8385-d8aba829569a">
+     whereas, the smart people have got it over and done with first thing in the morning.
+    </p>
+    <p class="" id="2377f6a4-04fe-8014-bb40-cbe821381994">
+     and now they walk through the day happy... and proud.
+    </p>
+    <p class="" id="2377f6a4-04fe-8030-995b-db845b7daf44">
+     they know they've done the hardest task that they had to do in their day already.
+    </p>
+    <p class="" id="2377f6a4-04fe-8098-bf43-f6b337056f0a">
+     <em>
+      <strong>
+       and this applies to your work.
+      </strong>
+     </em>
+    </p>
+    <p class="" id="2377f6a4-04fe-8041-9f1f-ca66404657bf">
+     it's not about "when should I wake up"
+    </p>
+    <p class="" id="2377f6a4-04fe-80ae-a591-db8af0505a24">
+     it's "when should I work?"
+    </p>
+    <p class="" id="2377f6a4-04fe-8020-b3a6-db744bb14ea7">
+     and my answer to that is?
+    </p>
+    <p class="" id="2377f6a4-04fe-80c9-a4da-c8d7f5b45ae5">
+     before you brush your teeth, get it done.
+    </p>
+    <p class="" id="2377f6a4-04fe-80ff-b5eb-d292ddc05f84">
+     wake up before anybody else.
+    </p>
+    <p class="" id="2377f6a4-04fe-8022-bbeb-e3d398830fcd">
+     don't hit snooze, even if you think your muscle hypertrophy is gonna suffer.
+    </p>
+    <p class="" id="2377f6a4-04fe-802b-96f5-e5127539efae">
+     it's pretty hard to argue against a smart mind.
+    </p>
+    <p class="" id="2377f6a4-04fe-8078-b9fb-d78531b1b2a0">
+     it'll come up with excuses like "I'm not maximising muscle growth when I don't sleep until rested"
+    </p>
+    <p class="" id="2377f6a4-04fe-80d2-bddb-d4a4ebed2e2b">
+     but after enough times, you start to question it.
+    </p>
+    <p class="" id="2377f6a4-04fe-801d-aa19-f344c76f67c6">
+     and when you find an answer to that question, wisdom is bred.
+    </p>
+    <p class="" id="2377f6a4-04fe-8055-a092-f26633b06581">
+     what's more important?
+    </p>
+    <p class="" id="2377f6a4-04fe-8095-abf0-ce510dc19190">
+     0.2 extra inches on your bicep or enough money to retire your wife, mother and sister?
+    </p>
+    <p class="" id="2377f6a4-04fe-80df-8c7a-ec4c78cadc4c">
+     that's the thought that I'm passing down to you.
+    </p>
+    <p class="" id="2377f6a4-04fe-8070-b72d-ea2a6a716cba">
+     so, here's a little summary.
+    </p>
+    <p class="" id="2377f6a4-04fe-805e-a759-d9c2701e4a62">
+     wake up before everybody else (reduce all friction)
+    </p>
+    <p class="" id="2377f6a4-04fe-80a8-b341-cac12721afd5">
+     work immediately after your eyes open.
+    </p>
+    <p class="" id="2377f6a4-04fe-80b3-9de9-f9e733d92656">
+     don't brush your teeth, don't press the power button on your phone.
+    </p>
+    <p class="" id="2377f6a4-04fe-80bb-bf2c-ec0a85bb74cc">
+     sit on your crusty kitchen chair, and work.
+    </p>
+    <p class="" id="2377f6a4-04fe-8021-868f-d4e42ed46e4d">
+     there is no other way.
+    </p>
+    <p class="" id="2377f6a4-04fe-80f5-ad9d-f9b6432793c6">
+     after all, why would you brush your teeth before eating a frog?
+    </p>
+    <p class="" id="2377f6a4-04fe-8012-8de9-f58802bd4cb0">
+     it's common sense.
+    </p>
+    <p class="" id="2377f6a4-04fe-807b-b458-f1b2511b1f9b">
+     d42.
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

@@ -1,0 +1,457 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   Creating Focus (February 6, 2017)
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="27a7f6a4-04fe-809e-825e-e4c683abd81f">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      Creating Focus (February 6, 2017)
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <figure class="image" id="27a7f6a4-04fe-800d-8e58-f544bfde3eb9">
+     <a href="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F5eb3e7fd-f394-40a6-a7d0-c25af62fea3f_4764x3176.jpeg">
+      <img src="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F5eb3e7fd-f394-40a6-a7d0-c25af62fea3f_4764x3176.jpeg"/>
+     </a>
+    </figure>
+    <p class="" id="27a7f6a4-04fe-8070-9926-eb282ecc304f">
+     Regular people are watching the Super Bowl as this post is being written. We have no interest in the game since we didn’t see a good set up for blow out odds to make money (unlike the presidential election where numbers were
+     <em>
+      emotionally
+     </em>
+     set at 10:1). Instead of writing some non-sense motivational speech on how to get amped up about your life, we’re going to outline a way to consistently get into “the zone”. Getting into the zone is something everyone has experienced at least once in their life and figuring out how to replicate that will separate yourself from the pack rapidly.
+    </p>
+    <h1 class="" id="27a7f6a4-04fe-8085-8222-d3a7f3de0e2a">
+     <strong>
+      Create the Zone First
+     </strong>
+    </h1>
+    <p class="" id="27a7f6a4-04fe-80b2-9902-fca72204fc31">
+     <strong>
+      Step 1: Write Down One Task:
+     </strong>
+     This is pretty simple, every day you wake up and you write down the one thing that is most important to you. It should be no longer than one sentence long.
+     <em>
+      “My #1 priority is X”
+     </em>
+     . Now you won’t waste your time hitting the snooze button on the alarm because you have not done anything to progress on the most important item on your list. Don’t waste your time worrying about your other priorities, this will actually kill your focus. Instead you wake up and write down one thing most important to your life and we have no right saying what that item is. Some will say “build second source of income” for others it may be career related. So on and so forth. At this point the only thing you’re allowed to do is eat or drink something (get ready for the day) and don’t allow yourself to do anything until
+     <em>
+      progress
+     </em>
+     is made on the #1 item on your list. Finally, the phrase is not an “end-goal” the phrase needs to be set up as progress otherwise you’ll get sick of it rapidly.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80d5-9ffc-ce82da4f94e0">
+     <strong>
+      Step 2: Create a Reminder:
+     </strong>
+     The #1 item on your list should have a substantial reason behind it. You then want to create a visible item to look at on a daily basis as you progress. We are not sure what the reminder will be, that said, we prefer a personal quote made by yourself (not some motivational dude who doesn’t care about you and just wants your money). If the task is building up your second source of income then it could be something as simple as
+     <em>
+      “Do I want to rely on someone else for my livlihood?”.
+     </em>
+     Place your personal reason in clear view when you sit down to start your task. In this clear example, before you get to do anything to start your day you’re going to be reminded that you’re relying on someone else to put food on your table. Not a good feeling and should spur on action.
+    </p>
+    <p class="" id="27a7f6a4-04fe-808b-8c6c-eba0cf489bf6">
+     <strong>
+      Step 3: You’re Not Allowed to Read:
+     </strong>
+     That’s right. Reading feels like you’re progressing on something but we’ve seen a total of Zero purchases made by books read. We’ve never seen someone purchase a Ferrari with “number of books read”. In fact, we don’t know a single time in history where a person reads a book and suddenly gets more money. Secondly, if the item is physical
+     <em>
+      “I will lose weight” or “I will gain muscle”,
+     </em>
+     then you’re not allowed to sit down and read up on new diets and exercise routines. You’re going to go straight to the gym to train physically. You can read after your important task is done.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80d4-bf12-de5acb665807">
+     The biggest problem with “reading” as it pertains to the most important item in your life is that it feels like something has been done. We’ve done this many times in the past. Spending 2-3 hours reading about a topic only to find that all of your most valuable energy is completely drained by the time you’re done researching "about" your business, not taking action…. This is not an efficient use of your brain. Reading is relatively low energy and will simply drain your body before you’re able to even get to work. This is also why we do not recommend checking Twitter, Personal Emails, Blogs, News Websites etc until you’ve started to get to work on the task. (p.s if teaching is part of your business, e.g the inbound method, then that's the only time you should read, because it directly makes you money)
+    </p>
+    <p class="" id="27a7f6a4-04fe-8032-acca-da89c5c0b513">
+     <strong>
+      Step 4: Remove All Noise:
+     </strong>
+     This is both literal and figurative. Unless the tasks requires phone calls (calling customers as an example) or access to the Internet at that specific moment, you should shut everything out. Take it to the extreme. As an example we prefer turning off our phones before starting to do real work and remove all tabs/browsers unrelated to real time work to prevent any distractions.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8086-a8d8-c7cf5aa09393">
+     This is actually a rare time where we can look to athletes as an example. If anyone has experience in competitive sports… thinking about anything but the present task is a recipe for disaster. The small fraction of a second where focus is lost can cost you the game or the race etc. Just think of all those examples of athletes celebrating before finishing the race, looking to the side or falling asleep as an opponent is able to easily cruise to an extra point. By removing all noise you’re going to be left with two items, your brain and the task at hand.
+    </p>
+    <p class="" id="27a7f6a4-04fe-804a-aef9-ccb57a353976">
+     <strong>
+      Step 5: Create a Mental Zone:
+     </strong>
+     At this point you’re about to start the task. You’ve already recognized it as the most important to you, you’ve already reminded yourself (utilizing fear) as to why you need to accomplish the task and finally, you’re in a place where you cannot be distracted by any means. Now comes the fun part of creating a “zone” or focus point.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8041-8a22-d33f14321816">
+     The final step before starting is to remind yourself of a previous success. It does not matter what it is, just choose the biggest achievement that you remember (or one of the biggest) and lock into that that time frame. After walking through it in your head as if watching a movie (should take a minute or two) you’re going to repeat the task and remember being “in the zone”. This is also more commonly known as neuro linguistic programming, but, we’ll try to take it a step further. Once you have played the event in your head once or twice the final time, instead of remember the event, remember the mental state you were in. Try to remember what you were thinking of during the event. You’ll find out the exact same thing. You were not thinking about anything. Ever wonder why we refer to people that are in the zone as being “unconscious, well now you know.
+    </p>
+    <p class="" id="27a7f6a4-04fe-802d-946e-ceecc54de1d5">
+     <strong>
+      Step 6: Take Action on the Task:
+     </strong>
+     If you’ve done this correctly your mind will not wander. You’ve prevented this by starting an action before doing any research at all. If we look  at the process, by breaking any of the steps… your brain will become distracted. This is human nature and a natural flaw of all humans. You’ll worry about doing other things unrelated to your most important action of the day.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8051-bb75-fef5c3d9b70f">
+     <strong>
+      Step 7: All Out or Full Speed:
+     </strong>
+     Since our bodies and brains get tired over time the best way to progress is at full speed until exhausted. Since this is hands down the most important task to you, you’ll need to continue in this zone until you lose the mental ability to continue. The vast majority won’t do the check in steps listed above and will pay dearly for it as the value of the work will decline dramatically. If you’re distracted or not 100% focused the value of the work is likely cut into a third. One hour of extreme full speed work and effort will be equivalent to 3 hours of regular effort work.
+    </p>
+    <p class="" id="27a7f6a4-04fe-804c-b6fa-c5d6bc70f9c9">
+     Think about eating the frog, once you wake up you go FULL SPEED into eating the frog, you do as much work as you can and "tire yourself out", just like eating a frog will taste horrible and you'll feel exhausted after, you want to gulp it down at full speed, you don't want to chew it and feel the texture of it's eyes and organs in your mouth.
+    </p>
+    <h3 class="" id="27a7f6a4-04fe-8087-95a4-e9a543097474">
+     <strong>
+      After Zoning In
+     </strong>
+    </h3>
+    <p class="" id="27a7f6a4-04fe-80b7-9ada-dd926a177684">
+     After this period of mania (we’ve found about ~3 hours can be obtained) you’ll need to check back out of the intense work mode. Once you find that your mind is wandering onto other topics rapidly and you’re not able to focus specifically on one task only, then you’re likely out of the zone. Instead of attempting to force your body to re-enter, it’s smarter to step out entirely. We recommend meditation for about 15 minutes where you think about nothing.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80f3-a64f-f94512428988">
+     <strong>
+      Re-evaluate the Work:
+     </strong>
+     Now that the intense focus period is over, we’d turn to less demanding items that we refer to as clean up. If your time was spent working on a new ad to place online, then we’d switch to proof reading. You can also switch to display issues and other bugs that may occur on your page. Unless you have hired someone to go through everything, you can simply do the lower level items that are less important. After a period of meditation you’ll have enough energy left to go through mundane items that are less meaningful but can make a big impact.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8003-8a3b-e570f63db5a0">
+     (even the wall street playboys follow our productive isolation routine, eat the frog, do needed tasks, rest)
+    </p>
+    <p class="" id="27a7f6a4-04fe-80ef-b796-d97cebe73dc9">
+     <strong>
+      Ask a Few Basic Questions:
+     </strong>
+     Part of the reason that you’ll fade out of the mania stage or “in the zone stage” is you’ll run into a hurdle you can’t seem to jump. If you see the problem consistently ask yourself what exactly is causing the problem and write it down once for later research. We’d recommend doing all research well into the middle/end of the day since the energy needed to do so is very minimal.
+    </p>
+    <h3 class="" id="27a7f6a4-04fe-80e5-aa71-c7ae03581d10">
+     <strong>
+      Switch to Task Two, Three and Research
+     </strong>
+    </h3>
+    <p class="" id="27a7f6a4-04fe-80d3-af4b-eaee886fdb7b">
+     Now that you have made a substantial amount of progress and “cleaned up” the work you’ve done in the morning, it’s very easy to move onto your second less important item for the day. Generally, since it is not the premier item for you, this will not require immense focus on your part (not logically sustainable given no person is operating at peak performance every single minute of the day).
+    </p>
+    <p class="" id="27a7f6a4-04fe-8032-812e-c9f7f85a9064">
+     Again, we do not know what is important for you. All we know is that there are several areas where you’re likely interested in improving. For the remaining items we recommend linking up with a person who is more motivated than yourself in that category. Using the most common items “money and fitness” if your goal is money, then you’ll need to find someone who is in better shape than you to hit the gym.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80b9-9f55-f336438ba865">
+     We strongly recommend working in more “team” oriented areas for tier 2-4 priorities. Why? Well if it’s not the most important item to you then it is likely the most important item to someone in the group you decide to be a part of. This makes your progress significantly faster than before.
+    </p>
+    <p class="" id="27a7f6a4-04fe-80f4-b6eb-ff599c76d545">
+     Finally, once you’re done with your activities for the day you can flip to researching the answer to your question when you’re wrapping up the day. You’ll find yourself getting distracted (more likely than not) and this is normal. The positive side is through the extremely easy task of researching a solution you’ll find at least one answer and apply that the next day. (work, do tasks, rest and learn)
+    </p>
+    <h2 class="" id="27a7f6a4-04fe-803b-a45c-d3148e451b5e">
+     <strong>
+      Massive Pitfalls to Avoid
+     </strong>
+    </h2>
+    <p class="" id="27a7f6a4-04fe-804b-a8a0-e22533e24eca">
+     We have a laundry list and instead will focus on bullets to get the point across quicker
+    </p>
+    <p class="" id="27a7f6a4-04fe-80ca-96a4-fe51c6fd0fa6">
+     1) Telling people your #1 priority. This will cause nothing but problems for your progress. Psychologically, telling someone you will do something sends signals to your brain that you’ve actually done something to make progress (not the case!). Do not confuse marketing with “telling people”it is not the same because when you market you’re already done creating a specific product (or practically near done).
+    </p>
+    <p class="" id="27a7f6a4-04fe-8009-9161-d141258999c7">
+     2) If you need to tell people… you don’t really want it. This is another good way to see if you’re actually interested in doing it. Material goods are another great example of this. If you actually want to do something and are not doing it just to create attention, then you’re not going to be interested in voicing your priority to the masses.
+    </p>
+    <p class="" id="27a7f6a4-04fe-809c-8304-d94e7304ed94">
+     3) Creating games instead of habits. You’re better off changing your long term habits than making crazy games such as “for 10 days i will do X”. This will just send a quick dopamine rush when you do something for 10 days and complete the task. Instead by creating a habit you won’t have to make up any sort of short term time frame.
+    </p>
+    <p class="" id="27a7f6a4-04fe-8008-b200-cfbcc4db84e0">
+     4) Constant obsession with priority #1. It’s not physically possible to be at peak performance for the human body at all times (otherwise world records would break daily). Therefore the check in process shouldn’t lead to constant thinking in the future. Once you’ve put in the high quality hours and minutes into the priority, set it aside and move on. (eat the frog and wash it down)
+    </p>
+    <p class="" id="27a7f6a4-04fe-8046-a711-d719aeee0a60">
+     5) Negative Thought Spiral. When getting into the zone you’re not allowed to frame anything as a negative. This is why visualization of a past success is extremely important. Once you think about how much you want to improve on item X then you immediately shift gears into a previous success. If you’re thinking about “what could go wrong” you’ll waste valuable brain cells on worrying (this usually leads to thinking about other items unrelated to your project – negative thinking).
+    </p>
+    <p class="" id="27a7f6a4-04fe-80f9-aa4f-e36a173a18b5">
+     <strong>
+      Concluding Remarks:
+     </strong>
+     Overall, if we continue to follow these steps to check in on a daily basis into the most important item on the list… we’ll subsequently improve on the other items. Generally, when your primary item is improving by leaps and bounds, the rest of the items tend to fall into place because your confidence goes up (able to do most important item, will be possible to do the second most).
+    </p>
+    <p class="" id="27a7f6a4-04fe-803f-bc01-f4b1bb8e2680">
+     also, a good way to know if you've maximised your brain points, do
+     <a href="https://humanbenchmark.com/tests/sequence">
+      https://humanbenchmark.com/tests/sequence
+     </a>
+    </p>
+    <p class="" id="27a7f6a4-04fe-80ed-9184-d46551566f12">
+     try your hardest, go slow, if you seem to be shit at it, means your brain points have been sapped and you know that you've "emptied your gas tank" for your brain.
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

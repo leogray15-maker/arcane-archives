@@ -1,0 +1,855 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   Theory Of Constraints.
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="26a7f6a4-04fe-8030-9673-f9d6473ce63e">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      Theory Of Constraints.
+     </strong>
+     <br/>
+     <br/>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <p class="" id="26a7f6a4-04fe-8050-afa6-d0800edb8cf9">
+     this theory of constraints is very powerful.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8069-b63a-e587ccb37b6a">
+     you have right now one of 3 constraints…
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c3-8be4-f5f4a065bf80">
+     there is just ONE thing that is holding you back, and you will literally make no significant progress unless you find which one of these 3 constraints it is, and actually unlock it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80fb-930d-ea011e35f294">
+     you can work as hard as possible, and still make no progress.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d2-9d9e-cc0d53e25606">
+     you won’t get that first sale, you won’t make any progress.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803c-88f7-d12c4e317479">
+     and this comes down to just understanding the theory of constraints.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8003-a426-e1a095a19316">
+     as soon as you understand this, I promise you’re going to feel like there’s a burden lifted off you, like you’ve broken through finally.
+    </p>
+    <p class="" id="26a7f6a4-04fe-804d-95b6-e125e9fa2738">
+     first, we need to understand what a constraint is.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-80ac-92f8-e3162ade9395">
+     <strong>
+      A CONSTRAINT IS A BOTTLENECK.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-8077-bc50-deb7105f4e2e">
+     you might have heard of what a bottleneck is, especially if you know something about pcs.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8015-b199-ec81a363d254">
+     you cannot upgrade the GPU without upgrading the CPU.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8029-989b-dcab3d10ae50">
+     but if you don’t understand that, here’s what I mean.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803f-8e70-e5a011be36de">
+     if i say that “I’m bottlenecked”
+    </p>
+    <p class="" id="26a7f6a4-04fe-8032-a176-e1d5f5a6658c">
+     that kind of means that i’ve stopped here because of a certain reason.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d9-89b1-e8c8a9243ae9">
+     and keep this in mind, IT IS USUALLY A VERY SPECIFIC REASON.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8015-8d1d-ee16ba0f9816">
+     it’s like someone is just holding you in place, you cannot move forward until you’ve got rid of this bottleneck.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808d-a453-f33bcb0d05de">
+     that is a constraint, which you need to get rid of to make progress.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80ae-885e-c3cafa23d448">
+     and to get rid of something, you must understand it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8038-8b8d-c787a964fc3f">
+     and there is 3 constraints that you could be experiencing.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8008-b3b3-d587d3906f70">
+     this is a mindset from Alex Hormozi, so let me explain it to you.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-807d-a599-de41b7a5ba0a">
+     <strong>
+      THE THREE CONSTRAINTS.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-80ee-b9da-d86f01afc2ac">
+     your constraint is either :
+    </p>
+    <ul class="bulleted-list" id="26a7f6a4-04fe-80dd-a646-f9b8b48401b0">
+     <li style="list-style-type:disc">
+      your skills.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="26a7f6a4-04fe-806a-bd17-c8569cf4fb8a">
+     <li style="list-style-type:disc">
+      your beliefs.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="26a7f6a4-04fe-8024-9f25-f17136c07926">
+     <li style="list-style-type:disc">
+      your traits.
+     </li>
+    </ul>
+    <p class="" id="26a7f6a4-04fe-80d3-87aa-e696cd1e43ff">
+     skills, beliefs, or traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80dd-85cd-d4751e4a6bb7">
+     inside of your right now, there is one thing that is deficient and that’s causing you to stay stuck at this level of income/money.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80be-97ce-c76969146f58">
+     so, what do you think is your constraint?
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-8011-be35-fa02d6501ab1">
+     <strong>
+      SKILLS.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-8009-8800-fd9ea168b4a9">
+     skills are how to ACTUALLY do the thing.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8023-b8d3-c9434f010174">
+     so this is something like being good at copywriting.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c5-8ad4-e5cd0e6e31d4">
+     knowing how to day trade or whatever.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8032-bdca-e3e2aa23e484">
+     and you know what? this is actually kind of the “clickbait” thing.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8023-9a72-ffe28f899963">
+     this is the thing that most people think that their constraint is.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8043-8aa5-ea4ab5397fb1">
+     if you go online, and you see those youtube videos that tell you “top 18 side hustles”
+    </p>
+    <p class="" id="26a7f6a4-04fe-804f-9a96-d33653de9e88">
+     these videos just teach you the skills.
+    </p>
+    <p class="" id="26a7f6a4-04fe-809a-b989-ed5d08d4ff8a">
+     they’ll tell you “you can do amazon FBA, you can day trade, you can do copywriting” etc.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8018-a9eb-e30a82fdfedd">
+     you might actually think that you lack the skills, but I’m here to tell you that it’s actually not skills that you’re missing.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8088-8b67-c4a30f1a7bf4">
+     most people think this is constraint, but it is also why they are broke.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8034-b2eb-ebf6e9b8ea25">
+     people will join this network, read the inbound method business model and fail.
+    </p>
+    <p class="" id="26a7f6a4-04fe-802e-84a8-ff55b3ffd1cd">
+     that’s because they’ve been brainwashed to believe that the thing they are missing is the skill.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8042-b367-f3586d33237b">
+     so they tried to do a business model and succeed.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c7-a5da-fb291b1e48db">
+     but let me hit you with some truth.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8091-b27c-cecce87aa284">
+     you already know how to do all these businesses.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80a8-8257-e14600c3dc52">
+     you know how to dropship, you get a product and make some ads.
+    </p>
+    <p class="" id="26a7f6a4-04fe-805a-9250-ce329249ed39">
+     you know how to copywrite, you read books/courses and outreach.
+    </p>
+    <p class="" id="26a7f6a4-04fe-800f-b1f2-c6aaa3234b8d">
+     you know how to do the inbound method, you literally just follow what’s laid out…
+    </p>
+    <p class="" id="26a7f6a4-04fe-8014-ba3e-c562012ab436">
+     so most likely, this isn’t even your constraint.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f9-a1ce-c2e78f92f39a">
+     the only way this COULD be your constraint, is if you don’t even know how to do a business model, which I think you’re past that stage.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8007-bab9-f4fd422ab43b">
+     I mean, you literally have the inbound method.
+    </p>
+    <p class="" id="26a7f6a4-04fe-809a-be00-fe3c87518e26">
+     so we’ve cleared that up, it’s probably not skill.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8075-8ecd-c019b580e01f">
+     but it’s what gets more views on youtube…
+    </p>
+    <p class="" id="26a7f6a4-04fe-8087-913b-ec1613bcc7f7">
+     so what’s left?
+    </p>
+    <p class="" id="26a7f6a4-04fe-80ef-a6a8-fe79ae175021">
+     traits and beliefs.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c8-8002-d47d7ad28091">
+     it is these two things which I am CERTAIN is the thing that you lack.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c0-8a6d-d901bfa9eb83">
+     and here we will cover the second one, which is traits.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-8035-be50-e991c9173592">
+     <strong>
+      TRAITS.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-80ce-bb0e-dba2100e7704">
+     traits are basically just character traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8085-9b18-fbc5a1048cc2">
+     if you lack these, you are definitely not going to make it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803b-8b27-d09dd984cb93">
+     these are the things like impulse control, resilience, emotional control.
+    </p>
+    <p class="" id="26a7f6a4-04fe-801c-94b3-d35970297720">
+     and if you know about this, you’ve already reached the next level of maturity.
+    </p>
+    <p class="" id="26a7f6a4-04fe-801b-9d94-ffd20d0e9efa">
+     like if you asked me “how do I become more resilient to setbacks?”
+    </p>
+    <p class="" id="26a7f6a4-04fe-8050-8487-ea612f486c78">
+     I’d respond with a smile on my face, KNOWING that you’re going to make it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-800f-9434-ed61972a6d86">
+     but the guy who asks me “how do I make 10K a month asap”
+    </p>
+    <p class="" id="26a7f6a4-04fe-80bf-8a0c-eb8791b5ba51">
+     I probably wont even respond because I don’t want to waste my time.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8035-8b0f-ec94fcd152e0">
+     but if you asked me something like “how do I become better at logical thinkng rather than thinking with emotion?”, I’d be like a proud father.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8018-9aab-eb9d5f411607">
+     so, traits are probably something you’re lacking rn…
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f9-ad0d-e25d0d3afbfc">
+     I mean, I can’t really blame you.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80dd-9e41-e13c4315065e">
+     everyone used to have traits like impatience, seeking pleasure, lack of impulse control, succumbs to desire.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d7-9b61-fc0b03ca8e9d">
+     if you had intense cravings to eat something, to smoke weed, watch pointless youtube, would you follow through?
+    </p>
+    <p class="" id="26a7f6a4-04fe-8047-be0b-f5ffd70c1c7e">
+     I used to feel these things, then actually go follow through.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f1-8453-d0be634fa5b3">
+     this all comes to a lack of impulse control.
+    </p>
+    <p class="" id="26a7f6a4-04fe-805f-b158-cd1d683714d4">
+     and you actually can’t become successful with that, because work will always feel like work.
+    </p>
+    <p class="" id="26a7f6a4-04fe-802e-8f68-dc2ae94d4ed6">
+     setbacks will always feel painful.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8041-a914-fa9333c34c87">
+     it’s about what your character does when it is in certain situations.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8012-9405-c8a5eeff92a2">
+     if your character had the trait of persistence, he will stand up after every failure.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8073-b093-e89614a84075">
+     and lucky for you, this is pretty easy to get over…
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c1-8ba3-ee9e16f42330">
+     it’s pretty easy to adopt some character traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-802b-8307-fc61f288ed76">
+     all you have to do is customize your game character.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-8061-9197-c14fe2cf0a42">
+     <strong>
+      CUSTOMIZING THE GAME CHARACTER.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-80da-ab43-e0341c0ba17c">
+     here’s the ONLY way that you can change your traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8045-958b-d893055c8436">
+     it’s to act like the person that already has the traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-807b-9878-d1fc724a681d">
+     do that for a long enough amount of time, and it will burn into your identity.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803b-b016-ecde68b48a78">
+     now you will have these traits in your new reality.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8024-895b-eba4b872f318">
+     you should already know that this life is all about the inner work.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8002-830c-cdd7f91605e4">
+     I preach about identity so often, it feels almost like I’m just repeating myself.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c1-a11c-d6e210f54655">
+     but guess what? it’s just the answer to all the problems.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-801c-8c08-dbdedfabbde6">
+     <strong>
+      HOW TO CUSTOMIZE THE GAME CHARACTER.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-80f6-98d9-fa78bcd91527">
+     it’s going to come back to your alchemy of self.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8088-9e22-ea5263143041">
+     I already told you that it’s just about acting like the person who already has the traits for a long amount of time.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80ac-b8df-c627c8d60967">
+     so the name of the game is simply to make it as EASY as possible to act like that person with those traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-804d-85df-db71cfceb015">
+     and how much easier could it be than just to remind yourself every morning how you’re going to act that day?
+    </p>
+    <p class="" id="26a7f6a4-04fe-8005-902c-c66aa8030094">
+     as sam ovens said in the introduction video to the network.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803a-b49c-d09cd5543814">
+     you have to act like you have to remind yourself of who you are every morning.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8070-818b-f784fd203794">
+     as if you have no memory, and you just have to refresh yourself.
+    </p>
+    <p class="" id="26a7f6a4-04fe-800e-ac23-e6c04a1f0181">
+     and after a long enough time of doing the affirmations, reminding yourself of who you are.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f4-88b1-d2f5c0aa5938">
+     you put the traits down like
+    </p>
+    <ul class="bulleted-list" id="26a7f6a4-04fe-8070-ab4f-ea2ba044b501">
+     <li style="list-style-type:disc">
+      “never succumbs to pleasure, always dives into pain”
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="26a7f6a4-04fe-80d8-8d15-c64e5f652189">
+     <li style="list-style-type:disc">
+      “never watches content, always finds an opportunity to improve”
+     </li>
+    </ul>
+    <p class="" id="26a7f6a4-04fe-80c0-b810-f60c04e98481">
+     you will read these every morning, and you will act through the lens of these every day.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808a-82da-d7792b1b1889">
+     you will slowly be moulding your new game character, and it’s truly a beautiful thing.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8043-bedd-cb38e6376578">
+     the magic is in repetition.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d9-a4b0-fcc800e92a24">
+     and what’s crazy is that we literally have a tool to become ANYONE we want to be…
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f5-9270-fe42d2fe57ed">
+     this is so fucking powerful, it’s crazy.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80b6-a3bd-c11814868e56">
+     all you have to do is believe that you are already the person you want to be.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80aa-b5fa-f49202060fbd">
+     that’s how you develop the character traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8009-8d8e-ce7d63b1efc7">
+     so, if you believe that you have to change your character traits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f3-9117-f7c8202b4c7d">
+     I demand you to go BACK over the introduction video to the network, the special mission.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8047-98a6-c3d09d8c08a5">
+     follow directly what sam ovens says, don’t go on your own path, follow the words of an 8 figure entrepreneur, you’d be stupid not to.
+    </p>
+    <p class="" id="26a7f6a4-04fe-809b-97c4-d8c9cacb8b46">
+     but there is still another constraint.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80e0-9b6a-ec1ce7f8049e">
+     which I actually believe 99% of people are bottlenecked by.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8007-955b-c87fc7061f7c">
+     and these are…
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-809b-808e-f46e107d4bea">
+     <strong>
+      BELIEFS.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-8065-af28-e7be9d77deec">
+     Jim Rohn said that the first rule of success is philosophy.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8039-9537-db9661c3b89e">
+     or in other words, the lens you view life through.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8035-a93c-fa9adf86e4a1">
+     when you have a different mindset, it is LITERALLY like looking at life through a different lens.
+    </p>
+    <p class="" id="26a7f6a4-04fe-809f-b0fc-f9510d4292d7">
+     so, let’s actually give a little summary of what we talked about so far.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d5-8b5b-d8131ec47001">
+     skills are the thing that is NOT holding you back, because you already know how to succeed in your field, you know how to actually do the business etc.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8076-88a5-df01f29d742d">
+     traits might be the thing that is holding you back, and we have covered that you simply need to just customize your game character.
+    </p>
+    <p class="" id="26a7f6a4-04fe-809b-a198-e2dbfb55649c">
+     and now, we are onto beliefs.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80ac-aa2b-e084275e114c">
+     and let me tell you, beliefs are almost 100% the thing holding you back.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80b9-b2eb-c8262d228444">
+     and the reason why, is something you won’t expect.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-80d1-bed9-d8dee1ee7da2">
+     <strong>
+      IF YOU DON’T USE IT, YOU LOSE IT.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-8016-9a02-ccb356c5da95">
+     you see, we’re all surrounded by mediocrity, and that’s nothing new.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80e1-81bd-d2da39321a3b">
+     and as humans, we get complacent.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8020-82dc-f8d92d511df6">
+     we stop going hard in the gym because we have a decent physique.
+    </p>
+    <p class="" id="26a7f6a4-04fe-807e-ab1e-f56d45d8ac4a">
+     we stop reading books because we already think we’re knowledgeable enough.
+    </p>
+    <p class="" id="26a7f6a4-04fe-802c-a517-cd9966600a03">
+     but this is when your life starts to go downhill…
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f0-aa49-d4510969a231">
+     I just told you that we’re surrounded by mediocrity.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803f-90c3-c708daed3610">
+     which means you will be engulfed in it, inevitably.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8081-8d2b-eded3ec382d1">
+     so if you don’t have something that you are ACTIVELY getting your information from, you will simply develop your view on life from the mediocrity around you.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80ae-a435-e8d9d1e8f054">
+     even if you think you’re invincible to this, it will happen.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8044-8e40-d549ab18db98">
+     you will start getting more complacent day by day…
+    </p>
+    <p class="" id="26a7f6a4-04fe-8070-9499-daf083062fdd">
+     and this is because you’re surrounded by people lower status than you.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80fa-affa-d5a6d1813b1b">
+     when you are in a room where you are above everyone else, you will obviously not have the drive to work hard, because what are you working hard for?
+    </p>
+    <p class="" id="26a7f6a4-04fe-80e1-a85b-dccf9d5cbe77">
+     but if you are in a room where everyone is above you, you will be grinding in the trenches, not missing a minute.
+    </p>
+    <p class="" id="26a7f6a4-04fe-804f-af32-e8aff60d27bd">
+     and this all comes down to beliefs.
+    </p>
+    <p class="" id="26a7f6a4-04fe-802c-bec6-d421628bcb59">
+     you believe that you need to work hard.
+    </p>
+    <p class="" id="26a7f6a4-04fe-807f-9722-e71e9a53056d">
+     or you believe that you can be complacent.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c2-86e4-f4bfb377dbfa">
+     it’s no coincidence that Jim Rohn said this is the first puzzle to success.
+    </p>
+    <p class="" id="26a7f6a4-04fe-806a-bef7-c2ef77c883b2">
+     this is the thing that will make you succeed.
+    </p>
+    <p class="" id="26a7f6a4-04fe-805d-9731-fd64e6d836a0">
+     you need to be CONSTANTLY topping up your beliefs.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808b-a349-ecce8069a760">
+     keep on adding new ones, because without that, the old ones will also disappear.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808f-a545-e3fcfb433882">
+     your mind is also a muscle, you have to train it to keep it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d8-ae91-da2bcba9406e">
+     if you don’t train it, it will shrink.
+    </p>
+    <p class="" id="26a7f6a4-04fe-804c-ad2f-d41f1d1770d4">
+     but also, the muscle memory does come back…
+    </p>
+    <p class="" id="26a7f6a4-04fe-802e-8be9-c1b37abc6ba4">
+     and I assure you.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f7-a925-ef639a41c965">
+     once you start topping up your beliefs constantly again, you will feel so good.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80f9-bbe9-c6bcd38b9231">
+     once you start listening to successful people speak 24/7 again, you will feel back at home.
+    </p>
+    <p class="" id="26a7f6a4-04fe-809d-a327-ed30a74206a5">
+     and what’s cool about this, is that this network is literally the hub for the changes of beliefs.
+    </p>
+    <p class="" id="26a7f6a4-04fe-802b-a70b-e63eeb23582f">
+     we have SO MUCH daily quests that can be listened back on.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808d-af29-fa126712e66b">
+     SO MUCH courses.
+    </p>
+    <p class="" id="26a7f6a4-04fe-801c-8ed9-fe8b45976897">
+     and if you listen to the daily quest I set out every day for you, you will succeed alone.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80c2-a9d1-f359de1fa8ca">
+     this is why I’m so confident in this network.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8008-9040-df9debc157bd">
+     the only people who will lose and quit, is the ones who don’t take action in here.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8066-ad3f-c7678c93b729">
+     but all it takes is to literally click on the video that I give you every morning in here, and listen to it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808d-997b-cf2ac652bb11">
+     and in due time, you will reach success.
+    </p>
+    <p class="" id="26a7f6a4-04fe-807d-a1be-f02cbd6d149b">
+     it has never been easier.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8068-ac44-d6a7fb76b241">
+     you are refreshing and topping up your mind with new beliefs, and you are reminding yourself of who you are by listening to this content 24/7.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8067-a3a1-ea5c9db56377">
+     and I’m literally reminding you RN to get back on it.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80be-b186-f7373639d886">
+     that’s how it goes man, you have everything you need in here, literally.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8088-bf97-ed1d0e2aeeef">
+     so here’s your actionable step and summary.
+    </p>
+    <h1 class="" id="26a7f6a4-04fe-801d-bb28-fdd49bde0517">
+     <strong>
+      SUMMARY + ACTIONBLE STEPS.
+     </strong>
+    </h1>
+    <p class="" id="26a7f6a4-04fe-80d1-9a94-eaaa4c12b943">
+     SKILLS IS NOT A CONSTRAINT FOR 99% OF PEOPLE, YOU KNOW WHAT WORK TO DO.
+    </p>
+    <p class="" id="26a7f6a4-04fe-806f-94e3-f66441cdb751">
+     TO DEVELOP THE DESIRED CHARACTER TRAITS YOU WANT, SIMPLY RECUSTOMIZE YOUR GAME CHARACTER.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80af-a70b-ebbf2901750b">
+     TO NEVER FALL OFF AND KEEP THIS LIFE, KEEP RENEWING YOUR BELIEFS WITH THE DAILY QUESTS, THIS ENSURES THAT YOU WILL NEVER FALL OFF TRACK.
+    </p>
+    <p class="" id="26a7f6a4-04fe-803f-8ba5-c03963be2fa9">
+     the main key is, you have everything you need in here.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80e7-aaea-e72735b5fcd6">
+     it’s the boring work that will make you succeed.
+    </p>
+    <p class="" id="26a7f6a4-04fe-808b-b457-f484edc23802">
+     the daily long listens, they’re not fun and flashy, but they will get you to that fun and flashy lifestyle.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8050-8a86-cb21de25f4fa">
+     these are 3 constraints.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80e3-a6be-fd19f5892fca">
+     and you know which ones you are.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8084-b2a1-f21467506b84">
+     you probably either have the wrong character traits, you succumb to pleasure and bad habits.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80d0-8f78-d09a00113324">
+     or you simply have bad beliefs, you’ve not filled your mind enough recently, or both.
+    </p>
+    <p class="" id="26a7f6a4-04fe-801c-b100-fb82d9a4ead6">
+     they can all be solved by taking action.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8084-86c9-e0e8fbda48fe">
+     and that covers the 3 constraints of your life rn.
+    </p>
+    <p class="" id="26a7f6a4-04fe-80ef-adf0-d5f291001d7e">
+     identify, solve, and the life you want is yours for the taking.
+    </p>
+    <p class="" id="26a7f6a4-04fe-8037-b7e0-ee76d1d094de">
+     succeed
+    </p>
+    <p class="" id="26a7f6a4-04fe-802c-966d-db26bc1bd0cd">
+    </p>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>

@@ -1,0 +1,532 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <title>
+   PILOT VS PLANE MODE.
+  </title>
+  <style>
+   /* Arcane Archives Universal Styling */
+:root {
+    --bg-dark: #02010a;
+    --bg-card: rgba(15, 23, 42, 0.96);
+    --purple: #9333ea;
+    --purple-dark: #7e22ce;
+    --purple-light: #a78bfa;
+    --gold: #fbbf24;
+    --text-light: #e5e5e5;
+    --text-dim: #a3a3a3;
+    --border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Override Notion's default white background */
+html, body {
+    background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%) !important;
+    color: var(--text-light) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Back to Archives button */
+.arcane-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+}
+
+.arcane-back-btn:hover {
+    color: var(--purple-light);
+    border-color: rgba(147, 51, 234, 0.8);
+    transform: translateX(-2px);
+}
+
+/* Main content container */
+.page, article {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+/* Course title */
+h1, .page-title {
+    font-size: 2.2rem !important;
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    background: linear-gradient(135deg, var(--purple-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Course icon */
+.page-header-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem;
+}
+
+/* Sub-module links */
+a {
+    color: var(--purple-light) !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: var(--gold) !important;
+    text-decoration: underline !important;
+}
+
+/* Module links styling */
+figure a, .link-to-page a {
+    display: block;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 12px;
+    color: var(--text-light) !important;
+    transition: all 0.2s;
+}
+
+figure a:hover, .link-to-page a:hover {
+    border-color: rgba(147, 51, 234, 0.9);
+    background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.25), rgba(15, 23, 42, 0.98));
+    transform: translateX(4px);
+    text-decoration: none !important;
+}
+
+/* Text styling */
+p {
+    color: var(--text-light) !important;
+    line-height: 1.7;
+    margin: 1rem 0;
+}
+
+/* Headers */
+h2, h3, h4, h5, h6 {
+    color: var(--text-light) !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h2 { font-size: 1.7rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+
+/* Lists */
+ul, ol {
+    color: var(--text-light) !important;
+    padding-left: 1.5rem;
+}
+
+li {
+    color: var(--text-light) !important;
+    margin: 0.5rem 0;
+}
+
+/* Code blocks */
+code, pre {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: var(--purple-light) !important;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+pre {
+    padding: 1rem !important;
+    overflow-x: auto;
+}
+
+/* Dividers */
+hr {
+    border: none;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin: 2rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 3px solid var(--purple);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--text-dim) !important;
+    font-style: italic;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+th, td {
+    padding: 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: var(--text-light) !important;
+}
+
+th {
+    background: rgba(147, 51, 234, 0.2);
+    font-weight: 600;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .page, article {
+        margin: 1.5rem 0.8rem;
+        padding: 1.3rem;
+    }
+
+    .arcane-back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto;
+        width: fit-content;
+    }
+
+    h1, .page-title {
+        font-size: 1.5rem !important;
+    }
+
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+
+    figure a, .link-to-page a {
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .page-header-icon {
+        font-size: 2rem !important;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    pre {
+        padding: 0.8rem !important;
+        font-size: 0.85rem;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .page, article {
+        margin: 1rem 0.5rem;
+        padding: 1rem;
+    }
+
+    h1, .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    figure a, .link-to-page a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .arcane-back-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+  </style>
+ </head>
+ <body>
+  <a class="arcane-back-btn" href="archives.html">
+   ← Back to Archives
+  </a>
+  <article class="page sans" id="2317f6a4-04fe-80a0-8071-f1e07c053cea">
+   <header>
+    <h1 class="page-title">
+     <strong>
+      PILOT VS PLANE MODE.
+     </strong>
+    </h1>
+    <p class="page-description">
+    </p>
+   </header>
+   <div class="page-body">
+    <p class="" id="2317f6a4-04fe-80bf-86e8-c0ef8ff6a69b">
+     we have 2 modes.
+    </p>
+    <ol class="numbered-list" id="2317f6a4-04fe-8072-89ab-c15742106d9e" start="1" type="1">
+     <li>
+      SETTING THE DESTINATION.
+     </li>
+    </ol>
+    <ol class="numbered-list" id="2317f6a4-04fe-8090-be00-deb4952241d1" start="2" type="1">
+     <li>
+      TAKING ACTION.
+     </li>
+    </ol>
+    <p class="" id="2317f6a4-04fe-80b8-b466-e3d14269e2d2">
+     OR IN OTHER WORDS
+    </p>
+    <ol class="numbered-list" id="2317f6a4-04fe-80aa-94f6-eb711f092390" start="1" type="1">
+     <li>
+      THE PILOT
+     </li>
+    </ol>
+    <ol class="numbered-list" id="2317f6a4-04fe-80f1-9c56-eb2c03f66a94" start="2" type="1">
+     <li>
+      THE PLANE.
+     </li>
+    </ol>
+    <h1 class="" id="2317f6a4-04fe-80dd-93db-fd877785e66e">
+     THE 2 STEP FRAMEWORK TO SUCCESS.
+    </h1>
+    <ol class="numbered-list" id="2317f6a4-04fe-80b5-9466-d02813fe640d" start="1" type="1">
+     <li>
+      SET UP WHAT YOU HAVE TO DO
+     </li>
+    </ol>
+    <ol class="numbered-list" id="2317f6a4-04fe-807a-affc-c9c29e6b5196" start="2" type="1">
+     <li>
+      DO IT.
+     </li>
+    </ol>
+    <p class="" id="2317f6a4-04fe-802b-9892-fd687b0f110b">
+     it's that simple.
+    </p>
+    <p class="" id="2317f6a4-04fe-8030-b2ea-deacad6f03d9">
+     success is just telling yourself what work to do.
+    </p>
+    <p class="" id="2317f6a4-04fe-80a4-882a-c3f32ace7df8">
+     and actually doing it for a long enough period of time.
+    </p>
+    <p class="" id="2317f6a4-04fe-80dd-9746-cb944451aeb8">
+     and voila, you are now a success.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-802f-9ee0-d0d1177d7f00">
+     THIS IS HOW YOU UTILIZE THIS.
+    </h1>
+    <h2 class="" id="2317f6a4-04fe-8075-bbad-c75e896695fd">
+     PILOT MODE.
+    </h2>
+    <p class="" id="2317f6a4-04fe-80bd-94a9-da4fbd66bd0a">
+     we talked about planning your day EVERY NIGHT before bed.
+    </p>
+    <p class="" id="2317f6a4-04fe-80e5-9c36-c9ae883e2646">
+     and I wasn't lying when I said this is the highest ROI activity.
+    </p>
+    <p class="" id="2317f6a4-04fe-8037-b8b5-c3826aee9240">
+     <strong>
+      PLANNING YOUR DAY IS PILOT MODE.
+     </strong>
+    </p>
+    <h1 class="" id="2317f6a4-04fe-8087-9859-e3ce30b98ec5">
+     <strong>
+      PLANE MODE.
+     </strong>
+    </h1>
+    <h1 class="" id="2317f6a4-04fe-80ca-9f95-f0ad5c8bf3b1">
+    </h1>
+    <p class="" id="2317f6a4-04fe-80a5-a8f9-fe61fd2c23ef">
+     this is autopilot mode.
+    </p>
+    <p class="" id="2317f6a4-04fe-805f-a353-c05c62c0bd8a">
+     when we are taking action.
+    </p>
+    <h2 class="" id="2317f6a4-04fe-8055-b9b5-ddb4afa2cc7a">
+     WHEN THE DAY IS PLANNED.
+    </h2>
+    <p class="" id="2317f6a4-04fe-80c8-b7d1-e9928d6816b7">
+     YOU CAN GLIDE ACROSS YOUR DAY.
+    </p>
+    <p class="" id="2317f6a4-04fe-801f-99ef-e22e647844aa">
+     you have momentum.
+    </p>
+    <p class="" id="2317f6a4-04fe-8006-aeea-ff6e43982825">
+     you walk with purpose.
+    </p>
+    <p class="" id="2317f6a4-04fe-80e0-8c42-fa4ba02848ce">
+     you know where you are going.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-806a-bb63-f43dd805a68f">
+     THIS IS A GLITCH TO SUCCESS.
+    </h1>
+    <p class="" id="2317f6a4-04fe-8005-b7b0-c8ce154c5d2c">
+     it's weird.
+    </p>
+    <p class="" id="2317f6a4-04fe-80f8-877e-d6c9aba1eb1a">
+     when you're in plane mode.
+    </p>
+    <p class="" id="2317f6a4-04fe-8023-8a6a-dd923f88e580">
+     you can do hard work.
+    </p>
+    <p class="" id="2317f6a4-04fe-8036-929d-f6f355befb61">
+     and it won't even feel that hard.
+    </p>
+    <p class="" id="2317f6a4-04fe-8047-976b-c2743f40c966">
+     there will be no friction to doing it.
+    </p>
+    <p class="" id="2317f6a4-04fe-8052-bc87-fd011e5a1292">
+     and I know why.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-8080-9d9d-c7bc1c61f40b">
+     FRICTION IS IN THE DECISION.
+    </h1>
+    <p class="" id="2317f6a4-04fe-804c-969b-f49132aae860">
+     when you're thinking "should I work rn or not"
+    </p>
+    <p class="" id="2317f6a4-04fe-80ab-b7a5-f948454ed980">
+     you often just procrastinate that choice for HOURS.
+    </p>
+    <p class="" id="2317f6a4-04fe-8056-a057-f172d9c746a7">
+     but when you actually get into the work.
+    </p>
+    <p class="" id="2317f6a4-04fe-80d2-8d08-d8a83160f5bb">
+     you're in flow state.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-80f5-8ebf-d4621c7ccb52">
+    </h1>
+    <h1 class="" id="2317f6a4-04fe-80e8-8cd2-faab0ace7138">
+     DO NOT WAKE UP IN PILOT MODE.
+    </h1>
+    <p class="" id="2317f6a4-04fe-8072-b49f-c70f04e9b3a0">
+     when you wake up in pilot mode.
+    </p>
+    <p class="" id="2317f6a4-04fe-80e9-99ef-e2015cf83c0e">
+     you have to make the decisions on what you have to do.
+    </p>
+    <p class="" id="2317f6a4-04fe-808c-9d1c-d6d2d6fef716">
+     which leads to CHRONIC PROCRASTINATION.
+    </p>
+    <p class="" id="2317f6a4-04fe-802b-a922-d15703c54d6d">
+     mad friction that you have to get rid of.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-804d-936c-eccc08219d2e">
+     WHEN YOU PLAN THE NIGHT BEFORE.
+    </h1>
+    <p class="" id="2317f6a4-04fe-802e-b19e-f07b6ee3b37b">
+     you look at the next day as the "best possible day"
+    </p>
+    <p class="" id="2317f6a4-04fe-8038-a42e-e7387f6f2a7a">
+     you look at your decisions with pure discipline.
+    </p>
+    <p class="" id="2317f6a4-04fe-802d-b3a5-d1e462b9fe2e">
+     but if you wake up the next day, and you decide to plan then.
+    </p>
+    <p class="" id="2317f6a4-04fe-80be-852b-d689dce269db">
+     you will be tired, your emotions will play on your decisions.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-80e2-88f1-fded1f8fa722">
+     BUT IF YOU DO IT THE NIGHT BEFORE.
+    </h1>
+    <p class="" id="2317f6a4-04fe-8038-a7cd-eacb1ba2bd26">
+     you look at the day with pure masculinity.
+    </p>
+    <p class="" id="2317f6a4-04fe-80cc-8b06-f0bd9e3a246d">
+     pure discipline, goal striving.
+    </p>
+    <p class="" id="2317f6a4-04fe-80ed-a1f9-e89759f3227e">
+     but when you wake up.
+    </p>
+    <p class="" id="2317f6a4-04fe-8045-a6ee-ec316feafcd0">
+     you are a pussy naturally.
+    </p>
+    <p class="" id="2317f6a4-04fe-802c-95c0-d11a74c0537b">
+     which will lead you to procrastinate, waste time.
+    </p>
+    <p class="" id="2317f6a4-04fe-8050-a555-fd69d24b21d9">
+     and do bullshit.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-803f-99d9-feb9ef0936b9">
+    </h1>
+    <h1 class="" id="2317f6a4-04fe-80d4-8ad7-df2dd5ce9a22">
+     DO NOT LET EMOTIONS INTERFERE.
+    </h1>
+    <p class="" id="2317f6a4-04fe-801f-8381-c69fe1fbb28e">
+     ALWAYS PLAN THE NIGHT BEFORE.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-80ad-84e9-f9a898a9ef29">
+     LET THE PLANE GLIDE.
+    </h1>
+    <p class="" id="2317f6a4-04fe-8087-8cb3-d64a1bf6c1ad">
+     A smooth ride is guaranteed.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-805d-8afd-e48332feed17">
+     THE BEST PART IS?
+    </h1>
+    <h1 class="" id="2317f6a4-04fe-80a5-8294-e17e76714237">
+    </h1>
+    <p class="" id="2317f6a4-04fe-8024-9654-f2ed864a9be8">
+     if you pussy out the day after.
+    </p>
+    <p class="" id="2317f6a4-04fe-8073-b716-cfad8fa6e36d">
+     you know you're ACTUALLY being a pussy.
+    </p>
+    <p class="" id="2317f6a4-04fe-8068-bb87-d57294adfabb">
+     because you planned it the day before with sheer masculinity.
+    </p>
+    <p class="" id="2317f6a4-04fe-8075-9571-fe839497d0f6">
+     it just means if you don't follow through...
+    </p>
+    <p class="" id="2317f6a4-04fe-8087-a76c-ddf8b15f7c1a">
+     you don't stick to your word.
+    </p>
+    <p class="" id="2317f6a4-04fe-8021-9f3e-d69ea1911435">
+     remember that.
+    </p>
+    <h1 class="" id="2317f6a4-04fe-80d0-a07b-f1fa10947dde">
+     ACTIONABLE STEP.
+    </h1>
+    <ul class="bulleted-list" id="2317f6a4-04fe-8098-98eb-efae55d9b1bd">
+     <li style="list-style-type:disc">
+      UTILIZE PILOT VS PLANE.
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="2317f6a4-04fe-804c-9b82-fb4d41a0eace">
+     <li style="list-style-type:disc">
+      CREATE A CALENDAR IF YOU HAVEN'T ALREADY
+     </li>
+    </ul>
+    <ul class="bulleted-list" id="2317f6a4-04fe-8043-b8c0-c8b3cf812e35">
+     <li style="list-style-type:disc">
+      PLAN EVERY NIGHT
+     </li>
+    </ul>
+   </div>
+  </article>
+  <span class="sans" style="font-size:14px;padding-top:2em">
+  </span>
+ </body>
+</html>
