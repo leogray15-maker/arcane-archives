@@ -1,4 +1,4 @@
-// alerts.js – simplified Arcane Alerts + Trade Ideas
+// alerts.js – Arcane Alerts + Trade Ideas + XAUUSD chart
 import { protectPage, db } from "./auth-guard.js";
 import {
   collection,
@@ -10,18 +10,18 @@ import {
   onSnapshot,
   serverTimestamp,
   arrayUnion,
-  limit
+  limit,
+  getDoc,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-// Only this email can post new trade ideas
 const ADMIN_EMAIL = "leogray15@gmail.com";
 
 let currentUser = null;
 let isAdmin = false;
 
-// Entry point
+// Entry point – protect page and then init
 protectPage({
-  onSuccess: (user, userData) => {
+  onSuccess: (user) => {
     currentUser = user;
     isAdmin = user.email === ADMIN_EMAIL;
 
@@ -29,14 +29,15 @@ protectPage({
 
     setupAdminForm();
     initAlertsFeed();
+    initXauusdChart();
   },
   onFailure: () => {
     window.location.href = "login.html";
-  }
+  },
 });
 
 /**
- * Show / wire the "New Trade Idea" form for admin
+ * Admin-only form for posting trade ideas
  */
 function setupAdminForm() {
   const formWrapper = document.getElementById("alertForm");
@@ -44,12 +45,10 @@ function setupAdminForm() {
   if (!formWrapper || !postBtn) return;
 
   if (!isAdmin) {
-    // Hide form for non-admins
     formWrapper.style.display = "none";
     return;
   }
 
-  // Show form for admin
   formWrapper.classList.add("visible");
 
   postBtn.addEventListener("click", async () => {
@@ -61,13 +60,13 @@ function setupAdminForm() {
     const tp2El = document.getElementById("tp2Input");
     const notesEl = document.getElementById("notesInput");
 
-    const pair = pairEl.value.trim() || "XAUUSD";
-    const direction = directionEl.value || "Long";
-    const entry = entryEl.value.trim();
-    const sl = slEl.value.trim();
-    const tp1 = tp1El.value.trim();
-    const tp2 = tp2El.value.trim();
-    const notes = notesEl.value.trim();
+    const pair = (pairEl?.value || "XAUUSD").trim();
+    const direction = directionEl?.value || "Long";
+    const entry = entryEl?.value.trim();
+    const sl = slEl?.value.trim();
+    const tp1 = tp1El?.value.trim();
+    const tp2 = tp2El?.value.trim();
+    const notes = notesEl?.value.trim();
 
     if (!entry) {
       alert("Please add at least an entry price.");
@@ -88,19 +87,20 @@ function setupAdminForm() {
         tp2: tp2 || null,
         notes: notes || null,
         createdAt: serverTimestamp(),
-        createdBy: currentUser.uid,
-        createdByEmail: currentUser.email,
-        readBy: [],
+        createdBy: {
+          uid: currentUser.uid,
+          email: currentUser.email,
+        },
         reactions: {
           fire: [],
           bear: [],
-          eyes: []
-        }
+          eyes: [],
+        },
+        status: "open", // "win" / "loss" / "be" later
       };
 
       await addDoc(collection(db, "alerts"), alertData);
 
-      // Reset form
       entryEl.value = "";
       slEl.value = "";
       tp1El.value = "";
@@ -169,20 +169,20 @@ function initAlertsFeed() {
   );
 }
 
+/**
+ * Render a single alert / trade idea card
+ */
 function renderAlertCard(id, data) {
-  const isTrade = data.type === "trade_idea";
-  const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : null;
-  const timeText = formatTimeAgo(createdAt);
-
   const card = document.createElement("div");
   card.className = "alert-card";
 
+  const isTrade = data.type === "trade_idea";
   const pair = data.pair || "XAUUSD";
-  const direction = data.direction || "Long";
-  const entry = data.entry || "-";
-  const sl = data.sl || "-";
-  const tp1 = data.tp1 || "-";
-  const tp2 = data.tp2 || "-";
+  const direction = data.direction || "";
+  const entry = data.entry || "";
+  const sl = data.sl || "";
+  const tp1 = data.tp1 || "";
+  const tp2 = data.tp2 || "";
   const notes = data.notes || data.message || "";
 
   const reactions = data.reactions || { fire: [], bear: [], eyes: [] };
@@ -198,53 +198,49 @@ function renderAlertCard(id, data) {
   const typeLabel = isTrade ? "Trade Idea" : "Alert";
 
   card.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
-      <div style="display:flex;align-items:center;gap:0.5rem;">
-        <span style="
-          font-size:0.75rem;
-          padding:0.15rem 0.6rem;
-          border-radius:999px;
-          border:1px solid rgba(148,163,184,0.7);
-          text-transform:uppercase;
-          letter-spacing:0.08em;
-          color:#9ca3af;
-        ">
-          ${typeLabel}
-        </span>
-        <span style="font-size:0.8rem;color:#9ca3af;">${pair}</span>
-      </div>
-      <div style="font-size:0.8rem;color:#9ca3af;">${timeText}</div>
+    <div class="alert-top">
+      <div class="alert-type">${typeLabel}</div>
+      <div class="alert-timestamp">${formatTimestamp(data.createdAt)}</div>
     </div>
 
-    ${
-      isTrade
-        ? `
-      <div style="font-size:0.9rem;margin-bottom:0.6rem;">
-        <strong>${direction}</strong> | Entry: <strong>${entry}</strong> · SL: ${sl} · TP1: ${tp1}${tp2 ? " · TP2: " + tp2 : ""}
+    <div class="alert-main">
+      <div class="alert-title">
+        <span class="pair">${pair}</span>
+        ${
+          direction
+            ? `<span class="direction ${direction.toLowerCase()}">${direction}</span>`
+            : ""
+        }
       </div>
-      `
-        : ""
-    }
+      <div class="alert-entries">
+        ${entry ? `<div><span>Entry:</span> ${entry}</div>` : ""}
+        ${sl ? `<div><span>SL:</span> ${sl}</div>` : ""}
+        ${tp1 ? `<div><span>TP1:</span> ${tp1}</div>` : ""}
+        ${tp2 ? `<div><span>TP2:</span> ${tp2}</div>` : ""}
+      </div>
+      ${notes ? `<div class="alert-notes">${notes}</div>` : ""}
+    </div>
 
-    ${
-      notes
-        ? `<div style="font-size:0.9rem;color:#e5e7eb;margin-bottom:0.6rem;white-space:pre-wrap;">${notes}</div>`
-        : ""
-    }
-
-    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:#9ca3af;margin-top:0.3rem;">
-      <div>By ${data.createdByEmail || "System"}</div>
-      <div style="display:flex;gap:0.35rem;">
+    <div class="alert-footer">
+      <div class="reactions">
         <button class="reaction-btn" data-id="${id}" data-type="fire" style="
-          background:transparent;border:none;color:${userReactedFire ? "#f97316" : "#9ca3af"};
+          background:transparent;border:none;color:${
+            userReactedFire ? "#f97316" : "#9ca3af"
+          };
           cursor:pointer;display:inline-flex;align-items:center;gap:0.2rem;
         ">🔥 ${fireCount}</button>
+
         <button class="reaction-btn" data-id="${id}" data-type="bear" style="
-          background:transparent;border:none;color:${userReactedBear ? "#f97316" : "#9ca3af"};
+          background:transparent;border:none;color:${
+            userReactedBear ? "#f97316" : "#9ca3af"
+          };
           cursor:pointer;display:inline-flex;align-items:center;gap:0.2rem;
         ">🐻 ${bearCount}</button>
+
         <button class="reaction-btn" data-id="${id}" data-type="eyes" style="
-          background:transparent;border:none;color:${userReactedEyes ? "#f97316" : "#9ca3af"};
+          background:transparent;border:none;color:${
+            userReactedEyes ? "#f97316" : "#9ca3af"
+          };
           cursor:pointer;display:inline-flex;align-items:center;gap:0.2rem;
         ">👀 ${eyesCount}</button>
       </div>
@@ -266,8 +262,7 @@ function attachReactionHandlers(container) {
 
       try {
         const ref = doc(db, "alerts", id);
-        const snap = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js")
-          .then(m => m.getDoc(ref));
+        const snap = await getDoc(ref);
         if (!snap.exists()) return;
 
         const data = snap.data();
@@ -281,18 +276,19 @@ function attachReactionHandlers(container) {
           newArr = [...arr, currentUser.uid];
         }
 
-        await updateDoc(ref, {
-          [`reactions.${type}`]: newArr
-        });
+        reactions[type] = newArr;
+
+        await updateDoc(ref, { reactions });
       } catch (err) {
-        console.error("Error updating reaction:", err);
+        console.error("Error updating reactions:", err);
       }
     });
   });
 }
 
-function formatTimeAgo(date) {
-  if (!date) return "";
+function formatTimestamp(ts) {
+  if (!ts) return "";
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -304,8 +300,150 @@ function formatTimeAgo(date) {
   return date.toLocaleDateString();
 }
 
-// Debug helper
+/**
+ * XAUUSD chart – uses Netlify function /.netlify/functions/xauusd-chart
+ * The function should return: { candles: [{ time, open, high, low, close }, ...] }
+ */
+function initXauusdChart() {
+  const container = document.getElementById("xauChart");
+  const fallback = document.getElementById("chartFallback");
+  if (!container) {
+    console.warn("⚠️ xauChart container not found");
+    return;
+  }
+
+  if (!window.LightweightCharts) {
+    console.warn("⚠️ LightweightCharts not loaded");
+    if (fallback) fallback.style.display = "flex";
+    return;
+  }
+
+  const chart = LightweightCharts.createChart(container, {
+    layout: {
+      background: { type: "solid", color: "#020617" },
+      textColor: "#e5e7eb",
+      fontSize: 11,
+      fontFamily:
+        "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif",
+    },
+    rightPriceScale: {
+      borderColor: "#1f2937",
+    },
+    timeScale: {
+      borderColor: "#1f2937",
+      timeVisible: true,
+      secondsVisible: false,
+    },
+    grid: {
+      vertLines: { color: "#020617" },
+      horzLines: { color: "#020617" },
+    },
+  });
+
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: "#22c55e",
+    downColor: "#ef4444",
+    borderVisible: false,
+    wickUpColor: "#22c55e",
+    wickDownColor: "#ef4444",
+  });
+
+  const lineSeries = chart.addLineSeries({
+    color: "#a855f7",
+    lineWidth: 2,
+    visible: false,
+  });
+
+  function resizeChart() {
+    const rect = container.getBoundingClientRect();
+    chart.applyOptions({
+      width: rect.width,
+      height: rect.height,
+    });
+  }
+
+  resizeChart();
+  window.addEventListener("resize", resizeChart);
+
+  async function loadData(interval = "15min") {
+    try {
+      if (fallback) fallback.style.display = "none";
+
+      const res = await fetch(
+        `/.netlify/functions/xauusd-chart?interval=${encodeURIComponent(
+          interval
+        )}`
+      );
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+      const json = await res.json();
+      const raw = json.candles || json.data || [];
+
+      if (!Array.isArray(raw) || raw.length === 0) {
+        throw new Error("No data");
+      }
+
+      const candles = raw
+        .map((c) => ({
+          time:
+            c.time ||
+            c.timestamp ||
+            (c.date ? Math.floor(new Date(c.date).getTime() / 1000) : undefined),
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+        }))
+        .filter((c) => c.time && !Number.isNaN(c.open));
+
+      candleSeries.setData(candles);
+      lineSeries.setData(
+        candles.map((c) => ({
+          time: c.time,
+          value: c.close,
+        }))
+      );
+    } catch (err) {
+      console.error("Error loading XAUUSD chart:", err);
+      if (fallback) fallback.style.display = "flex";
+    }
+  }
+
+  // Default load
+  loadData("15min");
+
+  // Timeframe buttons
+  const tfButtons = document.querySelectorAll(".tf-btn");
+  tfButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tf = btn.dataset.timeframe || "15min";
+      tfButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      loadData(tf);
+    });
+  });
+
+  // Mode buttons – candles / line
+  const modeButtons = document.querySelectorAll(".chart-toggle");
+  modeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.chartMode || "candle";
+      modeButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      if (mode === "line") {
+        candleSeries.applyOptions({ visible: false });
+        lineSeries.applyOptions({ visible: true });
+      } else {
+        candleSeries.applyOptions({ visible: true });
+        lineSeries.applyOptions({ visible: false });
+      }
+    });
+  });
+}
+
+// Debug helper in console
 window.arcaneAlerts = {
   getCurrentUser: () => currentUser,
-  isAdmin: () => isAdmin
+  isAdmin: () => isAdmin,
 };
