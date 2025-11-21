@@ -29,7 +29,36 @@ protectPage({
 
     setupAdminForm();
     initAlertsFeed();
-    initXauusdChart();
+    
+    // Wait for chart library to be available
+    if (typeof window.LightweightCharts !== 'undefined') {
+      console.log("✅ LightweightCharts loaded");
+      initXauusdChart();
+    } else {
+      console.warn("⚠️ LightweightCharts not loaded, waiting...");
+      // Wait a bit and try again
+      setTimeout(() => {
+        if (typeof window.LightweightCharts !== 'undefined') {
+          console.log("✅ LightweightCharts loaded (delayed)");
+          initXauusdChart();
+        } else {
+          console.error("❌ LightweightCharts failed to load");
+          const fallback = document.getElementById("chartFallback");
+          if (fallback) {
+            fallback.style.display = "flex";
+            fallback.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 48px; height: 48px; color: #a855f7;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div style="text-align: center;">
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Chart library failed to load</div>
+                <div style="font-size: 0.875rem; color: #9ca3af;">Please refresh the page</div>
+              </div>
+            `;
+          }
+        }
+      }, 2000);
+    }
   },
   onFailure: () => {
     window.location.href = "login.html";
@@ -138,9 +167,9 @@ function initAlertsFeed() {
       if (snapshot.empty) {
         container.innerHTML = `
           <div class="alert-card">
-            <div style="font-size:1rem;font-weight:600;">No alerts yet</div>
+            <div style="font-size:1rem;font-weight:600;">No trade ideas yet</div>
             <div style="font-size:0.85rem;color:#9ca3af;margin-top:0.25rem;">
-              Once you post trade ideas or system alerts, they will appear here.
+              Once you post trade ideas, they will appear here.
             </div>
           </div>
         `;
@@ -301,24 +330,37 @@ function formatTimestamp(ts) {
 }
 
 /**
- * XAUUSD chart – uses Netlify function /.netlify/functions/xauusd-chart
- * The function should return: { candles: [{ time, open, high, low, close }, ...] }
+ * XAUUSD chart with proper timeframe handling
  */
 function initXauusdChart() {
   const container = document.getElementById("xauChart");
   const fallback = document.getElementById("chartFallback");
+  
   if (!container) {
     console.warn("⚠️ xauChart container not found");
     return;
   }
 
   if (!window.LightweightCharts) {
-    console.warn("⚠️ LightweightCharts not loaded");
-    if (fallback) fallback.style.display = "flex";
+    console.error("❌ LightweightCharts not loaded");
+    if (fallback) {
+      fallback.style.display = "flex";
+      fallback.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 48px; height: 48px; color: #a855f7;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div style="text-align: center;">
+          <div style="font-weight: 600; margin-bottom: 0.25rem;">Chart library not available</div>
+          <div style="font-size: 0.875rem; color: #9ca3af;">Please refresh the page</div>
+        </div>
+      `;
+    }
     return;
   }
 
-  const chart = LightweightCharts.createChart(container, {
+  console.log("🎨 Initializing chart...");
+
+  const chart = window.LightweightCharts.createChart(container, {
     layout: {
       background: { type: "solid", color: "#020617" },
       textColor: "#e5e7eb",
@@ -335,8 +377,11 @@ function initXauusdChart() {
       secondsVisible: false,
     },
     grid: {
-      vertLines: { color: "#020617" },
-      horzLines: { color: "#020617" },
+      vertLines: { color: "#0f172a" },
+      horzLines: { color: "#0f172a" },
+    },
+    crosshair: {
+      mode: window.LightweightCharts.CrosshairMode.Normal,
     },
   });
 
@@ -365,36 +410,77 @@ function initXauusdChart() {
   resizeChart();
   window.addEventListener("resize", resizeChart);
 
-  async function loadData(interval = "15min") {
+  // Timeframe mapping: button value -> API interval
+  const timeframeMap = {
+    "1": "1min",
+    "3": "3min",
+    "5": "5min",
+    "15": "15min",
+    "30": "30min",
+    "60": "60min",
+    "240": "240min",
+    "D": "daily"
+  };
+
+  async function loadData(timeframe = "1") {
     try {
       if (fallback) fallback.style.display = "none";
 
+      const interval = timeframeMap[timeframe] || "1min";
+      console.log(`📊 Loading chart data for interval: ${interval}`);
+
       const res = await fetch(
-        `/.netlify/functions/xauusd-chart?interval=${encodeURIComponent(
-          interval
-        )}`
+        `/.netlify/functions/xauusd-chart?interval=${encodeURIComponent(interval)}`
       );
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status} - ${res.statusText}`);
+      }
 
       const json = await res.json();
-      const raw = json.candles || json.data || [];
+      console.log("📈 Chart API response received:", { 
+        hasCandles: !!json.candles, 
+        hasData: !!json.data,
+        hasValues: !!json.values
+      });
+
+      const raw = json.candles || json.data || json.values || [];
 
       if (!Array.isArray(raw) || raw.length === 0) {
-        throw new Error("No data");
+        throw new Error("No data returned from API");
       }
 
       const candles = raw
-        .map((c) => ({
-          time:
-            c.time ||
-            c.timestamp ||
-            (c.date ? Math.floor(new Date(c.date).getTime() / 1000) : undefined),
-          open: Number(c.open),
-          high: Number(c.high),
-          low: Number(c.low),
-          close: Number(c.close),
-        }))
-        .filter((c) => c.time && !Number.isNaN(c.open));
+        .map((c) => {
+          let time;
+          
+          // Handle different time formats
+          if (c.time) {
+            time = typeof c.time === 'string' ? new Date(c.time).getTime() / 1000 : c.time;
+          } else if (c.timestamp) {
+            time = typeof c.timestamp === 'string' ? new Date(c.timestamp).getTime() / 1000 : c.timestamp;
+          } else if (c.date) {
+            time = new Date(c.date).getTime() / 1000;
+          } else if (c.datetime) {
+            time = new Date(c.datetime).getTime() / 1000;
+          }
+
+          return {
+            time: Math.floor(time),
+            open: parseFloat(c.open),
+            high: parseFloat(c.high),
+            low: parseFloat(c.low),
+            close: parseFloat(c.close),
+          };
+        })
+        .filter((c) => c.time && !isNaN(c.open) && !isNaN(c.close))
+        .sort((a, b) => a.time - b.time);
+
+      console.log(`✅ Processed ${candles.length} candles`);
+
+      if (candles.length === 0) {
+        throw new Error("No valid candles after processing");
+      }
 
       candleSeries.setData(candles);
       lineSeries.setData(
@@ -403,20 +489,36 @@ function initXauusdChart() {
           value: c.close,
         }))
       );
+
+      chart.timeScale().fitContent();
+      console.log("✅ Chart loaded successfully");
+      
     } catch (err) {
-      console.error("Error loading XAUUSD chart:", err);
-      if (fallback) fallback.style.display = "flex";
+      console.error("❌ Error loading XAUUSD chart:", err);
+      if (fallback) {
+        fallback.style.display = "flex";
+        fallback.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 48px; height: 48px; color: #a855f7;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <div style="text-align: center;">
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">Chart temporarily unavailable</div>
+            <div style="font-size: 0.875rem; color: #9ca3af;">${err.message}</div>
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Powered by AlphaVantage - updates periodically</div>
+          </div>
+        `;
+      }
     }
   }
 
   // Default load
-  loadData("15min");
+  loadData("1");
 
   // Timeframe buttons
   const tfButtons = document.querySelectorAll(".tf-btn");
   tfButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const tf = btn.dataset.timeframe || "15min";
+      const tf = btn.dataset.timeframe || "1";
       tfButtons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       loadData(tf);
@@ -446,4 +548,8 @@ function initXauusdChart() {
 window.arcaneAlerts = {
   getCurrentUser: () => currentUser,
   isAdmin: () => isAdmin,
+  checkChart: () => {
+    console.log("LightweightCharts available:", typeof window.LightweightCharts !== 'undefined');
+    console.log("Container exists:", !!document.getElementById("xauChart"));
+  }
 };
