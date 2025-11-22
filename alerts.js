@@ -1,4 +1,4 @@
-// alerts.js – Arcane Alerts + Trade Ideas + XAUUSD chart (AlphaVantage via Netlify)
+// alerts.js – Arcane Alerts + Trade Ideas (admin) + Performance tracking
 
 import { protectPage, db } from "./auth-guard.js";
 import {
@@ -33,7 +33,6 @@ protectPage({
     setupAdminForm();
     initAlertsFeed();
     initPerformanceTracking();
-    initXauusdChart();
   },
   onFailure: () => {
     window.location.href = "login.html";
@@ -232,14 +231,14 @@ function renderAlertCard(id, data) {
       <div class="trade-time">${formatTimestamp(data.createdAt)}</div>
       <div class="reactions">
         <button class="reaction-btn" data-id="${id}" data-type="fire" style="color:${
-    userReactedFire ? "#f97316" : "#9ca3af"
-  }">🔥 ${fireCount}</button>
+          userReactedFire ? "#f97316" : "#9ca3af"
+        }">🔥 ${fireCount}</button>
         <button class="reaction-btn" data-id="${id}" data-type="bear" style="color:${
-    userReactedBear ? "#f97316" : "#9ca3af"
-  }">🐻 ${bearCount}</button>
+          userReactedBear ? "#f97316" : "#9ca3af"
+        }">🐻 ${bearCount}</button>
         <button class="reaction-btn" data-id="${id}" data-type="eyes" style="color:${
-    userReactedEyes ? "#f97316" : "#9ca3af"
-  }">👀 ${eyesCount}</button>
+          userReactedEyes ? "#f97316" : "#9ca3af"
+        }">👀 ${eyesCount}</button>
       </div>
     </div>
 
@@ -305,9 +304,10 @@ function attachAdminHandlers(container) {
       const action = btn.getAttribute("data-action");
       if (!id || !action) return;
 
-      // Get pip value from user
-      const pipsInput = prompt(`Enter pips for this ${action.toUpperCase()} trade (e.g., +50, -30, 0):`);
-      if (pipsInput === null) return; // User cancelled
+      const pipsInput = prompt(
+        `Enter pips for this ${action.toUpperCase()} trade (e.g., +50, -30, 0):`
+      );
+      if (pipsInput === null) return;
 
       const pips = parseFloat(pipsInput) || 0;
 
@@ -343,99 +343,6 @@ function formatTimestamp(ts) {
 }
 
 /**
- * Initialize XAUUSD chart using LightweightCharts + Netlify function
- */
-async function initXauusdChart() {
-  const container = document.getElementById("xauusdChart");
-  const errorEl = document.getElementById("chartError");
-
-  if (!container) {
-    console.error("❌ xauusdChart container not found");
-    return;
-  }
-
-  if (typeof LightweightCharts === "undefined") {
-    console.error("❌ LightweightCharts library not loaded");
-    if (errorEl) {
-      errorEl.style.display = "flex";
-      errorEl.textContent = "Chart library failed to load.";
-    }
-    return;
-  }
-
-  console.log("📈 Initializing XAUUSD chart (AlphaVantage)...");
-
-  // Create chart
-  const chart = LightweightCharts.createChart(container, {
-    layout: {
-      background: { color: "#020617" },
-      textColor: "#e5e7eb",
-    },
-    grid: {
-      vertLines: { color: "#0f172a" },
-      horzLines: { color: "#0f172a" },
-    },
-    timeScale: {
-      borderColor: "#1f2933",
-      timeVisible: true,
-      secondsVisible: false,
-    },
-    rightPriceScale: {
-      borderColor: "#1f2933",
-    },
-  });
-
-  const candleSeries = chart.addCandlestickSeries({
-    upColor: "#22c55e",
-    downColor: "#ef4444",
-    borderUpColor: "#22c55e",
-    borderDownColor: "#ef4444",
-    wickUpColor: "#22c55e",
-    wickDownColor: "#ef4444",
-  });
-
-  // Resize handler
-  function resizeChart() {
-    const { width, height } = container.getBoundingClientRect();
-    chart.applyOptions({ width, height });
-  }
-
-  window.addEventListener("resize", resizeChart);
-  resizeChart();
-
-  try {
-    const res = await fetch("/.netlify/functions/xauusd-chart?interval=15min");
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const payload = await res.json();
-
-    if (!Array.isArray(payload.candles) || payload.candles.length === 0) {
-      throw new Error("No candle data returned");
-    }
-
-    const formatted = payload.candles.map((candle) => ({
-      time: Math.floor(new Date(candle.time).getTime() / 1000),
-      open: candle.open,
-      high: candle.high,
-      low: candle.low,
-      close: candle.close,
-    }));
-
-    candleSeries.setData(formatted);
-    console.log(`✅ Loaded ${formatted.length} candles from AlphaVantage`);
-  } catch (err) {
-    console.error("❌ Error loading chart data:", err);
-    if (errorEl) {
-      errorEl.style.display = "flex";
-      errorEl.textContent =
-        "Error loading chart data. AlphaVantage might be rate limiting. Try refreshing in a minute.";
-    }
-  }
-}
-
-/**
  * Performance tracking - listen to closed trades and update stats
  */
 function initPerformanceTracking() {
@@ -466,7 +373,6 @@ function initPerformanceTracking() {
 
       totalPips += pips;
 
-      // Build history row
       const closedDate = data.closedAt
         ? data.closedAt.toDate().toLocaleDateString()
         : "N/A";
@@ -484,17 +390,17 @@ function initPerformanceTracking() {
       });
     });
 
-    // Update stats
     document.getElementById("winsCount").textContent = wins;
     document.getElementById("lossesCount").textContent = losses;
     document.getElementById("beCount").textContent = breakEvens;
 
     const totalTrades = wins + losses;
-    const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
+    const winRate =
+      totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
     document.getElementById("winRate").textContent = `${winRate}%`;
-    document.getElementById("netPips").textContent = totalPips > 0 ? `+${totalPips}` : totalPips;
+    document.getElementById("netPips").textContent =
+      totalPips > 0 ? `+${totalPips}` : totalPips;
 
-    // Update history table
     updateHistoryTable(historyRows);
   });
 }
@@ -524,7 +430,9 @@ function updateHistoryTable(rows) {
       <td>${row.entry}</td>
       <td>${row.exit}</td>
       <td><span class="result-badge ${row.status}">${row.status.toUpperCase()}</span></td>
-      <td style="color: ${row.pips > 0 ? "#22c55e" : row.pips < 0 ? "#ef4444" : "#a855f7"}; font-weight: 600;">
+      <td style="color: ${
+        row.pips > 0 ? "#22c55e" : row.pips < 0 ? "#ef4444" : "#a855f7"
+      }; font-weight: 600;">
         ${row.pips > 0 ? "+" : ""}${row.pips}
       </td>
     </tr>
@@ -533,7 +441,7 @@ function updateHistoryTable(rows) {
     .join("");
 }
 
-// Debug helper in console
+// Debug helper
 window.arcaneAlerts = {
   getCurrentUser: () => currentUser,
   isAdmin: () => isAdmin,
