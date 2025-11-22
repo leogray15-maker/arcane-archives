@@ -1,4 +1,5 @@
-// alerts.js – Arcane Alerts + Trade Ideas + XAUUSD chart
+// alerts.js – Arcane Alerts + Trade Ideas + XAUUSD chart (AlphaVantage via Netlify)
+
 import { protectPage, db } from "./auth-guard.js";
 import {
   collection,
@@ -9,7 +10,6 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
-  arrayUnion,
   limit,
   getDoc,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
@@ -19,7 +19,9 @@ const ADMIN_EMAIL = "leogray15@gmail.com";
 let currentUser = null;
 let isAdmin = false;
 
-// Entry point – protect page and then init
+/**
+ * Entry point – protect page and then init
+ */
 protectPage({
   onSuccess: (user) => {
     currentUser = user;
@@ -29,7 +31,7 @@ protectPage({
 
     setupAdminForm();
     initAlertsFeed();
-    initTradingViewChart();
+    initXauusdChart(); // ⬅️ NEW: AlphaVantage + LightweightCharts
   },
   onFailure: () => {
     window.location.href = "login.html";
@@ -301,46 +303,97 @@ function formatTimestamp(ts) {
 }
 
 /**
- * Initialize TradingView chart widget
+ * Initialize XAUUSD chart using LightweightCharts + Netlify function
  */
-function initTradingViewChart() {
-  if (typeof TradingView === 'undefined') {
-    console.error("❌ TradingView library not loaded");
+async function initXauusdChart() {
+  const container = document.getElementById("xauusdChart");
+  const errorEl = document.getElementById("chartError");
+
+  if (!container) {
+    console.error("❌ xauusdChart container not found");
     return;
   }
 
-  console.log("📈 Initializing TradingView chart...");
-
-  new TradingView.widget({
-    "autosize": true,
-    "symbol": "OANDA:XAUUSD",
-    "interval": "15",
-    "timezone": "Etc/UTC",
-    "theme": "dark",
-    "style": "1",
-    "locale": "en",
-    "toolbar_bg": "#020617",
-    "enable_publishing": false,
-    "hide_top_toolbar": false,
-    "hide_legend": false,
-    "save_image": true,
-    "container_id": "tradingview_chart",
-    "backgroundColor": "#020617",
-    "gridColor": "#0f172a",
-    "studies": [],
-    "disabled_features": [],
-    "enabled_features": ["study_templates"],
-    "overrides": {
-      "mainSeriesProperties.candleStyle.upColor": "#22c55e",
-      "mainSeriesProperties.candleStyle.downColor": "#ef4444",
-      "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
-      "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
-      "mainSeriesProperties.candleStyle.wickUpColor": "#22c55e",
-      "mainSeriesProperties.candleStyle.wickDownColor": "#ef4444"
+  if (typeof LightweightCharts === "undefined") {
+    console.error("❌ LightweightCharts library not loaded");
+    if (errorEl) {
+      errorEl.style.display = "flex";
+      errorEl.textContent = "Chart library failed to load.";
     }
+    return;
+  }
+
+  console.log("📈 Initializing XAUUSD chart (AlphaVantage)...");
+
+  // Create chart
+  const chart = LightweightCharts.createChart(container, {
+    layout: {
+      background: { color: "#020617" },
+      textColor: "#e5e7eb",
+    },
+    grid: {
+      vertLines: { color: "#0f172a" },
+      horzLines: { color: "#0f172a" },
+    },
+    timeScale: {
+      borderColor: "#1f2933",
+      timeVisible: true,
+      secondsVisible: false,
+    },
+    rightPriceScale: {
+      borderColor: "#1f2933",
+    },
   });
 
-  console.log("✅ TradingView chart initialized");
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: "#22c55e",
+    downColor: "#ef4444",
+    borderUpColor: "#22c55e",
+    borderDownColor: "#ef4444",
+    wickUpColor: "#22c55e",
+    wickDownColor: "#ef4444",
+  });
+
+  // Resize handler
+  function resizeChart() {
+    const { width, height } = container.getBoundingClientRect();
+    chart.applyOptions({ width, height });
+  }
+
+  window.addEventListener("resize", resizeChart);
+  resizeChart();
+
+  try {
+    const res = await fetch("/.netlify/functions/xauusd-chart?interval=15min");
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const payload = await res.json();
+
+    if (!Array.isArray(payload.candles) || payload.candles.length === 0) {
+      throw new Error("No candle data returned");
+    }
+
+    const formatted = payload.candles.map((candle) => ({
+      // LightweightCharts expects UNIX timestamp in seconds or a businessDay object
+      time: Math.floor(new Date(candle.time).getTime() / 1000),
+      open: candle.open,
+      high: candle.high,
+      low: candle.low,
+      close: candle.close,
+    }));
+
+    candleSeries.setData(formatted);
+    console.log(`✅ Loaded ${formatted.length} candles from AlphaVantage`);
+  } catch (err) {
+    console.error("❌ Error loading chart data:", err);
+    if (errorEl) {
+      errorEl.style.display = "flex";
+      errorEl.textContent =
+        "Error loading chart data. AlphaVantage might be rate limiting. Try refreshing in a minute.";
+    }
+  }
 }
 
 // Debug helper in console

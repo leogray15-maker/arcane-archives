@@ -1,10 +1,13 @@
 // netlify/functions/xauusd-chart.js
-const fetch = require("node-fetch");
 
 /**
  * Serverless proxy for AlphaVantage XAUUSD data.
  * Supports multiple timeframes dynamically.
+ *
+ * IMPORTANT:
+ * - Requires ALPHAVANTAGE_KEY in Netlify environment variables
  */
+
 exports.handler = async function (event, context) {
   try {
     const apiKey = process.env.ALPHAVANTAGE_KEY;
@@ -12,35 +15,35 @@ exports.handler = async function (event, context) {
       console.error("❌ Missing ALPHAVANTAGE_KEY environment variable");
       return {
         statusCode: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
         body: JSON.stringify({ error: "Missing API key configuration" }),
       };
     }
 
-    // Get interval from query params (default to 1min)
-    const requestedInterval = event.queryStringParameters?.interval || "1min";
+    // Get interval from query params (default to 15min)
+    const requestedInterval = event.queryStringParameters?.interval || "15min";
     console.log(`📊 Requested interval: ${requestedInterval}`);
 
-    // Map frontend intervals to AlphaVantage supported intervals
-    // AlphaVantage FX_INTRADAY supports: 1min, 5min, 15min, 30min, 60min
-    // For others, we'll use the closest available
     const intervalMap = {
       "1min": "1min",
-      "3min": "5min",    // Use 5min as closest
+      "3min": "5min", // closest
       "5min": "5min",
       "15min": "15min",
       "30min": "30min",
       "60min": "60min",
-      "240min": "60min", // Use 60min as closest for 4H
-      "daily": "daily"   // Will use different API endpoint
+      "240min": "60min", // closest to 4H
+      "daily": "daily",
     };
 
-    const avInterval = intervalMap[requestedInterval] || "5min";
+    const avInterval = intervalMap[requestedInterval] || "15min";
     console.log(`🔄 Using AlphaVantage interval: ${avInterval}`);
 
-    let url, seriesKey;
+    let url;
+    let seriesKey;
 
-    // Use different API function for daily data
     if (requestedInterval === "daily") {
       url = `https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=XAU&to_symbol=USD&outputsize=full&apikey=${apiKey}`;
       seriesKey = "Time Series FX (Daily)";
@@ -49,16 +52,17 @@ exports.handler = async function (event, context) {
       seriesKey = `Time Series FX (${avInterval})`;
     }
 
-    console.log(`🌐 Fetching from AlphaVantage...`);
+    console.log("🌐 Fetching from AlphaVantage:", url);
+
+    // Use native fetch (Node 18+ on Netlify supports this)
     const res = await fetch(url);
-    
+
     if (!res.ok) {
       throw new Error(`AlphaVantage HTTP ${res.status}`);
     }
 
     const data = await res.json();
-    
-    // Check for API errors
+
     if (data["Error Message"]) {
       console.error("❌ AlphaVantage error:", data["Error Message"]);
       throw new Error(data["Error Message"]);
@@ -66,11 +70,13 @@ exports.handler = async function (event, context) {
 
     if (data["Note"]) {
       console.warn("⚠️ AlphaVantage rate limit:", data["Note"]);
-      throw new Error("API rate limit reached. Please try again in a minute.");
+      throw new Error(
+        "API rate limit reached. Please wait a minute and refresh the page."
+      );
     }
 
     const series = data[seriesKey] || {};
-    
+
     if (Object.keys(series).length === 0) {
       console.error("❌ No data in response:", data);
       throw new Error("No market data available");
@@ -79,7 +85,7 @@ exports.handler = async function (event, context) {
     // Convert to array sorted by time ascending
     const points = Object.entries(series)
       .map(([time, candle]) => ({
-        time,
+        time, // "YYYY-MM-DD HH:mm:ss"
         open: parseFloat(candle["1. open"]),
         high: parseFloat(candle["2. high"]),
         low: parseFloat(candle["3. low"]),
@@ -91,24 +97,28 @@ exports.handler = async function (event, context) {
 
     return {
       statusCode: 200,
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=60" // Cache for 1 minute
+        "Cache-Control": "public, max-age=60",
+        "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         candles: points,
         interval: requestedInterval,
-        source: "AlphaVantage"
+        source: "AlphaVantage",
       }),
     };
   } catch (err) {
     console.error("❌ Function error:", err);
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
         error: err.message,
-        details: "Check Netlify function logs for more info"
+        details: "Check Netlify function logs for more info",
       }),
     };
   }
