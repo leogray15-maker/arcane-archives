@@ -12,6 +12,7 @@ import {
   serverTimestamp,
   limit,
   getDoc,
+  where,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const ADMIN_EMAIL = "leogray15@gmail.com";
@@ -31,7 +32,8 @@ protectPage({
 
     setupAdminForm();
     initAlertsFeed();
-    initXauusdChart(); // ⬅️ NEW: AlphaVantage + LightweightCharts
+    initPerformanceTracking();
+    initXauusdChart();
   },
   onFailure: () => {
     window.location.href = "login.html";
@@ -60,14 +62,16 @@ function setupAdminForm() {
     const slEl = document.getElementById("slInput");
     const tp1El = document.getElementById("tp1Input");
     const tp2El = document.getElementById("tp2Input");
+    const tp3El = document.getElementById("tp3Input");
     const notesEl = document.getElementById("notesInput");
 
-    const pair = (pairEl?.value || "XAUUSD").trim();
-    const direction = directionEl?.value || "Long";
+    const pair = pairEl?.value || "XAUUSD";
+    const direction = directionEl?.value || "Buy";
     const entry = entryEl?.value.trim();
     const sl = slEl?.value.trim();
     const tp1 = tp1El?.value.trim();
     const tp2 = tp2El?.value.trim();
+    const tp3 = tp3El?.value.trim();
     const notes = notesEl?.value.trim();
 
     if (!entry) {
@@ -87,6 +91,7 @@ function setupAdminForm() {
         sl: sl || null,
         tp1: tp1 || null,
         tp2: tp2 || null,
+        tp3: tp3 || null,
         notes: notes || null,
         createdAt: serverTimestamp(),
         createdBy: {
@@ -98,24 +103,28 @@ function setupAdminForm() {
           bear: [],
           eyes: [],
         },
-        status: "open", // "win" / "loss" / "be" later
+        status: "open", // "win" / "loss" / "be" / "open"
+        closedAt: null,
+        pips: null,
       };
 
       await addDoc(collection(db, "alerts"), alertData);
 
+      // Clear form
       entryEl.value = "";
       slEl.value = "";
       tp1El.value = "";
       tp2El.value = "";
+      tp3El.value = "";
       notesEl.value = "";
 
-      postBtn.textContent = "Post Trade Idea";
+      postBtn.textContent = "Post Trade Signal";
       postBtn.disabled = false;
-      alert("✅ Trade idea posted");
+      alert("✅ Trade signal posted");
     } catch (err) {
       console.error("Error posting alert:", err);
-      alert("Error posting trade idea. Please try again.");
-      postBtn.textContent = "Post Trade Idea";
+      alert("Error posting trade signal. Please try again.");
+      postBtn.textContent = "Post Trade Signal";
       postBtn.disabled = false;
     }
   });
@@ -132,7 +141,12 @@ function initAlertsFeed() {
   }
 
   const alertsRef = collection(db, "alerts");
-  const q = query(alertsRef, orderBy("createdAt", "desc"), limit(50));
+  const q = query(
+    alertsRef,
+    where("status", "==", "open"),
+    orderBy("createdAt", "desc"),
+    limit(20)
+  );
 
   onSnapshot(
     q,
@@ -140,9 +154,9 @@ function initAlertsFeed() {
       if (snapshot.empty) {
         container.innerHTML = `
           <div class="alert-card">
-            <div style="font-size:1rem;font-weight:600;">No trade ideas yet</div>
-            <div style="font-size:0.85rem;color:#9ca3af;margin-top:0.25rem;">
-              Once you post trade ideas, they will appear here.
+            <div style="text-align: center; font-size:1rem;font-weight:600;">No active signals</div>
+            <div style="text-align: center; font-size:0.85rem;color:#9ca3af;margin-top:0.25rem;">
+              New trade signals will appear here once posted.
             </div>
           </div>
         `;
@@ -158,6 +172,7 @@ function initAlertsFeed() {
       });
 
       attachReactionHandlers(container);
+      attachAdminHandlers(container);
     },
     (err) => {
       console.error("Error loading alerts:", err);
@@ -178,14 +193,14 @@ function renderAlertCard(id, data) {
   const card = document.createElement("div");
   card.className = "alert-card";
 
-  const isTrade = data.type === "trade_idea";
   const pair = data.pair || "XAUUSD";
-  const direction = data.direction || "";
+  const direction = data.direction || "Buy";
   const entry = data.entry || "";
   const sl = data.sl || "";
   const tp1 = data.tp1 || "";
   const tp2 = data.tp2 || "";
-  const notes = data.notes || data.message || "";
+  const tp3 = data.tp3 || "";
+  const notes = data.notes || "";
 
   const reactions = data.reactions || { fire: [], bear: [], eyes: [] };
   const userId = currentUser?.uid;
@@ -197,56 +212,48 @@ function renderAlertCard(id, data) {
   const userReactedBear = userId && reactions.bear?.includes(userId);
   const userReactedEyes = userId && reactions.eyes?.includes(userId);
 
-  const typeLabel = isTrade ? "Trade Idea" : "Alert";
-
   card.innerHTML = `
-    <div class="alert-top">
-      <div class="alert-type">${typeLabel}</div>
-      <div class="alert-timestamp">${formatTimestamp(data.createdAt)}</div>
+    <div class="trade-header">
+      <div class="trade-pair">${pair}</div>
+      <div class="trade-direction ${direction.toLowerCase()}">${direction.toUpperCase()}</div>
     </div>
 
-    <div class="alert-main">
-      <div class="alert-title">
-        <span class="pair">${pair}</span>
-        ${
-          direction
-            ? `<span class="direction ${direction.toLowerCase()}">${direction}</span>`
-            : ""
-        }
-      </div>
-      <div class="alert-entries">
-        ${entry ? `<div><span>Entry:</span> ${entry}</div>` : ""}
-        ${sl ? `<div><span>SL:</span> ${sl}</div>` : ""}
-        ${tp1 ? `<div><span>TP1:</span> ${tp1}</div>` : ""}
-        ${tp2 ? `<div><span>TP2:</span> ${tp2}</div>` : ""}
-      </div>
-      ${notes ? `<div class="alert-notes">${notes}</div>` : ""}
+    <div class="trade-details">
+      ${entry ? `<div class="trade-detail"><div class="trade-detail-label">Entry</div><div class="trade-detail-value">${entry}</div></div>` : ""}
+      ${sl ? `<div class="trade-detail"><div class="trade-detail-label">Stop Loss</div><div class="trade-detail-value">${sl}</div></div>` : ""}
+      ${tp1 ? `<div class="trade-detail"><div class="trade-detail-label">TP1</div><div class="trade-detail-value">${tp1}</div></div>` : ""}
+      ${tp2 ? `<div class="trade-detail"><div class="trade-detail-label">TP2</div><div class="trade-detail-value">${tp2}</div></div>` : ""}
+      ${tp3 ? `<div class="trade-detail"><div class="trade-detail-label">TP3</div><div class="trade-detail-value">${tp3}</div></div>` : ""}
     </div>
 
-    <div class="alert-footer">
+    ${notes ? `<div class="trade-notes">${notes}</div>` : ""}
+
+    <div class="trade-footer">
+      <div class="trade-time">${formatTimestamp(data.createdAt)}</div>
       <div class="reactions">
-        <button class="reaction-btn" data-id="${id}" data-type="fire" style="
-          background:transparent;border:none;color:${
-            userReactedFire ? "#f97316" : "#9ca3af"
-          };
-          cursor:pointer;display:inline-flex;align-items:center;gap:0.2rem;
-        ">🔥 ${fireCount}</button>
-
-        <button class="reaction-btn" data-id="${id}" data-type="bear" style="
-          background:transparent;border:none;color:${
-            userReactedBear ? "#f97316" : "#9ca3af"
-          };
-          cursor:pointer;display:inline-flex;align-items:center;gap:0.2rem;
-        ">🐻 ${bearCount}</button>
-
-        <button class="reaction-btn" data-id="${id}" data-type="eyes" style="
-          background:transparent;border:none;color:${
-            userReactedEyes ? "#f97316" : "#9ca3af"
-          };
-          cursor:pointer;display:inline-flex;align-items:center;gap:0.2rem;
-        ">👀 ${eyesCount}</button>
+        <button class="reaction-btn" data-id="${id}" data-type="fire" style="color:${
+    userReactedFire ? "#f97316" : "#9ca3af"
+  }">🔥 ${fireCount}</button>
+        <button class="reaction-btn" data-id="${id}" data-type="bear" style="color:${
+    userReactedBear ? "#f97316" : "#9ca3af"
+  }">🐻 ${bearCount}</button>
+        <button class="reaction-btn" data-id="${id}" data-type="eyes" style="color:${
+    userReactedEyes ? "#f97316" : "#9ca3af"
+  }">👀 ${eyesCount}</button>
       </div>
     </div>
+
+    ${
+      isAdmin
+        ? `
+    <div class="admin-actions">
+      <button class="admin-btn win" data-id="${id}" data-action="win">Win</button>
+      <button class="admin-btn loss" data-id="${id}" data-action="loss">Loss</button>
+      <button class="admin-btn be" data-id="${id}" data-action="be">Break Even</button>
+    </div>
+    `
+        : ""
+    }
   `;
 
   return card;
@@ -283,6 +290,39 @@ function attachReactionHandlers(container) {
         await updateDoc(ref, { reactions });
       } catch (err) {
         console.error("Error updating reactions:", err);
+      }
+    });
+  });
+}
+
+function attachAdminHandlers(container) {
+  if (!isAdmin) return;
+
+  const adminButtons = container.querySelectorAll(".admin-btn");
+  adminButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      if (!id || !action) return;
+
+      // Get pip value from user
+      const pipsInput = prompt(`Enter pips for this ${action.toUpperCase()} trade (e.g., +50, -30, 0):`);
+      if (pipsInput === null) return; // User cancelled
+
+      const pips = parseFloat(pipsInput) || 0;
+
+      try {
+        const ref = doc(db, "alerts", id);
+        await updateDoc(ref, {
+          status: action,
+          closedAt: serverTimestamp(),
+          pips: pips,
+        });
+
+        alert(`✅ Trade marked as ${action.toUpperCase()} with ${pips} pips`);
+      } catch (err) {
+        console.error("Error closing trade:", err);
+        alert("Error closing trade. Please try again.");
       }
     });
   });
@@ -376,7 +416,6 @@ async function initXauusdChart() {
     }
 
     const formatted = payload.candles.map((candle) => ({
-      // LightweightCharts expects UNIX timestamp in seconds or a businessDay object
       time: Math.floor(new Date(candle.time).getTime() / 1000),
       open: candle.open,
       high: candle.high,
@@ -394,6 +433,104 @@ async function initXauusdChart() {
         "Error loading chart data. AlphaVantage might be rate limiting. Try refreshing in a minute.";
     }
   }
+}
+
+/**
+ * Performance tracking - listen to closed trades and update stats
+ */
+function initPerformanceTracking() {
+  const alertsRef = collection(db, "alerts");
+  const closedQuery = query(
+    alertsRef,
+    where("status", "in", ["win", "loss", "be"]),
+    orderBy("closedAt", "desc"),
+    limit(100)
+  );
+
+  onSnapshot(closedQuery, (snapshot) => {
+    let wins = 0;
+    let losses = 0;
+    let breakEvens = 0;
+    let totalPips = 0;
+
+    const historyRows = [];
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const status = data.status;
+      const pips = data.pips || 0;
+
+      if (status === "win") wins++;
+      else if (status === "loss") losses++;
+      else if (status === "be") breakEvens++;
+
+      totalPips += pips;
+
+      // Build history row
+      const closedDate = data.closedAt
+        ? data.closedAt.toDate().toLocaleDateString()
+        : "N/A";
+      historyRows.push({
+        date: closedDate,
+        pair: data.pair || "XAUUSD",
+        direction: data.direction || "Buy",
+        entry: data.entry || "N/A",
+        exit:
+          status === "win"
+            ? data.tp1 || data.tp2 || data.tp3 || "N/A"
+            : data.sl || "N/A",
+        status: status,
+        pips: pips,
+      });
+    });
+
+    // Update stats
+    document.getElementById("winsCount").textContent = wins;
+    document.getElementById("lossesCount").textContent = losses;
+    document.getElementById("beCount").textContent = breakEvens;
+
+    const totalTrades = wins + losses;
+    const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
+    document.getElementById("winRate").textContent = `${winRate}%`;
+    document.getElementById("netPips").textContent = totalPips > 0 ? `+${totalPips}` : totalPips;
+
+    // Update history table
+    updateHistoryTable(historyRows);
+  });
+}
+
+function updateHistoryTable(rows) {
+  const tbody = document.getElementById("historyTableBody");
+  if (!tbody) return;
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; color: #9ca3af; padding: 2rem;">
+          No closed trades yet. Mark live signals as WIN/LOSS/BE to track performance.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = rows
+    .map(
+      (row) => `
+    <tr>
+      <td>${row.date}</td>
+      <td>${row.pair}</td>
+      <td>${row.direction}</td>
+      <td>${row.entry}</td>
+      <td>${row.exit}</td>
+      <td><span class="result-badge ${row.status}">${row.status.toUpperCase()}</span></td>
+      <td style="color: ${row.pips > 0 ? "#22c55e" : row.pips < 0 ? "#ef4444" : "#a855f7"}; font-weight: 600;">
+        ${row.pips > 0 ? "+" : ""}${row.pips}
+      </td>
+    </tr>
+  `
+    )
+    .join("");
 }
 
 // Debug helper in console

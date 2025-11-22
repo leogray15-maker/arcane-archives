@@ -6,7 +6,7 @@
   <title>Arcane Alerts | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
 
-  <!-- Lightweight Charts (for AlphaVantage data) -->
+  <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
@@ -19,13 +19,13 @@
     body {
       background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
       color: #e5e7eb;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       padding: 1rem;
     }
 
     .container {
-      max-width: 1600px;
+      max-width: 1800px;
       margin: 0 auto;
     }
 
@@ -61,6 +61,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: 0.5rem;
+      font-weight: 700;
     }
 
     .header p {
@@ -68,14 +69,15 @@
       font-size: clamp(0.9rem, 2vw, 1rem);
     }
 
+    /* ADMIN FORM - CLEANER LAYOUT */
     #alertForm {
       display: none;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(139, 92, 246, 0.3);
       border-radius: 1rem;
-      padding: 1.5rem;
+      padding: 2rem;
       margin-bottom: 2rem;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(20px);
     }
 
     #alertForm.visible {
@@ -83,17 +85,20 @@
     }
 
     .form-title {
-      font-size: 1.25rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 700;
       color: #a855f7;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
     }
 
     .form-group {
@@ -103,21 +108,24 @@
     }
 
     .form-group label {
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       color: #9ca3af;
-      font-weight: 500;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .form-group input,
     .form-group select,
     .form-group textarea {
-      background: rgba(30, 41, 59, 0.5);
+      background: rgba(30, 41, 59, 0.6);
       border: 1px solid rgba(139, 92, 246, 0.2);
       border-radius: 0.5rem;
-      padding: 0.75rem;
+      padding: 0.875rem;
       color: #e5e7eb;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       transition: all 0.2s;
+      font-family: inherit;
     }
 
     .form-group input:focus,
@@ -125,29 +133,32 @@
     .form-group textarea:focus {
       outline: none;
       border-color: #a855f7;
-      background: rgba(30, 41, 59, 0.7);
+      background: rgba(30, 41, 59, 0.8);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
     }
 
     .form-group textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 100px;
+      grid-column: 1 / -1;
     }
 
     .post-btn {
       background: linear-gradient(135deg, #a855f7, #ec4899);
       border: none;
       border-radius: 0.5rem;
-      padding: 0.875rem 1.5rem;
+      padding: 1rem 2rem;
       color: white;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       width: 100%;
+      font-size: 1rem;
     }
 
     .post-btn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+      box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
     }
 
     .post-btn:disabled {
@@ -155,51 +166,48 @@
       cursor: not-allowed;
     }
 
-    /* FULL WIDTH CHART */
+    /* MAIN LAYOUT - TWO COLUMN */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 450px;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* CHART SECTION */
     .chart-section {
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(139, 92, 246, 0.3);
       border-radius: 1rem;
       padding: 1.5rem;
-      margin-bottom: 2rem;
-      backdrop-filter: blur(10px);
-      width: 100%;
+      backdrop-filter: blur(20px);
+      height: fit-content;
     }
 
     .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       margin-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 1rem;
     }
 
     .chart-title {
       font-size: 1.25rem;
-      font-weight: 600;
-      color: #a855f7;
+      font-weight: 700;
+      color: #e5e7eb;
+      margin-bottom: 0.25rem;
     }
 
     .chart-subtitle {
-      font-size: 0.875rem;
-      color: #9ca3af;
-      margin-top: 0.25rem;
+      font-size: 0.8rem;
+      color: #6b7280;
     }
 
     .chart-container {
       width: 100%;
-      height: 650px;
+      height: 600px;
       background: #020617;
       border-radius: 0.75rem;
       overflow: hidden;
       position: relative;
-    }
-
-    @media (max-width: 768px) {
-      .chart-container {
-        height: 450px;
-      }
+      border: 1px solid rgba(139, 92, 246, 0.1);
     }
 
     .chart-error {
@@ -215,125 +223,163 @@
       pointer-events: none;
     }
 
-    .ideas-section {
-      background: rgba(15, 23, 42, 0.6);
+    /* LIVE TRADES SIDEBAR */
+    .trades-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .live-trades-section {
+      background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(139, 92, 246, 0.3);
       border-radius: 1rem;
       padding: 1.5rem;
-      margin-bottom: 2rem;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(20px);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
     }
 
     .section-title {
       font-size: 1.25rem;
-      font-weight: 600;
-      color: #a855f7;
-      margin-bottom: 1rem;
+      font-weight: 700;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .live-badge {
+      background: #22c55e;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
     #alertsContainer {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
     }
 
+    #alertsContainer::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #alertsContainer::-webkit-scrollbar-track {
+      background: rgba(30, 41, 59, 0.3);
+      border-radius: 3px;
+    }
+
+    #alertsContainer::-webkit-scrollbar-thumb {
+      background: rgba(139, 92, 246, 0.4);
+      border-radius: 3px;
+    }
+
+    #alertsContainer::-webkit-scrollbar-thumb:hover {
+      background: rgba(139, 92, 246, 0.6);
+    }
+
+    /* TRADE CARD - MINIMALIST */
     .alert-card {
       background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.15);
       border-radius: 0.75rem;
-      padding: 1.25rem;
+      padding: 1rem;
       transition: all 0.2s;
     }
 
     .alert-card:hover {
       border-color: rgba(139, 92, 246, 0.4);
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    .alert-top {
+    .trade-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.75rem;
     }
 
-    .alert-type {
-      padding: 0.25rem 0.75rem;
-      background: rgba(139, 92, 246, 0.2);
-      border-radius: 0.375rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #a855f7;
-      text-transform: uppercase;
-    }
-
-    .alert-timestamp {
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    .alert-main {
-      margin-bottom: 1rem;
-    }
-
-    .alert-title {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .pair {
-      font-size: 1.125rem;
+    .trade-pair {
+      font-size: 1.1rem;
       font-weight: 700;
       color: #e5e7eb;
     }
 
-    .direction {
+    .trade-direction {
       padding: 0.25rem 0.75rem;
       border-radius: 0.375rem;
-      font-size: 0.875rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .direction.long {
-      background: rgba(34, 197, 94, 0.2);
+    .trade-direction.buy {
+      background: rgba(34, 197, 94, 0.15);
       color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
-    .direction.short {
-      background: rgba(239, 68, 68, 0.2);
+    .trade-direction.sell {
+      background: rgba(239, 68, 68, 0.15);
       color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    .alert-entries {
+    .trade-details {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
       margin-bottom: 0.75rem;
     }
 
-    .alert-entries div {
-      font-size: 0.875rem;
-      color: #9ca3af;
+    .trade-detail {
+      font-size: 0.8rem;
     }
 
-    .alert-entries span {
+    .trade-detail-label {
+      color: #6b7280;
       font-weight: 600;
-      color: #a855f7;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
     }
 
-    .alert-notes {
-      font-size: 0.9rem;
-      color: #d1d5db;
-      line-height: 1.5;
+    .trade-detail-value {
+      color: #e5e7eb;
+      font-weight: 600;
+      margin-top: 0.15rem;
+    }
+
+    .trade-notes {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      line-height: 1.4;
       padding: 0.75rem;
       background: rgba(15, 23, 42, 0.5);
       border-radius: 0.5rem;
-      border-left: 3px solid #a855f7;
+      border-left: 2px solid #a855f7;
+      margin-bottom: 0.75rem;
     }
 
-    .alert-footer {
+    .trade-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -341,9 +387,14 @@
       border-top: 1px solid rgba(139, 92, 246, 0.1);
     }
 
+    .trade-time {
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+
     .reactions {
       display: flex;
-      gap: 0.75rem;
+      gap: 0.5rem;
     }
 
     .reaction-btn {
@@ -354,7 +405,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       transition: all 0.2s;
       padding: 0.25rem 0.5rem;
       border-radius: 0.375rem;
@@ -365,43 +416,110 @@
       background: rgba(249, 115, 22, 0.1);
     }
 
+    /* ADMIN ACTIONS */
+    .admin-actions {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(139, 92, 246, 0.1);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .admin-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 0.375rem;
+      background: rgba(30, 41, 59, 0.5);
+      color: #e5e7eb;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .admin-btn:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+
+    .admin-btn.win {
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .admin-btn.win:hover {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgba(34, 197, 94, 0.5);
+    }
+
+    .admin-btn.loss {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .admin-btn.loss:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .admin-btn.be {
+      border-color: rgba(168, 85, 247, 0.3);
+      color: #a855f7;
+    }
+
+    .admin-btn.be:hover {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    /* PERFORMANCE SECTION */
     .performance-section {
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(139, 92, 246, 0.3);
       border-radius: 1rem;
-      padding: 1.5rem;
+      padding: 2rem;
+      backdrop-filter: blur(20px);
       margin-bottom: 2rem;
-      backdrop-filter: blur(10px);
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .stat-card {
       background: rgba(30, 41, 59, 0.5);
       border: 1px solid rgba(139, 92, 246, 0.2);
       border-radius: 0.75rem;
-      padding: 1.5rem;
+      padding: 2rem;
       text-align: center;
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
 
     .stat-label {
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       color: #9ca3af;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
       text-transform: uppercase;
-      font-weight: 600;
-      letter-spacing: 0.05em;
+      font-weight: 700;
+      letter-spacing: 0.1em;
     }
 
     .stat-value {
-      font-size: 2.5rem;
+      font-size: 3rem;
       font-weight: 700;
       color: #a855f7;
+      line-height: 1;
     }
 
     .stat-card.wins .stat-value {
@@ -412,31 +530,41 @@
       color: #ef4444;
     }
 
+    .stat-card.winrate .stat-value {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* TRADE HISTORY TABLE */
     .trade-history {
       background: rgba(30, 41, 59, 0.5);
       border: 1px solid rgba(139, 92, 246, 0.2);
       border-radius: 0.75rem;
-      padding: 1rem;
+      padding: 1.5rem;
       overflow-x: auto;
     }
 
     .trade-history table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px;
+      min-width: 800px;
     }
 
     .trade-history th {
       text-align: left;
-      padding: 0.75rem;
-      font-size: 0.875rem;
+      padding: 1rem;
+      font-size: 0.75rem;
       color: #9ca3af;
-      border-bottom: 1px solid rgba(139, 92, 246, 0.1);
-      font-weight: 600;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .trade-history td {
-      padding: 0.75rem;
+      padding: 1rem;
       font-size: 0.875rem;
       color: #d1d5db;
       border-bottom: 1px solid rgba(139, 92, 246, 0.05);
@@ -444,6 +572,44 @@
 
     .trade-history tr:hover {
       background: rgba(139, 92, 246, 0.05);
+    }
+
+    .result-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .result-badge.win {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+
+    .result-badge.loss {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .result-badge.be {
+      background: rgba(168, 85, 247, 0.15);
+      color: #a855f7;
+    }
+
+    @media (max-width: 1200px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 500px;
+      }
+
+      #alertsContainer {
+        max-height: none;
+      }
     }
 
     @media (max-width: 768px) {
@@ -455,12 +621,15 @@
         grid-template-columns: 1fr;
       }
 
-      .chart-header {
-        flex-direction: column;
-        align-items: flex-start;
+      .chart-container {
+        height: 400px;
       }
 
       .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .trade-details {
         grid-template-columns: 1fr;
       }
     }
@@ -473,23 +642,30 @@
     </a>
 
     <div class="header">
-      <h1>Arcane Alerts & Performance</h1>
-      <p>Live XAUUSD chart, trade ideas, and transparent performance tracking</p>
+      <h1>Arcane Trading Floor</h1>
+      <p>Live market data, trade signals, and transparent performance tracking</p>
     </div>
 
     <!-- Admin Form -->
     <div id="alertForm">
-      <div class="form-title">📢 Post New Trade Idea</div>
+      <div class="form-title">📊 Post New Trade Signal</div>
       <div class="form-grid">
         <div class="form-group">
           <label>Pair</label>
-          <input type="text" id="pairInput" value="XAUUSD" />
+          <select id="pairInput">
+            <option value="XAUUSD">XAUUSD (Gold)</option>
+            <option value="EURUSD">EURUSD</option>
+            <option value="GBPUSD">GBPUSD</option>
+            <option value="USDJPY">USDJPY</option>
+            <option value="BTCUSD">BTCUSD</option>
+            <option value="ETHUSD">ETHUSD</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Direction</label>
           <select id="directionSelect">
-            <option value="Long">Long</option>
-            <option value="Short">Short</option>
+            <option value="Buy">Buy</option>
+            <option value="Sell">Sell</option>
           </select>
         </div>
         <div class="form-group">
@@ -508,37 +684,47 @@
           <label>TP2</label>
           <input type="text" id="tp2Input" placeholder="e.g. 2670.00" />
         </div>
+        <div class="form-group">
+          <label>TP3</label>
+          <input type="text" id="tp3Input" placeholder="e.g. 2680.00" />
+        </div>
         <div class="form-group" style="grid-column: 1 / -1;">
-          <label>Notes (optional)</label>
-          <textarea id="notesInput" placeholder="Analysis, reasoning, etc."></textarea>
+          <label>Analysis Notes (optional)</label>
+          <textarea id="notesInput" placeholder="Share your analysis, key levels, confluence factors..."></textarea>
         </div>
       </div>
-      <button id="postAlertBtn" class="post-btn">Post Trade Idea</button>
+      <button id="postAlertBtn" class="post-btn">Post Trade Signal</button>
     </div>
 
-    <!-- XAUUSD CHART SECTION (AlphaVantage + LightweightCharts) -->
-    <div class="chart-section">
-      <div class="chart-header">
-        <div>
+    <!-- Main Layout: Chart + Live Trades -->
+    <div class="main-layout">
+      <!-- Chart Section -->
+      <div class="chart-section">
+        <div class="chart-header">
           <div class="chart-title">📈 XAUUSD Live Chart</div>
-          <div class="chart-subtitle">
-            Powered by AlphaVantage • 15min candles via Netlify Function
-          </div>
+          <div class="chart-subtitle">AlphaVantage • 15min Candles</div>
+        </div>
+        <div class="chart-container">
+          <div id="xauusdChart" style="width: 100%; height: 100%;"></div>
+          <div id="chartError" class="chart-error" style="display:none;"></div>
         </div>
       </div>
-      <div class="chart-container">
-        <div id="xauusdChart" style="width: 100%; height: 100%;"></div>
-        <div id="chartError" class="chart-error" style="display:none;"></div>
-      </div>
-    </div>
 
-    <!-- Trade Ideas Section -->
-    <div class="ideas-section">
-      <div class="section-title">💡 Live Trade Ideas</div>
-      <div id="alertsContainer">
-        <div class="alert-card">
-          <div style="text-align: center; color: #9ca3af;">
-            Loading trade ideas...
+      <!-- Live Trades Sidebar -->
+      <div class="trades-sidebar">
+        <div class="live-trades-section">
+          <div class="section-header">
+            <div class="section-title">
+              <span class="live-badge"></span>
+              Live Signals
+            </div>
+          </div>
+          <div id="alertsContainer">
+            <div class="alert-card">
+              <div style="text-align: center; color: #9ca3af;">
+                Loading trade signals...
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -546,19 +732,27 @@
 
     <!-- Performance Section -->
     <div class="performance-section">
-      <div class="section-title">📊 Performance Overview</div>
+      <div class="section-title" style="margin-bottom: 2rem;">📊 Performance Overview</div>
       <div class="stats-grid">
         <div class="stat-card wins">
           <div class="stat-label">Wins</div>
-          <div class="stat-value">0</div>
+          <div class="stat-value" id="winsCount">0</div>
         </div>
         <div class="stat-card losses">
           <div class="stat-label">Losses</div>
-          <div class="stat-value">0</div>
+          <div class="stat-value" id="lossesCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Break Even</div>
+          <div class="stat-value" id="beCount">0</div>
+        </div>
+        <div class="stat-card winrate">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-value" id="winRate">0%</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Net Pips</div>
-          <div class="stat-value">0</div>
+          <div class="stat-value" id="netPips">0</div>
         </div>
       </div>
       <div class="trade-history">
@@ -568,14 +762,16 @@
               <th>Date</th>
               <th>Pair</th>
               <th>Direction</th>
+              <th>Entry</th>
+              <th>Exit</th>
               <th>Result</th>
               <th>Pips</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="historyTableBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: #9ca3af; padding: 2rem;">
-                No closed trades yet. When a trade is marked WIN / LOSS / BE, it appears here.
+              <td colspan="7" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                No closed trades yet. Mark live signals as WIN/LOSS/BE to track performance.
               </td>
             </tr>
           </tbody>
@@ -584,7 +780,6 @@
     </div>
   </div>
 
-  <!-- Firebase & Auth - Load alerts.js as module -->
   <script type="module" src="alerts.js"></script>
 </body>
 </html>
