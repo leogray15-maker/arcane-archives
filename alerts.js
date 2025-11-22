@@ -1,4 +1,4 @@
-// alerts.js – Arcane Alerts + Trade Ideas (admin) + Performance tracking
+// alerts.js – Arcane Alerts vB (TradingView + performance + Telegram ping)
 
 import { protectPage, db } from "./auth-guard.js";
 import {
@@ -20,15 +20,11 @@ const ADMIN_EMAIL = "leogray15@gmail.com";
 let currentUser = null;
 let isAdmin = false;
 
-/**
- * Entry point – protect page and then init
- */
+// Protect alerts page, then init
 protectPage({
   onSuccess: (user) => {
     currentUser = user;
     isAdmin = user.email === ADMIN_EMAIL;
-
-    console.log("✅ Alerts access:", user.email, "Admin:", isAdmin);
 
     setupAdminForm();
     initAlertsFeed();
@@ -39,9 +35,8 @@ protectPage({
   },
 });
 
-/**
- * Admin-only form for posting trade ideas
- */
+// ---------- Admin: post trades ----------
+
 function setupAdminForm() {
   const formWrapper = document.getElementById("alertForm");
   const postBtn = document.getElementById("postAlertBtn");
@@ -55,23 +50,14 @@ function setupAdminForm() {
   formWrapper.classList.add("visible");
 
   postBtn.addEventListener("click", async () => {
-    const pairEl = document.getElementById("pairInput");
-    const directionEl = document.getElementById("directionSelect");
-    const entryEl = document.getElementById("entryInput");
-    const slEl = document.getElementById("slInput");
-    const tp1El = document.getElementById("tp1Input");
-    const tp2El = document.getElementById("tp2Input");
-    const tp3El = document.getElementById("tp3Input");
-    const notesEl = document.getElementById("notesInput");
-
-    const pair = pairEl?.value || "XAUUSD";
-    const direction = directionEl?.value || "Buy";
-    const entry = entryEl?.value.trim();
-    const sl = slEl?.value.trim();
-    const tp1 = tp1El?.value.trim();
-    const tp2 = tp2El?.value.trim();
-    const tp3 = tp3El?.value.trim();
-    const notes = notesEl?.value.trim();
+    const pair = document.getElementById("pairInput")?.value || "XAUUSD";
+    const direction = document.getElementById("directionSelect")?.value || "Buy";
+    const entry = document.getElementById("entryInput")?.value.trim();
+    const sl = document.getElementById("slInput")?.value.trim();
+    const tp1 = document.getElementById("tp1Input")?.value.trim();
+    const tp2 = document.getElementById("tp2Input")?.value.trim();
+    const tp3 = document.getElementById("tp3Input")?.value.trim();
+    const notes = document.getElementById("notesInput")?.value.trim();
 
     if (!entry) {
       alert("Please add at least an entry price.");
@@ -102,45 +88,44 @@ function setupAdminForm() {
           bear: [],
           eyes: [],
         },
-        status: "open", // "win" / "loss" / "be" / "open"
+        status: "open", // open | win | loss | be
         closedAt: null,
         pips: null,
       };
 
       await addDoc(collection(db, "alerts"), alertData);
 
-      // Clear form
-      entryEl.value = "";
-      slEl.value = "";
-      tp1El.value = "";
-      tp2El.value = "";
-      tp3El.value = "";
-      notesEl.value = "";
+      // ultra–private Telegram ping (no trade details)
+      sendTelegramAlert();
+
+      // clear form
+      document.getElementById("entryInput").value = "";
+      document.getElementById("slInput").value = "";
+      document.getElementById("tp1Input").value = "";
+      document.getElementById("tp2Input").value = "";
+      document.getElementById("tp3Input").value = "";
+      document.getElementById("notesInput").value = "";
 
       postBtn.textContent = "Post Trade Signal";
       postBtn.disabled = false;
       alert("✅ Trade signal posted");
     } catch (err) {
       console.error("Error posting alert:", err);
-      alert("Error posting trade signal. Please try again.");
+      alert("Error posting trade signal. Check console for details.");
       postBtn.textContent = "Post Trade Signal";
       postBtn.disabled = false;
     }
   });
 }
 
-/**
- * Listen to alerts collection and render list
- */
+// ---------- Live alerts feed (open trades) ----------
+
 function initAlertsFeed() {
   const container = document.getElementById("alertsContainer");
-  if (!container) {
-    console.warn("⚠️ alertsContainer not found");
-    return;
-  }
+  if (!container) return;
 
   const alertsRef = collection(db, "alerts");
-  const q = query(
+  const qAlerts = query(
     alertsRef,
     where("status", "==", "open"),
     orderBy("createdAt", "desc"),
@@ -148,7 +133,7 @@ function initAlertsFeed() {
   );
 
   onSnapshot(
-    q,
+    qAlerts,
     (snapshot) => {
       if (snapshot.empty) {
         container.innerHTML = `
@@ -185,9 +170,6 @@ function initAlertsFeed() {
   );
 }
 
-/**
- * Render a single alert / trade idea card
- */
 function renderAlertCard(id, data) {
   const card = document.createElement("div");
   card.className = "alert-card";
@@ -218,11 +200,31 @@ function renderAlertCard(id, data) {
     </div>
 
     <div class="trade-details">
-      ${entry ? `<div class="trade-detail"><div class="trade-detail-label">Entry</div><div class="trade-detail-value">${entry}</div></div>` : ""}
-      ${sl ? `<div class="trade-detail"><div class="trade-detail-label">Stop Loss</div><div class="trade-detail-value">${sl}</div></div>` : ""}
-      ${tp1 ? `<div class="trade-detail"><div class="trade-detail-label">TP1</div><div class="trade-detail-value">${tp1}</div></div>` : ""}
-      ${tp2 ? `<div class="trade-detail"><div class="trade-detail-label">TP2</div><div class="trade-detail-value">${tp2}</div></div>` : ""}
-      ${tp3 ? `<div class="trade-detail"><div class="trade-detail-label">TP3</div><div class="trade-detail-value">${tp3}</div></div>` : ""}
+      ${
+        entry
+          ? `<div class="trade-detail"><div class="trade-detail-label">Entry</div><div class="trade-detail-value">${entry}</div></div>`
+          : ""
+      }
+      ${
+        sl
+          ? `<div class="trade-detail"><div class="trade-detail-label">Stop Loss</div><div class="trade-detail-value">${sl}</div></div>`
+          : ""
+      }
+      ${
+        tp1
+          ? `<div class="trade-detail"><div class="trade-detail-label">TP1</div><div class="trade-detail-value">${tp1}</div></div>`
+          : ""
+      }
+      ${
+        tp2
+          ? `<div class="trade-detail"><div class="trade-detail-label">TP2</div><div class="trade-detail-value">${tp2}</div></div>`
+          : ""
+      }
+      ${
+        tp3
+          ? `<div class="trade-detail"><div class="trade-detail-label">TP3</div><div class="trade-detail-value">${tp3}</div></div>`
+          : ""
+      }
     </div>
 
     ${notes ? `<div class="trade-notes">${notes}</div>` : ""}
@@ -257,6 +259,8 @@ function renderAlertCard(id, data) {
 
   return card;
 }
+
+// ---------- Reactions ----------
 
 function attachReactionHandlers(container) {
   const buttons = container.querySelectorAll(".reaction-btn");
@@ -294,6 +298,8 @@ function attachReactionHandlers(container) {
   });
 }
 
+// ---------- Admin: mark trade as win/loss/BE ----------
+
 function attachAdminHandlers(container) {
   if (!isAdmin) return;
 
@@ -322,29 +328,14 @@ function attachAdminHandlers(container) {
         alert(`✅ Trade marked as ${action.toUpperCase()} with ${pips} pips`);
       } catch (err) {
         console.error("Error closing trade:", err);
-        alert("Error closing trade. Please try again.");
+        alert("Error closing trade. Check console for details.");
       }
     });
   });
 }
 
-function formatTimestamp(ts) {
-  if (!ts) return "";
-  const date = ts.toDate ? ts.toDate() : new Date(ts);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+// ---------- Performance tracking (closed trades) ----------
 
-  if (seconds < 60) return "Just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-
-  return date.toLocaleDateString();
-}
-
-/**
- * Performance tracking - listen to closed trades and update stats
- */
 function initPerformanceTracking() {
   const alertsRef = collection(db, "alerts");
   const closedQuery = query(
@@ -441,7 +432,40 @@ function updateHistoryTable(rows) {
     .join("");
 }
 
-// Debug helper
+// ---------- Helpers ----------
+
+function formatTimestamp(ts) {
+  if (!ts) return "";
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return "Just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+  return date.toLocaleDateString();
+}
+
+// Telegram ping via Netlify function
+async function sendTelegramAlert() {
+  try {
+    const res = await fetch("/.netlify/functions/send-telegram-alert", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Telegram function error:", res.status, text);
+    }
+  } catch (err) {
+    console.error("Telegram notification failed:", err);
+  }
+}
+
+// Expose for console debugging
 window.arcaneAlerts = {
   getCurrentUser: () => currentUser,
   isAdmin: () => isAdmin,

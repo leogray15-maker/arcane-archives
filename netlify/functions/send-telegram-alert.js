@@ -1,25 +1,17 @@
 // netlify/functions/send-telegram-alert.js
-// Ultra-private Telegram ping: no trade details, just "new idea posted"
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: "Method Not Allowed",
-    };
+    return { statusCode: 405, body: "Method Not Allowed" };
   }
 
   try {
-    // ✅ Read from ENV VARS (set in Netlify)
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
     if (!token || !chatId) {
       console.error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID");
-      return {
-        statusCode: 500,
-        body: "Missing Telegram configuration",
-      };
+      return { statusCode: 500, body: "Missing Telegram configuration" };
     }
 
     const text =
@@ -42,21 +34,12 @@ exports.handler = async (event) => {
     if (!res.ok) {
       const errorText = await res.text();
       console.error("Telegram API error:", res.status, errorText);
-      return {
-        statusCode: 502,
-        body: "Failed to send Telegram message",
-      };
+      return { statusCode: 502, body: "Failed to send Telegram message" };
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ ok: true }),
-    };
+    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (err) {
     console.error("send-telegram-alert error:", err);
-    return {
-      statusCode: 500,
-      body: "Internal Server Error",
-    };
+    return { statusCode: 500, body: "Internal Server Error" };
   }
 };
