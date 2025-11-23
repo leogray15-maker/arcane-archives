@@ -741,7 +741,7 @@
             updateUserAvatar, 
             setupLogoutButton
         } from './auth-guard.js';
-        import { getProgressToNextLevel } from './xp-system.js';
+        import { getProgressToNextLevel, getLevelFromXP } from './xp-system.js';
 
         function showLevelUpToast(fromLevel, toLevel) {
             const toast = document.getElementById("levelUpToast");
@@ -781,12 +781,24 @@
 
                 // 🔮 XP + Level
                 const xp = userData.Xp || 0;
-                const level = userData.Level || "Seeker";
+
+                // Always derive level from XP
+                let levelFromXP = "Seeker";
+                try {
+                    if (typeof getLevelFromXP === "function") {
+                        levelFromXP = getLevelFromXP(xp);
+                    } else {
+                        levelFromXP = userData.Level || "Seeker";
+                    }
+                } catch (e) {
+                    console.warn("getLevelFromXP failed, falling back to stored Level", e);
+                    levelFromXP = userData.Level || "Seeker";
+                }
 
                 const progress = getProgressToNextLevel(xp);
                 const nextLevelXP = progress.nextLevelXP || (xp + 100);
 
-                document.getElementById("userLevel").textContent = level;
+                document.getElementById("userLevel").textContent = levelFromXP;
                 document.getElementById("currentXP").textContent = xp;
                 document.getElementById("nextLevelXP").textContent = nextLevelXP;
 
@@ -798,7 +810,7 @@
                 // Level badge
                 const badgeEl = document.getElementById("userLevelBadge");
                 if (badgeEl) {
-                    badgeEl.textContent = level.toUpperCase();
+                    badgeEl.textContent = levelFromXP.toUpperCase();
                 }
 
                 // Stats
@@ -814,16 +826,16 @@
                 // 📈 Mobile HUD
                 const hud = document.getElementById("xpHud");
                 if (hud) {
-                    document.getElementById("hudLevel").textContent = level;
+                    document.getElementById("hudLevel").textContent = levelFromXP;
                     document.getElementById("hudXP").textContent = xp;
                 }
 
                 // ✨ Level-up detection (client-side)
                 const prevLevel = localStorage.getItem("aa_prev_level");
-                if (prevLevel && prevLevel !== level) {
-                    showLevelUpToast(prevLevel, level);
+                if (prevLevel && prevLevel !== levelFromXP) {
+                    showLevelUpToast(prevLevel, levelFromXP);
                 }
-                localStorage.setItem("aa_prev_level", level);
+                localStorage.setItem("aa_prev_level", levelFromXP);
             }
         });
 
