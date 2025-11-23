@@ -66,14 +66,14 @@ export async function getUserStats(uid) {
 
   if (!snap.exists()) {
     const base = {
-      xp: 0,
-      level: "Apprentice",
-      coursesCompleted: 0,
-      modulesCompleted: 0,
+      Xp: 0,
+      Level: "Apprentice",
+      CoursesCompleted: 0,
+      ModulesCompleted: 0,
       completedCourseIds: [],
       completedModuleIds: [],
-      winsPosted: 0,
-      callsAttended: 0,
+      WinsPosted: 0,
+      CallAttended: 0,
       loginStreak: 0,
       lastLoginDate: null,
       createdAt: serverTimestamp(),
@@ -91,14 +91,14 @@ export async function getUserStats(uid) {
   const data = snap.data() || {};
   return {
     id: uid,
-    xp: data.xp || 0,
-    level: data.level || "Apprentice",
-    coursesCompleted: data.coursesCompleted || 0,
-    modulesCompleted: data.modulesCompleted || 0,
+    Xp: data.Xp || 0,
+    Level: data.Level || "Apprentice",
+    CoursesCompleted: data.CoursesCompleted || 0,
+    ModulesCompleted: data.ModulesCompleted || 0,
     completedCourseIds: data.completedCourseIds || [],
     completedModuleIds: data.completedModuleIds || [],
-    winsPosted: data.winsPosted || 0,
-    callsAttended: data.callsAttended || 0,
+    WinsPosted: data.WinsPosted || 0,
+    CallAttended: data.CallAttended || 0,
     loginStreak: data.loginStreak || 0,
     lastLoginDate: data.lastLoginDate,
     ...data,
@@ -117,23 +117,32 @@ export async function awardXP(uid, action, metadata = {}) {
   const snap = await getDoc(userRef);
   const currentData = snap.exists() ? snap.data() : {};
   
-  const newXP = (currentData.xp || 0) + xpAmount;
+  const currentXP = currentData.Xp || 0;
+  const oldLevel = currentData.Level || "Apprentice";
+  const newXP = currentXP + xpAmount;
   const newLevel = getLevelFromXP(newXP);
 
   const updates = {
-    xp: newXP,
-    level: newLevel,
+    Xp: newXP,
+    Level: newLevel,
     updatedAt: serverTimestamp(),
   };
 
   // Track specific action counts
   if (action === 'WIN_POSTED') {
-    updates.winsPosted = increment(1);
+    updates.WinsPosted = increment(1);
   } else if (action === 'LIVE_CALL_ATTENDED') {
-    updates.callsAttended = increment(1);
+    updates.CallAttended = increment(1);
+  } else if (action === 'MODULE_COMPLETED') {
+    updates.ModulesCompleted = increment(1);
   }
 
   await setDoc(userRef, updates, { merge: true });
+
+  // Log level up
+  if (oldLevel !== newLevel) {
+    console.log(`🎉 LEVEL UP! ${oldLevel} → ${newLevel}`);
+  }
 
   console.log(`✅ Awarded ${xpAmount} XP for ${action}. New total: ${newXP} XP (${newLevel})`);
   return true;
@@ -163,16 +172,12 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
   await setDoc(
     userRef,
     {
-      modulesCompleted: increment(1),
       completedModuleIds: arrayUnion(fullModuleId),
       updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
 
-  // Check if entire course is now complete
-  // This would require knowing total modules in the course
-  // For now, return module completion
   return { alreadyCompleted: false, courseCompleted: false };
 }
 
@@ -197,7 +202,7 @@ export async function markCourseCompleted(uid, courseId) {
   await setDoc(
     userRef,
     {
-      coursesCompleted: increment(1),
+      CoursesCompleted: increment(1),
       completedCourseIds: arrayUnion(courseId),
       updatedAt: serverTimestamp(),
     },
