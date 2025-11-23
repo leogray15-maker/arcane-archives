@@ -1,5 +1,5 @@
 // wins.js
-// Wins board with XP rewards
+// Wins board with XP rewards + admin approval
 
 import { protectPage, db } from "./auth-guard.js";
 import { awardXP, XP_REWARDS } from "./xp-system.js";
@@ -20,10 +20,22 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 let currentUser = null;
+let isAdmin = false;
+
+// 🔐 Admins – by UID and/or email
+const ADMIN_UIDS = [
+  // "your-firebase-uid-here" // optional if you want to hard-code UID too
+];
+
+const ADMIN_EMAILS = ["leogray15@gmail.com"];
 
 protectPage({
   onSuccess: (user, userData) => {
     currentUser = user;
+
+    const email = (user.email || "").toLowerCase();
+    isAdmin = ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
+
     setupWinForm();
     loadWinsFeed();
   },
@@ -66,20 +78,22 @@ function setupWinForm() {
           trophy: [],
           rocket: [],
         },
+        // ⭐ new: status for admin review
+        status: "pending", // "pending" | "approved" | "rejected"
       });
 
-      // Award XP for posting a win
-      await awardXP(currentUser.uid, 'WIN_POSTED');
+      // XP still given for posting a win
+      await awardXP(currentUser.uid, "WIN_POSTED");
 
-      // Clear form
       if (titleInput) titleInput.value = "";
       if (descInput) descInput.value = "";
 
       postBtn.textContent = "Post Win";
       postBtn.disabled = false;
 
-      // Show success message with XP
-      showSuccessMessage(`✅ Win posted! +${XP_REWARDS.WIN_POSTED} XP earned`);
+      showSuccessMessage(
+        `✅ Win submitted for review! +${XP_REWARDS.WIN_POSTED} XP earned`
+      );
     } catch (err) {
       console.error("Error posting win:", err);
       alert("Error posting win. Please try again.");
@@ -94,7 +108,19 @@ function loadWinsFeed() {
   if (!container) return;
 
   const winsRef = collection(db, "wins");
-  const qWins = query(winsRef, orderBy("createdAt", "desc"), limit(50));
+
+  // 👀 Admin sees everything, normal users only see approved wins
+  let qWins;
+  if (isAdmin) {
+    qWins = query(winsRef, orderBy("createdAt", "desc"), limit(50));
+  } else {
+    qWins = query(
+      winsRef,
+      where("status", "==", "approved"),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    );
+  }
 
   onSnapshot(
     qWins,
@@ -103,8 +129,12 @@ function loadWinsFeed() {
         container.innerHTML = `
           <div class="win-card" style="text-align: center; padding: 3rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
-            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">No wins yet!</div>
-            <div style="color: #9ca3af;">Be the first to share a victory</div>
+            <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">
+              No wins yet!
+            </div>
+            <div style="color: #9ca3af;">
+              Be the first to share a victory
+            </div>
           </div>
         `;
         return;
@@ -112,15 +142,20 @@ function loadWinsFeed() {
 
       container.innerHTML = "";
 
-      // Get all user data for display names
-      const userIds = [...new Set(snapshot.docs.map(doc => doc.data().userId))];
+      // fetch all user data for display
+      const userIds = [...new Set(snapshot.docs.map((d) => d.data().userId))];
       const userDataMap = {};
-      
+
       for (const uid of userIds) {
-        const userRef = doc(db, "Users", uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          userDataMap[uid] = userSnap.data();
+        if (!uid) continue;
+        try {
+          const userRef = doc(db, "Users", uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            userDataMap[uid] = userSnap.data();
+          }
+        } catch (e) {
+          console.warn("Error loading user data for", uid, e);
         }
       }
 
@@ -128,17 +163,20 @@ function loadWinsFeed() {
         const data = docSnap.data();
         const id = docSnap.id;
         const userData = userDataMap[data.userId];
-        container.appendChild(renderWinCard(id, data, userData));
+        const card = renderWinCard(id, data, userData);
+        if (card) container.appendChild(card);
       });
 
-      attachReactionHandlers(container);
+      attachHandlers(container);
     },
     (err) => {
       console.error("Error loading wins:", err);
       container.innerHTML = `
         <div class="win-card" style="text-align: center; padding: 2rem;">
           <div style="color: #ef4444;">Error loading wins</div>
-          <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.5rem;">${err.message}</div>
+          <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.5rem;">
+            ${err.message}
+          </div>
         </div>
       `;
     }
@@ -149,7 +187,8 @@ function renderWinCard(id, data, userData) {
   const card = document.createElement("div");
   card.className = "win-card";
 
-  const username = userData?.Username || data.userEmail?.split("@")[0] || "Member";
+  const username =
+    userData?.Username || data.userEmail?.split("@")[0] || "Member";
   const userLevel = userData?.level || "Apprentice";
   const userInitial = username.charAt(0).toUpperCase();
 
@@ -173,6 +212,79 @@ function renderWinCard(id, data, userData) {
   };
 
   const categoryIcon = categoryIcons[data.category] || "⭐";
+
+  // ⭐ New: status display
+  const status = data.status || "approved"; // old docs treated as approved
+  const isPending = status === "pending";
+  const isRejected = status === "rejected";
+
+  let statusBadgeHtml = "";
+  if (isPending) {
+    statusBadgeHtml = `
+      <span style="
+        font-size: 0.75rem;
+        padding: 0.15rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(234, 179, 8, 0.15);
+        border: 1px solid rgba(234, 179, 8, 0.6);
+        color: #fbbf24;
+      ">
+        ⏳ Pending review
+      </span>
+    `;
+  } else if (isRejected) {
+    statusBadgeHtml = `
+      <span style="
+        font-size: 0.75rem;
+        padding: 0.15rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(239, 68, 68, 0.18);
+        border: 1px solid rgba(239, 68, 68, 0.7);
+        color: #f97373;
+      ">
+        ✗ Rejected
+      </span>
+    `;
+  }
+
+  // 👑 Admin controls (only visible for pending wins to admin)
+  let adminControlsHtml = "";
+  if (isAdmin && isPending) {
+    adminControlsHtml = `
+      <div class="win-admin-actions" style="display:flex; gap:0.5rem; margin-top:0.6rem; flex-wrap:wrap;">
+        <button
+          data-admin-action="approve"
+          data-id="${id}"
+          style="
+            padding:0.35rem 0.7rem;
+            border-radius:8px;
+            border:1px solid rgba(34,197,94,0.7);
+            background:rgba(34,197,94,0.15);
+            color:#22c55e;
+            font-size:0.75rem;
+            cursor:pointer;
+          "
+        >
+          ✓ Approve
+        </button>
+        <button
+          data-admin-action="reject"
+          data-id="${id}"
+          style="
+            padding:0.35rem 0.7rem;
+            border-radius:8px;
+            border:1px solid rgba(239,68,68,0.7);
+            background:rgba(239,68,68,0.15);
+            color:#f87171;
+            font-size:0.75rem;
+            cursor:pointer;
+          "
+        >
+          ✗ Reject
+        </button>
+      </div>
+    `;
+  }
 
   card.innerHTML = `
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
@@ -201,9 +313,13 @@ function renderWinCard(id, data, userData) {
             ${categoryIcon}
           </div>
         </div>
-        <div style="font-size: 0.8rem; color: #9ca3af;">
-          ${formatTimestamp(data.createdAt)}
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div style="font-size: 0.8rem; color: #9ca3af;">
+            ${formatTimestamp(data.createdAt)}
+          </div>
+          ${statusBadgeHtml}
         </div>
+        ${adminControlsHtml}
       </div>
     </div>
 
@@ -230,8 +346,10 @@ function renderWinCard(id, data, userData) {
           padding: 0.6rem;
           border-radius: 8px;
           border: 1px solid rgba(148, 163, 184, 0.3);
-          background: ${userReactedFire ? 'rgba(251, 146, 60, 0.15)' : 'rgba(15, 23, 42, 0.5)'};
-          color: ${userReactedFire ? '#fb923c' : '#9ca3af'};
+          background: ${
+            userReactedFire ? "rgba(251, 146, 60, 0.15)" : "rgba(15, 23, 42, 0.5)"
+          };
+          color: ${userReactedFire ? "#fb923c" : "#9ca3af"};
           font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.2s;
@@ -248,8 +366,10 @@ function renderWinCard(id, data, userData) {
           padding: 0.6rem;
           border-radius: 8px;
           border: 1px solid rgba(148, 163, 184, 0.3);
-          background: ${userReactedTrophy ? 'rgba(234, 179, 8, 0.15)' : 'rgba(15, 23, 42, 0.5)'};
-          color: ${userReactedTrophy ? '#eab308' : '#9ca3af'};
+          background: ${
+            userReactedTrophy ? "rgba(234, 179, 8, 0.15)" : "rgba(15, 23, 42, 0.5)"
+          };
+          color: ${userReactedTrophy ? "#eab308" : "#9ca3af"};
           font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.2s;
@@ -266,8 +386,10 @@ function renderWinCard(id, data, userData) {
           padding: 0.6rem;
           border-radius: 8px;
           border: 1px solid rgba(148, 163, 184, 0.3);
-          background: ${userReactedRocket ? 'rgba(147, 51, 234, 0.15)' : 'rgba(15, 23, 42, 0.5)'};
-          color: ${userReactedRocket ? '#a78bfa' : '#9ca3af'};
+          background: ${
+            userReactedRocket ? "rgba(147, 51, 234, 0.15)" : "rgba(15, 23, 42, 0.5)"
+          };
+          color: ${userReactedRocket ? "#a78bfa" : "#9ca3af"};
           font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.2s;
@@ -281,9 +403,10 @@ function renderWinCard(id, data, userData) {
   return card;
 }
 
-function attachReactionHandlers(container) {
-  const buttons = container.querySelectorAll(".reaction-btn");
-  buttons.forEach((btn) => {
+// 👇 Reactions + admin actions
+function attachHandlers(container) {
+  const reactionButtons = container.querySelectorAll(".reaction-btn");
+  reactionButtons.forEach((btn) => {
     btn.addEventListener("click", async () => {
       if (!currentUser) return;
 
@@ -297,16 +420,18 @@ function attachReactionHandlers(container) {
         if (!snap.exists()) return;
 
         const data = snap.data();
-        const reactions = data.reactions || { fire: [], trophy: [], rocket: [] };
+        const reactions = data.reactions || {
+          fire: [],
+          trophy: [],
+          rocket: [],
+        };
         const arr = reactions[type] || [];
 
         if (arr.includes(currentUser.uid)) {
-          // Remove reaction
           await updateDoc(winRef, {
             [`reactions.${type}`]: arrayRemove(currentUser.uid),
           });
         } else {
-          // Add reaction
           await updateDoc(winRef, {
             [`reactions.${type}`]: arrayUnion(currentUser.uid),
           });
@@ -316,6 +441,60 @@ function attachReactionHandlers(container) {
       }
     });
   });
+
+  if (isAdmin) {
+    const adminButtons = container.querySelectorAll("[data-admin-action]");
+    adminButtons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        const action = btn.getAttribute("data-admin-action");
+        if (!id || !action) return;
+
+        if (action === "approve") {
+          await approveWin(id);
+        } else if (action === "reject") {
+          await rejectWin(id);
+        }
+      });
+    });
+  }
+}
+
+async function approveWin(id) {
+  try {
+    const winRef = doc(db, "wins", id);
+    await updateDoc(winRef, {
+      status: "approved",
+      approvedAt: serverTimestamp(),
+      approvedBy: currentUser?.uid || null,
+    });
+
+    showSuccessMessage("✅ Win approved");
+  } catch (err) {
+    console.error("Error approving win:", err);
+    alert("Error approving win");
+  }
+}
+
+async function rejectWin(id) {
+  const confirmReject = window.confirm(
+    "Are you sure you want to reject this win?"
+  );
+  if (!confirmReject) return;
+
+  try {
+    const winRef = doc(db, "wins", id);
+    await updateDoc(winRef, {
+      status: "rejected",
+      rejectedAt: serverTimestamp(),
+      rejectedBy: currentUser?.uid || null,
+    });
+
+    showSuccessMessage("✗ Win rejected");
+  } catch (err) {
+    console.error("Error rejecting win:", err);
+    alert("Error rejecting win");
+  }
 }
 
 function formatTimestamp(ts) {
@@ -339,7 +518,7 @@ function escapeHtml(text) {
 }
 
 function showSuccessMessage(message) {
-  const toast = document.createElement('div');
+  const toast = document.createElement("div");
   toast.style.cssText = `
     position: fixed;
     top: 2rem;
@@ -354,10 +533,10 @@ function showSuccessMessage(message) {
     z-index: 10000;
     animation: slideIn 0.3s ease-out;
   `;
-  
+
   toast.textContent = message;
-  
-  const style = document.createElement('style');
+
+  const style = document.createElement("style");
   style.textContent = `
     @keyframes slideIn {
       from { transform: translateX(400px); opacity: 0; }
@@ -365,11 +544,11 @@ function showSuccessMessage(message) {
     }
   `;
   document.head.appendChild(style);
-  
+
   document.body.appendChild(toast);
-  
+
   setTimeout(() => {
-    toast.style.animation = 'slideIn 0.3s ease-out reverse';
+    toast.style.animation = "slideIn 0.3s ease-out reverse";
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }

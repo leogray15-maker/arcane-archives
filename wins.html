@@ -33,8 +33,8 @@
 
         .back-btn {
             position: fixed;
-            top: 1.5rem;
-            left: 1.5rem;
+            top: 1.1rem;
+            left: 1.1rem;
             z-index: 40;
             padding: 0.4rem 0.9rem;
             border-radius: 999px;
@@ -287,6 +287,7 @@
             align-items: center;
             gap: 1rem;
             font-size: 0.8rem;
+            flex-wrap: wrap;
         }
 
         .like-btn {
@@ -330,6 +331,7 @@
             display: flex;
             gap: 0.5rem;
             margin-top: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .approve-btn, .reject-btn {
@@ -379,6 +381,7 @@
             resize: vertical;
             min-height: 60px;
             max-height: 140px;
+            width: 100%;
         }
 
         #winInput::placeholder {
@@ -484,9 +487,21 @@
             color: var(--text-dim);
         }
 
+        /* 🌐 Tablet & down */
+        @media (max-width: 900px) {
+            .main-content {
+                padding: 0 1.1rem 0;
+            }
+
+            .page-card {
+                padding: 1.6rem 1.4rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .wins-layout {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
             .wins-meta {
@@ -495,6 +510,81 @@
 
             .wins-card {
                 order: 1;
+                max-height: none;
+            }
+
+            .wins-list {
+                max-height: 55vh;
+            }
+
+            .header {
+                margin-top: 2.2rem;
+                padding: 1.2rem 1.2rem 0.4rem;
+            }
+        }
+
+        /* 📱 Small phones */
+        @media (max-width: 500px) {
+            .back-btn {
+                top: 0.7rem;
+                left: 0.7rem;
+                padding: 0.3rem 0.75rem;
+                font-size: 0.78rem;
+            }
+
+            .header {
+                margin-top: 2.2rem;
+                padding: 1rem 1rem 0.3rem;
+            }
+
+            .main-content {
+                padding: 0 1rem 0;
+            }
+
+            .page-card {
+                padding: 1.3rem 1rem 1.4rem;
+                border-radius: 18px;
+            }
+
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
+
+            .page-header p {
+                font-size: 0.9rem;
+            }
+
+            .wins-card {
+                padding: 1.1rem;
+                gap: 0.8rem;
+            }
+
+            .wins-input-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.6rem;
+            }
+
+            #winInput {
+                min-height: 80px;
+                max-height: 170px;
+            }
+
+            .input-actions {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .file-upload-btn,
+            .post-btn {
+                width: 48%;
+                padding-top: 0.6rem;
+                padding-bottom: 0.6rem;
+            }
+
+            .win-actions {
+                flex-direction: row;
+                align-items: center;
             }
         }
     </style>
@@ -623,14 +713,16 @@
 
         const storage = getStorage();
 
-        // Admin UIDs - Add your admin user IDs here
-        const ADMIN_UIDS = ['YOUR_ADMIN_UID_HERE']; // Replace with actual admin UIDs
+        // Admin identifiers
+        const ADMIN_UIDS = ['YOUR_ADMIN_UID_HERE']; // optional – if you know your UID you can add it
+        const ADMIN_EMAILS = ['leogray15@gmail.com'];
 
         protectPage({
             onSuccess: async (user, userData) => {
                 currentUser = user;
                 currentUserData = userData;
-                isAdmin = ADMIN_UIDS.includes(user.uid);
+                const email = (user.email || '').toLowerCase();
+                isAdmin = ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
                 initWinsBoard();
             },
             onFailure: () => {
