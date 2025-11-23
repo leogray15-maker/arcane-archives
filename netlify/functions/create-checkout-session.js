@@ -42,9 +42,8 @@ exports.handler = async (event) => {
     const priceId =
       bodyPriceId ||
       process.env.STRIPE_PRICE_ID ||
-      "price_1SRnIxCXghparoQFb0oQPUes"; // <- replace with your real price if different
+      "price_1SRnIxCXghparoQFb0oQPUes"; // <- change if needed
 
-    // Detect your site URL (Netlify envs) with a default
     const baseUrl =
       process.env.URL ||
       process.env.DEPLOY_PRIME_URL ||

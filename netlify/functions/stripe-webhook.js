@@ -15,7 +15,7 @@ if (!admin.apps.length) {
         credential: admin.credential.cert(serviceAccount),
       });
     } else {
-      admin.initializeApp(); // uses default creds in Netlify env if configured
+      admin.initializeApp(); // uses default creds if configured
     }
     db = admin.firestore();
     console.log("✅ Firebase Admin initialized");
@@ -26,6 +26,7 @@ if (!admin.apps.length) {
   db = admin.firestore();
 }
 
+// Create or update a user by Firebase UID
 async function upsertUserByUid(firebaseUid, email, updates) {
   if (!db || !firebaseUid) return;
 
@@ -54,6 +55,7 @@ async function upsertUserByUid(firebaseUid, email, updates) {
   }
 }
 
+// Update any user docs that match an email
 async function updateUserByEmail(email, updates) {
   if (!db || !email) return;
 
@@ -137,7 +139,7 @@ exports.handler = async (event) => {
   console.log("⚡ Stripe event received:", type);
 
   try {
-    // === 1. Checkout completed (initial signup) ===
+    // 1) Initial signup – checkout complete
     if (type === "checkout.session.completed") {
       const session = data.object;
       const email =
@@ -159,16 +161,15 @@ exports.handler = async (event) => {
       }
     }
 
-    // === 2. Subscription cancelled / ended ===
+    // 2) Subscription cancelled or updated
     if (
       type === "customer.subscription.deleted" ||
       type === "customer.subscription.updated"
     ) {
       const subscription = data.object;
-      const status = subscription.status; // e.g. 'active', 'canceled'
+      const status = subscription.status; // 'active', 'canceled', etc.
       const customerId = subscription.customer;
 
-      // Try to fetch customer to get email
       let email = null;
       try {
         const customer = await stripe.customers.retrieve(customerId);
