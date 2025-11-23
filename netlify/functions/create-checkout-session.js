@@ -19,12 +19,11 @@ exports.handler = async (event) => {
     return {
       statusCode: 405,
       headers,
-      body: JSON.stringify({ error: "Method Not Allowed" }),
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
 
   try {
-    // Check if Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY) {
       console.error("❌ STRIPE_SECRET_KEY is not set");
       return {
@@ -37,23 +36,23 @@ exports.handler = async (event) => {
     }
 
     const body = event.body ? JSON.parse(event.body) : {};
-    
-    // Price ID - allow override or use env var or default
-    const priceId = body.priceId || 
-                    process.env.STRIPE_PRICE_ID || 
-                    "price_1SRnIxCXghparoQFb0oQPUes";
+    const { priceId: bodyPriceId, uid, email } = body;
 
-    // Determine base URL
-    const baseUrl = process.env.URL ||
-                    process.env.DEPLOY_PRIME_URL ||
-                    process.env.DEPLOY_URL ||
-                    "https://arcanearchives.netlify.app";
+    // Use body priceId, env price, or hard-coded fallback
+    const priceId =
+      bodyPriceId ||
+      process.env.STRIPE_PRICE_ID ||
+      "price_1SRnIxCXghparoQFb0oQPUes"; // <- replace with your real price if different
 
-    console.log("🧾 Creating checkout session");
-    console.log("   Price ID:", priceId);
-    console.log("   Base URL:", baseUrl);
+    // Detect your site URL (Netlify envs) with a default
+    const baseUrl =
+      process.env.URL ||
+      process.env.DEPLOY_PRIME_URL ||
+      process.env.DEPLOY_URL ||
+      "https://thearcanearchives.netlify.app";
 
-    // Create Stripe checkout session
+    console.log("🧾 Creating checkout session for:", email, "uid:", uid);
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -67,10 +66,11 @@ exports.handler = async (event) => {
       billing_address_collection: "required",
       success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/#pricing`,
-      
-      // Additional metadata for better tracking
+      customer_email: email || undefined,
       metadata: {
         source: "arcane_archives",
+        firebaseUid: uid || "",
+        email: email || "",
       },
     });
 
@@ -79,10 +79,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ 
-        id: session.id,
-        url: session.url 
-      }),
+      body: JSON.stringify({ id: session.id, url: session.url }),
     };
   } catch (error) {
     console.error("🔥 Stripe checkout error:", error);

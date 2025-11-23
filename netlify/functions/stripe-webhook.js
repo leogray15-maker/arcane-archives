@@ -1,164 +1,207 @@
 // netlify/functions/stripe-webhook.js
-// Handles automatic user activation when Stripe processes payments
+// Automatic user activation + subscription updates
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 const admin = require("firebase-admin");
 
 let db;
 
-// Initialize Firebase Admin
+// Initialise Firebase Admin once
 if (!admin.apps.length) {
   try {
-    // Try full service account JSON first
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
       });
     } else {
-      // Fall back to individual fields
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        }),
-      });
+      admin.initializeApp(); // uses default creds in Netlify env if configured
     }
-
     db = admin.firestore();
-    console.log("✅ Firebase admin initialized for webhooks");
+    console.log("✅ Firebase Admin initialized");
   } catch (err) {
-    console.error("❌ Failed to init Firebase admin:", err);
+    console.error("❌ Failed to initialize Firebase Admin:", err);
+  }
+} else {
+  db = admin.firestore();
+}
+
+async function upsertUserByUid(firebaseUid, email, updates) {
+  if (!db || !firebaseUid) return;
+
+  const userRef = db.collection("Users").doc(firebaseUid);
+  const snap = await userRef.get();
+
+  const baseData = {
+    Email: email || null,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    ...updates,
+  };
+
+  if (!snap.exists) {
+    console.log("🆕 Creating Users doc for uid:", firebaseUid);
+    await userRef.set({
+      xp: 0,
+      level: "Apprentice",
+      winsPosted: 0,
+      callsAttended: 0,
+      joinedAt: admin.firestore.FieldValue.serverTimestamp(),
+      ...baseData,
+    });
+  } else {
+    console.log("📝 Updating Users doc for uid:", firebaseUid);
+    await userRef.update(baseData);
   }
 }
 
+async function updateUserByEmail(email, updates) {
+  if (!db || !email) return;
+
+  const snap = await db
+    .collection("Users")
+    .where("Email", "==", email)
+    .limit(10)
+    .get();
+
+  if (snap.empty) {
+    console.warn("⚠️ No user with Email:", email);
+    return;
+  }
+
+  const ops = [];
+  snap.forEach((doc) => {
+    console.log("📝 Updating user by email:", doc.id);
+    ops.push(
+      doc.ref.update({
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        ...updates,
+      })
+    );
+  });
+  await Promise.all(ops);
+}
+
 exports.handler = async (event) => {
-  // Check environment
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
-    console.error("❌ Stripe env vars missing");
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ error: "Server misconfigured" })
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, Stripe-Signature",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Content-Type": "application/json",
+  };
+
+  // Preflight
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
+  }
+
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
 
-  const sig = event.headers["stripe-signature"];
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error("❌ Stripe env vars missing");
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Stripe not configured" }),
+    };
+  }
+
+  const sig =
+    event.headers["stripe-signature"] ||
+    event.headers["Stripe-Signature"] ||
+    event.headers["STRIPE-SIGNATURE"];
+
   let stripeEvent;
 
   try {
-    // Verify webhook signature
     stripeEvent = stripe.webhooks.constructEvent(
       event.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error("❌ Webhook signature verification failed:", err.message);
-    return { 
-      statusCode: 400, 
-      body: JSON.stringify({ error: `Webhook Error: ${err.message}` })
+    console.error("❌ Webhook signature error:", err.message);
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: `Webhook signature error: ${err.message}` }),
     };
   }
 
+  const { type, data } = stripeEvent;
+  console.log("⚡ Stripe event received:", type);
+
   try {
-    const type = stripeEvent.type;
-    const data = stripeEvent.data.object;
-
-    console.log("📩 Webhook event received:", type);
-
-    // Handle payment events
+    // === 1. Checkout completed (initial signup) ===
     if (type === "checkout.session.completed") {
-      const customerEmail = data.customer_details?.email || data.customer_email;
-      const customerId = data.customer;
-      const subscriptionId = data.subscription;
+      const session = data.object;
+      const email =
+        session.customer_details?.email || session.customer_email || null;
+      const firebaseUid = session.metadata?.firebaseUid || null;
 
-      console.log("💳 Checkout completed for:", customerEmail);
+      const updates = {
+        isPaid: true,
+        subscriptionStatus: "active",
+        stripeCustomerId: session.customer || null,
+        stripeSubscriptionId: session.subscription || null,
+        paidAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
 
-      if (db && customerEmail) {
-        await updateUserSubscription(customerEmail, {
-          isPaid: true,
-          subscriptionStatus: 'active',
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId,
-          paidAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+      if (firebaseUid) {
+        await upsertUserByUid(firebaseUid, email, updates);
+      } else if (email) {
+        await updateUserByEmail(email, updates);
       }
     }
 
-    if (type === "invoice.payment_succeeded") {
-      const customerEmail = data.customer_email;
-      const customerId = data.customer;
-      const subscriptionId = data.subscription;
+    // === 2. Subscription cancelled / ended ===
+    if (
+      type === "customer.subscription.deleted" ||
+      type === "customer.subscription.updated"
+    ) {
+      const subscription = data.object;
+      const status = subscription.status; // e.g. 'active', 'canceled'
+      const customerId = subscription.customer;
 
-      console.log("💰 Payment succeeded for:", customerEmail);
+      // Try to fetch customer to get email
+      let email = null;
+      try {
+        const customer = await stripe.customers.retrieve(customerId);
+        email = customer.email || null;
+      } catch (e) {
+        console.warn("⚠️ Could not fetch customer:", customerId);
+      }
 
-      if (db && customerEmail) {
-        await updateUserSubscription(customerEmail, {
-          isPaid: true,
-          subscriptionStatus: 'active',
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId,
-          lastPaymentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+      const updates = {
+        subscriptionStatus: status,
+        stripeSubscriptionId: subscription.id,
+      };
+
+      if (status !== "active") {
+        updates.isPaid = false;
+      }
+
+      if (email) {
+        await updateUserByEmail(email, updates);
       }
     }
 
-    if (type === "customer.subscription.deleted") {
-      const customerEmail = data.customer_email;
-      
-      console.log("🚫 Subscription cancelled for:", customerEmail);
-
-      if (db && customerEmail) {
-        await updateUserSubscription(customerEmail, {
-          isPaid: false,
-          subscriptionStatus: 'cancelled',
-          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-      }
-    }
-
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify({ received: true })
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ received: true }),
     };
   } catch (err) {
     console.error("🔥 Error handling webhook:", err);
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ error: "Internal Server Error" })
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Webhook handler failed" }),
     };
   }
 };
-
-// Helper function to update user by email
-async function updateUserSubscription(email, updates) {
-  try {
-    const usersRef = db.collection("Users");
-    
-    // Try matching with "Email" field (your schema)
-    let snapshot = await usersRef.where("Email", "==", email).get();
-    
-    // Also try lowercase "email" just in case
-    if (snapshot.empty) {
-      snapshot = await usersRef.where("email", "==", email).get();
-    }
-
-    if (!snapshot.empty) {
-      const updatePromises = [];
-      snapshot.forEach((doc) => {
-        console.log("📝 Updating user:", doc.id);
-        updatePromises.push(doc.ref.update(updates));
-      });
-      await Promise.all(updatePromises);
-      console.log("✅ User subscription updated");
-      return true;
-    } else {
-      console.warn("⚠️ No user found with email:", email);
-      return false;
-    }
-  } catch (err) {
-    console.error("❌ Error updating user:", err);
-    return false;
-  }
-}
