@@ -393,7 +393,8 @@
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    <!-- default back = Home; JS will switch to dashboard if logged in -->
+    <a href="index.html" class="back-btn" id="backBtn">← Back to Home</a>
 
     <div class="header">
         <div class="logo">
@@ -544,5 +545,38 @@
             &copy; 2024 The Arcane Archives. All rights reserved.
         </div>
     </footer>
+
+    <!-- Detect auth + switch back button -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+            measurementId: "G-YGPLQHDXMM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const backBtn = document.getElementById('backBtn');
+
+        onAuthStateChanged(auth, (user) => {
+            if (!backBtn) return;
+
+            if (user) {
+                backBtn.href = "dashboard.html";
+                backBtn.textContent = "← Back to Dashboard";
+            } else {
+                backBtn.href = "index.html";
+                backBtn.textContent = "← Back to Home";
+            }
+        });
+    </script>
 </body>
 </html>
