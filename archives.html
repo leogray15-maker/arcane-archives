@@ -737,56 +737,6 @@
     </div>
   </footer>
 
-  <script type="module">
-    import { protectPage } from "./universal-auth.js";
-    import { getUserStats, XP_VALUES } from "./xp-system.js";
-
-    protectPage({
-      onSuccess: async (user, userData) => {
-        // Get user stats
-        const stats = await getUserStats(user.uid);
-        if (stats) {
-          updateProgressDisplay(stats);
-          markCompletedCourses(stats.completedCourseIds);
-        }
-      },
-      onFailure: () => {
-        window.location.href = "login.html";
-      }
-    });
-
-    function updateProgressDisplay(stats) {
-      const totalCourses = document.querySelectorAll('.link-to-page').length;
-      const completedCourses = stats.coursesCompleted;
-      const percentage = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
-      const xpFromCourses = completedCourses * XP_VALUES.COURSE_COMPLETED;
-
-      const progressContainer = document.getElementById('courseProgressStats');
-      const progressBar = document.getElementById('progressBar');
-      const progressPercentage = document.getElementById('progressPercentage');
-      const coursesCompletedText = document.getElementById('coursesCompletedText');
-      const xpEarnedText = document.getElementById('xpEarnedText');
-
-      if (progressContainer) {
-        progressContainer.style.display = 'block';
-        progressBar.style.width = `${percentage}%`;
-        progressPercentage.textContent = `${percentage}%`;
-        coursesCompletedText.textContent = `${completedCourses} of ${totalCourses} courses completed`;
-        xpEarnedText.textContent = `${xpFromCourses.toLocaleString()} XP from courses`;
-      }
-    }
-
-    function markCompletedCourses(completedCourseIds) {
-      document.querySelectorAll('.link-to-page').forEach(figure => {
-        const courseId = figure.getAttribute('data-course-id');
-        if (courseId && completedCourseIds.includes(courseId)) {
-          const link = figure.querySelector('a');
-          if (link) {
-            link.classList.add('completed');
-          }
-        }
-      });
-    }
-  </script>
+  <script type="module" src="./archives.js"></script>
 </body>
 </html>
