@@ -133,11 +133,12 @@ async function awardReferralXP(referrerId, referredUserId) {
 }
 
 function getLevelFromXP(xp) {
-    if (xp >= 5000) return "Archmage";
-    if (xp >= 3000) return "Master";
-    if (xp >= 1500) return "Adept";
-    if (xp >= 500) return "Scholar";
-    return "Apprentice";
+    if (xp >= 5000) return "Arcane Master";
+    if (xp >= 3000) return "Awakened Master";
+    if (xp >= 1500) return "Awakened Apprentice";
+    if (xp >= 600)  return "Advanced Apprentice";
+    if (xp >= 200)  return "Apprentice";
+    return "Seeker";
 }
 
 // Export functions

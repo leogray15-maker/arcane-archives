@@ -527,21 +527,11 @@
             where, 
             orderBy, 
             limit, 
-            onSnapshot,
-            serverTimestamp,
-            addDoc,
-            getDoc,
-            doc
+            onSnapshot
         } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
         let currentUser = null;
         let isAdmin = false;
-        let affiliateData = {
-            activeReferrals: 0,
-            totalEarnings: 0,
-            monthlyEarnings: 0,
-            availableBalance: 0
-        };
 
         const ADMIN_UIDS = [];
         const ADMIN_EMAILS = ['leogray15@gmail.com'];
@@ -554,14 +544,18 @@
                 const email = (user.email || '').toLowerCase();
                 isAdmin = ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
 
+                // Use stored referralCode if exists, else fallback to UID slice
+                const referralCode = (userData && userData.referralCode) 
+                    ? userData.referralCode 
+                    : user.uid.slice(0, 8).toUpperCase();
+
                 // Set up referral link
-                const referralCode = userData.referralCode || user.uid.slice(0, 8).toUpperCase();
                 const referralLink = `https://arcanearchives.netlify.app?ref=${referralCode}`;
                 document.getElementById('referralLink').value = referralLink;
 
-                // Load referral stats
-                loadReferralStats(user.uid);
-                loadReferredMembers(user.uid);
+                // Load referral stats + referred members based on referredBy
+                loadReferralStats(referralCode);
+                loadReferredMembers(referralCode);
 
                 // Handle affiliate tab visibility
                 checkAffiliateAccess();
@@ -592,11 +586,9 @@
             const affiliateContent = document.getElementById('affiliateContent');
             
             if (isAdmin) {
-                // Admin can access
                 if (lockedMessage) lockedMessage.style.display = 'none';
                 if (affiliateContent) affiliateContent.style.display = 'block';
             } else {
-                // Not admin - show lock message
                 if (lockedMessage) lockedMessage.style.display = 'block';
                 if (affiliateContent) affiliateContent.style.display = 'none';
             }
@@ -619,10 +611,11 @@
             });
         }
 
-        function loadReferralStats(userId) {
+        // 🔢 Stats: count users whose `referredBy` equals your referralCode
+        function loadReferralStats(referralCode) {
             const q = query(
                 collection(db, 'Users'),
-                where('referralCode', '==', userId.slice(0, 8).toUpperCase())
+                where('referredBy', '==', referralCode)
             );
 
             onSnapshot(q, (snapshot) => {
@@ -651,12 +644,11 @@
             });
         }
 
-        function loadReferredMembers(userId) {
-            const referralCode = userId.slice(0, 8).toUpperCase();
-            
+        // 🧾 Table of referred members
+        function loadReferredMembers(referralCode) {
             const q = query(
                 collection(db, 'Users'),
-                where('referralCode', '==', referralCode),
+                where('referredBy', '==', referralCode),
                 orderBy('joinedAt', 'desc'),
                 limit(20)
             );

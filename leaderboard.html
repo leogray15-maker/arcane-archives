@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --purple: #9333ea;
+      --purple-light: #a78bfa;
+      --text-light: #e5e5e5;
+      --text-dim: #a3a3a3;
+      --border-color: rgba(148, 163, 184, 0.5);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 40;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+    .back-btn:hover {
+      color: var(--purple-light);
+      border-color: rgba(147, 51, 234, 0.8);
+      transform: translateX(-2px);
+    }
+
+    .header {
+      max-width: 1200px;
+      margin: 2.5rem auto 0;
+      padding: 1.5rem 1.5rem 0.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+
+    .logo img {
+      height: 32px;
+      width: 32px;
+    }
+
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+      flex: 1;
+    }
+
+    .page-card {
+      margin-top: 1.5rem;
+      background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85), 0 0 40px rgba(147, 51, 234, 0.25);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header-eyebrow {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .page-header h1 span {
+      background: linear-gradient(135deg, var(--purple-light), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+
+    .leaderboard-table {
+      margin-top: 1.5rem;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead {
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-dim);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.98);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .rank {
+      font-weight: 600;
+    }
+
+    .rank-1 .rank { color: #fbbf24; }
+    .rank-2 .rank { color: #e5e7eb; }
+    .rank-3 .rank { color: #f97316; }
+
+    .level-pill {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(147, 51, 234, 0.7);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--purple-light);
+    }
+
+    footer {
+      background: rgba(5, 5, 5, 0.95);
+      padding: 2rem;
+      border-top: 1px solid rgba(147, 51, 234, 0.25);
+      text-align: center;
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .footer-bottom {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+      .back-btn {
+        position: static;
+        display: block;
+        margin: 1rem auto 0;
+        width: fit-content;
+      }
+
+      .header {
+        margin-top: 1rem;
+        padding: 1rem;
+      }
+
+      .logo {
+        justify-content: center;
+      }
+
+      .main-content {
+        padding: 0 1rem 2rem;
+      }
+
+      .page-card {
+        padding: 1.5rem 1rem;
+      }
+
+      .page-header h1 {
+        font-size: 1.6rem;
+      }
+
+      th, td {
+        padding: 0.6rem 0.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+  <div class="header">
+    <div class="logo">
+      <img src="ArcaneA.png" alt="Logo" />
+      THE ARCANE ARCHIVES
+    </div>
+  </div>
+
+  <main class="main-content">
+    <section class="page-card">
+      <header class="page-header">
+        <div class="page-header-eyebrow">Order of the Archives</div>
+        <h1><span>Leaderboard</span></h1>
+        <p>Top members ranked by XP. Every course, win and call shifts your position.</p>
+      </header>
+
+      <div class="leaderboard-table">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Member</th>
+              <th>Level</th>
+              <th>XP</th>
+              <th>Wins</th>
+              <th>Calls</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <tr>
+              <td colspan="6">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-bottom">
+      &copy; 2024 The Arcane Archives. All rights reserved.
+    </div>
+  </footer>
+
+  <script type="module">
+    import { protectPage } from './auth-guard.js';
+    import { db } from './auth-guard.js';
+    import {
+      collection,
+      getDocs,
+      query,
+      orderBy,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    protectPage({
+      onSuccess: async (user, userData) => {
+        const tbody = document.getElementById("leaderboardBody");
+        tbody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+
+        try {
+          const usersRef = collection(db, "Users");
+          const q = query(usersRef, orderBy("Xp", "desc"), limit(50));
+          const snap = await getDocs(q);
+
+          if (snap.empty) {
+            tbody.innerHTML = '<tr><td colspan="6">No members yet.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = "";
+          let rank = 1;
+
+          snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const tr = document.createElement("tr");
+            tr.classList.add(`rank-${rank}`);
+
+            const username = data.Username || data.Email || "Unknown";
+            const xp = data.Xp || 0;
+            const level = data.Level || "Seeker";
+            const wins = data.WinsPosted || 0;
+            const calls = data.CallAttended || 0;
+
+            tr.innerHTML = `
+              <td class="rank">${rank}</td>
+              <td>${username}</td>
+              <td><span class="level-pill">${level.toUpperCase()}</span></td>
+              <td>${xp}</td>
+              <td>${wins}</td>
+              <td>${calls}</td>
+            `;
+
+            tbody.appendChild(tr);
+            rank++;
+          });
+
+        } catch (err) {
+          console.error("Error loading leaderboard:", err);
+          tbody.innerHTML = '<tr><td colspan="6">Failed to load leaderboard.</td></tr>';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

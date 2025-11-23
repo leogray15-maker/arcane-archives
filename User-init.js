@@ -36,7 +36,7 @@ export async function ensureUserProfile(user) {
         Username: username,
         Email: email,
         Xp: 0,
-        Level: "Apprentice",
+        Level: "Seeker",          // 🔮 NEW default rank
         WinsPosted: 0,
         CallAttended: 0,
         CoursesCompleted: 0,

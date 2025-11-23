@@ -240,6 +240,9 @@
 
         .xp-header-left {
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
         .xp-header-left span {
@@ -399,7 +402,59 @@
             font-size: 0.85rem;
         }
 
-        /* Mobile */
+        /* Level badge */
+        .level-badge {
+            margin-left: 0.4rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(147, 51, 234, 0.8);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--purple-light);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        /* Level-up toast */
+        .level-up-toast {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 50;
+            display: none;
+        }
+
+        .level-up-toast .toast-inner {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 1rem;
+            border-radius: 999px;
+            background: radial-gradient(circle at top left, rgba(147, 51, 234, 0.3), #020617);
+            border: 1px solid rgba(147, 51, 234, 0.7);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.8);
+        }
+
+        .toast-icon {
+            font-size: 1.3rem;
+        }
+
+        .toast-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+        }
+
+        .toast-body {
+            font-size: 0.85rem;
+        }
+
+        /* Tiny mobile HUD for level + XP */
+        .xp-hud {
+            display: none;
+        }
+
         @media (max-width: 900px) {
             .top-strip {
                 grid-template-columns: minmax(0, 1fr);
@@ -457,6 +512,30 @@
             .footer-links {
                 flex-direction: column;
                 gap: 1rem;
+            }
+
+            .xp-hud {
+                position: fixed;
+                bottom: 0.75rem;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 0.4rem 0.9rem;
+                border-radius: 999px;
+                background: rgba(15, 23, 42, 0.95);
+                border: 1px solid rgba(148, 163, 184, 0.6);
+                font-size: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                z-index: 40;
+            }
+
+            .xp-hud span {
+                color: var(--text-dim);
+            }
+
+            .xp-hud strong {
+                color: var(--purple-light);
             }
         }
 
@@ -519,7 +598,8 @@
                 <section class="xp-section">
                     <div class="xp-header">
                         <div class="xp-header-left">
-                            Level: <span id="userLevel">Apprentice</span>
+                            Level: <span id="userLevel">Seeker</span>
+                            <span id="userLevelBadge" class="level-badge"></span>
                         </div>
                         <div class="xp-header-right">
                             XP: <span id="currentXP">0</span> / <span id="nextLevelXP">100</span>
@@ -612,11 +692,36 @@
                             <div class="nav-card-title">Settings</div>
                             <div class="nav-card-desc">Update your avatar, username, notifications and security.</div>
                         </div>
+
+                        <div class="nav-card" onclick="window.location.href='leaderboard.html'">
+                            <div class="nav-card-icon">🏆</div>
+                            <div class="nav-card-title">Leaderboard</div>
+                            <div class="nav-card-desc">See where you rank inside the Archives.</div>
+                        </div>
                     </div>
                 </section>
             </div>
         </section>
     </main>
+
+    <!-- Level-up toast -->
+    <div id="levelUpToast" class="level-up-toast">
+        <div class="toast-inner">
+            <div class="toast-icon">✨</div>
+            <div>
+                <div class="toast-title">Level Up</div>
+                <div class="toast-body">
+                    <span id="levelUpFrom"></span> → <strong id="levelUpTo"></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile XP HUD -->
+    <div class="xp-hud" id="xpHud">
+        <span>Lvl <strong id="hudLevel">-</strong></span>
+        <span>XP <strong id="hudXP">0</strong></span>
+    </div>
 
     <footer>
         <div class="footer-links">
@@ -636,6 +741,20 @@
             updateUserAvatar, 
             setupLogoutButton
         } from './auth-guard.js';
+        import { getProgressToNextLevel } from './xp-system.js';
+
+        function showLevelUpToast(fromLevel, toLevel) {
+            const toast = document.getElementById("levelUpToast");
+            if (!toast) return;
+
+            document.getElementById("levelUpFrom").textContent = fromLevel;
+            document.getElementById("levelUpTo").textContent = toLevel;
+
+            toast.style.display = "block";
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 4500);
+        }
 
         protectPage({
             onSuccess: (user, userData) => {
@@ -644,6 +763,7 @@
                 const username = userData.Username || user.displayName || user.email.split("@")[0];
                 document.getElementById("username").textContent = username;
 
+                // Avatar
                 updateUserAvatar(user, userData);
                 const welcomeAvatar = document.getElementById("welcomeAvatar");
                 if (welcomeAvatar) {
@@ -659,30 +779,56 @@
                     }
                 }
 
-                const level = userData.Level || "Apprentice";
+                // 🔮 XP + Level
                 const xp = userData.Xp || 0;
-                const nextLevelXp = 100;
+                const level = userData.Level || "Seeker";
+
+                const progress = getProgressToNextLevel(xp);
+                const nextLevelXP = progress.nextLevelXP || (xp + 100);
 
                 document.getElementById("userLevel").textContent = level;
                 document.getElementById("currentXP").textContent = xp;
-                document.getElementById("nextLevelXP").textContent = nextLevelXp;
+                document.getElementById("nextLevelXP").textContent = nextLevelXP;
 
-                const progressPercentage = Math.min((xp / nextLevelXp) * 100, 100);
                 const progressBar = document.getElementById("xpProgressBar");
-                progressBar.style.width = progressPercentage + "%";
-                progressBar.textContent = Math.round(progressPercentage) + "%";
+                const pct = progress.percentage ?? 0;
+                progressBar.style.width = pct + "%";
+                progressBar.textContent = Math.round(pct) + "%";
 
+                // Level badge
+                const badgeEl = document.getElementById("userLevelBadge");
+                if (badgeEl) {
+                    badgeEl.textContent = level.toUpperCase();
+                }
+
+                // Stats
                 document.getElementById("coursesCompleted").textContent = userData.CoursesCompleted || 0;
                 document.getElementById("winsPosted").textContent = userData.WinsPosted || 0;
                 document.getElementById("callsAttended").textContent = userData.CallAttended || 0;
 
+                // Subscription badge
                 if (userData.subscriptionStatus === 'active' || userData.isPaid) {
                     document.getElementById("subscriptionBadge").style.display = 'inline-block';
                 }
+
+                // 📈 Mobile HUD
+                const hud = document.getElementById("xpHud");
+                if (hud) {
+                    document.getElementById("hudLevel").textContent = level;
+                    document.getElementById("hudXP").textContent = xp;
+                }
+
+                // ✨ Level-up detection (client-side)
+                const prevLevel = localStorage.getItem("aa_prev_level");
+                if (prevLevel && prevLevel !== level) {
+                    showLevelUpToast(prevLevel, level);
+                }
+                localStorage.setItem("aa_prev_level", level);
             }
         });
 
         setupLogoutButton();
     </script>
+
 </body>
 </html>

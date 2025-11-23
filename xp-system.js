@@ -12,7 +12,7 @@ import {
   arrayUnion,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-// XP reward values for different actions
+// 🔮 XP reward values for different actions (BASE amounts, before multiplier)
 export const XP_REWARDS = {
   MODULE_COMPLETED: 50,      // Per module completed
   COURSE_COMPLETED: 100,     // Bonus when all modules in a course are done
@@ -23,43 +23,87 @@ export const XP_REWARDS = {
   DAILY_LOGIN: 10,           // Daily login streak
 };
 
-// Level thresholds
+// 🧬 Level thresholds – NEW RANKS
+// Seeker → Apprentice → Advanced Apprentice → Awakened Apprentice → Awakened Master → Arcane Master
 export const LEVELS = {
-  APPRENTICE: { min: 0, max: 499, name: "Apprentice", icon: "🎯" },
-  SCHOLAR: { min: 500, max: 1499, name: "Scholar", icon: "📚" },
-  ADEPT: { min: 1500, max: 2999, name: "Adept", icon: "⚡" },
-  MASTER: { min: 3000, max: 4999, name: "Master", icon: "🔮" },
-  ARCHMAGE: { min: 5000, max: Infinity, name: "Archmage", icon: "👑" },
+  SEEKER: {
+    min: 0,
+    max: 199,
+    name: "Seeker",
+    icon: "🕯️",
+  },
+  APPRENTICE: {
+    min: 200,
+    max: 599,
+    name: "Apprentice",
+    icon: "📘",
+  },
+  ADVANCED_APPRENTICE: {
+    min: 600,
+    max: 1499,
+    name: "Advanced Apprentice",
+    icon: "📗",
+  },
+  AWAKENED_APPRENTICE: {
+    min: 1500,
+    max: 2999,
+    name: "Awakened Apprentice",
+    icon: "📙",
+  },
+  AWAKENED_MASTER: {
+    min: 3000,
+    max: 4999,
+    name: "Awakened Master",
+    icon: "⚡",
+  },
+  ARCANE_MASTER: {
+    min: 5000,
+    max: Infinity,
+    name: "Arcane Master",
+    icon: "👑",
+  },
 };
 
-// Get level based on XP
-export function getLevelFromXP(xp) {
-  for (const [key, level] of Object.entries(LEVELS)) {
+export function getLevelFromXP(xp = 0) {
+  for (const level of Object.values(LEVELS)) {
     if (xp >= level.min && xp <= level.max) {
       return level.name;
     }
   }
-  return "Apprentice";
+  return "Seeker";
 }
 
-// Get progress to next level
-export function getProgressToNextLevel(xp) {
+// 🔁 Streak multiplier: every 7 days adds +10% XP, capped at 2x
+export function getStreakMultiplier(loginStreak = 0) {
+  if (!loginStreak || loginStreak < 1) return 1;
+  const tiers = Math.floor(loginStreak / 7); // every 7 days = +0.1
+  const multiplier = 1 + tiers * 0.1;
+  return Math.min(multiplier, 2); // cap at 2x
+}
+
+// For the dashboard XP bar
+export function getProgressToNextLevel(xp = 0) {
   const currentLevel = Object.values(LEVELS).find(
-    level => xp >= level.min && xp <= level.max
+    (level) => xp >= level.min && xp <= level.max
   );
-  
+
   if (!currentLevel || currentLevel.max === Infinity) {
-    return { current: xp, total: xp, percentage: 100 };
+    return {
+      current: xp,
+      total: xp || 1,
+      percentage: 100,
+      nextLevelXP: xp,
+    };
   }
 
   const current = xp - currentLevel.min;
   const total = currentLevel.max - currentLevel.min + 1;
   const percentage = Math.min(100, Math.round((current / total) * 100));
+  const nextLevelXP = currentLevel.max + 1;
 
-  return { current, total, percentage };
+  return { current, total, percentage, nextLevelXP };
 }
 
-// Ensure a sane user doc exists and return merged stats
 export async function getUserStats(uid) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
@@ -67,7 +111,7 @@ export async function getUserStats(uid) {
   if (!snap.exists()) {
     const base = {
       Xp: 0,
-      Level: "Apprentice",
+      Level: "Seeker",
       CoursesCompleted: 0,
       ModulesCompleted: 0,
       completedCourseIds: [],
@@ -89,10 +133,12 @@ export async function getUserStats(uid) {
   }
 
   const data = snap.data() || {};
+  const xp = data.Xp || 0;
+
   return {
     id: uid,
-    Xp: data.Xp || 0,
-    Level: data.Level || "Apprentice",
+    Xp: xp,
+    Level: data.Level || getLevelFromXP(xp),
     CoursesCompleted: data.CoursesCompleted || 0,
     ModulesCompleted: data.ModulesCompleted || 0,
     completedCourseIds: data.completedCourseIds || [],
@@ -105,10 +151,10 @@ export async function getUserStats(uid) {
   };
 }
 
-// Award XP for any action
+// 🎮 Central XP award – now includes streak multiplier
 export async function awardXP(uid, action, metadata = {}) {
-  const xpAmount = XP_REWARDS[action];
-  if (!xpAmount) {
+  const baseXP = XP_REWARDS[action];
+  if (!baseXP) {
     console.warn(`Unknown XP action: ${action}`);
     return false;
   }
@@ -116,10 +162,15 @@ export async function awardXP(uid, action, metadata = {}) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
   const currentData = snap.exists() ? snap.data() : {};
-  
+
   const currentXP = currentData.Xp || 0;
-  const oldLevel = currentData.Level || "Apprentice";
-  const newXP = currentXP + xpAmount;
+  const oldLevel = currentData.Level || getLevelFromXP(currentXP);
+  const loginStreak = currentData.loginStreak || 0;
+
+  const multiplier = getStreakMultiplier(loginStreak);
+  const gainedXP = Math.round(baseXP * multiplier); // apply multiplier
+
+  const newXP = currentXP + gainedXP;
   const newLevel = getLevelFromXP(newXP);
 
   const updates = {
@@ -128,27 +179,28 @@ export async function awardXP(uid, action, metadata = {}) {
     updatedAt: serverTimestamp(),
   };
 
-  // Track specific action counts
-  if (action === 'WIN_POSTED') {
+  if (action === "WIN_POSTED") {
     updates.WinsPosted = increment(1);
-  } else if (action === 'LIVE_CALL_ATTENDED') {
+  } else if (action === "LIVE_CALL_ATTENDED") {
     updates.CallAttended = increment(1);
-  } else if (action === 'MODULE_COMPLETED') {
+  } else if (action === "MODULE_COMPLETED") {
     updates.ModulesCompleted = increment(1);
   }
 
   await setDoc(userRef, updates, { merge: true });
 
-  // Log level up
   if (oldLevel !== newLevel) {
     console.log(`🎉 LEVEL UP! ${oldLevel} → ${newLevel}`);
   }
 
-  console.log(`✅ Awarded ${xpAmount} XP for ${action}. New total: ${newXP} XP (${newLevel})`);
+  console.log(
+    `✅ Awarded ${gainedXP} XP (base ${baseXP} x${multiplier.toFixed(
+      1
+    )}) for ${action}. New total: ${newXP} XP (${newLevel})`
+  );
   return true;
 }
 
-// Mark a module as completed
 export async function markModuleCompleted(uid, courseId, moduleId) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
@@ -160,15 +212,12 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
 
   const fullModuleId = `${courseId}::${moduleId}`;
 
-  // Already completed - no double XP
   if (completedModuleIds.includes(fullModuleId)) {
     return { alreadyCompleted: true, courseCompleted: false };
   }
 
-  // Award module XP
-  await awardXP(uid, 'MODULE_COMPLETED');
+  await awardXP(uid, "MODULE_COMPLETED");
 
-  // Add to completed modules
   await setDoc(
     userRef,
     {
@@ -181,7 +230,6 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
   return { alreadyCompleted: false, courseCompleted: false };
 }
 
-// Mark a course as completed for a user + award XP ONCE
 export async function markCourseCompleted(uid, courseId) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
@@ -191,13 +239,11 @@ export async function markCourseCompleted(uid, courseId) {
     ? data.completedCourseIds
     : [];
 
-  // Already counted → no XP double-dip
   if (currentCompleted.includes(courseId)) {
     return false;
   }
 
-  // Award course completion bonus
-  await awardXP(uid, 'COURSE_COMPLETED');
+  await awardXP(uid, "COURSE_COMPLETED");
 
   await setDoc(
     userRef,
@@ -212,73 +258,48 @@ export async function markCourseCompleted(uid, courseId) {
   return true;
 }
 
-// Check and update daily login streak
+// 🔥 Daily login streak + auto XP
 export async function updateLoginStreak(uid) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
   const data = snap.exists() ? snap.data() : {};
 
-  const lastLogin = data.lastLoginDate?.toDate ? data.lastLoginDate.toDate() : null;
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().slice(0, 10);
 
-  let shouldAwardXP = false;
-  let newStreak = data.loginStreak || 0;
+  const lastLoginDate =
+    data.lastLoginDate && data.lastLoginDate.toDate
+      ? data.lastLoginDate.toDate()
+      : null;
 
-  if (!lastLogin) {
-    // First ever login
-    newStreak = 1;
-    shouldAwardXP = true;
+  let loginStreak = data.loginStreak || 0;
+
+  if (!lastLoginDate) {
+    loginStreak = 1;
   } else {
-    const lastLoginDate = new Date(lastLogin);
-    lastLoginDate.setHours(0, 0, 0, 0);
-    
-    const diffDays = Math.floor((today - lastLoginDate) / (1000 * 60 * 60 * 24));
+    const lastStr = lastLoginDate.toISOString().slice(0, 10);
 
-    if (diffDays === 0) {
-      // Same day - no change
+    if (lastStr === todayStr) {
+      // already logged in today
       return;
-    } else if (diffDays === 1) {
-      // Next day - continue streak
-      newStreak += 1;
-      shouldAwardXP = true;
+    }
+
+    const diffMs = today - lastLoginDate;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      loginStreak += 1;
     } else {
-      // Streak broken
-      newStreak = 1;
-      shouldAwardXP = true;
+      loginStreak = 1;
     }
   }
 
-  await setDoc(
-    userRef,
-    {
-      loginStreak: newStreak,
-      lastLoginDate: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  await awardXP(uid, "DAILY_LOGIN");
 
-  if (shouldAwardXP) {
-    await awardXP(uid, 'DAILY_LOGIN');
-  }
-}
+  await updateDoc(userRef, {
+    loginStreak,
+    lastLoginDate: serverTimestamp(),
+  });
 
-// Get module progress for a specific course
-export async function getCourseProgress(uid, courseId) {
-  const userRef = doc(db, "Users", uid);
-  const snap = await getDoc(userRef);
-  
-  if (!snap.exists()) {
-    return { completedModules: [], totalModules: 0, percentage: 0 };
-  }
-
-  const data = snap.data();
-  const completedModuleIds = data.completedModuleIds || [];
-  
-  const courseModules = completedModuleIds.filter(id => id.startsWith(`${courseId}::`));
-  
-  return {
-    completedModules: courseModules.map(id => id.split('::')[1]),
-    totalCompleted: courseModules.length,
-  };
+  console.log(`🔥 Login streak updated: ${loginStreak} days`);
 }
