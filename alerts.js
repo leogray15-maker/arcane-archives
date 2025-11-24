@@ -1,472 +1,189 @@
-// alerts.js – Arcane Alerts vB (TradingView + performance + Telegram ping)
+// archives.js
+// Arcane Archives – course progress + XP badge
 
-import { protectPage, db } from "./auth-guard.js";
+import { protectPage } from "./universal-auth.js";
 import {
-  collection,
-  addDoc,
-  updateDoc,
-  doc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-  limit,
-  getDoc,
-  where,
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  getUserStats,
+  XP_REWARDS,
+  getLevelFromXP,
+  getProgressToNextLevel,
+} from "./xp-system.js";
 
-const ADMIN_EMAIL = "leogray15@gmail.com";
-
-let currentUser = null;
-let isAdmin = false;
-
-// Protect alerts page, then init
+// Protect page: must be logged in + paid (universal-auth handles that)
 protectPage({
-  onSuccess: (user) => {
-    currentUser = user;
-    isAdmin = user.email === ADMIN_EMAIL;
+  onSuccess: async (user, userData) => {
+    try {
+      // Prefer the same data the dashboard uses (userData),
+      // fall back to getUserStats if needed
+      let stats = null;
 
-    setupAdminForm();
-    initAlertsFeed();
-    initPerformanceTracking();
+      if (userData) {
+        // If userData already looks like a stats object, use it directly.
+        if (
+          typeof userData.xp === "number" ||
+          typeof userData.coursesCompleted === "number" ||
+          Array.isArray(userData.completedCourseIds)
+        ) {
+          stats = userData;
+        } else if (userData.stats) {
+          // or nested stats
+          stats = userData.stats;
+        }
+      }
+
+      if (!stats) {
+        stats = await getUserStats(user.uid);
+      }
+
+      if (!stats) return;
+
+      updateProgressDisplay(stats);
+      markCompletedCourses(stats.completedCourseIds || []);
+      updateUserLevel(stats.xp || 0);
+    } catch (err) {
+      console.error("Error loading archive stats:", err);
+    }
   },
   onFailure: () => {
+    // If not allowed in, send back to login
     window.location.href = "login.html";
   },
 });
 
-// ---------- Admin: post trades ----------
+/**
+ * Update the purple "Your Progress" box
+ */
+function updateProgressDisplay(stats) {
+  const totalCourses = document.querySelectorAll("figure.link-to-page").length;
 
-function setupAdminForm() {
-  const formWrapper = document.getElementById("alertForm");
-  const postBtn = document.getElementById("postAlertBtn");
-  if (!formWrapper || !postBtn) return;
+  const completedCourses =
+    typeof stats.coursesCompleted === "number"
+      ? stats.coursesCompleted
+      : (stats.completedCourseIds || []).length;
 
-  if (!isAdmin) {
-    formWrapper.style.display = "none";
-    return;
+  const percentage =
+    totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
+
+  const totalXP = typeof stats.xp === "number" ? stats.xp : 0;
+  const modulesCompleted =
+    typeof stats.modulesCompleted === "number" ? stats.modulesCompleted : 0;
+
+  const progressContainer = document.getElementById("courseProgressStats");
+  const progressBar = document.getElementById("progressBar");
+  const progressPercentage = document.getElementById("progressPercentage");
+  const coursesCompletedText = document.getElementById("coursesCompletedText");
+  const xpEarnedText = document.getElementById("xpEarnedText");
+
+  if (!progressContainer) return;
+
+  progressContainer.style.display = "block";
+
+  if (progressBar) progressBar.style.width = `${percentage}%`;
+  if (progressPercentage) progressPercentage.textContent = `${percentage}%`;
+
+  if (coursesCompletedText) {
+    coursesCompletedText.textContent = `${completedCourses} of ${totalCourses} courses completed`;
   }
 
-  formWrapper.classList.add("visible");
+  if (xpEarnedText) {
+    xpEarnedText.textContent = `${totalXP.toLocaleString()} Total XP • ${modulesCompleted} Modules Completed`;
+  }
+}
 
-  postBtn.addEventListener("click", async () => {
-    const pair = document.getElementById("pairInput")?.value || "XAUUSD";
-    const direction = document.getElementById("directionSelect")?.value || "Buy";
-    const entry = document.getElementById("entryInput")?.value.trim();
-    const sl = document.getElementById("slInput")?.value.trim();
-    const tp1 = document.getElementById("tp1Input")?.value.trim();
-    const tp2 = document.getElementById("tp2Input")?.value.trim();
-    const tp3 = document.getElementById("tp3Input")?.value.trim();
-    const notes = document.getElementById("notesInput")?.value.trim();
+/**
+ * Mark completed courses visually inside the list
+ * (uses your existing .completed CSS + ✓ ::after)
+ */
+function markCompletedCourses(completedCourseIds) {
+  const completedSet = new Set(completedCourseIds || []);
 
-    if (!entry) {
-      alert("Please add at least an entry price.");
-      return;
-    }
+  document.querySelectorAll("figure.link-to-page").forEach((figure) => {
+    const courseId = figure.getAttribute("data-course-id");
+    if (!courseId) return;
 
-    postBtn.disabled = true;
-    postBtn.textContent = "Posting...";
+    if (completedSet.has(courseId)) {
+      const link = figure.querySelector("a");
+      if (!link) return;
 
-    try {
-      const alertData = {
-        type: "trade_idea",
-        pair,
-        direction,
-        entry: entry || null,
-        sl: sl || null,
-        tp1: tp1 || null,
-        tp2: tp2 || null,
-        tp3: tp3 || null,
-        notes: notes || null,
-        createdAt: serverTimestamp(),
-        createdBy: {
-          uid: currentUser.uid,
-          email: currentUser.email,
-        },
-        reactions: {
-          fire: [],
-          bear: [],
-          eyes: [],
-        },
-        status: "open", // open | win | loss | be
-        closedAt: null,
-        pips: null,
-      };
-
-      await addDoc(collection(db, "alerts"), alertData);
-
-      // ultra–private Telegram ping (no trade details)
-      sendTelegramAlert();
-
-      // clear form
-      document.getElementById("entryInput").value = "";
-      document.getElementById("slInput").value = "";
-      document.getElementById("tp1Input").value = "";
-      document.getElementById("tp2Input").value = "";
-      document.getElementById("tp3Input").value = "";
-      document.getElementById("notesInput").value = "";
-
-      postBtn.textContent = "Post Trade Signal";
-      postBtn.disabled = false;
-      alert("✅ Trade signal posted");
-    } catch (err) {
-      console.error("Error posting alert:", err);
-      alert("Error posting trade signal. Check console for details.");
-      postBtn.textContent = "Post Trade Signal";
-      postBtn.disabled = false;
+      link.classList.add("completed");
     }
   });
 }
 
-// ---------- Live alerts feed (open trades) ----------
+/**
+ * XP / Level badge under the title (non-floating, mobile-safe)
+ * Uses the same XP + level logic as dashboard via getLevelFromXP().
+ */
+function updateUserLevel(xpRaw) {
+  const xp = typeof xpRaw === "number" ? xpRaw : 0;
+  const level = getLevelFromXP(xp);
+  const progress = getProgressToNextLevel(xp);
 
-function initAlertsFeed() {
-  const container = document.getElementById("alertsContainer");
-  if (!container) return;
+  const titleEl = document.querySelector(".page-title");
+  if (!titleEl) return;
 
-  const alertsRef = collection(db, "alerts");
-  const qAlerts = query(
-    alertsRef,
-    where("status", "==", "open"),
-    orderBy("createdAt", "desc"),
-    limit(20)
-  );
+  let badge = document.getElementById("user-level-badge");
 
-  onSnapshot(
-    qAlerts,
-    (snapshot) => {
-      if (snapshot.empty) {
-        container.innerHTML = `
-          <div class="alert-card">
-            <div style="text-align: center; font-size:1rem;font-weight:600;">No active signals</div>
-            <div style="text-align: center; font-size:0.85rem;color:#9ca3af;margin-top:0.25rem;">
-              New trade signals will appear here once posted.
-            </div>
-          </div>
-        `;
-        return;
-      }
+  // Create badge once and insert just under the title
+  if (!badge) {
+    badge = document.createElement("div");
+    badge.id = "user-level-badge";
+    badge.style.marginTop = "0.45rem";
+    badge.style.display = "inline-flex";
+    badge.style.alignItems = "center";
+    badge.style.gap = "0.45rem";
+    badge.style.padding = "0.25rem 0.75rem";
+    badge.style.borderRadius = "999px";
+    badge.style.border = "1px solid rgba(147, 51, 234, 0.85)";
+    badge.style.background =
+      "radial-gradient(circle at top left, rgba(147,51,234,0.35), rgba(15,23,42,0.96))";
+    badge.style.fontSize = "0.8rem";
+    badge.style.color = "#e5e5e5";
+    badge.style.boxShadow = "0 8px 30px rgba(15,23,42,0.9)";
+    badge.style.backdropFilter = "blur(10px)";
 
-      container.innerHTML = "";
+    // Lives inside header, directly under the H1
+    titleEl.insertAdjacentElement("afterend", badge);
+  }
 
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const id = docSnap.id;
-        container.appendChild(renderAlertCard(id, data));
-      });
+  const icon = getLevelIcon(level);
 
-      attachReactionHandlers(container);
-      attachAdminHandlers(container);
-    },
-    (err) => {
-      console.error("Error loading alerts:", err);
-      container.innerHTML = `
-        <div class="alert-card">
-          <div style="color:#fca5a5;">Error loading alerts.</div>
-          <div style="font-size:0.85rem;color:#9ca3af;">${err.message}</div>
-        </div>
-      `;
-    }
-  );
-}
+  let pctText = "";
+  if (progress && typeof progress.percentage === "number") {
+    const pct = Math.round(progress.percentage);
+    pctText = pct < 100 ? `${pct}% to next` : "MAX";
+  }
 
-function renderAlertCard(id, data) {
-  const card = document.createElement("div");
-  card.className = "alert-card";
-
-  const pair = data.pair || "XAUUSD";
-  const direction = data.direction || "Buy";
-  const entry = data.entry || "";
-  const sl = data.sl || "";
-  const tp1 = data.tp1 || "";
-  const tp2 = data.tp2 || "";
-  const tp3 = data.tp3 || "";
-  const notes = data.notes || "";
-
-  const reactions = data.reactions || { fire: [], bear: [], eyes: [] };
-  const userId = currentUser?.uid;
-  const fireCount = reactions.fire?.length || 0;
-  const bearCount = reactions.bear?.length || 0;
-  const eyesCount = reactions.eyes?.length || 0;
-
-  const userReactedFire = userId && reactions.fire?.includes(userId);
-  const userReactedBear = userId && reactions.bear?.includes(userId);
-  const userReactedEyes = userId && reactions.eyes?.includes(userId);
-
-  card.innerHTML = `
-    <div class="trade-header">
-      <div class="trade-pair">${pair}</div>
-      <div class="trade-direction ${direction.toLowerCase()}">${direction.toUpperCase()}</div>
-    </div>
-
-    <div class="trade-details">
-      ${
-        entry
-          ? `<div class="trade-detail"><div class="trade-detail-label">Entry</div><div class="trade-detail-value">${entry}</div></div>`
-          : ""
-      }
-      ${
-        sl
-          ? `<div class="trade-detail"><div class="trade-detail-label">Stop Loss</div><div class="trade-detail-value">${sl}</div></div>`
-          : ""
-      }
-      ${
-        tp1
-          ? `<div class="trade-detail"><div class="trade-detail-label">TP1</div><div class="trade-detail-value">${tp1}</div></div>`
-          : ""
-      }
-      ${
-        tp2
-          ? `<div class="trade-detail"><div class="trade-detail-label">TP2</div><div class="trade-detail-value">${tp2}</div></div>`
-          : ""
-      }
-      ${
-        tp3
-          ? `<div class="trade-detail"><div class="trade-detail-label">TP3</div><div class="trade-detail-value">${tp3}</div></div>`
-          : ""
-      }
-    </div>
-
-    ${notes ? `<div class="trade-notes">${notes}</div>` : ""}
-
-    <div class="trade-footer">
-      <div class="trade-time">${formatTimestamp(data.createdAt)}</div>
-      <div class="reactions">
-        <button class="reaction-btn" data-id="${id}" data-type="fire" style="color:${
-          userReactedFire ? "#f97316" : "#9ca3af"
-        }">🔥 ${fireCount}</button>
-        <button class="reaction-btn" data-id="${id}" data-type="bear" style="color:${
-          userReactedBear ? "#f97316" : "#9ca3af"
-        }">🐻 ${bearCount}</button>
-        <button class="reaction-btn" data-id="${id}" data-type="eyes" style="color:${
-          userReactedEyes ? "#f97316" : "#9ca3af"
-        }">👀 ${eyesCount}</button>
-      </div>
-    </div>
-
-    ${
-      isAdmin
-        ? `
-    <div class="admin-actions">
-      <button class="admin-btn win" data-id="${id}" data-action="win">Win</button>
-      <button class="admin-btn loss" data-id="${id}" data-action="loss">Loss</button>
-      <button class="admin-btn be" data-id="${id}" data-action="be">Break Even</button>
-    </div>
-    `
-        : ""
-    }
+  badge.innerHTML = `
+    <span style="font-size: 1rem;">${icon}</span>
+    <span>Level: <strong style="color:#a78bfa;">${level}</strong></span>
+    <span style="font-size: 0.7rem; color:#9ca3af;">
+      ${xp.toLocaleString()} XP${pctText ? " • " + pctText : ""}
+    </span>
   `;
-
-  return card;
 }
 
-// ---------- Reactions ----------
+/**
+ * Level icons – supports your new ladder:
+ * Seeker → Apprentice → Advanced Apprentice → Awakened Apprentice → Awakened Master → Arcane Master
+ * and also falls back to older names if they still exist in the DB.
+ */
+function getLevelIcon(level) {
+  const map = {
+    // New system
+    Seeker: "📜",
+    Apprentice: "🪄",
+    "Advanced Apprentice": "⚔️",
+    "Awakened Apprentice": "🌌",
+    "Awakened Master": "🔮",
+    "Arcane Master": "👑",
 
-function attachReactionHandlers(container) {
-  const buttons = container.querySelectorAll(".reaction-btn");
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (!currentUser) return;
+    // Old names (if any user still has them)
+    Scholar: "📚",
+    Adept: "⚡",
+    Master: "🔮",
+    Archmage: "👑",
+  };
 
-      const id = btn.getAttribute("data-id");
-      const type = btn.getAttribute("data-type");
-      if (!id || !type) return;
-
-      try {
-        const ref = doc(db, "alerts", id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-
-        const data = snap.data();
-        const reactions = data.reactions || { fire: [], bear: [], eyes: [] };
-        const arr = reactions[type] || [];
-        let newArr;
-
-        if (arr.includes(currentUser.uid)) {
-          newArr = arr.filter((uid) => uid !== currentUser.uid);
-        } else {
-          newArr = [...arr, currentUser.uid];
-        }
-
-        reactions[type] = newArr;
-
-        await updateDoc(ref, { reactions });
-      } catch (err) {
-        console.error("Error updating reactions:", err);
-      }
-    });
-  });
+  return map[level] || "📜";
 }
-
-// ---------- Admin: mark trade as win/loss/BE ----------
-
-function attachAdminHandlers(container) {
-  if (!isAdmin) return;
-
-  const adminButtons = container.querySelectorAll(".admin-btn");
-  adminButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-id");
-      const action = btn.getAttribute("data-action");
-      if (!id || !action) return;
-
-      const pipsInput = prompt(
-        `Enter pips for this ${action.toUpperCase()} trade (e.g., +50, -30, 0):`
-      );
-      if (pipsInput === null) return;
-
-      const pips = parseFloat(pipsInput) || 0;
-
-      try {
-        const ref = doc(db, "alerts", id);
-        await updateDoc(ref, {
-          status: action,
-          closedAt: serverTimestamp(),
-          pips: pips,
-        });
-
-        alert(`✅ Trade marked as ${action.toUpperCase()} with ${pips} pips`);
-      } catch (err) {
-        console.error("Error closing trade:", err);
-        alert("Error closing trade. Check console for details.");
-      }
-    });
-  });
-}
-
-// ---------- Performance tracking (closed trades) ----------
-
-function initPerformanceTracking() {
-  const alertsRef = collection(db, "alerts");
-  const closedQuery = query(
-    alertsRef,
-    where("status", "in", ["win", "loss", "be"]),
-    orderBy("closedAt", "desc"),
-    limit(100)
-  );
-
-  onSnapshot(closedQuery, (snapshot) => {
-    let wins = 0;
-    let losses = 0;
-    let breakEvens = 0;
-    let totalPips = 0;
-
-    const historyRows = [];
-
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const status = data.status;
-      const pips = data.pips || 0;
-
-      if (status === "win") wins++;
-      else if (status === "loss") losses++;
-      else if (status === "be") breakEvens++;
-
-      totalPips += pips;
-
-      const closedDate = data.closedAt
-        ? data.closedAt.toDate().toLocaleDateString()
-        : "N/A";
-      historyRows.push({
-        date: closedDate,
-        pair: data.pair || "XAUUSD",
-        direction: data.direction || "Buy",
-        entry: data.entry || "N/A",
-        exit:
-          status === "win"
-            ? data.tp1 || data.tp2 || data.tp3 || "N/A"
-            : data.sl || "N/A",
-        status: status,
-        pips: pips,
-      });
-    });
-
-    document.getElementById("winsCount").textContent = wins;
-    document.getElementById("lossesCount").textContent = losses;
-    document.getElementById("beCount").textContent = breakEvens;
-
-    const totalTrades = wins + losses;
-    const winRate =
-      totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
-    document.getElementById("winRate").textContent = `${winRate}%`;
-    document.getElementById("netPips").textContent =
-      totalPips > 0 ? `+${totalPips}` : totalPips;
-
-    updateHistoryTable(historyRows);
-  });
-}
-
-function updateHistoryTable(rows) {
-  const tbody = document.getElementById("historyTableBody");
-  if (!tbody) return;
-
-  if (rows.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; color: #9ca3af; padding: 2rem;">
-          No closed trades yet. Mark live signals as WIN/LOSS/BE to track performance.
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = rows
-    .map(
-      (row) => `
-    <tr>
-      <td>${row.date}</td>
-      <td>${row.pair}</td>
-      <td>${row.direction}</td>
-      <td>${row.entry}</td>
-      <td>${row.exit}</td>
-      <td><span class="result-badge ${row.status}">${row.status.toUpperCase()}</span></td>
-      <td style="color: ${
-        row.pips > 0 ? "#22c55e" : row.pips < 0 ? "#ef4444" : "#a855f7"
-      }; font-weight: 600;">
-        ${row.pips > 0 ? "+" : ""}${row.pips}
-      </td>
-    </tr>
-  `
-    )
-    .join("");
-}
-
-// ---------- Helpers ----------
-
-function formatTimestamp(ts) {
-  if (!ts) return "";
-  const date = ts.toDate ? ts.toDate() : new Date(ts);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "Just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-
-  return date.toLocaleDateString();
-}
-
-// Telegram ping via Netlify function
-async function sendTelegramAlert() {
-  try {
-    const res = await fetch("/.netlify/functions/send-telegram-alert", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Telegram function error:", res.status, text);
-    }
-  } catch (err) {
-    console.error("Telegram notification failed:", err);
-  }
-}
-
-// Expose for console debugging
-window.arcaneAlerts = {
-  getCurrentUser: () => currentUser,
-  isAdmin: () => isAdmin,
-};
