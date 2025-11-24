@@ -317,6 +317,13 @@
             font-weight: 600;
         }
 
+        /* NEW: subline for modules under courses */
+        .stat-subvalue {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.15rem;
+        }
+
         /* Navigation cards */
         .nav-section {
             margin-top: 1.2rem;
@@ -614,9 +621,13 @@
                     </div>
 
                     <div class="stats-grid">
+                        <!-- Courses + modules in the SAME card -->
                         <div class="stat-card">
                             <div class="stat-label">Courses Completed</div>
                             <div class="stat-value" id="coursesCompleted">0</div>
+                            <div class="stat-subvalue">
+                                <span id="modulesCompleted">0</span> modules completed
+                            </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Wins Posted</div>
@@ -814,9 +825,17 @@
                 }
 
                 // Stats
-                document.getElementById("coursesCompleted").textContent = userData.CoursesCompleted || 0;
-                document.getElementById("winsPosted").textContent = userData.WinsPosted || 0;
-                document.getElementById("callsAttended").textContent = userData.CallAttended || 0;
+                const coursesCompleted = userData.CoursesCompleted ?? userData.coursesCompleted ?? 0;
+                const modulesCompleted = userData.ModulesCompleted ?? userData.modulesCompleted ?? 0;
+
+                document.getElementById("coursesCompleted").textContent = coursesCompleted;
+                const modulesEl = document.getElementById("modulesCompleted");
+                if (modulesEl) {
+                    modulesEl.textContent = modulesCompleted;
+                }
+
+                document.getElementById("winsPosted").textContent = userData.WinsPosted || userData.winsPosted || 0;
+                document.getElementById("callsAttended").textContent = userData.CallAttended || userData.callsAttended || 0;
 
                 // Subscription badge
                 if (userData.subscriptionStatus === 'active' || userData.isPaid) {
@@ -842,5 +861,7 @@
         setupLogoutButton();
     </script>
 
+    <!-- XP event listener (keeps things in sync across pages) -->
+    <script type="module" src="/xp-module-listener.js"></script>
 </body>
 </html>
