@@ -1,22 +1,27 @@
 from pathlib import Path
 import json
 import re
+from typing import Optional
 
 ROOT = Path(__file__).parent
 EXPORT_ROOT = ROOT / "notion-export-clean" / "The Arcane Archives"
+
 
 def slugify(name: str) -> str:
     name = name.strip().lower()
     name = re.sub(r"[^a-z0-9]+", "-", name)
     return re.sub(r"-+", "-", name).strip("-")
 
-def extract_module_id(html: str) -> str | None:
+
+def extract_module_id(html: str) -> Optional[str]:
     m = re.search(r"initModuleTracker\(['\"]([^'\"]+)['\"]\)", html)
     return m.group(1) if m else None
+
 
 def main():
     index = {}
 
+    # Walk through every HTML file in "The Arcane Archives"
     for path in EXPORT_ROOT.rglob("*.html"):
         try:
             html = path.read_text(encoding="utf-8")
@@ -25,7 +30,8 @@ def main():
 
         module_id = extract_module_id(html)
         if not module_id:
-            continue  # not a real module page
+            # Skip files that don't use initModuleTracker
+            continue
 
         # Course directory = folder directly under "The Arcane Archives"
         try:
@@ -47,6 +53,7 @@ def main():
     out_path = ROOT / "course-index.json"
     out_path.write_text(json.dumps(index, indent=2), encoding="utf-8")
     print(f"Wrote course-index.json with {len(index)} courses at {out_path}")
+
 
 if __name__ == "__main__":
     main()

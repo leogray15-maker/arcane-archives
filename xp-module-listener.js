@@ -1,12 +1,5 @@
 // xp-module-listener.js
-// Listens for aa:moduleToggle events from course-module-tracker.js
-// and updates Firestore XP + stats.
-//
-// XP rules:
-//   +25 XP when module completed
-//   -25 XP when module un-ticked
-//   +100 XP when course flips incomplete -> complete
-//   -100 XP when course flips complete -> incomplete
+// Listens for aa:moduleToggle events and updates XP + stats.
 
 import { auth, db } from "./auth-guard.js";
 import {
@@ -23,10 +16,11 @@ function handleModuleToggle(detail) {
 
   const { completed, course } = detail;
 
-  const moduleDelta = completed ? 1 : -1; // modulesCompleted
+  const moduleDelta = completed ? 1 : -1; // ModulesCompleted
   let xpDelta = completed ? 25 : -25;
   let courseCountDelta = 0;
 
+  // Check if this toggle flips the whole course from incomplete <-> complete
   if (course && typeof course.completed === "boolean") {
     const nowCompleted = !!course.completed;
     const wasCompleted = !!course.previouslyCompleted;
@@ -44,10 +38,11 @@ function handleModuleToggle(detail) {
 
   const userRef = doc(db, "Users", currentUserId);
 
+  // 🔥 Use field names that match your Firestore rules exactly
   updateDoc(userRef, {
-    xp: increment(xpDelta),
-    modulesCompleted: increment(moduleDelta),
-    coursesCompleted: increment(courseCountDelta),
+    Xp: increment(xpDelta),
+    ModulesCompleted: increment(moduleDelta),
+    CoursesCompleted: increment(courseCountDelta),
   }).catch((err) => {
     console.error("[AA] Failed to update XP for module toggle", err);
   });
