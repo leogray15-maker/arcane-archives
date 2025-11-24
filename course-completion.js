@@ -47,12 +47,7 @@ export function autoInitCourseCompletion() {
       discovery.modules.length
     );
 
-    renderCourseProgressUI(
-      container,
-      user.uid,
-      discovery,
-      progressDoc
-    );
+    renderCourseProgressUI(container, user.uid, discovery, progressDoc);
   });
 }
 
@@ -111,11 +106,22 @@ function courseProgressRef(uid, courseId) {
   return doc(db, "courseProgress", `${uid}_${courseId}`);
 }
 
-async function loadCourseProgress(uid, courseId, totalModules) {
+// 🔧 helper: pick the best totalModules value
+function normalizeTotalModules(savedValue, discoveredTotal) {
+  const saved = Number.isFinite(savedValue) ? savedValue : 0;
+  const discovered = Number.isFinite(discoveredTotal)
+    ? discoveredTotal
+    : 0;
+  return Math.max(saved, discovered);
+}
+
+async function loadCourseProgress(uid, courseId, discoveredTotal) {
   const ref = courseProgressRef(uid, courseId);
   const snap = await getDoc(ref);
 
+  // No doc yet → create a fresh one using discovered module count
   if (!snap.exists()) {
+    const totalModules = normalizeTotalModules(null, discoveredTotal);
     const base = {
       userId: uid,
       courseId,
@@ -129,33 +135,55 @@ async function loadCourseProgress(uid, courseId, totalModules) {
     return base;
   }
 
+  // Existing doc → merge with what we see on the page now
   const data = snap.data() || {};
+  const completedModules = Array.isArray(data.completedModules)
+    ? data.completedModules
+    : [];
+
+  const totalModules = normalizeTotalModules(
+    data.totalModules,
+    discoveredTotal
+  );
+
+  const completed = completedModules.length >= totalModules;
+
+  // If we detected that totalModules should be higher, patch the doc
+  if (totalModules !== data.totalModules) {
+    await setDoc(
+      ref,
+      {
+        totalModules,
+        completed,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }
+
   return {
     userId: uid,
     courseId,
-    completedModules: Array.isArray(data.completedModules)
-      ? data.completedModules
-      : [],
-    totalModules: data.totalModules || totalModules,
-    completed: !!data.completed,
+    completedModules,
+    totalModules,
+    completed,
   };
 }
 
-async function toggleModuleProgress(
-  uid,
-  discovery,
-  moduleId,
-  checked
-) {
+async function toggleModuleProgress(uid, discovery, moduleId, checked) {
   const ref = courseProgressRef(uid, discovery.courseId);
   const snap = await getDoc(ref);
   const data = snap.exists() ? snap.data() : {};
 
-  const totalModules = data.totalModules || discovery.modules.length;
+  // Use the largest of "saved total" vs "modules on page now"
+  const discoveredTotal = discovery.modules.length;
+  const totalModules = normalizeTotalModules(
+    data.totalModules,
+    discoveredTotal
+  );
+
   const completedSet = new Set(
-    Array.isArray(data.completedModules)
-      ? data.completedModules
-      : []
+    Array.isArray(data.completedModules) ? data.completedModules : []
   );
 
   if (checked) {
@@ -194,12 +222,7 @@ async function toggleModuleProgress(
 
 // ------- UI rendering -------
 
-function renderCourseProgressUI(
-  container,
-  uid,
-  discovery,
-  progress
-) {
+function renderCourseProgressUI(container, uid, discovery, progress) {
   const total = progress.totalModules || discovery.modules.length;
   const done = progress.completedModules.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
