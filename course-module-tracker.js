@@ -31,6 +31,14 @@ const STORAGE_KEY = "aa_module_progress_v1";
 let courseIndexPromise = null;
 let moduleToCourseMap = null;
 
+// Handles both string module ids and objects { id: "..." }
+function normalizeModuleId(mod) {
+  if (!mod) return null;
+  if (typeof mod === "string") return mod;
+  if (typeof mod === "object" && mod.id) return String(mod.id);
+  return null;
+}
+
 function loadCourseIndex() {
   if (!courseIndexPromise) {
     courseIndexPromise = fetch("/course-index.json")
@@ -42,8 +50,9 @@ function loadCourseIndex() {
         moduleToCourseMap = {};
         Object.entries(index).forEach(([courseId, course]) => {
           (course.modules || []).forEach((mod) => {
-            if (mod.id) {
-              moduleToCourseMap[mod.id] = courseId;
+            const mid = normalizeModuleId(mod);
+            if (mid) {
+              moduleToCourseMap[mid] = courseId;
             }
           });
         });
@@ -51,6 +60,7 @@ function loadCourseIndex() {
       })
       .catch((err) => {
         console.error("[AA] loadCourseIndex error", err);
+        moduleToCourseMap = {};
         return {};
       });
   }
@@ -96,7 +106,9 @@ function recomputeCourseProgress(progress, courseIndex, courseId) {
   let completedModules = 0;
 
   modules.forEach((mod) => {
-    if (progress.modules[mod.id]) {
+    const mid = normalizeModuleId(mod);
+    if (!mid) return;
+    if (progress.modules[mid]) {
       completedModules += 1;
     }
   });
@@ -150,9 +162,10 @@ export async function initModuleTracker(moduleId) {
         : moduleId;
 
     const index = await loadCourseIndex();
-    const courseId = moduleToCourseMap
-      ? moduleToCourseMap[effectiveModuleId]
-      : null;
+    const courseId =
+      moduleToCourseMap && effectiveModuleId
+        ? moduleToCourseMap[effectiveModuleId]
+        : null;
 
     if (!courseId) {
       console.warn(
@@ -162,9 +175,11 @@ export async function initModuleTracker(moduleId) {
     }
 
     const progress = loadProgress();
+
     // Ensure we have a course entry
     if (courseId && !progress.courses[courseId]) {
       recomputeCourseProgress(progress, index, courseId);
+      saveProgress(progress);
     }
 
     // Initial UI state
@@ -172,7 +187,11 @@ export async function initModuleTracker(moduleId) {
     applyButtonState(button, initiallyCompleted);
 
     // Click handler – toggle completion
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      // stop links/forms from doing anything
+      event.preventDefault();
+      event.stopPropagation();
+
       const newCompleted = !progress.modules[effectiveModuleId];
       const prevCourseState =
         courseId && progress.courses[courseId]
@@ -247,3 +266,28 @@ export function getStoredCourseProgress() {
   const { courses } = loadProgress();
   return courses || {};
 }
+// --- AUTO-INIT ON MODULE PAGES -----------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  // Find the purple pill button
+  const button =
+    document.getElementById("complete-module-btn") ||
+    document.querySelector("[data-module-id]");
+
+  if (!button) {
+    console.warn("[AA] No complete-module-btn found on this page");
+    return;
+  }
+
+  // Pull module ID from data-module-id (injected via Python scripts)
+  const moduleId =
+    (button.dataset.moduleId && button.dataset.moduleId.trim()) ||
+    button.getAttribute("data-module-id");
+
+  if (!moduleId) {
+    console.warn("[AA] No moduleId present on button; tracker skipped");
+    return;
+  }
+
+  // Load the full module tracking system
+  initModuleTracker(moduleId);
+});
