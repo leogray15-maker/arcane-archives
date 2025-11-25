@@ -100,6 +100,38 @@
       overflow: hidden;
     }
 
+    /* Archives XP strip */
+    .archives-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: center;
+      margin-bottom: 1.3rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    .archives-meta > div {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .archives-meta strong {
+      color: var(--text-light);
+    }
+
+    .level-badge {
+      padding: 0.12rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(147, 51, 234, 0.8);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--purple-light);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
     /* Notion content tweaks */
     .notion-page {
       line-height: 1.6;
@@ -341,6 +373,23 @@
 
   <main class="main-content">
     <div class="page-card notion-page">
+      <!-- 🔮 XP strip -->
+      <div class="archives-meta">
+        <div>
+          <span>Level:</span>
+          <span id="archivesLevelBadge" class="level-badge">SEEKER</span>
+        </div>
+        <div>
+          <span>XP:</span>
+          <strong id="archivesCurrentXP">0</strong>
+        </div>
+        <div>
+          <span id="archivesCourses">0 courses completed</span>
+        </div>
+        <div>
+          <span id="archivesModules">0 modules completed</span>
+        </div>
+      </div>
       <!-- ==== Notion content starts (your original article) ==== -->
       <article id="2317f6a4-04fe-80f4-9812-c1e75ba60d33" class="page sans">
         <header>
@@ -655,8 +704,36 @@
 
   <script type="module">
     import { protectPage } from "./auth-guard.js";
+    import { getUserStats } from "./xp-system.js";
 
     protectPage({
+      onSuccess: async (user) => {
+        try {
+          const stats = await getUserStats(user.uid);
+          const level = stats.Level || "Seeker";
+          const xp = stats.Xp || 0;
+          const courses = stats.CoursesCompleted || 0;
+          const modules = stats.ModulesCompleted || 0;
+
+          const badge = document.getElementById("archivesLevelBadge");
+          if (badge) badge.textContent = level.toUpperCase();
+
+          const xpEl = document.getElementById("archivesCurrentXP");
+          if (xpEl) xpEl.textContent = xp;
+
+          const coursesEl = document.getElementById("archivesCourses");
+          if (coursesEl) {
+            coursesEl.textContent = `${courses} course${courses === 1 ? "" : "s"} completed`;
+          }
+
+          const modulesEl = document.getElementById("archivesModules");
+          if (modulesEl) {
+            modulesEl.textContent = `${modules} module${modules === 1 ? "" : "s"} completed`;
+          }
+        } catch (err) {
+          console.error("[AA] Failed to load archives stats", err);
+        }
+      },
       onFailure: () => {
         window.location.href = "login.html";
       }

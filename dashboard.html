@@ -245,11 +245,6 @@
             gap: 0.4rem;
         }
 
-        .xp-header-left span {
-            color: var(--purple-light);
-            font-weight: 600;
-        }
-
         .xp-header-right {
             font-size: 0.8rem;
             color: var(--text-dim);
@@ -317,7 +312,6 @@
             font-weight: 600;
         }
 
-        /* NEW: subline for modules under courses */
         .stat-subvalue {
             font-size: 0.75rem;
             color: var(--text-dim);
@@ -409,10 +403,9 @@
             font-size: 0.85rem;
         }
 
-        /* Level badge */
+        /* Level badge (only purple pill now) */
         .level-badge {
-            margin-left: 0.4rem;
-            padding: 0.1rem 0.5rem;
+            padding: 0.12rem 0.55rem;
             border-radius: 999px;
             border: 1px solid rgba(147, 51, 234, 0.8);
             font-size: 0.7rem;
@@ -560,8 +553,6 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="../notion-arcane.css">
-    <script type="module" src="../notion-protect.js"></script>
 </head>
 <body>
     <a href="index.html" class="back-btn">← Back to Home</a>
@@ -605,8 +596,8 @@
                 <section class="xp-section">
                     <div class="xp-header">
                         <div class="xp-header-left">
-                            Level: <span id="userLevel">Seeker</span>
-                            <span id="userLevelBadge" class="level-badge"></span>
+                            Level:
+                            <span id="userLevelBadge" class="level-badge">SEEKER</span>
                         </div>
                         <div class="xp-header-right">
                             XP: <span id="currentXP">0</span> / <span id="nextLevelXP">100</span>
@@ -621,7 +612,6 @@
                     </div>
 
                     <div class="stats-grid">
-                        <!-- Courses + modules in the SAME card -->
                         <div class="stat-card">
                             <div class="stat-label">Courses Completed</div>
                             <div class="stat-value" id="coursesCompleted">0</div>
@@ -793,23 +783,21 @@
                 // 🔮 XP + Level
                 const xp = userData.Xp || 0;
 
-                // Always derive level from XP
-                let levelFromXP = "Seeker";
+                let levelFromXPValue = "Seeker";
                 try {
                     if (typeof getLevelFromXP === "function") {
-                        levelFromXP = getLevelFromXP(xp);
+                        levelFromXPValue = getLevelFromXP(xp);
                     } else {
-                        levelFromXP = userData.Level || "Seeker";
+                        levelFromXPValue = userData.Level || "Seeker";
                     }
                 } catch (e) {
                     console.warn("getLevelFromXP failed, falling back to stored Level", e);
-                    levelFromXP = userData.Level || "Seeker";
+                    levelFromXPValue = userData.Level || "Seeker";
                 }
 
                 const progress = getProgressToNextLevel(xp);
                 const nextLevelXP = progress.nextLevelXP || (xp + 100);
 
-                document.getElementById("userLevel").textContent = levelFromXP;
                 document.getElementById("currentXP").textContent = xp;
                 document.getElementById("nextLevelXP").textContent = nextLevelXP;
 
@@ -818,10 +806,9 @@
                 progressBar.style.width = pct + "%";
                 progressBar.textContent = Math.round(pct) + "%";
 
-                // Level badge
                 const badgeEl = document.getElementById("userLevelBadge");
                 if (badgeEl) {
-                    badgeEl.textContent = levelFromXP.toUpperCase();
+                    badgeEl.textContent = levelFromXPValue.toUpperCase();
                 }
 
                 // Stats
@@ -834,8 +821,10 @@
                     modulesEl.textContent = modulesCompleted;
                 }
 
-                document.getElementById("winsPosted").textContent = userData.WinsPosted || userData.winsPosted || 0;
-                document.getElementById("callsAttended").textContent = userData.CallAttended || userData.callsAttended || 0;
+                document.getElementById("winsPosted").textContent =
+                    userData.WinsPosted || userData.winsPosted || 0;
+                document.getElementById("callsAttended").textContent =
+                    userData.CallAttended || userData.callsAttended || 0;
 
                 // Subscription badge
                 if (userData.subscriptionStatus === 'active' || userData.isPaid) {
@@ -845,16 +834,16 @@
                 // 📈 Mobile HUD
                 const hud = document.getElementById("xpHud");
                 if (hud) {
-                    document.getElementById("hudLevel").textContent = levelFromXP;
+                    document.getElementById("hudLevel").textContent = levelFromXPValue;
                     document.getElementById("hudXP").textContent = xp;
                 }
 
                 // ✨ Level-up detection (client-side)
                 const prevLevel = localStorage.getItem("aa_prev_level");
-                if (prevLevel && prevLevel !== levelFromXP) {
-                    showLevelUpToast(prevLevel, levelFromXP);
+                if (prevLevel && prevLevel !== levelFromXPValue) {
+                    showLevelUpToast(prevLevel, levelFromXPValue);
                 }
-                localStorage.setItem("aa_prev_level", levelFromXP);
+                localStorage.setItem("aa_prev_level", levelFromXPValue);
             }
         });
 
@@ -862,6 +851,6 @@
     </script>
 
     <!-- XP event listener (keeps things in sync across pages) -->
-    <script type="module" src="/xp-module-listener.js"></script>
+    <script type="module" src="xp-module-listener.js"></script>
 </body>
 </html>

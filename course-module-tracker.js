@@ -1,5 +1,5 @@
 // course-module-tracker.js
-// Tracks per-module completion in localStorage and derives per-course completion
+// Tracks per-module completion in localStorage and derives per-course completion.
 // Emits DOM events so other scripts (XP, dashboard, archives) can react.
 //
 // Events:
@@ -144,6 +144,31 @@ function dispatchCourseState(courseId, state) {
   );
 }
 
+function applyButtonState(button, completed) {
+  if (!button) return;
+
+  button.dataset.completed = completed ? "true" : "false";
+
+  if (completed) {
+    button.classList.add("aa-pill-button--completed");
+  } else {
+    button.classList.remove("aa-pill-button--completed");
+  }
+
+  const primary = button.querySelector(".aa-pill-primary");
+  const secondary = button.querySelector(".aa-pill-secondary");
+
+  if (completed) {
+    if (primary) primary.textContent = "✅ Module Completed";
+    if (secondary) secondary.textContent = "+25 XP Awarded";
+    if (!primary && !secondary) button.textContent = "✅ Module Completed";
+  } else {
+    if (primary) primary.textContent = "🟣 Complete Module";
+    if (secondary) secondary.textContent = "+25 XP";
+    if (!primary && !secondary) button.textContent = "✅ Complete Module";
+  }
+}
+
 // PUBLIC: init tracking for a single module page
 export async function initModuleTracker(moduleId) {
   try {
@@ -188,7 +213,6 @@ export async function initModuleTracker(moduleId) {
 
     // Click handler – toggle completion
     button.addEventListener("click", (event) => {
-      // stop links/forms from doing anything
       event.preventDefault();
       event.stopPropagation();
 
@@ -208,56 +232,28 @@ export async function initModuleTracker(moduleId) {
       saveProgress(progress);
       applyButtonState(button, newCompleted);
 
-      if (courseId && courseState) {
-        dispatchModuleToggle({
-          courseId,
-          moduleId: effectiveModuleId,
-          completed: newCompleted,
-          course: {
-            totalModules: courseState.totalModules,
-            completedModules: courseState.completedModules,
-            completed: courseState.completed,
-            previouslyCompleted: prevCourseState
-              ? !!prevCourseState.completed
-              : false,
-          },
-        });
+      const detail = {
+        courseId,
+        moduleId: effectiveModuleId,
+        completed: newCompleted,
+        course: courseState
+          ? {
+              ...courseState,
+              previouslyCompleted:
+                prevCourseState && typeof prevCourseState.completed === "boolean"
+                  ? prevCourseState.completed
+                  : false,
+            }
+          : null,
+      };
 
-        // Fire course state changed event if completion flipped
-        const prevCompleted = prevCourseState
-          ? !!prevCourseState.completed
-          : false;
-        if (prevCompleted !== courseState.completed) {
-          dispatchCourseState(courseId, courseState);
-        }
-      } else {
-        // Still emit module toggle so XP can react even if courseId missing
-        dispatchModuleToggle({
-          courseId: courseId || null,
-          moduleId: effectiveModuleId,
-          completed: newCompleted,
-          course: null,
-        });
+      dispatchModuleToggle(detail);
+      if (courseId && courseState) {
+        dispatchCourseState(courseId, courseState);
       }
     });
   } catch (err) {
     console.error("[AA] initModuleTracker error", err);
-  }
-}
-
-function applyButtonState(button, completed) {
-  if (!button) return;
-  button.classList.toggle("aa-module-completed", completed);
-
-  const primary = button.querySelector(".aa-label-primary");
-  const secondary = button.querySelector(".aa-label-secondary");
-
-  if (completed) {
-    if (primary) primary.textContent = "✅ Module Completed";
-    if (secondary) secondary.textContent = "+25 XP Awarded";
-  } else {
-    if (primary) primary.textContent = "🟣 Complete Module";
-    if (secondary) secondary.textContent = "+25 XP";
   }
 }
 
@@ -266,28 +262,3 @@ export function getStoredCourseProgress() {
   const { courses } = loadProgress();
   return courses || {};
 }
-// --- AUTO-INIT ON MODULE PAGES -----------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-  // Find the purple pill button
-  const button =
-    document.getElementById("complete-module-btn") ||
-    document.querySelector("[data-module-id]");
-
-  if (!button) {
-    console.warn("[AA] No complete-module-btn found on this page");
-    return;
-  }
-
-  // Pull module ID from data-module-id (injected via Python scripts)
-  const moduleId =
-    (button.dataset.moduleId && button.dataset.moduleId.trim()) ||
-    button.getAttribute("data-module-id");
-
-  if (!moduleId) {
-    console.warn("[AA] No moduleId present on button; tracker skipped");
-    return;
-  }
-
-  // Load the full module tracking system
-  initModuleTracker(moduleId);
-});
