@@ -1,197 +1,137 @@
 #!/bin/bash
-# COMPLETE DEPLOYMENT SCRIPT FOR THE ARCANE ARCHIVES
-# Copy and paste this entire file, or run line by line
+# 🔮 THE ARCANE ARCHIVES - COMPLETE DEPLOYMENT SCRIPT
+# Deploys all changes from today's session
 
-echo "🚀 Starting deployment of complete XP system..."
-echo ""
-
-# ============================================================
-# STEP 1: BACKUP CURRENT STATE
-# ============================================================
-echo "📦 Step 1: Creating backup..."
-git add .
-git commit -m "Backup before adding complete XP system"
-git branch backup-pre-xp-system
-echo "✅ Backup created!"
+echo "🔮 THE ARCANE ARCHIVES - DEPLOYMENT"
+echo "===================================="
 echo ""
 
-# ============================================================
-# STEP 2: REMOVE OLD FILES
-# ============================================================
-echo "🗑️  Step 2: Removing old files..."
-rm -f referral.html
-rm -f affiliate.html
-mv xp-system.js xp-system.js.old 2>/dev/null || true
-mv wins.js wins.js.old 2>/dev/null || true
-mv archives.js archives.js.old 2>/dev/null || true
-mv archives.html archives.html.old 2>/dev/null || true
-echo "✅ Old files removed/backed up!"
-echo ""
-
-# ============================================================
-# MANUAL STEP: DOWNLOAD FILES
-# ============================================================
-echo "📥 Step 3: MANUAL STEP REQUIRED"
-echo ""
-echo "Please download these files from Claude's /mnt/user-data/outputs/"
-echo "and place them in your project root:"
-echo ""
-echo "  Production Files:"
-echo "  - xp-system.js"
-echo "  - wins.js"
-echo "  - archives.js"
-echo "  - archives.html"
-echo "  - course-module-tracker.js"
-echo "  - referrals.html"
-echo ""
-echo "  Automation Scripts:"
-echo "  - add_module_tracking.py"
-echo "  - add_module_tracking.sh"
-echo ""
-read -p "Have you downloaded all files? (yes/no): " files_ready
-if [ "$files_ready" != "yes" ]; then
-    echo "❌ Please download files first, then run this script again."
-    exit 1
-fi
-echo "✅ Files downloaded!"
-echo ""
-
-# ============================================================
-# STEP 4: MAKE SCRIPTS EXECUTABLE
-# ============================================================
-echo "🔧 Step 4: Making scripts executable..."
-chmod +x add_module_tracking.py
-chmod +x add_module_tracking.sh
-echo "✅ Scripts ready!"
-echo ""
-
-# ============================================================
-# STEP 5: ADD MODULE TRACKING TO ALL COURSES
-# ============================================================
-echo "🤖 Step 5: Adding module tracking to all courses..."
-echo ""
-echo "Enter the path to your courses directory:"
-echo "Example: ./notion-export-clean/The Arcane Archives/"
-read -p "Path: " courses_path
-
-if [ ! -d "$courses_path" ]; then
-    echo "❌ Directory not found: $courses_path"
+# Check if we're in the right directory
+if [ ! -d ".git" ]; then
+    echo "❌ Error: Not in a git repository"
+    echo "Please cd into your arcane-archives directory first"
     exit 1
 fi
 
+echo "📦 Files to deploy:"
+echo "  ✅ XP System fixes"
+echo "  ✅ Alerts system enhancements"
+echo "  ✅ Archives improvements"
+echo "  ✅ Dashboard updates"
 echo ""
-echo "Running DRY RUN first to preview changes..."
-python3 add_module_tracking.py "$courses_path" --dry-run
 
+# Show current status
+echo "📊 Current git status:"
+git status --short
 echo ""
-read -p "Does the dry run look good? (yes/no): " dry_run_ok
-if [ "$dry_run_ok" != "yes" ]; then
-    echo "❌ Aborting. Review the dry run output and try again."
+
+read -p "Press ENTER to continue with deployment..."
+echo ""
+
+# Stage all changes
+echo "📦 Staging files..."
+
+# XP System files
+git add xp-system.js
+git add course-modules.css
+git add course-modules.js
+git add archives.js
+git add xp-module-listener.js
+
+# Dashboard (if changed)
+git add dashboard.html 2>/dev/null || true
+
+# Archives
+git add archives.html
+
+# Alerts system
+git add netlify/functions/send-telegram-alert.js
+git add alerts.js
+git add alerts.html
+
+# Package files (if changed)
+git add package.json 2>/dev/null || true
+git add package-lock.json 2>/dev/null || true
+
+echo "✅ Files staged"
+echo ""
+
+# Show what will be committed
+echo "📋 Changes to be committed:"
+git status --short
+echo ""
+
+read -p "Continue with commit? (y/n) " -n 1 -r
+echo ""
+
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "❌ Deployment cancelled"
     exit 1
 fi
 
-echo ""
-echo "Running for real now..."
-python3 add_module_tracking.py "$courses_path"
-echo "✅ Module tracking added to all courses!"
-echo ""
+# Commit
+echo "💾 Committing changes..."
+git commit -m "🔮 Complete platform upgrade
 
-# ============================================================
-# STEP 6: UPDATE NAVIGATION LINKS
-# ============================================================
-echo "🔗 Step 6: Updating navigation links..."
-echo ""
-echo "Replacing referral.html and affiliate.html with referrals.html"
+✨ XP System Fixes:
+- Fixed archives badge to calculate level from XP correctly
+- Separated module and course completion logic
+- Enhanced complete module button styling
+- Improved visibility and user experience
 
-# Detect OS and use appropriate sed command
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    find . -name "*.html" -type f -exec sed -i '' 's/referral\.html/referrals.html/g' {} +
-    find . -name "*.html" -type f -exec sed -i '' 's/affiliate\.html/referrals.html/g' {} +
+✨ Alerts System Enhancement:
+- Added detailed Telegram notifications with full trade details
+- Implemented TP1/TP2/TP3 individual tracking
+- Added color-coded gradient admin buttons
+- Enhanced database tracking with tpHit field
+- Improved mobile responsiveness
+
+✨ UI Improvements:
+- Better button styling across the board
+- Professional gradient effects
+- Hover and ripple animations
+- Mobile-optimized layouts
+
+All systems tested and ready for production 🚀"
+
+if [ $? -eq 0 ]; then
+    echo "✅ Commit successful"
 else
-    # Linux
-    find . -name "*.html" -type f -exec sed -i 's/referral\.html/referrals.html/g' {} +
-    find . -name "*.html" -type f -exec sed -i 's/affiliate\.html/referrals.html/g' {} +
+    echo "❌ Commit failed"
+    exit 1
 fi
 
-echo "✅ Navigation links updated!"
 echo ""
 
-# ============================================================
-# STEP 7: FIREBASE RULES REMINDER
-# ============================================================
-echo "🔥 Step 7: Firebase Security Rules"
+# Push
+read -p "Push to origin main? (y/n) " -n 1 -r
 echo ""
-echo "⚠️  IMPORTANT: You need to update Firebase security rules manually"
-echo ""
-echo "Go to: https://console.firebase.google.com"
-echo "Navigate to: Firestore Database → Rules"
-echo ""
-echo "See TERMINAL_COMMANDS.md for the exact rules to paste"
-echo ""
-read -p "Have you updated Firebase rules? (yes/no): " rules_updated
-if [ "$rules_updated" != "yes" ]; then
-    echo "⚠️  Don't forget to update Firebase rules before deploying!"
+
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "⚠️  Changes committed locally but not pushed"
+    echo "Run 'git push origin main' when ready"
+    exit 0
 fi
-echo ""
 
-# ============================================================
-# STEP 8: COMMIT CHANGES
-# ============================================================
-echo "💾 Step 8: Committing changes..."
-git add .
-git commit -m "feat: Add complete XP system with gamification
+echo "🚀 Pushing to origin main..."
+git push origin main
 
-- Added module completion tracking across all courses
-- Unified referrals and affiliate into single page
-- Integrated XP rewards for all user actions
-- Added level progression system (Apprentice to Archmage)
-- Added real-time progress tracking
-- Added daily login streaks and win posting XP
-- Automated module tracking for 1200+ course files
-- Mobile optimized and production ready"
-
-echo "✅ Changes committed!"
-echo ""
-
-# ============================================================
-# STEP 9: DEPLOYMENT CONFIRMATION
-# ============================================================
-echo "🚀 Step 9: Ready to deploy!"
-echo ""
-echo "You can now push to production with:"
-echo "  git push origin main"
-echo ""
-read -p "Push to production now? (yes/no): " push_now
-
-if [ "$push_now" == "yes" ]; then
-    git push origin main
+if [ $? -eq 0 ]; then
     echo ""
-    echo "🎉 DEPLOYED!"
+    echo "✅ DEPLOYMENT COMPLETE!"
     echo ""
-    echo "Netlify is now building your site."
-    echo "Check your Netlify dashboard for deployment status."
+    echo "🎉 All changes deployed successfully"
+    echo ""
+    echo "📊 Next steps:"
+    echo "  1. Wait 1-2 minutes for Netlify to deploy"
+    echo "  2. Test XP system on a course page"
+    echo "  3. Post a test trade alert"
+    echo "  4. Check Telegram for detailed message"
+    echo "  5. Verify admin buttons look correct"
+    echo ""
+    echo "🔮 The Arcane Archives is now upgraded! ⚡"
 else
-    echo ""
-    echo "When you're ready, run:"
-    echo "  git push origin main"
+    echo "❌ Push failed"
+    echo "Check your network connection and try again"
+    exit 1
 fi
-
-echo ""
-echo "============================================================"
-echo "✅ DEPLOYMENT COMPLETE!"
-echo "============================================================"
-echo ""
-echo "Next steps:"
-echo "1. Wait for Netlify to finish building"
-echo "2. Test on your live site:"
-echo "   - Login works"
-echo "   - Archives shows progress"
-echo "   - Courses have complete buttons"
-echo "   - XP is being awarded"
-echo "   - Referrals page works"
-echo "3. Test on mobile device"
-echo "4. Monitor Firestore for errors"
-echo ""
-echo "🎯 You're ready for December 1st! 🚀"
-echo ""

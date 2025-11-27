@@ -1,147 +1,61 @@
 // course-module-tracker.js
-// Tracks per-module completion in localStorage and derives per-course completion.
-// Emits DOM events so other scripts (XP, dashboard, archives) can react.
+// Tracks per-module completion for Arcane Archives.
+// Uses localStorage as the single source of truth and emits a DOM event
+// so the XP system + dashboard/archives can react.
 //
-// Events:
-//  - "aa:moduleToggle" detail = {
-//        courseId, moduleId, completed,
-//        course: {
-//          totalModules,
-//          completedModules,
-//          completed,          // course state AFTER toggle
-//          previouslyCompleted // course state BEFORE toggle
-//        }
-//    }
-//  - "aa:courseStateChanged" detail = { courseId, state }
-//
-// Storage format (localStorage[STORAGE_KEY]):
-// {
-//   modules: { [moduleId]: true|false },
-//   courses: {
-//     [courseId]: {
-//       totalModules: number,
-//       completedModules: number,
-//       completed: boolean
-//     }
+// Event:
+//   "aa:moduleToggle" detail = {
+//      courseId: string,
+//      moduleId: string,
+//      completed: boolean
 //   }
-// }
 
-const STORAGE_KEY = "aa_module_progress_v1";
+const STORAGE_KEY = "aa_module_progress_v2";
 
-let courseIndexPromise = null;
-let moduleToCourseMap = null;
-
-// Handles both string module ids and objects { id: "..." }
-function normalizeModuleId(mod) {
-  if (!mod) return null;
-  if (typeof mod === "string") return mod;
-  if (typeof mod === "object" && mod.id) return String(mod.id);
-  return null;
+function slugify(text) {
+  if (!text) return "";
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
 }
 
-function loadCourseIndex() {
-  if (!courseIndexPromise) {
-    courseIndexPromise = fetch("/course-index.json")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load course-index.json");
-        return res.json();
-      })
-      .then((index) => {
-        moduleToCourseMap = {};
-        Object.entries(index).forEach(([courseId, course]) => {
-          (course.modules || []).forEach((mod) => {
-            const mid = normalizeModuleId(mod);
-            if (mid) {
-              moduleToCourseMap[mid] = courseId;
-            }
-          });
-        });
-        return index;
-      })
-      .catch((err) => {
-        console.error("[AA] loadCourseIndex error", err);
-        moduleToCourseMap = {};
-        return {};
-      });
-  }
-  return courseIndexPromise;
-}
-
-function loadProgress() {
+function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { modules: {}, courses: {} };
+      return { modules: {} };
     }
     const parsed = JSON.parse(raw);
-    return {
-      modules: parsed.modules || {},
-      courses: parsed.courses || {},
-    };
-  } catch (e) {
-    console.warn("[AA] Failed to parse module progress, resetting", e);
-    return { modules: {}, courses: {} };
-  }
-}
-
-function saveProgress(progress) {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        modules: progress.modules || {},
-        courses: progress.courses || {},
-      })
-    );
-  } catch (e) {
-    console.warn("[AA] Failed to save module progress", e);
-  }
-}
-
-function recomputeCourseProgress(progress, courseIndex, courseId) {
-  const course = courseIndex[courseId];
-  if (!course) return;
-
-  const modules = course.modules || [];
-  let completedModules = 0;
-
-  modules.forEach((mod) => {
-    const mid = normalizeModuleId(mod);
-    if (!mid) return;
-    if (progress.modules[mid]) {
-      completedModules += 1;
+    if (!parsed || typeof parsed !== "object") {
+      return { modules: {} };
     }
-  });
-
-  const totalModules = modules.length;
-  const completed = totalModules > 0 && completedModules === totalModules;
-
-  progress.courses[courseId] = {
-    totalModules,
-    completedModules,
-    completed,
-  };
-
-  return progress.courses[courseId];
+    return {
+      modules:
+        parsed.modules && typeof parsed.modules === "object"
+          ? parsed.modules
+          : {},
+    };
+  } catch (err) {
+    console.warn("[AA] Failed to load module progress from localStorage", err);
+    return { modules: {} };
+  }
 }
 
-function dispatchModuleToggle(detail) {
-  document.dispatchEvent(
-    new CustomEvent("aa:moduleToggle", {
-      detail,
-    })
-  );
+function saveState(state) {
+  try {
+    const payload = {
+      modules: state.modules || {},
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (err) {
+    console.warn("[AA] Failed to save module progress to localStorage", err);
+  }
 }
 
-function dispatchCourseState(courseId, state) {
-  document.dispatchEvent(
-    new CustomEvent("aa:courseStateChanged", {
-      detail: {
-        courseId,
-        state,
-      },
-    })
-  );
+function getModuleKey(courseId, moduleId) {
+  return `${courseId}::${moduleId}`;
 }
 
 function applyButtonState(button, completed) {
@@ -149,116 +63,150 @@ function applyButtonState(button, completed) {
 
   button.dataset.completed = completed ? "true" : "false";
 
-  if (completed) {
-    button.classList.add("aa-pill-button--completed");
-  } else {
-    button.classList.remove("aa-pill-button--completed");
+  let primary = button.querySelector(".aa-pill-primary");
+  let secondary = button.querySelector(".aa-pill-secondary");
+
+  if (!primary) {
+    primary = document.createElement("span");
+    primary.className = "aa-pill-primary";
+    button.appendChild(primary);
+  }
+  if (!secondary) {
+    secondary = document.createElement("span");
+    secondary.className = "aa-pill-secondary";
+    button.appendChild(secondary);
   }
 
-  const primary = button.querySelector(".aa-pill-primary");
-  const secondary = button.querySelector(".aa-pill-secondary");
-
   if (completed) {
-    if (primary) primary.textContent = "✅ Module Completed";
-    if (secondary) secondary.textContent = "+25 XP Awarded";
-    if (!primary && !secondary) button.textContent = "✅ Module Completed";
+    button.classList.add("aa-pill-button--completed");
+    primary.textContent = "✅ Module Completed";
+    secondary.textContent = "+50 XP awarded";
   } else {
-    if (primary) primary.textContent = "🟣 Complete Module";
-    if (secondary) secondary.textContent = "+25 XP";
-    if (!primary && !secondary) button.textContent = "✅ Complete Module";
+    button.classList.remove("aa-pill-button--completed");
+    primary.textContent = "Complete Module";
+    secondary.textContent = "+50 XP";
   }
 }
 
-// PUBLIC: init tracking for a single module page
-export async function initModuleTracker(moduleId) {
+// Try to derive sensible default IDs from URL + page title.
+// You can override these by adding data attributes:
+//
+//   <body data-aa-course="mind-hijacking" data-aa-module="read-before-starting">
+//
+function derivePageDefaults() {
+  const body = document.body || document.documentElement;
+
+  const bodyCourse = body.getAttribute("data-aa-course");
+  const bodyModule = body.getAttribute("data-aa-module");
+
+  const urlPath = window.location.pathname || "";
+  const segments = urlPath.split("/").filter(Boolean);
+
+  // Heuristic: parent folder = course, file name / title = module
+  const rawCourse =
+    segments.length > 1 ? segments[segments.length - 2] : segments[0] || "course";
+  const rawModule =
+    document.querySelector("h1, .page-title")?.textContent ||
+    document.title ||
+    "module";
+
+  const courseId = bodyCourse || slugify(rawCourse);
+  const moduleId = bodyModule || slugify(rawModule);
+
+  return { courseId, moduleId };
+}
+
+// Initialise buttons on the current page.
+export function initModuleTracker() {
   try {
-    const button =
-      document.getElementById("complete-module-btn") ||
-      document.querySelector("[data-module-id]");
-    if (!button) {
-      console.warn("[AA] initModuleTracker: no button found for module", moduleId);
-      return;
-    }
+    const buttons = Array.from(document.querySelectorAll(".aa-pill-button"));
+    if (!buttons.length) return;
 
-    // If the button itself carries the id, prefer that
-    const effectiveModuleId =
-      button.dataset.moduleId && button.dataset.moduleId.trim().length
-        ? button.dataset.moduleId.trim()
-        : moduleId;
+    const state = loadState();
+    const defaults = derivePageDefaults();
 
-    const index = await loadCourseIndex();
-    const courseId =
-      moduleToCourseMap && effectiveModuleId
-        ? moduleToCourseMap[effectiveModuleId]
-        : null;
+    buttons.forEach((button, index) => {
+      const courseId = button.dataset.courseId || defaults.courseId;
 
-    if (!courseId) {
-      console.warn(
-        "[AA] initModuleTracker: no courseId found for module",
-        effectiveModuleId
-      );
-    }
+      // If multiple buttons on a page, give them unique module IDs based on index
+      const rawModuleId =
+        button.dataset.moduleId ||
+        (index === 0 ? defaults.moduleId : `${defaults.moduleId}-${index + 1}`);
+      const moduleId = slugify(rawModuleId) || `module-${index + 1}`;
 
-    const progress = loadProgress();
+      const key = getModuleKey(courseId, moduleId);
+      const completed = !!state.modules[key];
 
-    // Ensure we have a course entry
-    if (courseId && !progress.courses[courseId]) {
-      recomputeCourseProgress(progress, index, courseId);
-      saveProgress(progress);
-    }
+      // Save IDs back onto the button for debugging / other scripts
+      button.dataset.courseId = courseId;
+      button.dataset.moduleId = moduleId;
 
-    // Initial UI state
-    const initiallyCompleted = !!progress.modules[effectiveModuleId];
-    applyButtonState(button, initiallyCompleted);
+      applyButtonState(button, completed);
 
-    // Click handler – toggle completion
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+      button.addEventListener("click", () => {
+        const current = !!state.modules[key];
+        const next = !current;
 
-      const newCompleted = !progress.modules[effectiveModuleId];
-      const prevCourseState =
-        courseId && progress.courses[courseId]
-          ? { ...progress.courses[courseId] }
-          : null;
+        state.modules[key] = next;
+        saveState(state);
+        applyButtonState(button, next);
 
-      progress.modules[effectiveModuleId] = newCompleted;
+        const detail = {
+          courseId,
+          moduleId,
+          completed: next,
+        };
 
-      let courseState = null;
-      if (courseId) {
-        courseState = recomputeCourseProgress(progress, index, courseId);
-      }
-
-      saveProgress(progress);
-      applyButtonState(button, newCompleted);
-
-      const detail = {
-        courseId,
-        moduleId: effectiveModuleId,
-        completed: newCompleted,
-        course: courseState
-          ? {
-              ...courseState,
-              previouslyCompleted:
-                prevCourseState && typeof prevCourseState.completed === "boolean"
-                  ? prevCourseState.completed
-                  : false,
-            }
-          : null,
-      };
-
-      dispatchModuleToggle(detail);
-      if (courseId && courseState) {
-        dispatchCourseState(courseId, courseState);
-      }
+        document.dispatchEvent(
+          new CustomEvent("aa:moduleToggle", {
+            detail,
+          })
+        );
+      });
     });
   } catch (err) {
     console.error("[AA] initModuleTracker error", err);
   }
 }
 
-// Helper for dashboards / archives
+// Helper for dashboards / archives – derive per-course stats from stored modules.
 export function getStoredCourseProgress() {
-  const { courses } = loadProgress();
-  return courses || {};
+  const state = loadState();
+  const modules = state.modules || {};
+  const courses = {};
+
+  Object.entries(modules).forEach(([fullKey, completed]) => {
+    const [courseId, moduleId] = fullKey.split("::");
+    if (!courseId || !moduleId) return;
+
+    if (!courses[courseId]) {
+      courses[courseId] = {
+        totalModules: 0,
+        completedModules: 0,
+        completed: false,
+      };
+    }
+
+    const course = courses[courseId];
+    course.totalModules += 1;
+    if (completed) {
+      course.completedModules += 1;
+    }
+  });
+
+  Object.values(courses).forEach((course) => {
+    course.completed =
+      course.totalModules > 0 && course.completedModules === course.totalModules;
+  });
+
+  return courses;
+}
+
+// Auto-init when used as a side-effect module
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => initModuleTracker());
+  } else {
+    initModuleTracker();
+  }
 }

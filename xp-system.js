@@ -1,7 +1,6 @@
 // xp-system.js
 // Central XP + course completion utilities for The Arcane Archives
 
-import { db } from "./auth-guard.js";
 import {
   doc,
   getDoc,
@@ -10,6 +9,7 @@ import {
   serverTimestamp,
   increment,
   arrayUnion,
+  arrayRemove,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 // 🔮 XP reward values for different actions (BASE amounts, before multiplier)
@@ -258,6 +258,81 @@ export async function markCourseCompleted(uid, courseId) {
     },
     { merge: true }
   );
+
+  return true;
+}
+
+/* 🔁 NEW: undo functions for toggling off modules / courses */
+
+export async function unmarkModuleCompleted(uid, courseId, moduleId) {
+  const userRef = doc(db, "Users", uid);
+  const snap = await getDoc(userRef);
+  const data = snap.exists() ? snap.data() : {};
+
+  const completedModuleIds = Array.isArray(data.completedModuleIds)
+    ? data.completedModuleIds
+    : [];
+
+  const fullModuleId = `${courseId}::${moduleId}`;
+
+  // If it was never completed, nothing to undo
+  if (!completedModuleIds.includes(fullModuleId)) {
+    return { alreadyCompleted: false };
+  }
+
+  const baseXP = XP_REWARDS.MODULE_COMPLETED || 0;
+  const currentXP = data.Xp || 0;
+  const newXP = Math.max(0, currentXP - baseXP);
+  const newLevel = getLevelFromXP(newXP);
+
+  const currentModules =
+    typeof data.ModulesCompleted === "number" ? data.ModulesCompleted : 0;
+  const newModules = currentModules > 0 ? currentModules - 1 : 0;
+
+  const updates = {
+    Xp: newXP,
+    Level: newLevel,
+    ModulesCompleted: newModules,
+    completedModuleIds: arrayRemove(fullModuleId),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(userRef, updates, { merge: true });
+
+  return { alreadyCompleted: true };
+}
+
+export async function unmarkCourseCompleted(uid, courseId) {
+  const userRef = doc(db, "Users", uid);
+  const snap = await getDoc(userRef);
+  const data = snap.exists() ? snap.data() : {};
+
+  const completedCourseIds = Array.isArray(data.completedCourseIds)
+    ? data.completedCourseIds
+    : [];
+
+  if (!completedCourseIds.includes(courseId)) {
+    return false;
+  }
+
+  const baseXP = XP_REWARDS.COURSE_COMPLETED || 0;
+  const currentXP = data.Xp || 0;
+  const newXP = Math.max(0, currentXP - baseXP);
+  const newLevel = getLevelFromXP(newXP);
+
+  const currentCourses =
+    typeof data.CoursesCompleted === "number" ? data.CoursesCompleted : 0;
+  const newCourses = currentCourses > 0 ? currentCourses - 1 : 0;
+
+  const updates = {
+    Xp: newXP,
+    Level: newLevel,
+    CoursesCompleted: newCourses,
+    completedCourseIds: arrayRemove(courseId),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(userRef, updates, { merge: true });
 
   return true;
 }
