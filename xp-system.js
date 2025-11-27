@@ -1,6 +1,8 @@
 // xp-system.js
 // Central XP + course completion utilities for The Arcane Archives
 
+import { db } from "./universal-auth.js";   // ⬅️ NEW LINE (line 3 in your screenshot)
+
 import {
   doc,
   getDoc,
@@ -11,6 +13,7 @@ import {
   arrayUnion,
   arrayRemove,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
 
 // 🔮 XP reward values for different actions (BASE amounts, before multiplier)
 export const XP_REWARDS = {
