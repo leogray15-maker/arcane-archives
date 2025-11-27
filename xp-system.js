@@ -1,7 +1,7 @@
 // xp-system.js
 // Central XP + course completion utilities for The Arcane Archives
 
-import { db } from "./universal-auth.js";   // ⬅️ NEW LINE (line 3 in your screenshot)
+import { db } from "./universal-auth.js";
 
 import {
   doc,
@@ -13,7 +13,6 @@ import {
   arrayUnion,
   arrayRemove,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-
 
 // 🔮 XP reward values for different actions (BASE amounts, before multiplier)
 export const XP_REWARDS = {
@@ -27,7 +26,6 @@ export const XP_REWARDS = {
 };
 
 // 🧬 Level thresholds – NEW RANKS
-// Seeker → Apprentice → Advanced Apprentice → Awakened Apprentice → Awakened Master → Arcane Master
 export const LEVELS = {
   SEEKER: {
     min: 0,
@@ -79,9 +77,9 @@ export function getLevelFromXP(xp = 0) {
 // 🔥 Streak multiplier: every 7 days adds +10% XP, capped at 2x
 export function getStreakMultiplier(loginStreak = 0) {
   if (!loginStreak || loginStreak < 1) return 1;
-  const tiers = Math.floor(loginStreak / 7); // every 7 days = +0.1
+  const tiers = Math.floor(loginStreak / 7);
   const multiplier = 1 + tiers * 0.1;
-  return Math.min(multiplier, 2); // cap at 2x
+  return Math.min(multiplier, 2);
 }
 
 // For the dashboard XP bar
@@ -141,7 +139,7 @@ export async function getUserStats(uid) {
   return {
     id: uid,
     Xp: xp,
-    Level: getLevelFromXP(xp), // ✅ ALWAYS calculate from XP
+    Level: getLevelFromXP(xp),
     CoursesCompleted: data.CoursesCompleted || 0,
     ModulesCompleted: data.ModulesCompleted || 0,
     completedCourseIds: data.completedCourseIds || [],
@@ -154,7 +152,7 @@ export async function getUserStats(uid) {
   };
 }
 
-// 🎮 Central XP award – now includes streak multiplier
+// 🎮 Central XP award – ONLY XP + wins/calls counters now
 export async function awardXP(uid, action, metadata = {}) {
   const baseXP = XP_REWARDS[action];
   if (!baseXP) {
@@ -171,7 +169,7 @@ export async function awardXP(uid, action, metadata = {}) {
   const loginStreak = currentData.loginStreak || 0;
 
   const multiplier = getStreakMultiplier(loginStreak);
-  const gainedXP = Math.round(baseXP * multiplier); // apply multiplier
+  const gainedXP = Math.round(baseXP * multiplier);
 
   const newXP = currentXP + gainedXP;
   const newLevel = getLevelFromXP(newXP);
@@ -182,16 +180,12 @@ export async function awardXP(uid, action, metadata = {}) {
     updatedAt: serverTimestamp(),
   };
 
-  // ✅ Only increment specific counters for specific actions
   if (action === "WIN_POSTED") {
     updates.WinsPosted = increment(1);
   } else if (action === "LIVE_CALL_ATTENDED") {
     updates.CallAttended = increment(1);
-  } else if (action === "MODULE_COMPLETED") {
-    updates.ModulesCompleted = increment(1);
-  } else if (action === "COURSE_COMPLETED") {
-    updates.CoursesCompleted = increment(1);
   }
+  // NOTE: no ModulesCompleted / CoursesCompleted here anymore
 
   await setDoc(userRef, updates, { merge: true });
 
@@ -222,13 +216,13 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
     return { alreadyCompleted: true, courseCompleted: false };
   }
 
-  // ✅ Award XP for module only
   await awardXP(uid, "MODULE_COMPLETED");
 
   await setDoc(
     userRef,
     {
       completedModuleIds: arrayUnion(fullModuleId),
+      ModulesCompleted: increment(1), // 👈 own the counter here
       updatedAt: serverTimestamp(),
     },
     { merge: true }
@@ -250,13 +244,13 @@ export async function markCourseCompleted(uid, courseId) {
     return false;
   }
 
-  // ✅ Award XP for course completion only
   await awardXP(uid, "COURSE_COMPLETED");
 
   await setDoc(
     userRef,
     {
       completedCourseIds: arrayUnion(courseId),
+      CoursesCompleted: increment(1), // 👈 own the counter here
       updatedAt: serverTimestamp(),
     },
     { merge: true }
@@ -265,7 +259,7 @@ export async function markCourseCompleted(uid, courseId) {
   return true;
 }
 
-/* 🔁 NEW: undo functions for toggling off modules / courses */
+/* 🔁 Undo functions for toggling off modules / courses */
 
 export async function unmarkModuleCompleted(uid, courseId, moduleId) {
   const userRef = doc(db, "Users", uid);
@@ -278,7 +272,6 @@ export async function unmarkModuleCompleted(uid, courseId, moduleId) {
 
   const fullModuleId = `${courseId}::${moduleId}`;
 
-  // If it was never completed, nothing to undo
   if (!completedModuleIds.includes(fullModuleId)) {
     return { alreadyCompleted: false };
   }
@@ -362,7 +355,6 @@ export async function updateLoginStreak(uid) {
     const lastStr = lastLoginDate.toISOString().slice(0, 10);
 
     if (lastStr === todayStr) {
-      // already logged in today
       return;
     }
 
