@@ -1,5 +1,5 @@
 // alerts.js
-// Arcane Alerts – live trade signals + Telegram integration + performance tracking
+// Arcane Alerts with custom pips/notes modal
 
 import { protectPage, db } from "./auth-guard.js";
 import {
@@ -15,26 +15,17 @@ import {
   arrayUnion,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-// ======================================================================
-// Global state
-// ======================================================================
 let currentUser = null;
 let isAdmin = false;
 
-// 🔐 Admins – by UID and/or email
-const ADMIN_UIDS = [
-  // Add your Firebase UID here if needed
-];
-
+const ADMIN_UIDS = [];
 const ADMIN_EMAILS = ["leogray15@gmail.com"];
 
-// Collections
 const LIVE_ALERTS_COLLECTION = "alerts_live";
 const HISTORY_COLLECTION = "alerts_history";
 
-// ======================================================================
-// Entry – protect page & bootstrap
-// ======================================================================
+// Modal state
+let pendingAction = null;
 
 protectPage({
   onSuccess: (user, userData) => {
@@ -45,15 +36,94 @@ protectPage({
     setupAdminForm();
     subscribeToLiveAlerts();
     subscribeToHistory();
+    setupModal();
   },
   onFailure: () => {
     window.location.href = "login.html";
   },
 });
 
-// ======================================================================
-// Admin form – new trade signals
-// ======================================================================
+// Setup modal for custom pips/notes
+function setupModal() {
+  // Create modal HTML
+  const modalHTML = `
+    <div id="closeTradeModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;">
+      <div style="background:#1e293b; border-radius:16px; padding:2rem; max-width:500px; width:90%; border:1px solid rgba(139,92,246,0.3);">
+        <h3 style="color:#e5e7eb; margin-bottom:1rem; font-size:1.25rem;">Close Trade</h3>
+        
+        <div style="margin-bottom:1rem;">
+          <label style="color:#9ca3af; font-size:0.85rem; display:block; margin-bottom:0.5rem;">Result</label>
+          <input type="text" id="modalResult" readonly style="background:#0f172a; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:0.75rem; color:#e5e7eb; width:100%; font-size:1rem; font-weight:600;">
+        </div>
+        
+        <div style="margin-bottom:1rem;">
+          <label style="color:#9ca3af; font-size:0.85rem; display:block; margin-bottom:0.5rem;">Pips (optional)</label>
+          <input type="text" id="modalPips" placeholder="e.g. +100 pips" style="background:#0f172a; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:0.75rem; color:#e5e7eb; width:100%;">
+        </div>
+        
+        <div style="margin-bottom:1.5rem;">
+          <label style="color:#9ca3af; font-size:0.85rem; display:block; margin-bottom:0.5rem;">Note (optional)</label>
+          <textarea id="modalNotes" placeholder="Add a message..." rows="3" style="background:#0f172a; border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:0.75rem; color:#e5e7eb; width:100%; resize:vertical; font-family:inherit;"></textarea>
+        </div>
+        
+        <div style="display:flex; gap:0.75rem;">
+          <button id="modalCancel" style="flex:1; padding:0.75rem; border-radius:8px; border:1px solid rgba(148,163,184,0.5); background:transparent; color:#e5e7eb; cursor:pointer; font-weight:600;">Cancel</button>
+          <button id="modalConfirm" style="flex:1; padding:0.75rem; border-radius:8px; border:none; background:linear-gradient(135deg,#a855f7,#9333ea); color:white; cursor:pointer; font-weight:600;">Confirm</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  const modal = document.getElementById('closeTradeModal');
+  const cancelBtn = document.getElementById('modalCancel');
+  const confirmBtn = document.getElementById('modalConfirm');
+  
+  cancelBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+    pendingAction = null;
+  });
+  
+  confirmBtn.addEventListener('click', async () => {
+    if (pendingAction) {
+      const pips = document.getElementById('modalPips').value.trim();
+      const notes = document.getElementById('modalNotes').value.trim();
+      
+      await executeTradeClose(pendingAction, pips, notes);
+      
+      modal.style.display = 'none';
+      pendingAction = null;
+    }
+  });
+}
+
+function showModal(action, data) {
+  const modal = document.getElementById('closeTradeModal');
+  const resultInput = document.getElementById('modalResult');
+  const pipsInput = document.getElementById('modalPips');
+  const notesInput = document.getElementById('modalNotes');
+  
+  // Set result label
+  let resultText = '';
+  if (action === 'TP1') resultText = '✅ TP1 HIT';
+  else if (action === 'TP2') resultText = '✅ TP2 HIT';
+  else if (action === 'TP3') resultText = '✅ TP3 HIT';
+  else if (action === 'LOSS') resultText = '❌ STOP LOSS';
+  else if (action === 'BE') resultText = '⚖️ BREAK EVEN';
+  
+  resultInput.value = resultText;
+  pipsInput.value = '';
+  notesInput.value = '';
+  
+  pendingAction = { action, data };
+  modal.style.display = 'flex';
+}
+
+async function executeTradeClose(pending, customPips, customNotes) {
+  const { action, data } = pending;
+  await handleAdminAction(data.id, data.data, action, customPips, customNotes);
+}
 
 function setupAdminForm() {
   const formEl = document.getElementById("alertForm");
@@ -97,7 +167,6 @@ function setupAdminForm() {
     postBtn.textContent = "Posting...";
 
     try {
-      // Add to Firestore
       await addDoc(collection(db, LIVE_ALERTS_COLLECTION), {
         pair,
         direction,
@@ -118,7 +187,6 @@ function setupAdminForm() {
         },
       });
 
-      // 🔔 Send to Telegram
       await sendTelegramNotification("NEW_TRADE", {
         pair,
         direction,
@@ -130,7 +198,6 @@ function setupAdminForm() {
         notes,
       });
 
-      // Clear form
       if (entryInput) entryInput.value = "";
       if (slInput) slInput.value = "";
       if (tp1Input) tp1Input.value = "";
@@ -148,10 +215,6 @@ function setupAdminForm() {
     }
   });
 }
-
-// ======================================================================
-// Telegram Integration
-// ======================================================================
 
 async function sendTelegramNotification(type, payload) {
   try {
@@ -171,13 +234,8 @@ async function sendTelegramNotification(type, payload) {
     console.log("✅ Telegram notification sent:", result);
   } catch (error) {
     console.error("❌ Telegram notification failed:", error);
-    // Don't block the UI if Telegram fails
   }
 }
-
-// ======================================================================
-// Live alerts feed
-// ======================================================================
 
 function subscribeToLiveAlerts() {
   const container = document.getElementById("alertsContainer");
@@ -261,7 +319,6 @@ function renderLiveAlertCard(id, data) {
   const rocketCount = Array.isArray(r.rocket) ? r.rocket.length : 0;
   const eyesCount = Array.isArray(r.eyes) ? r.eyes.length : 0;
 
-  // Direction badge styling
   const dirClass = direction === "Buy" ? "buy" : "sell";
 
   card.innerHTML = `
@@ -326,7 +383,6 @@ function renderLiveAlertCard(id, data) {
     }
   `;
 
-  // Attach reaction listeners
   card.querySelectorAll(".reaction-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const reaction = btn.dataset.reaction;
@@ -334,28 +390,17 @@ function renderLiveAlertCard(id, data) {
     });
   });
 
-  // Attach admin action listeners
   if (isAdmin) {
     card.querySelectorAll(".admin-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const action = btn.dataset.action;
-        if (
-          confirm(
-            `Mark this trade as ${action}? This will move it to history and send a Telegram update.`
-          )
-        ) {
-          await handleAdminAction(id, data, action);
-        }
+        showModal(action, { id, data });
       });
     });
   }
 
   return card;
 }
-
-// ======================================================================
-// Reactions
-// ======================================================================
 
 async function handleReaction(alertId, type, btnElement) {
   if (!currentUser) return;
@@ -366,7 +411,6 @@ async function handleReaction(alertId, type, btnElement) {
     await updateDoc(alertRef, {
       [`reactions.${type}`]: arrayUnion(currentUser.uid),
     });
-    // Optimistic UI update
     const span = btnElement.querySelector("span");
     const current = parseInt(span?.textContent || "0", 10);
     if (span) span.textContent = String(current + 1);
@@ -375,11 +419,7 @@ async function handleReaction(alertId, type, btnElement) {
   }
 }
 
-// ======================================================================
-// Admin actions – TP1/TP2/TP3/Loss/BE
-// ======================================================================
-
-async function handleAdminAction(alertId, data, action) {
+async function handleAdminAction(alertId, data, action, customPips, customNotes) {
   if (!isAdmin) return;
 
   const pair = data.pair;
@@ -427,7 +467,6 @@ async function handleAdminAction(alertId, data, action) {
   const pips = calculatePips(pair, direction, entry, exit);
 
   try {
-    // 1) Add to history
     await addDoc(collection(db, HISTORY_COLLECTION), {
       pair,
       direction,
@@ -436,19 +475,21 @@ async function handleAdminAction(alertId, data, action) {
       result,
       tpHit,
       pips,
+      customPips: customPips || null,
+      customNotes: customNotes || null,
       closedAt: serverTimestamp(),
       openedAt: data.createdAt || null,
     });
 
-    // 2) Remove from live
     await deleteDoc(doc(db, LIVE_ALERTS_COLLECTION, alertId));
 
-    // 3) Send Telegram notification
     await sendTelegramNotification(notificationType, {
       pair,
       direction,
       result,
       tpHit,
+      customPips,
+      customNotes,
     });
 
     console.log(`✅ Trade closed: ${action}`);
@@ -457,10 +498,6 @@ async function handleAdminAction(alertId, data, action) {
     alert("Could not update trade. Check console for details.");
   }
 }
-
-// ======================================================================
-// History + performance stats
-// ======================================================================
 
 function subscribeToHistory() {
   const tbody = document.getElementById("historyTableBody");
@@ -592,10 +629,6 @@ function renderHistoryRow(data) {
   return tr;
 }
 
-// ======================================================================
-// Helpers
-// ======================================================================
-
 function calculatePips(pair, direction, entryRaw, exitRaw) {
   const entry = parseFloat(entryRaw);
   const exit = parseFloat(exitRaw);
@@ -614,7 +647,7 @@ function calculatePips(pair, direction, entryRaw, exitRaw) {
   ) {
     multiplier = 1;
   } else {
-    multiplier = 10000; // standard FX pips
+    multiplier = 10000;
   }
 
   let diff = exit - entry;

@@ -1,5 +1,5 @@
 // netlify/functions/send-telegram-alert.js
-// Enhanced to handle all trade notification types
+// Simple notifications with custom pips and notes
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -18,34 +18,59 @@ exports.handler = async (event) => {
       };
     }
 
-    // Parse the request body
     const body = JSON.parse(event.body || '{}');
     const { type, payload } = body;
 
-    // Format message based on type
     let message = '';
+    
+    // Extract custom fields
+    const pips = payload.customPips || '';
+    const notes = payload.customNotes || '';
     
     switch(type) {
       case 'NEW_TRADE':
-        message = formatNewTrade(payload);
+        message = "🟣 *New trade idea posted*\n\n" +
+                  "A new trade idea has been added inside *The Arcane Archives*.\n" +
+                  "Log in to your dashboard to view the full breakdown.";
         break;
+        
       case 'TP1_HIT':
-        message = formatTPHit(payload, 1);
+        message = "✅ *TP1 HIT*\n\n" +
+                  `${payload.pair || 'Signal'} closed at first target.`;
+        if (pips) message += `\n💰 ${pips}`;
+        if (notes) message += `\n\n📝 ${notes}`;
         break;
+        
       case 'TP2_HIT':
-        message = formatTPHit(payload, 2);
+        message = "✅ *TP2 HIT*\n\n" +
+                  `${payload.pair || 'Signal'} closed at second target.`;
+        if (pips) message += `\n💰 ${pips}`;
+        if (notes) message += `\n\n📝 ${notes}`;
         break;
+        
       case 'TP3_HIT':
-        message = formatTPHit(payload, 3);
+        message = "✅ *TP3 HIT*\n\n" +
+                  `${payload.pair || 'Signal'} closed at third target.`;
+        if (pips) message += `\n💰 ${pips}`;
+        if (notes) message += `\n\n📝 ${notes}`;
         break;
+        
       case 'LOSS_HIT':
-        message = formatLoss(payload);
+        message = "❌ *STOP LOSS HIT*\n\n" +
+                  `${payload.pair || 'Signal'} hit stop loss.`;
+        if (pips) message += `\n📉 ${pips}`;
+        if (notes) message += `\n\n${notes}`;
+        else message += `\n\nOnto the next setup.`;
         break;
+        
       case 'BE_HIT':
-        message = formatBreakEven(payload);
+        message = "⚖️ *BREAK EVEN*\n\n" +
+                  `${payload.pair || 'Signal'} closed at break even.`;
+        if (notes) message += `\n\n${notes}`;
+        else message += `\n\nNo gain, no loss.`;
         break;
+        
       default:
-        // Fallback for backward compatibility
         message = "🟣 *New trade idea posted*\n\n" +
                   "A new signal has been added inside *The Arcane Archives*.\n" +
                   "Log in to your dashboard to view the full breakdown.";
@@ -91,61 +116,3 @@ exports.handler = async (event) => {
     };
   }
 };
-
-// Message formatters
-function formatNewTrade(payload) {
-  const { pair, direction, entry, sl, tp1, tp2, tp3, notes } = payload;
-  
-  const emoji = direction === 'Buy' ? '🟢' : '🔴';
-  
-  let msg = `🔮 *NEW TRADE SIGNAL*\n\n`;
-  msg += `${emoji} *${pair}* | ${direction.toUpperCase()}\n\n`;
-  msg += `📍 Entry: \`${entry}\`\n`;
-  msg += `🛑 Stop Loss: \`${sl}\`\n\n`;
-  
-  if (tp1) msg += `🎯 TP1: \`${tp1}\`\n`;
-  if (tp2) msg += `🎯 TP2: \`${tp2}\`\n`;
-  if (tp3) msg += `🎯 TP3: \`${tp3}\`\n`;
-  
-  if (notes) {
-    msg += `\n📝 _${notes}_`;
-  }
-  
-  msg += `\n\n⚡ *The Arcane Archives*`;
-  
-  return msg;
-}
-
-function formatTPHit(payload, tpNumber) {
-  const { pair, direction } = payload;
-  
-  let msg = `✅ *TARGET HIT!*\n\n`;
-  msg += `🎯 TP${tpNumber} reached on *${pair}*\n`;
-  msg += `Direction: ${direction}\n\n`;
-  msg += `💰 Well done to everyone who took this trade!\n\n`;
-  msg += `⚡ *The Arcane Archives*`;
-  
-  return msg;
-}
-
-function formatLoss(payload) {
-  const { pair, direction } = payload;
-  
-  let msg = `❌ *STOP LOSS HIT*\n\n`;
-  msg += `🛑 ${pair} (${direction}) hit stop loss\n\n`;
-  msg += `This is part of trading. Onto the next setup.\n\n`;
-  msg += `⚡ *The Arcane Archives*`;
-  
-  return msg;
-}
-
-function formatBreakEven(payload) {
-  const { pair, direction } = payload;
-  
-  let msg = `⚖️ *BREAK EVEN*\n\n`;
-  msg += `${pair} (${direction}) closed at break even\n\n`;
-  msg += `No gain, no loss. Onto the next.\n\n`;
-  msg += `⚡ *The Arcane Archives*`;
-  
-  return msg;
-}
