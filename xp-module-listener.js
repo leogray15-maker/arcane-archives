@@ -1,5 +1,6 @@
 // xp-module-listener.js
-// Listens for aa:moduleToggle events and updates XP + stats.
+// Listens ONLY for course completion events (not individual modules)
+// Module completion is handled directly by course-modules.js
 
 import { auth, db } from "./auth-guard.js";
 import {
@@ -11,49 +12,42 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/f
 
 let currentUserId = null;
 
-function handleModuleToggle(detail) {
+// ✅ This now ONLY handles course completion events
+// Module events are handled by the xp-system.js directly
+function handleCourseCompletion(detail) {
   if (!currentUserId) return;
 
-  const { completed, course } = detail;
-
-  const moduleDelta = completed ? 1 : -1; // ModulesCompleted
-  let xpDelta = completed ? 25 : -25;
-  let courseCountDelta = 0;
-
-  // Check if this toggle flips the whole course from incomplete <-> complete
-  if (course && typeof course.completed === "boolean") {
-    const nowCompleted = !!course.completed;
-    const wasCompleted = !!course.previouslyCompleted;
-
-    if (!wasCompleted && nowCompleted) {
-      xpDelta += 100;
-      courseCountDelta += 1;
-    } else if (wasCompleted && !nowCompleted) {
-      xpDelta -= 100;
-      courseCountDelta -= 1;
-    }
-  }
-
-  if (xpDelta === 0 && moduleDelta === 0 && courseCountDelta === 0) return;
+  const { courseId, completed } = detail;
+  if (!courseId) return;
 
   const userRef = doc(db, "Users", currentUserId);
 
-  // 🔥 Use field names that match your Firestore rules exactly
-  updateDoc(userRef, {
-    Xp: increment(xpDelta),
-    ModulesCompleted: increment(moduleDelta),
-    CoursesCompleted: increment(courseCountDelta),
-  }).catch((err) => {
-    console.error("[AA] Failed to update XP for module toggle", err);
-  });
+  if (completed) {
+    // Course was just completed
+    updateDoc(userRef, {
+      Xp: increment(100), // Course completion bonus
+      CoursesCompleted: increment(1),
+    }).catch((err) => {
+      console.error("[AA] Failed to update XP for course completion", err);
+    });
+  } else {
+    // Course was uncompleted (rare, but handle it)
+    updateDoc(userRef, {
+      Xp: increment(-100),
+      CoursesCompleted: increment(-1),
+    }).catch((err) => {
+      console.error("[AA] Failed to update XP for course uncompletion", err);
+    });
+  }
 }
 
 function attachListeners() {
-  document.addEventListener("aa:moduleToggle", (evt) => {
+  // Only listen for course-level events
+  document.addEventListener("aa:courseToggle", (evt) => {
     try {
-      handleModuleToggle(evt.detail || {});
+      handleCourseCompletion(evt.detail || {});
     } catch (e) {
-      console.error("[AA] moduleToggle handler error", e);
+      console.error("[AA] courseToggle handler error", e);
     }
   });
 }

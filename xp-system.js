@@ -73,7 +73,7 @@ export function getLevelFromXP(xp = 0) {
   return "Seeker";
 }
 
-// 🔁 Streak multiplier: every 7 days adds +10% XP, capped at 2x
+// 🔥 Streak multiplier: every 7 days adds +10% XP, capped at 2x
 export function getStreakMultiplier(loginStreak = 0) {
   if (!loginStreak || loginStreak < 1) return 1;
   const tiers = Math.floor(loginStreak / 7); // every 7 days = +0.1
@@ -138,7 +138,7 @@ export async function getUserStats(uid) {
   return {
     id: uid,
     Xp: xp,
-    Level: data.Level || getLevelFromXP(xp),
+    Level: getLevelFromXP(xp), // ✅ ALWAYS calculate from XP
     CoursesCompleted: data.CoursesCompleted || 0,
     ModulesCompleted: data.ModulesCompleted || 0,
     completedCourseIds: data.completedCourseIds || [],
@@ -164,7 +164,7 @@ export async function awardXP(uid, action, metadata = {}) {
   const currentData = snap.exists() ? snap.data() : {};
 
   const currentXP = currentData.Xp || 0;
-  const oldLevel = currentData.Level || getLevelFromXP(currentXP);
+  const oldLevel = getLevelFromXP(currentXP);
   const loginStreak = currentData.loginStreak || 0;
 
   const multiplier = getStreakMultiplier(loginStreak);
@@ -179,12 +179,15 @@ export async function awardXP(uid, action, metadata = {}) {
     updatedAt: serverTimestamp(),
   };
 
+  // ✅ Only increment specific counters for specific actions
   if (action === "WIN_POSTED") {
     updates.WinsPosted = increment(1);
   } else if (action === "LIVE_CALL_ATTENDED") {
     updates.CallAttended = increment(1);
   } else if (action === "MODULE_COMPLETED") {
     updates.ModulesCompleted = increment(1);
+  } else if (action === "COURSE_COMPLETED") {
+    updates.CoursesCompleted = increment(1);
   }
 
   await setDoc(userRef, updates, { merge: true });
@@ -216,6 +219,7 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
     return { alreadyCompleted: true, courseCompleted: false };
   }
 
+  // ✅ Award XP for module only
   await awardXP(uid, "MODULE_COMPLETED");
 
   await setDoc(
@@ -243,12 +247,12 @@ export async function markCourseCompleted(uid, courseId) {
     return false;
   }
 
+  // ✅ Award XP for course completion only
   await awardXP(uid, "COURSE_COMPLETED");
 
   await setDoc(
     userRef,
     {
-      CoursesCompleted: increment(1),
       completedCourseIds: arrayUnion(courseId),
       updatedAt: serverTimestamp(),
     },

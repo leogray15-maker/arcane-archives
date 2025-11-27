@@ -704,14 +704,17 @@
 
   <script type="module">
     import { protectPage } from "./auth-guard.js";
-    import { getUserStats } from "./xp-system.js";
+    import { getUserStats, getLevelFromXP } from "./xp-system.js";
 
     protectPage({
       onSuccess: async (user) => {
         try {
           const stats = await getUserStats(user.uid);
-          const level = stats.Level || "Seeker";
           const xp = stats.Xp || 0;
+          
+          // ✅ ALWAYS calculate level from current XP
+          const level = getLevelFromXP(xp);
+          
           const courses = stats.CoursesCompleted || 0;
           const modules = stats.ModulesCompleted || 0;
 

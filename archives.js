@@ -1,7 +1,7 @@
 // archives.js
 // Arcane Archives – course progress + XP badge
 
-import { protectPage } from "./universal-auth.js";
+import { protectPage } from "./auth-guard.js";
 import {
   getUserStats,
   XP_REWARDS,
@@ -18,7 +18,7 @@ protectPage({
 
       updateProgressDisplay(stats);
       markCompletedCourses(stats.completedCourseIds || []);
-      updateUserLevel(stats.xp || 0);
+      updateUserLevel(stats.Xp || 0); // ✅ Pass XP, not stored Level
     } catch (err) {
       console.error("Error loading archive stats:", err);
     }
@@ -36,15 +36,15 @@ function updateProgressDisplay(stats) {
   const totalCourses = document.querySelectorAll("figure.link-to-page").length;
 
   const completedCourses =
-    typeof stats.coursesCompleted === "number"
-      ? stats.coursesCompleted
+    typeof stats.CoursesCompleted === "number"
+      ? stats.CoursesCompleted
       : (stats.completedCourseIds || []).length;
 
   const percentage =
     totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
 
-  const totalXP = stats.xp || 0;
-  const modulesCompleted = stats.modulesCompleted || 0;
+  const totalXP = stats.Xp || 0;
+  const modulesCompleted = stats.ModulesCompleted || 0;
 
   const progressContainer = document.getElementById("courseProgressStats");
   const progressBar = document.getElementById("progressBar");
@@ -92,6 +92,7 @@ function markCompletedCourses(completedCourseIds) {
  * XP / Level badge under the title (non-floating, mobile-safe)
  */
 function updateUserLevel(xp) {
+  // ✅ ALWAYS calculate level from XP
   const level = getLevelFromXP(xp);
   const progress = getProgressToNextLevel(xp);
 
@@ -104,16 +105,17 @@ function updateUserLevel(xp) {
   if (!badge) {
     badge = document.createElement("div");
     badge.id = "user-level-badge";
-    badge.style.marginTop = "0.45rem";
+    badge.style.marginTop = "0.5rem";
     badge.style.display = "inline-flex";
     badge.style.alignItems = "center";
-    badge.style.gap = "0.45rem";
-    badge.style.padding = "0.25rem 0.75rem";
+    badge.style.gap = "0.5rem";
+    badge.style.padding = "0.35rem 0.85rem";
     badge.style.borderRadius = "999px";
-    badge.style.border = "1px solid rgba(147, 51, 234, 0.75)";
+    badge.style.border = "1px solid rgba(147, 51, 234, 0.8)";
     badge.style.background = "rgba(15, 23, 42, 0.96)";
-    badge.style.fontSize = "0.8rem";
+    badge.style.fontSize = "0.85rem";
     badge.style.color = "#e5e5e5";
+    badge.style.boxShadow = "0 4px 12px rgba(147, 51, 234, 0.25)";
 
     // Lives inside header, directly under the H1
     titleEl.insertAdjacentElement("afterend", badge);
@@ -128,9 +130,9 @@ function updateUserLevel(xp) {
   }
 
   badge.innerHTML = `
-    <span style="font-size: 1rem;">${icon}</span>
+    <span style="font-size: 1.1rem;">${icon}</span>
     <span>Level: <strong style="color:#a78bfa;">${level}</strong></span>
-    <span style="font-size: 0.7rem; color:#9ca3af;">
+    <span style="font-size: 0.75rem; color:#9ca3af;">
       ${xp.toLocaleString()} XP${pctText ? " • " + pctText : ""}
     </span>
   `;
@@ -138,11 +140,12 @@ function updateUserLevel(xp) {
 
 function getLevelIcon(level) {
   const icons = {
-    Apprentice: "🎯",
-    Scholar: "📚",
-    Adept: "⚡",
-    Master: "🔮",
-    Archmage: "👑",
+    Seeker: "🕯️",
+    Apprentice: "📘",
+    "Advanced Apprentice": "📗",
+    "Awakened Apprentice": "📙",
+    "Awakened Master": "⚡",
+    "Arcane Master": "👑",
   };
-  return icons[level] || "🎯";
+  return icons[level] || "🕯️";
 }

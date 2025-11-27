@@ -1,5 +1,5 @@
 // alerts.js
-// Arcane Alerts – live trade signals + previous trades + admin tools
+// Arcane Alerts – live trade signals + Telegram integration + performance tracking
 
 import { protectPage, db } from "./auth-guard.js";
 import {
@@ -23,15 +23,14 @@ let isAdmin = false;
 
 // 🔐 Admins – by UID and/or email
 const ADMIN_UIDS = [
-  // "your-admin-uid-here",
+  // Add your Firebase UID here if needed
 ];
 
 const ADMIN_EMAILS = ["leogray15@gmail.com"];
 
-// Collections (change names here if you already use something else)
+// Collections
 const LIVE_ALERTS_COLLECTION = "alerts_live";
 const HISTORY_COLLECTION = "alerts_history";
-const NOTIFICATIONS_COLLECTION = "alerts_notifications";
 
 // ======================================================================
 // Entry – protect page & bootstrap
@@ -62,10 +61,11 @@ function setupAdminForm() {
   if (!formEl) return;
 
   if (!isAdmin) {
-    // Hide the entire admin block for non-admins
     formEl.style.display = "none";
     return;
   }
+
+  formEl.classList.add("visible");
 
   if (!postBtn) return;
 
@@ -93,7 +93,11 @@ function setupAdminForm() {
       return;
     }
 
+    postBtn.disabled = true;
+    postBtn.textContent = "Posting...";
+
     try {
+      // Add to Firestore
       await addDoc(collection(db, LIVE_ALERTS_COLLECTION), {
         pair,
         direction,
@@ -114,10 +118,16 @@ function setupAdminForm() {
         },
       });
 
-      // fire a lightweight notification doc that a new trade was posted
-      await createNotification("NEW_TRADE", {
+      // 🔔 Send to Telegram
+      await sendTelegramNotification("NEW_TRADE", {
         pair,
         direction,
+        entry,
+        sl,
+        tp1,
+        tp2,
+        tp3,
+        notes,
       });
 
       // Clear form
@@ -128,12 +138,41 @@ function setupAdminForm() {
       if (tp3Input) tp3Input.value = "";
       if (notesInput) notesInput.value = "";
 
-      alert("Trade posted. Members will see it on the live board.");
+      alert("✅ Trade posted and sent to Telegram!");
     } catch (e) {
       console.error("[AA] Failed to post trade signal", e);
-      alert("Could not post trade signal. Check console for details.");
+      alert("❌ Could not post trade signal. Check console.");
+    } finally {
+      postBtn.disabled = false;
+      postBtn.textContent = "Post Trade Signal";
     }
   });
+}
+
+// ======================================================================
+// Telegram Integration
+// ======================================================================
+
+async function sendTelegramNotification(type, payload) {
+  try {
+    const response = await fetch("/.netlify/functions/send-telegram-alert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type, payload }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Telegram send failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("✅ Telegram notification sent:", result);
+  } catch (error) {
+    console.error("❌ Telegram notification failed:", error);
+    // Don't block the UI if Telegram fails
+  }
 }
 
 // ======================================================================
@@ -217,64 +256,58 @@ function renderLiveAlertCard(id, data) {
   const card = document.createElement("div");
   card.className = "alert-card";
 
-  const dirColor =
-    direction === "Buy" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)";
-  const dirTextColor = direction === "Buy" ? "#22c55e" : "#ef4444";
-
   const r = reactions || {};
   const fireCount = Array.isArray(r.fire) ? r.fire.length : 0;
   const rocketCount = Array.isArray(r.rocket) ? r.rocket.length : 0;
   const eyesCount = Array.isArray(r.eyes) ? r.eyes.length : 0;
 
+  // Direction badge styling
+  const dirClass = direction === "Buy" ? "buy" : "sell";
+
   card.innerHTML = `
-    <div class="alert-header">
-      <div>
-        <div class="alert-title">${pair} <span style="font-size:0.85rem; color:#9ca3af;">• ${direction}</span></div>
-        <div class="alert-subtitle">Live trade setup</div>
-      </div>
-      <div class="alert-badge" style="background:${dirColor}; color:${dirTextColor};">
-        ${direction.toUpperCase()}
-      </div>
+    <div class="trade-header">
+      <div class="trade-pair">${pair}</div>
+      <div class="trade-direction ${dirClass}">${direction.toUpperCase()}</div>
     </div>
 
     <div class="trade-details">
-      <div>
-        <div class="trade-label">Entry</div>
-        <div class="trade-value">${entry || "-"}</div>
+      <div class="trade-detail">
+        <div class="trade-detail-label">Entry</div>
+        <div class="trade-detail-value">${entry || "-"}</div>
       </div>
-      <div>
-        <div class="trade-label">Stop Loss</div>
-        <div class="trade-value">${sl || "-"}</div>
+      <div class="trade-detail">
+        <div class="trade-detail-label">Stop Loss</div>
+        <div class="trade-detail-value">${sl || "-"}</div>
       </div>
-      <div>
-        <div class="trade-label">TP1</div>
-        <div class="trade-value">${tp1 || "-"}</div>
+      <div class="trade-detail">
+        <div class="trade-detail-label">TP1</div>
+        <div class="trade-detail-value">${tp1 || "-"}</div>
       </div>
-      <div>
-        <div class="trade-label">TP2</div>
-        <div class="trade-value">${tp2 || "-"}</div>
+      <div class="trade-detail">
+        <div class="trade-detail-label">TP2</div>
+        <div class="trade-detail-value">${tp2 || "-"}</div>
       </div>
-      <div>
-        <div class="trade-label">TP3</div>
-        <div class="trade-value">${tp3 || "-"}</div>
+      <div class="trade-detail">
+        <div class="trade-detail-label">TP3</div>
+        <div class="trade-detail-value">${tp3 || "-"}</div>
       </div>
     </div>
 
     ${
       notes
         ? `<div class="trade-notes">
-             <div class="trade-label" style="margin-bottom:0.25rem;">Notes</div>
-             <div class="trade-value">${escapeHtml(notes)}</div>
+             <div class="trade-detail-label" style="margin-bottom:0.25rem;">Analysis</div>
+             <div class="trade-detail-value">${escapeHtml(notes)}</div>
            </div>`
         : ""
     }
 
     <div class="trade-footer">
-      <div class="trade-time">${timeString}</div>
+      <div class="trade-time">📅 ${timeString}</div>
       <div class="reactions">
-        <button class="reaction-btn" data-reaction="fire">🔥 <span>${fireCount}</span></button>
-        <button class="reaction-btn" data-reaction="rocket">🚀 <span>${rocketCount}</span></button>
-        <button class="reaction-btn" data-reaction="eyes">👀 <span>${eyesCount}</span></button>
+        <button class="reaction-btn" data-id="${id}" data-reaction="fire">🔥 <span>${fireCount}</span></button>
+        <button class="reaction-btn" data-id="${id}" data-reaction="rocket">🚀 <span>${rocketCount}</span></button>
+        <button class="reaction-btn" data-id="${id}" data-reaction="eyes">👀 <span>${eyesCount}</span></button>
       </div>
     </div>
 
@@ -282,33 +315,37 @@ function renderLiveAlertCard(id, data) {
       isAdmin
         ? `
       <div class="admin-actions">
-        <button class="admin-btn win" data-action="TP1">TP1 HIT</button>
-        <button class="admin-btn win" data-action="TP2">TP2 HIT</button>
-        <button class="admin-btn win" data-action="TP3">TP3 HIT</button>
-        <button class="admin-btn loss" data-action="LOSS">LOSS</button>
-        <button class="admin-btn be" data-action="BE">BREAK EVEN</button>
+        <button class="admin-btn tp1" data-id="${id}" data-action="TP1">TP1</button>
+        <button class="admin-btn tp2" data-id="${id}" data-action="TP2">TP2</button>
+        <button class="admin-btn tp3" data-id="${id}" data-action="TP3">TP3</button>
+        <button class="admin-btn loss" data-id="${id}" data-action="LOSS">LOSS</button>
+        <button class="admin-btn be" data-id="${id}" data-action="BE">B/E</button>
       </div>
     `
         : ""
     }
   `;
 
-  // Hook reactions
-  const reactionButtons = card.querySelectorAll(".reaction-btn");
-  reactionButtons.forEach((btn) => {
+  // Attach reaction listeners
+  card.querySelectorAll(".reaction-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const reactionType = btn.getAttribute("data-reaction");
-      handleReaction(id, reactionType, btn);
+      const reaction = btn.dataset.reaction;
+      handleReaction(id, reaction, btn);
     });
   });
 
-  // Hook admin actions
+  // Attach admin action listeners
   if (isAdmin) {
-    const adminButtons = card.querySelectorAll(".admin-btn");
-    adminButtons.forEach((btn) => {
+    card.querySelectorAll(".admin-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const action = btn.getAttribute("data-action");
-        await handleAdminAction(id, data, action);
+        const action = btn.dataset.action;
+        if (
+          confirm(
+            `Mark this trade as ${action}? This will move it to history and send a Telegram update.`
+          )
+        ) {
+          await handleAdminAction(id, data, action);
+        }
       });
     });
   }
@@ -329,7 +366,7 @@ async function handleReaction(alertId, type, btnElement) {
     await updateDoc(alertRef, {
       [`reactions.${type}`]: arrayUnion(currentUser.uid),
     });
-    // optimistic UI bump
+    // Optimistic UI update
     const span = btnElement.querySelector("span");
     const current = parseInt(span?.textContent || "0", 10);
     if (span) span.textContent = String(current + 1);
@@ -390,7 +427,7 @@ async function handleAdminAction(alertId, data, action) {
   const pips = calculatePips(pair, direction, entry, exit);
 
   try {
-    // 1) Add to history (previous trades table)
+    // 1) Add to history
     await addDoc(collection(db, HISTORY_COLLECTION), {
       pair,
       direction,
@@ -406,32 +443,18 @@ async function handleAdminAction(alertId, data, action) {
     // 2) Remove from live
     await deleteDoc(doc(db, LIVE_ALERTS_COLLECTION, alertId));
 
-    // 3) Fire notification doc so Cloud Functions / bots can push to the group
-    await createNotification(notificationType, {
+    // 3) Send Telegram notification
+    await sendTelegramNotification(notificationType, {
       pair,
       direction,
       result,
       tpHit,
     });
+
+    console.log(`✅ Trade closed: ${action}`);
   } catch (e) {
     console.error("[AA] Failed to close trade", e);
     alert("Could not update trade. Check console for details.");
-  }
-}
-
-// ======================================================================
-// Notifications helper – used for group / Telegram bot integrations
-// ======================================================================
-
-async function createNotification(type, payload) {
-  try {
-    await addDoc(collection(db, NOTIFICATIONS_COLLECTION), {
-      type,
-      payload,
-      createdAt: serverTimestamp(),
-    });
-  } catch (e) {
-    console.warn("[AA] Failed to create notification doc", e);
   }
 }
 
@@ -461,7 +484,7 @@ function subscribeToHistory() {
         tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; color:#9ca3af; padding: 2rem;">
-              No closed trades yet. Mark live signals as WIN/LOSS/BE/TP1/2/3 to track performance.
+              No closed trades yet. Mark live signals as TP1/TP2/TP3/LOSS/BE to track performance.
             </td>
           </tr>
         `;
@@ -532,9 +555,16 @@ function renderHistoryRow(data) {
 
   const result = data.result || "-";
   const pips = typeof data.pips === "number" ? data.pips : null;
+  const tpHit = data.tpHit || 0;
 
-  const resultLabel =
-    result === "win" ? "WIN" : result === "loss" ? "LOSS" : result === "be" ? "B/E" : "-";
+  let resultLabel = "-";
+  if (result === "win") {
+    resultLabel = tpHit > 0 ? `TP${tpHit}` : "WIN";
+  } else if (result === "loss") {
+    resultLabel = "LOSS";
+  } else if (result === "be") {
+    resultLabel = "B/E";
+  }
 
   const resultClass =
     result === "win"
