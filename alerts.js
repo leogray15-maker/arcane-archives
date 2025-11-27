@@ -45,9 +45,12 @@ protectPage({
 
 // Setup modal for custom pips/notes
 function setupModal() {
+  // ✅ Guard: don't create the modal twice
+  if (document.getElementById("closeTradeModal")) return;
+
   // Create modal HTML
   const modalHTML = `
-    <div id="closeTradeModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div id="closeTradeModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
       <div style="background:#1e293b; border-radius:16px; padding:2rem; max-width:500px; width:90%; border:1px solid rgba(139,92,246,0.3);">
         <h3 style="color:#e5e7eb; margin-bottom:1rem; font-size:1.25rem;">Close Trade</h3>
         
@@ -117,7 +120,7 @@ function showModal(action, data) {
   notesInput.value = '';
   
   pendingAction = { action, data };
-  modal.style.display = 'flex';
+  modal.style.display = 'flex';   // 👈 we only switch to flex when opening
 }
 
 async function executeTradeClose(pending, customPips, customNotes) {
