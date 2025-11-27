@@ -1,11 +1,14 @@
 // xp-module-listener.js
-// Listens for module toggle events and syncs them with Firestore XP + profile data
+// Listens for module toggle events and syncs them with Firestore XP + stats.
+//
+// Event detail from course-module-tracker.js:
+//   { courseId, moduleId, completed }
 
 import { auth } from "./auth-guard.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
   markModuleCompleted,
-  unmarkModuleCompleted
+  unmarkModuleCompleted,
 } from "./xp-system.js";
 
 let currentUserId = null;
@@ -15,9 +18,8 @@ async function handleModuleToggle(detail) {
   if (!currentUserId) return;
 
   const { courseId, moduleId, completed } = detail || {};
-
   if (!courseId || !moduleId) {
-    console.warn("[Arcane] Missing courseId or moduleId", detail);
+    console.warn("[Arcane] moduleToggle missing courseId/moduleId", detail);
     return;
   }
 
@@ -42,14 +44,13 @@ function attachListeners() {
     try {
       handleModuleToggle(event.detail || {});
     } catch (err) {
-      console.error("[Arcane] Module toggle handler crashed", err);
+      console.error("[Arcane] moduleToggle handler crashed", err);
     }
   });
 }
 
 onAuthStateChanged(auth, (user) => {
   currentUserId = user ? user.uid : null;
-
   if (user) {
     attachListeners();
   }
