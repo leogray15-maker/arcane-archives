@@ -577,6 +577,8 @@
 
                             <div class="btn-row">
                                 <button class="btn btn-outline" id="resetPasswordBtn">🔐 Send Password Reset Email</button>
+                                <!-- 🚪 Logout button -->
+                                <button class="btn btn-outline" id="logoutBtn">🚪 Log Out</button>
                             </div>
                         </section>
                     </div>
@@ -692,7 +694,7 @@
     <script type="module">
         import { protectPage, updateUserAvatar, auth } from './auth-guard.js';
         import { getFirestore, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-        import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+        import { sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 
         const db = getFirestore();
 
@@ -705,6 +707,7 @@
 
         const saveProfileBtn = document.getElementById('saveProfileBtn');
         const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
 
         const avatarPreview = document.getElementById('currentAvatarPreview');
         const avatarOptions = Array.from(document.querySelectorAll('.avatar-option'));
@@ -944,6 +947,27 @@
                         alert('Error sending reset email. Try again.');
                     } finally {
                         resetPasswordBtn.disabled = false;
+                    }
+                });
+            }
+
+            // 🚪 Logout
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    const confirmed = confirm('Log out of The Arcane Archives on this device?');
+                    if (!confirmed) return;
+
+                    try {
+                        // Clear local-only caches
+                        localStorage.removeItem('aa_module_progress_v1');
+                        localStorage.removeItem('userAvatar');
+                        localStorage.removeItem('customAvatarUrl');
+
+                        await signOut(auth);
+                        window.location.href = 'login.html';
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error logging out. Try again.');
                     }
                 });
             }

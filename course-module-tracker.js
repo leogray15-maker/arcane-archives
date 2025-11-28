@@ -1,14 +1,9 @@
 // course-module-tracker.js
-// Tracks per-module completion for Arcane Archives.
-// Uses localStorage as the single source of truth and emits a DOM event
-// so the XP system + dashboard/archives can react.
-//
-// Event:
-//   "aa:moduleToggle" detail = {
-//      courseId: string,
-//      moduleId: string,
-//      completed: boolean
-//   }
+// Tracks per-module completion with Firestore sync + localStorage backup
+// Emits events that xp-module-listener.js catches
+
+import { auth } from "./universal-auth.js";
+import { getUserStats } from "./xp-system.js";
 
 const STORAGE_KEY = "aa_module_progress_v2";
 
@@ -24,9 +19,8 @@ function slugify(text) {
 function loadState() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return { modules: {} };
-    }
+    if (!raw) return { modules: {} };
+    
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") {
       return { modules: {} };
@@ -88,21 +82,15 @@ function applyButtonState(button, completed) {
   }
 }
 
-// Try to derive sensible default IDs from URL + page title.
-// You can override these by adding data attributes:
-//
-//   <body data-aa-course="mind-hijacking" data-aa-module="read-before-starting">
-//
+// Derive page defaults from URL + title
 function derivePageDefaults() {
   const body = document.body || document.documentElement;
-
   const bodyCourse = body.getAttribute("data-aa-course");
   const bodyModule = body.getAttribute("data-aa-module");
 
   const urlPath = window.location.pathname || "";
   const segments = urlPath.split("/").filter(Boolean);
 
-  // Heuristic: parent folder = course, file name / title = module
   const rawCourse =
     segments.length > 1 ? segments[segments.length - 2] : segments[0] || "course";
   const rawModule =
@@ -116,19 +104,59 @@ function derivePageDefaults() {
   return { courseId, moduleId };
 }
 
-// Initialise buttons on the current page.
-export function initModuleTracker() {
+// Sync localStorage state with Firestore on page load
+async function syncWithFirestore(state) {
+  const user = auth.currentUser;
+  if (!user) return state;
+
+  try {
+    const stats = await getUserStats(user.uid);
+    const firestoreModules = stats.completedModuleIds || [];
+
+    // Merge: Firestore is source of truth
+    const merged = { modules: {} };
+    
+    firestoreModules.forEach(fullId => {
+      merged.modules[fullId] = true;
+    });
+
+    // Save merged state back to localStorage
+    saveState(merged);
+    return merged;
+
+  } catch (err) {
+    console.warn("[AA] Could not sync with Firestore, using localStorage", err);
+    return state;
+  }
+}
+
+// Initialize buttons on the current page
+export async function initModuleTracker() {
   try {
     const buttons = Array.from(document.querySelectorAll(".aa-pill-button"));
     if (!buttons.length) return;
 
-    const state = loadState();
+    let state = loadState();
+    
+    // Wait for auth and sync with Firestore
+    if (auth.currentUser) {
+      state = await syncWithFirestore(state);
+    } else {
+      // Wait for auth to initialize
+      await new Promise(resolve => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+          unsubscribe();
+          resolve();
+        });
+      });
+      state = await syncWithFirestore(state);
+    }
+
     const defaults = derivePageDefaults();
 
     buttons.forEach((button, index) => {
       const courseId = button.dataset.courseId || defaults.courseId;
 
-      // If multiple buttons on a page, give them unique module IDs based on index
       const rawModuleId =
         button.dataset.moduleId ||
         (index === 0 ? defaults.moduleId : `${defaults.moduleId}-${index + 1}`);
@@ -137,20 +165,22 @@ export function initModuleTracker() {
       const key = getModuleKey(courseId, moduleId);
       const completed = !!state.modules[key];
 
-      // Save IDs back onto the button for debugging / other scripts
+      // Save IDs back onto button
       button.dataset.courseId = courseId;
       button.dataset.moduleId = moduleId;
 
       applyButtonState(button, completed);
 
-      button.addEventListener("click", () => {
+      button.addEventListener("click", async () => {
         const current = !!state.modules[key];
         const next = !current;
 
+        // Update localStorage immediately for snappy UI
         state.modules[key] = next;
         saveState(state);
         applyButtonState(button, next);
 
+        // Dispatch event for XP system to handle Firestore
         const detail = {
           courseId,
           moduleId,
@@ -158,10 +188,11 @@ export function initModuleTracker() {
         };
 
         document.dispatchEvent(
-          new CustomEvent("aa:moduleToggle", {
-            detail,
-          })
+          new CustomEvent("aa:moduleToggle", { detail })
         );
+
+        // Check if course is now complete
+        await checkCourseCompletion(courseId, state);
       });
     });
   } catch (err) {
@@ -169,7 +200,40 @@ export function initModuleTracker() {
   }
 }
 
-// Helper for dashboards / archives – derive per-course stats from stored modules.
+// Check if all modules in a course are completed
+async function checkCourseCompletion(courseId, state) {
+  const allButtons = Array.from(document.querySelectorAll(".aa-pill-button"));
+  const courseButtons = allButtons.filter(btn => btn.dataset.courseId === courseId);
+  
+  if (courseButtons.length === 0) return;
+
+  const completed = courseButtons.every(btn => {
+    const key = getModuleKey(btn.dataset.courseId, btn.dataset.moduleId);
+    return state.modules[key] === true;
+  });
+
+  const previouslyCompleted = window.__aaLastCourseState?.[courseId] || false;
+  window.__aaLastCourseState = window.__aaLastCourseState || {};
+  window.__aaLastCourseState[courseId] = completed;
+
+  if (completed && !previouslyCompleted) {
+    // Course just became complete
+    document.dispatchEvent(
+      new CustomEvent("aa:courseComplete", {
+        detail: { courseId }
+      })
+    );
+  } else if (!completed && previouslyCompleted) {
+    // Course became incomplete
+    document.dispatchEvent(
+      new CustomEvent("aa:courseUncomplete", {
+        detail: { courseId }
+      })
+    );
+  }
+}
+
+// Helper for dashboards/archives
 export function getStoredCourseProgress() {
   const state = loadState();
   const modules = state.modules || {};
@@ -202,7 +266,7 @@ export function getStoredCourseProgress() {
   return courses;
 }
 
-// Auto-init when used as a side-effect module
+// Auto-init
 if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => initModuleTracker());

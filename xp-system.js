@@ -152,7 +152,7 @@ export async function getUserStats(uid) {
   };
 }
 
-// 🎮 Central XP award – ONLY XP + wins/calls counters now
+// 🎮 Central XP award – handles wins/calls/daily login
 export async function awardXP(uid, action, metadata = {}) {
   const baseXP = XP_REWARDS[action];
   if (!baseXP) {
@@ -185,7 +185,6 @@ export async function awardXP(uid, action, metadata = {}) {
   } else if (action === "LIVE_CALL_ATTENDED") {
     updates.CallAttended = increment(1);
   }
-  // NOTE: no ModulesCompleted / CoursesCompleted here anymore
 
   await setDoc(userRef, updates, { merge: true });
 
@@ -201,6 +200,7 @@ export async function awardXP(uid, action, metadata = {}) {
   return true;
 }
 
+// ✅ Mark module completed (with XP and counter update)
 export async function markModuleCompleted(uid, courseId, moduleId) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
@@ -213,54 +213,36 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
   const fullModuleId = `${courseId}::${moduleId}`;
 
   if (completedModuleIds.includes(fullModuleId)) {
-    return { alreadyCompleted: true, courseCompleted: false };
+    return { alreadyCompleted: true };
   }
 
-  await awardXP(uid, "MODULE_COMPLETED");
+  // Calculate XP with streak multiplier
+  const loginStreak = data.loginStreak || 0;
+  const multiplier = getStreakMultiplier(loginStreak);
+  const baseXP = XP_REWARDS.MODULE_COMPLETED;
+  const gainedXP = Math.round(baseXP * multiplier);
+
+  const currentXP = data.Xp || 0;
+  const newXP = currentXP + gainedXP;
+  const newLevel = getLevelFromXP(newXP);
 
   await setDoc(
     userRef,
     {
+      Xp: newXP,
+      Level: newLevel,
       completedModuleIds: arrayUnion(fullModuleId),
-      ModulesCompleted: increment(1), // 👈 own the counter here
+      ModulesCompleted: increment(1),
       updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
 
-  return { alreadyCompleted: false, courseCompleted: false };
+  console.log(`✅ Module completed: +${gainedXP} XP (base ${baseXP} x${multiplier.toFixed(1)})`);
+  return { alreadyCompleted: false };
 }
 
-export async function markCourseCompleted(uid, courseId) {
-  const userRef = doc(db, "Users", uid);
-  const snap = await getDoc(userRef);
-  const data = snap.exists() ? snap.data() : {};
-
-  const currentCompleted = Array.isArray(data.completedCourseIds)
-    ? data.completedCourseIds
-    : [];
-
-  if (currentCompleted.includes(courseId)) {
-    return false;
-  }
-
-  await awardXP(uid, "COURSE_COMPLETED");
-
-  await setDoc(
-    userRef,
-    {
-      completedCourseIds: arrayUnion(courseId),
-      CoursesCompleted: increment(1), // 👈 own the counter here
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-
-  return true;
-}
-
-/* 🔁 Undo functions for toggling off modules / courses */
-
+// ❌ Unmark module (deduct XP)
 export async function unmarkModuleCompleted(uid, courseId, moduleId) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
@@ -276,6 +258,7 @@ export async function unmarkModuleCompleted(uid, courseId, moduleId) {
     return { alreadyCompleted: false };
   }
 
+  // Deduct base XP (no multiplier on removal for simplicity)
   const baseXP = XP_REWARDS.MODULE_COMPLETED || 0;
   const currentXP = data.Xp || 0;
   const newXP = Math.max(0, currentXP - baseXP);
@@ -295,9 +278,51 @@ export async function unmarkModuleCompleted(uid, courseId, moduleId) {
 
   await setDoc(userRef, updates, { merge: true });
 
+  console.log(`❌ Module uncompleted: -${baseXP} XP`);
   return { alreadyCompleted: true };
 }
 
+// 🏆 Mark course completed (with XP bonus)
+export async function markCourseCompleted(uid, courseId) {
+  const userRef = doc(db, "Users", uid);
+  const snap = await getDoc(userRef);
+  const data = snap.exists() ? snap.data() : {};
+
+  const currentCompleted = Array.isArray(data.completedCourseIds)
+    ? data.completedCourseIds
+    : [];
+
+  if (currentCompleted.includes(courseId)) {
+    return false;
+  }
+
+  // Calculate bonus XP with streak multiplier
+  const loginStreak = data.loginStreak || 0;
+  const multiplier = getStreakMultiplier(loginStreak);
+  const baseXP = XP_REWARDS.COURSE_COMPLETED;
+  const gainedXP = Math.round(baseXP * multiplier);
+
+  const currentXP = data.Xp || 0;
+  const newXP = currentXP + gainedXP;
+  const newLevel = getLevelFromXP(newXP);
+
+  await setDoc(
+    userRef,
+    {
+      Xp: newXP,
+      Level: newLevel,
+      completedCourseIds: arrayUnion(courseId),
+      CoursesCompleted: increment(1),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  console.log(`🏆 Course completed: +${gainedXP} XP (base ${baseXP} x${multiplier.toFixed(1)})`);
+  return true;
+}
+
+// 📉 Unmark course (deduct bonus XP)
 export async function unmarkCourseCompleted(uid, courseId) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);
@@ -311,6 +336,7 @@ export async function unmarkCourseCompleted(uid, courseId) {
     return false;
   }
 
+  // Deduct base course XP
   const baseXP = XP_REWARDS.COURSE_COMPLETED || 0;
   const currentXP = data.Xp || 0;
   const newXP = Math.max(0, currentXP - baseXP);
@@ -330,6 +356,7 @@ export async function unmarkCourseCompleted(uid, courseId) {
 
   await setDoc(userRef, updates, { merge: true });
 
+  console.log(`📉 Course uncompleted: -${baseXP} XP`);
   return true;
 }
 
@@ -355,7 +382,7 @@ export async function updateLoginStreak(uid) {
     const lastStr = lastLoginDate.toISOString().slice(0, 10);
 
     if (lastStr === todayStr) {
-      return;
+      return; // Already logged in today
     }
 
     const diffMs = today - lastLoginDate;
