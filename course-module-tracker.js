@@ -82,7 +82,6 @@ function applyButtonState(button, completed) {
   }
 }
 
-// Derive page defaults from URL + title
 function derivePageDefaults() {
   const body = document.body || document.documentElement;
   const bodyCourse = body.getAttribute("data-aa-course");
@@ -107,7 +106,10 @@ function derivePageDefaults() {
 // Sync localStorage state with Firestore on page load
 async function syncWithFirestore(state) {
   const user = auth.currentUser;
-  if (!user) return state;
+  if (!user) {
+    console.warn("[AA] No user logged in, skipping Firestore sync");
+    return state;
+  }
 
   try {
     const stats = await getUserStats(user.uid);
@@ -122,6 +124,7 @@ async function syncWithFirestore(state) {
 
     // Save merged state back to localStorage
     saveState(merged);
+    console.log("[AA] Synced with Firestore:", firestoreModules.length, "modules");
     return merged;
 
   } catch (err) {
@@ -134,25 +137,42 @@ async function syncWithFirestore(state) {
 export async function initModuleTracker() {
   try {
     const buttons = Array.from(document.querySelectorAll(".aa-pill-button"));
-    if (!buttons.length) return;
+    if (!buttons.length) {
+      console.log("[AA] No module buttons found on page");
+      return;
+    }
+
+    console.log("[AA] Found", buttons.length, "module buttons");
 
     let state = loadState();
     
-    // Wait for auth and sync with Firestore
-    if (auth.currentUser) {
-      state = await syncWithFirestore(state);
-    } else {
-      // Wait for auth to initialize
-      await new Promise(resolve => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
+    // 🔥 CRITICAL: Wait for auth to be ready
+    const user = await new Promise((resolve) => {
+      if (auth.currentUser) {
+        resolve(auth.currentUser);
+      } else {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
           unsubscribe();
-          resolve();
+          resolve(user);
         });
-      });
-      state = await syncWithFirestore(state);
+      }
+    });
+
+    if (!user) {
+      console.warn("[AA] No user logged in after auth check");
+      return;
     }
 
+    console.log("[AA] User authenticated:", user.uid);
+    
+    // Store user globally for xp-module-listener
+    window.currentUser = user;
+
+    // Sync with Firestore
+    state = await syncWithFirestore(state);
+
     const defaults = derivePageDefaults();
+    console.log("[AA] Course defaults:", defaults);
 
     buttons.forEach((button, index) => {
       const courseId = button.dataset.courseId || defaults.courseId;
@@ -169,11 +189,15 @@ export async function initModuleTracker() {
       button.dataset.courseId = courseId;
       button.dataset.moduleId = moduleId;
 
+      console.log("[AA] Button", index, ":", courseId, "/", moduleId, "- completed:", completed);
+
       applyButtonState(button, completed);
 
       button.addEventListener("click", async () => {
         const current = !!state.modules[key];
         const next = !current;
+
+        console.log("[AA] Button clicked:", courseId, "/", moduleId, "- toggle to:", next);
 
         // Update localStorage immediately for snappy UI
         state.modules[key] = next;
@@ -187,6 +211,8 @@ export async function initModuleTracker() {
           completed: next,
         };
 
+        console.log("[AA] Dispatching aa:moduleToggle event:", detail);
+
         document.dispatchEvent(
           new CustomEvent("aa:moduleToggle", { detail })
         );
@@ -195,6 +221,8 @@ export async function initModuleTracker() {
         await checkCourseCompletion(courseId, state);
       });
     });
+
+    console.log("[AA] Module tracker initialized successfully");
   } catch (err) {
     console.error("[AA] initModuleTracker error", err);
   }
@@ -217,14 +245,14 @@ async function checkCourseCompletion(courseId, state) {
   window.__aaLastCourseState[courseId] = completed;
 
   if (completed && !previouslyCompleted) {
-    // Course just became complete
+    console.log("[AA] Course completed:", courseId);
     document.dispatchEvent(
       new CustomEvent("aa:courseComplete", {
         detail: { courseId }
       })
     );
   } else if (!completed && previouslyCompleted) {
-    // Course became incomplete
+    console.log("[AA] Course uncompleted:", courseId);
     document.dispatchEvent(
       new CustomEvent("aa:courseUncomplete", {
         detail: { courseId }
