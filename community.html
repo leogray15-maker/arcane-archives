@@ -699,8 +699,18 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     imagePreviewContainer.innerHTML = `
-                        <img src="${e.target.result}" class="image-preview" alt="Preview">
+                        <div style="position: relative; display: inline-block;">
+                            <img src="${e.target.result}" class="image-preview" alt="Preview">
+                            <button id="removeImageBtn" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(239, 68, 68, 0.9); border: none; border-radius: 50%; width: 28px; height: 28px; color: white; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);" title="Remove image">×</button>
+                        </div>
                     `;
+                    
+                    // Add remove button handler
+                    document.getElementById('removeImageBtn').addEventListener('click', () => {
+                        selectedImage = null;
+                        imagePreviewContainer.innerHTML = '';
+                        imageUpload.value = '';
+                    });
                 };
                 reader.readAsDataURL(file);
             }
@@ -710,6 +720,7 @@
             const data = doc.data();
             const username = data.username || 'Member';
             const avatarChar = (data.avatarLetter || username.charAt(0) || '?').toUpperCase();
+            const customAvatarUrl = data.customAvatarUrl || null;
             const timestamp = data.timestamp?.toDate 
                 ? data.timestamp.toDate().toLocaleString()
                 : 'Just now';
@@ -722,9 +733,17 @@
                 imageHtml = `<img src="${data.imageUrl}" class="message-image" alt="Shared image">`;
             }
 
+            // ✅ Display custom avatar if available, otherwise show letter
+            let avatarHtml = '';
+            if (customAvatarUrl) {
+                avatarHtml = `<div class="message-avatar" style="background-image: url('${customAvatarUrl}'); background-size: cover; background-position: center;"></div>`;
+            } else {
+                avatarHtml = `<div class="message-avatar">${avatarChar}</div>`;
+            }
+
             wrapper.innerHTML = `
                 <div class="message-header">
-                    <div class="message-avatar">${avatarChar}</div>
+                    ${avatarHtml}
                     <div style="flex: 1;">
                         <div class="message-username">${username}</div>
                         <div class="message-meta">${timestamp}</div>
@@ -795,6 +814,7 @@
             try {
                 const username = currentUserData?.Username || currentUser.email.split('@')[0];
                 const avatarLetter = localStorage.getItem('userAvatar') || username.charAt(0);
+                const customAvatarUrl = localStorage.getItem('customAvatarUrl') || null;
 
                 let imageUrl = null;
 
@@ -810,9 +830,18 @@
                     username,
                     message: text,
                     avatarLetter,
+                    customAvatarUrl,  // ✅ Save custom avatar URL
                     imageUrl,
                     timestamp: serverTimestamp()
                 });
+
+                // ðŸ'¬ Award chat XP (capped at 50/day)
+                try {
+                    const { awardChatXP } = await import('./xp-system.js');
+                    await awardChatXP(currentUser.uid);
+                } catch (xpError) {
+                    console.log('Chat XP error (non-critical):', xpError);
+                }
 
                 input.value = '';
                 input.style.height = 'auto';

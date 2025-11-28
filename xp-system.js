@@ -16,52 +16,189 @@ import {
 
 // 🔮 XP reward values for different actions (BASE amounts, before multiplier)
 export const XP_REWARDS = {
-  MODULE_COMPLETED: 50,      // Per module completed
-  COURSE_COMPLETED: 100,     // Bonus when all modules in a course are done
-  WIN_POSTED: 75,            // Posting a win
-  LIVE_CALL_ATTENDED: 50,    // Attending a live call
+  MODULE_COMPLETED: 75,      // Per module completed
+  WIN_POSTED: 100,           // Posting a win
+  LIVE_CALL_ATTENDED: 250,   // Attending a live call
+  CHAT_MESSAGE: 10,          // Per chat message (capped at 50/day)
   REFERRAL_SIGNUP: 50,       // When someone signs up with your ref
   REFERRAL_ACTIVE: 200,      // When referral becomes paying member
   DAILY_LOGIN: 10,           // Daily login streak
 };
 
-// 🧬 Level thresholds – NEW RANKS
+// Daily caps
+export const DAILY_CAPS = {
+  CHAT_MESSAGES: 50,         // Max 50 messages/day = 500 XP max from chat
+};
+
+// 🧬 Level thresholds – 28 RANKS
 export const LEVELS = {
   SEEKER: {
     min: 0,
-    max: 199,
+    max: 299,
     name: "Seeker",
     icon: "🕯️",
   },
+  BEGINNER: {
+    min: 300,
+    max: 749,
+    name: "Beginner",
+    icon: "📿",
+  },
   APPRENTICE: {
-    min: 200,
-    max: 599,
+    min: 750,
+    max: 1499,
     name: "Apprentice",
     icon: "📘",
   },
   ADVANCED_APPRENTICE: {
-    min: 600,
-    max: 1499,
+    min: 1500,
+    max: 2499,
     name: "Advanced Apprentice",
     icon: "📗",
   },
   AWAKENED_APPRENTICE: {
-    min: 1500,
-    max: 2999,
+    min: 2500,
+    max: 3999,
     name: "Awakened Apprentice",
     icon: "📙",
   },
-  AWAKENED_MASTER: {
-    min: 3000,
-    max: 4999,
-    name: "Awakened Master",
+  JOURNEYMAN: {
+    min: 4000,
+    max: 5999,
+    name: "Journeyman",
+    icon: "⚒️",
+  },
+  EXPERT: {
+    min: 6000,
+    max: 8499,
+    name: "Expert",
+    icon: "🎯",
+  },
+  VETERAN: {
+    min: 8500,
+    max: 11499,
+    name: "Veteran",
+    icon: "⚔️",
+  },
+  ELITE: {
+    min: 11500,
+    max: 14999,
+    name: "Elite",
+    icon: "🛡️",
+  },
+  MASTER: {
+    min: 15000,
+    max: 19499,
+    name: "Master",
     icon: "⚡",
   },
+  ADVANCED_MASTER: {
+    min: 19500,
+    max: 24499,
+    name: "Advanced Master",
+    icon: "💫",
+  },
+  AWAKENED_MASTER: {
+    min: 24500,
+    max: 29999,
+    name: "Awakened Master",
+    icon: "✨",
+  },
+  GRANDMASTER: {
+    min: 30000,
+    max: 36499,
+    name: "Grandmaster",
+    icon: "👑",
+  },
+  NEO: {
+    min: 36500,
+    max: 43499,
+    name: "Neo",
+    icon: "🕶️",
+  },
+  CONQUEROR: {
+    min: 43500,
+    max: 51499,
+    name: "Conqueror",
+    icon: "🏆",
+  },
+  CHAMPION: {
+    min: 51500,
+    max: 60499,
+    name: "Champion",
+    icon: "🔥",
+  },
+  TITAN: {
+    min: 60500,
+    max: 69999,
+    name: "Titan",
+    icon: "💪",
+  },
+  LEGEND: {
+    min: 70000,
+    max: 79999,
+    name: "Legend",
+    icon: "⭐",
+  },
+  MYTHIC: {
+    min: 80000,
+    max: 89999,
+    name: "Mythic",
+    icon: "🌟",
+  },
+  IMMORTAL: {
+    min: 90000,
+    max: 99999,
+    name: "Immortal",
+    icon: "💀",
+  },
+  AURA: {
+    min: 100000,
+    max: 109999,
+    name: "Aura",
+    icon: "⚡",
+  },
+  ESCAPEE: {
+    min: 110000,
+    max: 119999,
+    name: "Escapee",
+    icon: "🚪",
+  },
+  ASCENDANT: {
+    min: 120000,
+    max: 129999,
+    name: "Ascendant",
+    icon: "🦅",
+  },
+  SUPREME: {
+    min: 130000,
+    max: 139999,
+    name: "Supreme",
+    icon: "👁️",
+  },
+  DIVINE: {
+    min: 140000,
+    max: 149999,
+    name: "Divine",
+    icon: "💎",
+  },
+  CELESTIAL: {
+    min: 150000,
+    max: 164999,
+    name: "Celestial",
+    icon: "✨",
+  },
+  ARCANE_SOVEREIGN: {
+    min: 165000,
+    max: 184999,
+    name: "Arcane Sovereign",
+    icon: "🔱",
+  },
   ARCANE_MASTER: {
-    min: 5000,
+    min: 185000,
     max: Infinity,
     name: "Arcane Master",
-    icon: "👑",
+    icon: "👁️‍🗨️",
   },
 };
 
@@ -200,6 +337,61 @@ export async function awardXP(uid, action, metadata = {}) {
   return true;
 }
 
+// 💬 Award XP for chat messages (with daily cap)
+export async function awardChatXP(uid) {
+  const userRef = doc(db, "Users", uid);
+  const snap = await getDoc(userRef);
+  const currentData = snap.exists() ? snap.data() : {};
+
+  const today = new Date().toISOString().slice(0, 10);
+  const lastChatDate = currentData.lastChatDate || null;
+  const chatMessagesToday = currentData.chatMessagesToday || 0;
+
+  // Reset counter if it's a new day
+  let newChatCount = chatMessagesToday;
+  if (lastChatDate !== today) {
+    newChatCount = 0;
+  }
+
+  // Check if user has hit daily cap
+  if (newChatCount >= DAILY_CAPS.CHAT_MESSAGES) {
+    console.log(`⚠️ Daily chat XP cap reached (${DAILY_CAPS.CHAT_MESSAGES} messages)`);
+    return false;
+  }
+
+  // Award XP
+  const baseXP = XP_REWARDS.CHAT_MESSAGE;
+  const loginStreak = currentData.loginStreak || 0;
+  const multiplier = getStreakMultiplier(loginStreak);
+  const gainedXP = Math.round(baseXP * multiplier);
+
+  const currentXP = currentData.Xp || 0;
+  const newXP = currentXP + gainedXP;
+  const newLevel = getLevelFromXP(newXP);
+  const oldLevel = getLevelFromXP(currentXP);
+
+  await setDoc(
+    userRef,
+    {
+      Xp: newXP,
+      Level: newLevel,
+      chatMessagesToday: newChatCount + 1,
+      lastChatDate: today,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  if (oldLevel !== newLevel) {
+    console.log(`🎉 LEVEL UP! ${oldLevel} → ${newLevel}`);
+  }
+
+  console.log(
+    `💬 Chat XP awarded: +${gainedXP} XP (${newChatCount + 1}/${DAILY_CAPS.CHAT_MESSAGES} today)`
+  );
+  return true;
+}
+
 // ✅ Mark module completed (with XP and counter update)
 export async function markModuleCompleted(uid, courseId, moduleId) {
   const userRef = doc(db, "Users", uid);
@@ -243,124 +435,6 @@ export async function markModuleCompleted(uid, courseId, moduleId) {
 }
 
 // ❌ Unmark module (deduct XP)
-export async function unmarkModuleCompleted(uid, courseId, moduleId) {
-  const userRef = doc(db, "Users", uid);
-  const snap = await getDoc(userRef);
-  const data = snap.exists() ? snap.data() : {};
-
-  const completedModuleIds = Array.isArray(data.completedModuleIds)
-    ? data.completedModuleIds
-    : [];
-
-  const fullModuleId = `${courseId}::${moduleId}`;
-
-  if (!completedModuleIds.includes(fullModuleId)) {
-    return { alreadyCompleted: false };
-  }
-
-  // Deduct base XP (no multiplier on removal for simplicity)
-  const baseXP = XP_REWARDS.MODULE_COMPLETED || 0;
-  const currentXP = data.Xp || 0;
-  const newXP = Math.max(0, currentXP - baseXP);
-  const newLevel = getLevelFromXP(newXP);
-
-  const currentModules =
-    typeof data.ModulesCompleted === "number" ? data.ModulesCompleted : 0;
-  const newModules = currentModules > 0 ? currentModules - 1 : 0;
-
-  const updates = {
-    Xp: newXP,
-    Level: newLevel,
-    ModulesCompleted: newModules,
-    completedModuleIds: arrayRemove(fullModuleId),
-    updatedAt: serverTimestamp(),
-  };
-
-  await setDoc(userRef, updates, { merge: true });
-
-  console.log(`❌ Module uncompleted: -${baseXP} XP`);
-  return { alreadyCompleted: true };
-}
-
-// 🏆 Mark course completed (with XP bonus)
-export async function markCourseCompleted(uid, courseId) {
-  const userRef = doc(db, "Users", uid);
-  const snap = await getDoc(userRef);
-  const data = snap.exists() ? snap.data() : {};
-
-  const currentCompleted = Array.isArray(data.completedCourseIds)
-    ? data.completedCourseIds
-    : [];
-
-  if (currentCompleted.includes(courseId)) {
-    return false;
-  }
-
-  // Calculate bonus XP with streak multiplier
-  const loginStreak = data.loginStreak || 0;
-  const multiplier = getStreakMultiplier(loginStreak);
-  const baseXP = XP_REWARDS.COURSE_COMPLETED;
-  const gainedXP = Math.round(baseXP * multiplier);
-
-  const currentXP = data.Xp || 0;
-  const newXP = currentXP + gainedXP;
-  const newLevel = getLevelFromXP(newXP);
-
-  await setDoc(
-    userRef,
-    {
-      Xp: newXP,
-      Level: newLevel,
-      completedCourseIds: arrayUnion(courseId),
-      CoursesCompleted: increment(1),
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-
-  console.log(`🏆 Course completed: +${gainedXP} XP (base ${baseXP} x${multiplier.toFixed(1)})`);
-  return true;
-}
-
-// 📉 Unmark course (deduct bonus XP)
-export async function unmarkCourseCompleted(uid, courseId) {
-  const userRef = doc(db, "Users", uid);
-  const snap = await getDoc(userRef);
-  const data = snap.exists() ? snap.data() : {};
-
-  const completedCourseIds = Array.isArray(data.completedCourseIds)
-    ? data.completedCourseIds
-    : [];
-
-  if (!completedCourseIds.includes(courseId)) {
-    return false;
-  }
-
-  // Deduct base course XP
-  const baseXP = XP_REWARDS.COURSE_COMPLETED || 0;
-  const currentXP = data.Xp || 0;
-  const newXP = Math.max(0, currentXP - baseXP);
-  const newLevel = getLevelFromXP(newXP);
-
-  const currentCourses =
-    typeof data.CoursesCompleted === "number" ? data.CoursesCompleted : 0;
-  const newCourses = currentCourses > 0 ? currentCourses - 1 : 0;
-
-  const updates = {
-    Xp: newXP,
-    Level: newLevel,
-    CoursesCompleted: newCourses,
-    completedCourseIds: arrayRemove(courseId),
-    updatedAt: serverTimestamp(),
-  };
-
-  await setDoc(userRef, updates, { merge: true });
-
-  console.log(`📉 Course uncompleted: -${baseXP} XP`);
-  return true;
-}
-
-// 🔥 Daily login streak + auto XP
 export async function updateLoginStreak(uid) {
   const userRef = doc(db, "Users", uid);
   const snap = await getDoc(userRef);

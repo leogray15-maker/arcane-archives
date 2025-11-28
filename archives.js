@@ -140,12 +140,34 @@ function updateUserLevel(xp) {
 
 function getLevelIcon(level) {
   const icons = {
-    Seeker: "🕯️",
-    Apprentice: "📘",
+    "Seeker": "🕯️",
+    "Beginner": "📿",
+    "Apprentice": "📘",
     "Advanced Apprentice": "📗",
     "Awakened Apprentice": "📙",
-    "Awakened Master": "⚡",
-    "Arcane Master": "👑",
+    "Journeyman": "⚒️",
+    "Expert": "🎯",
+    "Veteran": "⚔️",
+    "Elite": "🛡️",
+    "Master": "⚡",
+    "Advanced Master": "💫",
+    "Awakened Master": "✨",
+    "Grandmaster": "👑",
+    "Neo": "🕶️",
+    "Conqueror": "🏆",
+    "Champion": "🔥",
+    "Titan": "💪",
+    "Legend": "⭐",
+    "Mythic": "🌟",
+    "Immortal": "💀",
+    "Aura": "⚡",
+    "Escapee": "🚪",
+    "Ascendant": "🦅",
+    "Supreme": "👁️",
+    "Divine": "💎",
+    "Celestial": "✨",
+    "Arcane Sovereign": "🔱",
+    "Arcane Master": "👁️‍🗨️",
   };
   return icons[level] || "🕯️";
 }

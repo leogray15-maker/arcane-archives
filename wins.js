@@ -66,6 +66,10 @@ function setupWinForm() {
     postBtn.textContent = "Posting...";
 
     try {
+      const username = currentUser.displayName || currentUser.email?.split('@')[0] || 'Member';
+      const avatarLetter = localStorage.getItem('userAvatar') || username.charAt(0);
+      const customAvatarUrl = localStorage.getItem('customAvatarUrl') || null;
+
       await addDoc(collection(db, "wins"), {
         title,
         description: description || null,
@@ -73,6 +77,9 @@ function setupWinForm() {
         createdAt: serverTimestamp(),
         userId: currentUser.uid,
         userEmail: currentUser.email,
+        username,              // ✅ Save username
+        avatarLetter,          // ✅ Save avatar letter/emoji
+        customAvatarUrl,       // ✅ Save custom avatar URL
         reactions: {
           fire: [],
           trophy: [],
@@ -187,10 +194,13 @@ function renderWinCard(id, data, userData) {
   const card = document.createElement("div");
   card.className = "win-card";
 
-  const username =
-    userData?.Username || data.userEmail?.split("@")[0] || "Member";
-  const userLevel = userData?.level || "Apprentice";
-  const userInitial = username.charAt(0).toUpperCase();
+  // ✅ Use saved username from win document, fallback to userData or email
+  const username = data.username || userData?.Username || data.userEmail?.split("@")[0] || "Member";
+  const userLevel = userData?.Level || "Seeker";
+  
+  // ✅ Get custom avatar URL or use letter
+  const customAvatarUrl = data.customAvatarUrl || null;
+  const avatarLetter = data.avatarLetter || username.charAt(0).toUpperCase();
 
   const reactions = data.reactions || { fire: [], trophy: [], rocket: [] };
   const userId = currentUser?.uid;
@@ -288,21 +298,33 @@ function renderWinCard(id, data, userData) {
 
   card.innerHTML = `
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-      <div style="
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: radial-gradient(circle, #a78bfa, #4c1d95);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #fff;
-        flex-shrink: 0;
-      ">
-        ${userInitial}
-      </div>
+      ${customAvatarUrl 
+        ? `<div style="
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-image: url('${customAvatarUrl}');
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+            border: 2px solid rgba(167, 139, 250, 0.3);
+          "></div>`
+        : `<div style="
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #a78bfa, #4c1d95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+          ">
+            ${avatarLetter}
+          </div>`
+      }
       <div style="flex: 1; min-width: 0;">
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
           <div style="font-weight: 600; font-size: 1rem;">${username}</div>
