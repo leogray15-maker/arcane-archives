@@ -13,7 +13,8 @@ const shownPopupsThisSession = new Set();
 
 console.log("[XP Listener] Module loaded and listening for aa:moduleToggle events");
 
-window.addEventListener("aa:moduleToggle", async (e) => {
+// ✅ CRITICAL FIX: Use document.addEventListener, NOT window.addEventListener
+document.addEventListener("aa:moduleToggle", async (e) => {
   console.log("[XP Listener] ✅ Event received:", e.detail);
   
   const { courseId, moduleId, completed } = e.detail;
@@ -71,7 +72,7 @@ window.addEventListener("aa:moduleToggle", async (e) => {
 });
 
 // Listen for course completion events
-window.addEventListener("aa:courseComplete", async (e) => {
+document.addEventListener("aa:courseComplete", async (e) => {
   console.log("[XP Listener] 🏆 Course complete event received:", e.detail);
   
   const { courseId } = e.detail;
@@ -95,7 +96,7 @@ window.addEventListener("aa:courseComplete", async (e) => {
 });
 
 // Listen for course un-completion
-window.addEventListener("aa:courseUncomplete", async (e) => {
+document.addEventListener("aa:courseUncomplete", async (e) => {
   console.log("[XP Listener] 📉 Course uncomplete event received:", e.detail);
   
   const { courseId } = e.detail;
