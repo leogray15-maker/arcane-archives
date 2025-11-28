@@ -117,8 +117,8 @@ async function handleButtonClick(e) {
 
   console.log(`[AA] Button clicked: ${courseId} / ${moduleId} - toggle to: ${nowCompleted}`);
 
-  // Dispatch event for XP system
-  document.dispatchEvent(new CustomEvent('aa:moduleToggle', {
+  // Dispatch event for XP system (xp-module-listener listens on window)
+  window.dispatchEvent(new CustomEvent('aa:moduleToggle', {
     detail: {
       courseId,
       moduleId,
@@ -129,7 +129,7 @@ async function handleButtonClick(e) {
 }
 
 // Initialize module tracker
-async function initModuleTracker() {
+export async function initModuleTracker() {
   console.log('[AA] Module tracker initializing...');
   
   const user = await waitForAuth();
@@ -186,9 +186,15 @@ async function initModuleTracker() {
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initModuleTracker);
+  document.addEventListener('DOMContentLoaded', () => {
+    initModuleTracker().catch(err =>
+      console.error('[AA] initModuleTracker auto-init error:', err)
+    );
+  });
 } else {
-  initModuleTracker();
+  initModuleTracker().catch(err =>
+    console.error('[AA] initModuleTracker auto-init error:', err)
+  );
 }
 
 // Export helper for other pages
