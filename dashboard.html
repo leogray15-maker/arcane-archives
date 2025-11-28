@@ -422,6 +422,7 @@
             bottom: 1.5rem;
             z-index: 50;
             display: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .level-up-toast .toast-inner {
@@ -514,6 +515,7 @@
                 gap: 1rem;
             }
 
+            /* 🔥 MOBILE XP HUD */
             .xp-hud {
                 position: fixed;
                 bottom: 0.75rem;
@@ -521,13 +523,15 @@
                 transform: translateX(-50%);
                 padding: 0.4rem 0.9rem;
                 border-radius: 999px;
-                background: rgba(15, 23, 42, 0.95);
+                background: rgba(15, 23, 42, 0.92);
+                backdrop-filter: blur(12px);
                 border: 1px solid rgba(148, 163, 184, 0.6);
                 font-size: 0.75rem;
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
                 z-index: 40;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
             }
 
             .xp-hud span {
@@ -536,6 +540,37 @@
 
             .xp-hud strong {
                 color: var(--purple-light);
+            }
+
+            /* 🔥 FIX: Level-up toast - prevent overlap with XP HUD */
+            .level-up-toast {
+                right: 50%;
+                transform: translateX(50%);
+                bottom: 4.5rem !important;
+                left: auto;
+            }
+
+            .level-up-toast .toast-inner {
+                padding: 0.7rem 1rem;
+                font-size: 0.85rem;
+                max-width: 85vw;
+            }
+
+            .toast-icon {
+                font-size: 1.1rem;
+            }
+
+            .toast-body {
+                font-size: 0.8rem;
+            }
+
+            /* Add bottom padding to prevent overlap */
+            .nav-section {
+                padding-bottom: 4rem;
+            }
+
+            .stats-grid {
+                padding-bottom: 1rem;
             }
         }
 
@@ -550,6 +585,11 @@
 
             .nav-card {
                 padding: 0.9rem;
+            }
+
+            /* Even higher on very small screens */
+            .level-up-toast {
+                bottom: 5rem !important;
             }
         }
     </style>
@@ -580,7 +620,7 @@
                         <div class="welcome-avatar" id="welcomeAvatar">L</div>
                         <div class="welcome-main">
                             <h2>Welcome, <span id="username">...</span> 🔮</h2>
-                            <p>Your decisions here compound into the person you’re becoming outside this screen.</p>
+                            <p>Your decisions here compound into the person you're becoming outside this screen.</p>
                             <div id="subscriptionBadge" class="subscription-badge" style="display:none;">
                                 <span>ACTIVE MEMBER</span>
                             </div>
@@ -752,9 +792,36 @@
             document.getElementById("levelUpTo").textContent = toLevel;
 
             toast.style.display = "block";
+            
+            // Auto-dismiss after 4 seconds
             setTimeout(() => {
-                toast.style.display = "none";
-            }, 4500);
+                toast.style.opacity = "0";
+                toast.style.transform = window.innerWidth <= 768 
+                    ? "translateX(50%) translateY(-20px)" 
+                    : "translateY(-20px)";
+                
+                setTimeout(() => {
+                    toast.style.display = "none";
+                    toast.style.opacity = "1";
+                    toast.style.transform = window.innerWidth <= 768 
+                        ? "translateX(50%) translateY(0)" 
+                        : "translateY(0)";
+                }, 300);
+            }, 4000);
+
+            // Allow manual dismiss by clicking on mobile
+            if (window.innerWidth <= 768) {
+                toast.style.cursor = "pointer";
+                const dismissHandler = () => {
+                    toast.style.opacity = "0";
+                    setTimeout(() => {
+                        toast.style.display = "none";
+                        toast.style.opacity = "1";
+                    }, 300);
+                    toast.removeEventListener("click", dismissHandler);
+                };
+                toast.addEventListener("click", dismissHandler);
+            }
         }
 
         protectPage({
