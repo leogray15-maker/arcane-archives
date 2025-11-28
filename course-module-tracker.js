@@ -174,8 +174,12 @@ export async function initModuleTracker() {
     const defaults = derivePageDefaults();
     console.log("[AA] Course defaults:", defaults);
 
+    // ✅ Get the courseId from the FIRST button (all buttons on same page = same course)
+    const mainCourseId = buttons[0].dataset.courseId || defaults.courseId;
+
     buttons.forEach((button, index) => {
-      const courseId = button.dataset.courseId || defaults.courseId;
+      // ✅ All buttons on this page belong to the SAME course
+      const courseId = mainCourseId;
 
       const rawModuleId =
         button.dataset.moduleId ||
@@ -217,8 +221,8 @@ export async function initModuleTracker() {
           new CustomEvent("aa:moduleToggle", { detail })
         );
 
-        // Check if course is now complete
-        await checkCourseCompletion(courseId, state);
+        // ✅ Check if THIS PAGE's modules are all complete
+        await checkPageCompletion(courseId, state, buttons);
       });
     });
 
@@ -228,31 +232,41 @@ export async function initModuleTracker() {
   }
 }
 
-// Check if all modules in a course are completed
-async function checkCourseCompletion(courseId, state) {
-  const allButtons = Array.from(document.querySelectorAll(".aa-pill-button"));
-  const courseButtons = allButtons.filter(btn => btn.dataset.courseId === courseId);
-  
-  if (courseButtons.length === 0) return;
-
-  const completed = courseButtons.every(btn => {
+// ✅ NEW: Check if all modules on THIS PAGE are completed (not the whole course)
+async function checkPageCompletion(courseId, state, pageButtons) {
+  // Check if ALL buttons on this page are completed
+  const allCompleted = pageButtons.every(btn => {
     const key = getModuleKey(btn.dataset.courseId, btn.dataset.moduleId);
     return state.modules[key] === true;
   });
 
-  const previouslyCompleted = window.__aaLastCourseState?.[courseId] || false;
-  window.__aaLastCourseState = window.__aaLastCourseState || {};
-  window.__aaLastCourseState[courseId] = completed;
+  const pageCompletionKey = `__page_${courseId}_${window.location.pathname}`;
+  const previouslyCompleted = window[pageCompletionKey] || false;
+  window[pageCompletionKey] = allCompleted;
 
-  if (completed && !previouslyCompleted) {
-    console.log("[AA] Course completed:", courseId);
-    document.dispatchEvent(
-      new CustomEvent("aa:courseComplete", {
-        detail: { courseId }
-      })
-    );
-  } else if (!completed && previouslyCompleted) {
-    console.log("[AA] Course uncompleted:", courseId);
+  // ✅ Only fire course complete if ALL modules on this page are done
+  // AND we haven't already marked this course as complete
+  if (allCompleted && !previouslyCompleted) {
+    // Check if this course was already completed in Firestore
+    const user = window.currentUser;
+    if (user) {
+      const stats = await getUserStats(user.uid);
+      const completedCourses = stats.completedCourseIds || [];
+      
+      if (!completedCourses.includes(courseId)) {
+        console.log("[AA] 🏆 All modules on page completed - marking course complete:", courseId);
+        document.dispatchEvent(
+          new CustomEvent("aa:courseComplete", {
+            detail: { courseId }
+          })
+        );
+      } else {
+        console.log("[AA] Course already completed in Firestore:", courseId);
+      }
+    }
+  } else if (!allCompleted && previouslyCompleted) {
+    // User unchecked a module - uncomplete the course
+    console.log("[AA] 📉 Module unchecked - unmarking course:", courseId);
     document.dispatchEvent(
       new CustomEvent("aa:courseUncomplete", {
         detail: { courseId }
