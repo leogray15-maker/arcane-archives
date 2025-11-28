@@ -7,27 +7,46 @@ import {
   markCourseCompleted,
   unmarkCourseCompleted 
 } from "./xp-system.js";
-import { auth } from "./universal-auth.js";
 
 // Track if we've shown popup this session to avoid spam
 const shownPopupsThisSession = new Set();
 
+console.log("[XP Listener] Module loaded and listening for aa:moduleToggle events");
+
 window.addEventListener("aa:moduleToggle", async (e) => {
+  console.log("[XP Listener] ✅ Event received:", e.detail);
+  
   const { courseId, moduleId, completed } = e.detail;
 
-  // Wait for auth to be ready
-  const user = auth.currentUser;
+  // Wait for user to be available
+  let user = window.currentUser;
+  
   if (!user) {
-    console.warn("⚠️ No user logged in, skipping XP sync");
+    console.warn("[XP Listener] ⚠️ No user found on window.currentUser, waiting...");
+    
+    // Wait up to 2 seconds for user to be set
+    for (let i = 0; i < 20; i++) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      user = window.currentUser;
+      if (user) break;
+    }
+  }
+  
+  if (!user) {
+    console.error("[XP Listener] ❌ No user logged in after waiting, skipping XP sync");
     return;
   }
+
+  console.log("[XP Listener] User found:", user.uid);
 
   try {
     if (completed === true) {
       // ✅ Module toggled ON
-      console.log("✅ Module completed:", courseId, moduleId);
+      console.log("[XP Listener] ✅ Module completed:", courseId, moduleId);
       
       const result = await markModuleCompleted(user.uid, courseId, moduleId);
+      
+      console.log("[XP Listener] Mark result:", result);
       
       // Show congratulations popup (only once per module per session)
       const popupKey = `${courseId}::${moduleId}`;
@@ -38,7 +57,7 @@ window.addEventListener("aa:moduleToggle", async (e) => {
 
     } else {
       // ❌ Module toggled OFF
-      console.log("❌ Module uncompleted:", courseId, moduleId);
+      console.log("[XP Listener] ❌ Module uncompleted:", courseId, moduleId);
       
       await unmarkModuleCompleted(user.uid, courseId, moduleId);
       
@@ -47,47 +66,56 @@ window.addEventListener("aa:moduleToggle", async (e) => {
     }
 
   } catch (err) {
-    console.error("❌ Failed to sync module completion:", err);
+    console.error("[XP Listener] ❌ Failed to sync module completion:", err);
   }
 });
 
 // Listen for course completion events
 window.addEventListener("aa:courseComplete", async (e) => {
+  console.log("[XP Listener] 🏆 Course complete event received:", e.detail);
+  
   const { courseId } = e.detail;
 
-  const user = auth.currentUser;
-  if (!user) return;
+  const user = window.currentUser;
+  if (!user) {
+    console.warn("[XP Listener] No user for course completion");
+    return;
+  }
 
   try {
-    console.log("🏆 Course completed:", courseId);
+    console.log("[XP Listener] 🏆 Course completed:", courseId);
     const wasNew = await markCourseCompleted(user.uid, courseId);
     
     if (wasNew) {
       showCongratulationsPopup(100, true); // 100 XP for course, special styling
     }
   } catch (err) {
-    console.error("❌ Failed to mark course completed:", err);
+    console.error("[XP Listener] ❌ Failed to mark course completed:", err);
   }
 });
 
 // Listen for course un-completion
 window.addEventListener("aa:courseUncomplete", async (e) => {
+  console.log("[XP Listener] 📉 Course uncomplete event received:", e.detail);
+  
   const { courseId } = e.detail;
 
-  const user = auth.currentUser;
+  const user = window.currentUser;
   if (!user) return;
 
   try {
-    console.log("📉 Course uncompleted:", courseId);
+    console.log("[XP Listener] 📉 Course uncompleted:", courseId);
     await unmarkCourseCompleted(user.uid, courseId);
     showXPRemovedNotification(100);
   } catch (err) {
-    console.error("❌ Failed to unmark course:", err);
+    console.error("[XP Listener] ❌ Failed to unmark course:", err);
   }
 });
 
 // 🎉 Congratulations popup
 function showCongratulationsPopup(xp, isCourse = false) {
+  console.log("[XP Listener] 🎉 Showing popup:", xp, "XP");
+  
   const popup = document.createElement("div");
   popup.className = "aa-xp-popup";
   
@@ -249,3 +277,5 @@ if (!document.getElementById("aa-xp-popup-styles")) {
   `;
   document.head.appendChild(style);
 }
+
+console.log("[XP Listener] Initialization complete");
