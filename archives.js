@@ -33,21 +33,10 @@ protectPage({
  * Update the purple "Your Progress" box
  */
 function updateProgressDisplay(stats) {
-  const totalCourses = document.querySelectorAll("figure.link-to-page").length;
-
-  const completedCourses =
-    typeof stats.CoursesCompleted === "number"
-      ? stats.CoursesCompleted
-      : (stats.completedCourseIds || []).length;
-
-  const percentage =
-    totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
-
   const totalXP = stats.Xp || 0;
   const modulesCompleted = stats.ModulesCompleted || 0;
 
   const progressContainer = document.getElementById("courseProgressStats");
-  const progressBar = document.getElementById("progressBar");
   const progressPercentage = document.getElementById("progressPercentage");
   const coursesCompletedText = document.getElementById("coursesCompletedText");
   const xpEarnedText = document.getElementById("xpEarnedText");
@@ -56,15 +45,17 @@ function updateProgressDisplay(stats) {
 
   progressContainer.style.display = "block";
 
-  if (progressBar) progressBar.style.width = `${percentage}%`;
-  if (progressPercentage) progressPercentage.textContent = `${percentage}%`;
+  // Hide progress bar since we're not tracking courses
+  const progressBar = document.getElementById("progressBar");
+  if (progressBar) progressBar.style.display = 'none';
+  if (progressPercentage) progressPercentage.style.display = 'none';
 
   if (coursesCompletedText) {
-    coursesCompletedText.textContent = `${completedCourses} of ${totalCourses} courses completed`;
+    coursesCompletedText.textContent = `${modulesCompleted} Modules Completed`;
   }
 
   if (xpEarnedText) {
-    xpEarnedText.textContent = `${totalXP.toLocaleString()} Total XP • ${modulesCompleted} Modules Completed`;
+    xpEarnedText.textContent = `${totalXP.toLocaleString()} Total XP`;
   }
 }
 
@@ -140,34 +131,12 @@ function updateUserLevel(xp) {
 
 function getLevelIcon(level) {
   const icons = {
-    "Seeker": "🕯️",
-    "Beginner": "📿",
-    "Apprentice": "📘",
+    Seeker: "🕯️",
+    Apprentice: "📘",
     "Advanced Apprentice": "📗",
     "Awakened Apprentice": "📙",
-    "Journeyman": "⚒️",
-    "Expert": "🎯",
-    "Veteran": "⚔️",
-    "Elite": "🛡️",
-    "Master": "⚡",
-    "Advanced Master": "💫",
-    "Awakened Master": "✨",
-    "Grandmaster": "👑",
-    "Neo": "🕶️",
-    "Conqueror": "🏆",
-    "Champion": "🔥",
-    "Titan": "💪",
-    "Legend": "⭐",
-    "Mythic": "🌟",
-    "Immortal": "💀",
-    "Aura": "⚡",
-    "Escapee": "🚪",
-    "Ascendant": "🦅",
-    "Supreme": "👁️",
-    "Divine": "💎",
-    "Celestial": "✨",
-    "Arcane Sovereign": "🔱",
-    "Arcane Master": "👁️‍🗨️",
+    "Awakened Master": "⚡",
+    "Arcane Master": "👑",
   };
   return icons[level] || "🕯️";
 }

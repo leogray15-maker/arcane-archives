@@ -79,7 +79,7 @@ function updateButtonState(button, isCompleted) {
   } else {
     button.classList.remove('completed');
     primarySpan.textContent = 'Complete Module';
-    secondarySpan.textContent = '+50 XP';
+    secondarySpan.textContent = '+75 XP';
     secondarySpan.style.display = 'inline';
   }
 }
