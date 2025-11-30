@@ -1,16 +1,7 @@
 // course-module-tracker.js - COMPLETE MODULE & COURSE TRACKER
 import { auth, db, doc, getDoc, updateDoc, setDoc } from '/universal-auth.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 
 const STORAGE_KEY = 'aa_module_progress_v2';
-
-// ✅ CRITICAL: Set window.currentUser for XP listener
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    window.currentUser = user;
-    console.log('[Module Tracker] User authenticated:', user.uid);
-  }
-});
 
 // Wait for user authentication
 async function waitForAuth(maxWait = 5000) {
@@ -194,6 +185,9 @@ async function initModuleTracker() {
   }
 
   console.log('[AA] User authenticated:', user.uid);
+  
+  // ✅ Set window.currentUser for XP listener
+  window.currentUser = user;
 
   // Sync with Firestore
   const progress = await syncWithFirestore(user.uid);

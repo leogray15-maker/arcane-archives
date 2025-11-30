@@ -100,7 +100,9 @@ while IFS= read -r file; do
         # Create the script to inject
         script_to_inject="
   <script type=\"module\">
-    import { initModuleTracker } from '../../course-module-tracker.js';
+    <!-- XP System Scripts -->
+<script type="module" src="/course-module-tracker.js"></script>
+<script type="module" src="/xp-module-listener.js"></script> from '../../course-module-tracker.js';
     initModuleTracker('$course_id');
   </script>
 "

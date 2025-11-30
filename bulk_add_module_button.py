@@ -97,7 +97,9 @@ def process_file(path: Path):
   # import path
   html = re.sub(
     r"import\s+\{\s*initModuleTracker\s*\}\s+from\s+['\\\"][^'\\\"]+['\\\"];",
-    "import { initModuleTracker } from '/course-module-tracker.js';",
+    "<!-- XP System Scripts -->
+<script type="module" src="/course-module-tracker.js"></script>
+<script type="module" src="/xp-module-listener.js"></script> from '/course-module-tracker.js';",
     html
   )
 
