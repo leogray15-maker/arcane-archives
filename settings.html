@@ -958,16 +958,22 @@
                     if (!confirmed) return;
 
                     try {
-                        // Clear local-only caches
-                        localStorage.removeItem('aa_module_progress_v1');
-                        localStorage.removeItem('userAvatar');
-                        localStorage.removeItem('customAvatarUrl');
-
+                        // ✅ Clear ALL localStorage
+                        localStorage.clear();
+                        
+                        // ✅ Clear sessionStorage
+                        sessionStorage.clear();
+                        
+                        // ✅ Sign out from Firebase
                         await signOut(auth);
-                        window.location.href = 'login.html';
+                        
+                        // ✅ Force redirect to login
+                        window.location.replace('login.html');
+                        
                     } catch (err) {
-                        console.error(err);
-                        alert('Error logging out. Try again.');
+                        console.error('Logout error:', err);
+                        // Force redirect anyway
+                        window.location.replace('login.html');
                     }
                 });
             }

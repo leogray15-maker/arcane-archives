@@ -1,7 +1,16 @@
 // course-module-tracker.js - COMPLETE MODULE & COURSE TRACKER
 import { auth, db, doc, getDoc, updateDoc, setDoc } from '/universal-auth.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 
 const STORAGE_KEY = 'aa_module_progress_v2';
+
+// ✅ CRITICAL: Set window.currentUser for XP listener
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.currentUser = user;
+    console.log('[Module Tracker] User authenticated:', user.uid);
+  }
+});
 
 // Wait for user authentication
 async function waitForAuth(maxWait = 5000) {
@@ -73,14 +82,55 @@ function updateButtonState(button, isCompleted) {
   }
 
   if (isCompleted) {
-    button.classList.add('aa-pill-button--completed');
+    button.classList.add('completed');
     primarySpan.textContent = '✓ Module Completed';
     secondarySpan.style.display = 'none';
   } else {
-    button.classList.remove('aa-pill-button--completed');
+    button.classList.remove('completed');
     primarySpan.textContent = 'Complete Module';
-    secondarySpan.textContent = '+75 XP';
+    secondarySpan.textContent = '+50 XP';
     secondarySpan.style.display = 'inline';
+  }
+}
+
+// Check if all modules on current page are complete
+async function checkPageCompletion(courseId) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const buttons = document.querySelectorAll('.aa-pill-button');
+  const allComplete = Array.from(buttons).every(btn => btn.classList.contains('completed'));
+  
+  if (!allComplete) return;
+
+  // Check if course already completed in Firestore
+  try {
+    const userRef = doc(db, 'Users', user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      const completedCourses = userSnap.data().completedCourseIds || [];
+      if (completedCourses.includes(courseId)) {
+        console.log('[AA] Course already completed:', courseId);
+        return; // Don't fire event again
+      }
+    }
+
+    // Mark course as complete in local storage
+    const progress = getLocalProgress();
+    const pageKey = `__page_${courseId}_${window.location.pathname}`;
+    if (!progress.courses[pageKey]) {
+      progress.courses[pageKey] = true;
+      saveLocalProgress(progress);
+      
+      // Fire course completion event
+      console.log('[AA] 🎉 All modules complete! Dispatching course completion event');
+      document.dispatchEvent(new CustomEvent('aa:courseComplete', {
+        detail: { courseId, moduleCount: buttons.length }
+      }));
+    }
+  } catch (error) {
+    console.error('[AA] Error checking course completion:', error);
   }
 }
 
@@ -117,8 +167,8 @@ async function handleButtonClick(e) {
 
   console.log(`[AA] Button clicked: ${courseId} / ${moduleId} - toggle to: ${nowCompleted}`);
 
-  // Dispatch event for XP system (xp-module-listener listens on window)
-  window.dispatchEvent(new CustomEvent('aa:moduleToggle', {
+  // Dispatch event for XP system
+  document.dispatchEvent(new CustomEvent('aa:moduleToggle', {
     detail: {
       courseId,
       moduleId,
@@ -126,10 +176,15 @@ async function handleButtonClick(e) {
       completed: nowCompleted
     }
   }));
+
+  // Check if all modules on page are now complete
+  if (nowCompleted) {
+    setTimeout(() => checkPageCompletion(courseId), 500);
+  }
 }
 
 // Initialize module tracker
-export async function initModuleTracker() {
+async function initModuleTracker() {
   console.log('[AA] Module tracker initializing...');
   
   const user = await waitForAuth();
@@ -186,15 +241,9 @@ export async function initModuleTracker() {
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    initModuleTracker().catch(err =>
-      console.error('[AA] initModuleTracker auto-init error:', err)
-    );
-  });
+  document.addEventListener('DOMContentLoaded', initModuleTracker);
 } else {
-  initModuleTracker().catch(err =>
-    console.error('[AA] initModuleTracker auto-init error:', err)
-  );
+  initModuleTracker();
 }
 
 // Export helper for other pages

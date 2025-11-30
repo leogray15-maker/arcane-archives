@@ -501,6 +501,12 @@
 
             try {
                 const provider = new GoogleAuthProvider();
+                
+                // ✅ Force account picker every time
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
 
@@ -529,7 +535,18 @@
 
             } catch (error) {
                 console.error("❌ Google login error:", error);
-                showError("Google sign-in failed. Please try again.");
+                
+                // Better error messages
+                let errorMsg = "Google sign-in failed. Please try again.";
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMsg = "Sign-in cancelled. Please try again.";
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMsg = "Popup blocked. Please allow popups and try again.";
+                } else if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMsg = "An account already exists with this email using a different sign-in method.";
+                }
+                
+                showError(errorMsg);
                 googleLoginBtn.disabled = false;
                 googleLoginBtn.textContent = "Continue with Google";
             }
