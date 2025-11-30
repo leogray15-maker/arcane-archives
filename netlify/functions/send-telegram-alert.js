@@ -36,21 +36,21 @@ exports.handler = async (event) => {
         
       case 'TP1_HIT':
         message = "✅ *TP1 HIT*\n\n" +
-                  `${payload.pair || 'Signal'} closed at first target.`;
+                  `${payload.pair || 'Signal'} TP1 HIT.`;
         if (pips) message += `\n💰 ${pips}`;
         if (notes) message += `\n\n📝 ${notes}`;
         break;
         
       case 'TP2_HIT':
         message = "✅ *TP2 HIT*\n\n" +
-                  `${payload.pair || 'Signal'} closed at second target.`;
+                  `${payload.pair || 'Signal'} TP2 HIT.`;
         if (pips) message += `\n💰 ${pips}`;
         if (notes) message += `\n\n📝 ${notes}`;
         break;
         
       case 'TP3_HIT':
         message = "✅ *TP3 HIT*\n\n" +
-                  `${payload.pair || 'Signal'} closed at third target.`;
+                  `${payload.pair || 'Signal'} TP3 HIT.`;
         if (pips) message += `\n💰 ${pips}`;
         if (notes) message += `\n\n📝 ${notes}`;
         break;

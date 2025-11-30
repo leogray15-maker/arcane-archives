@@ -758,8 +758,18 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     imagePreviewContainer.innerHTML = `
-                        <img src="${e.target.result}" class="image-preview" alt="Preview">
+                        <div style="position: relative; display: inline-block;">
+                            <img src="${e.target.result}" class="image-preview" alt="Preview">
+                            <button id="removeImageBtn" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(239, 68, 68, 0.9); border: none; border-radius: 50%; width: 28px; height: 28px; color: white; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);" title="Remove image">×</button>
+                        </div>
                     `;
+                    
+                    // Add remove button handler
+                    document.getElementById('removeImageBtn').addEventListener('click', () => {
+                        selectedImage = null;
+                        imagePreviewContainer.innerHTML = '';
+                        imageUpload.value = '';
+                    });
                 };
                 reader.readAsDataURL(file);
             }
