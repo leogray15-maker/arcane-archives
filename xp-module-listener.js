@@ -2,7 +2,10 @@
 // Listens to module toggle events and handles XP + Firestore sync
 
 import { 
-  markModuleCompleted
+  markModuleCompleted, 
+  unmarkModuleCompleted,
+  markCourseCompleted,
+  unmarkCourseCompleted 
 } from "./xp-system.js";
 
 // Track if we've shown popup this session to avoid spam
@@ -54,9 +57,13 @@ document.addEventListener("aa:moduleToggle", async (e) => {
       }
 
     } else {
-      // ❌ Module toggled OFF - just log it, no XP removal
+      // ❌ Module toggled OFF
       console.log("[XP Listener] ❌ Module uncompleted:", courseId, moduleId);
-      // Note: We're not removing XP anymore for simplicity
+      
+      await unmarkModuleCompleted(user.uid, courseId, moduleId);
+      
+      // Optional: show a subtle "XP removed" notification
+      showXPRemovedNotification(50);
     }
 
   } catch (err) {
@@ -64,17 +71,62 @@ document.addEventListener("aa:moduleToggle", async (e) => {
   }
 });
 
+// Listen for course completion events
+document.addEventListener("aa:courseComplete", async (e) => {
+  console.log("[XP Listener] 🏆 Course complete event received:", e.detail);
+  
+  const { courseId } = e.detail;
+
+  const user = window.currentUser;
+  if (!user) {
+    console.warn("[XP Listener] No user for course completion");
+    return;
+  }
+
+  try {
+    console.log("[XP Listener] 🏆 Course completed:", courseId);
+    const wasNew = await markCourseCompleted(user.uid, courseId);
+    
+    if (wasNew) {
+      showCongratulationsPopup(100, true); // 100 XP for course, special styling
+    }
+  } catch (err) {
+    console.error("[XP Listener] ❌ Failed to mark course completed:", err);
+  }
+});
+
+// Listen for course un-completion
+document.addEventListener("aa:courseUncomplete", async (e) => {
+  console.log("[XP Listener] 📉 Course uncomplete event received:", e.detail);
+  
+  const { courseId } = e.detail;
+
+  const user = window.currentUser;
+  if (!user) return;
+
+  try {
+    console.log("[XP Listener] 📉 Course uncompleted:", courseId);
+    await unmarkCourseCompleted(user.uid, courseId);
+    showXPRemovedNotification(100);
+  } catch (err) {
+    console.error("[XP Listener] ❌ Failed to unmark course:", err);
+  }
+});
+
 // 🎉 Congratulations popup
-function showCongratulationsPopup(xp) {
+function showCongratulationsPopup(xp, isCourse = false) {
   console.log("[XP Listener] 🎉 Showing popup:", xp, "XP");
   
   const popup = document.createElement("div");
   popup.className = "aa-xp-popup";
   
+  const icon = isCourse ? "🏆" : "✨";
+  const message = isCourse ? "Course Completed!" : "Module Completed!";
+  
   popup.innerHTML = `
     <div class="aa-xp-popup-content">
-      <div class="aa-xp-popup-icon">✨</div>
-      <div class="aa-xp-popup-title">Module Completed!</div>
+      <div class="aa-xp-popup-icon">${icon}</div>
+      <div class="aa-xp-popup-title">${message}</div>
       <div class="aa-xp-popup-xp">+${xp} XP</div>
     </div>
   `;
@@ -91,7 +143,27 @@ function showCongratulationsPopup(xp) {
   }, 3000);
 }
 
-// Remove the XP removed notification function - we don't need it anymore
+// 📉 XP removed notification (subtle)
+function showXPRemovedNotification(xp) {
+  const notification = document.createElement("div");
+  notification.className = "aa-xp-notification aa-xp-notification--removed";
+  
+  notification.innerHTML = `
+    <div class="aa-xp-notification-content">
+      <span>Module unchecked</span>
+      <span class="aa-xp-notification-xp">-${xp} XP</span>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.classList.add("aa-xp-notification--show"), 10);
+  
+  setTimeout(() => {
+    notification.classList.remove("aa-xp-notification--show");
+    setTimeout(() => notification.remove(), 300);
+  }, 2500);
+}
 
 // Add styles for popups (inject once)
 if (!document.getElementById("aa-xp-popup-styles")) {

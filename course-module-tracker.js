@@ -48,7 +48,12 @@ async function syncWithFirestore(userId) {
         courses: {}
       };
       
-      firestoreModules.forEach(id => { synced.modules[id] = true; });
+      // ✅ FIX: Convert Firestore format (COURSE::module) to localStorage format (COURSE/module)
+      firestoreModules.forEach(id => { 
+        const localId = id.replace('::', '/');
+        synced.modules[localId] = true; 
+      });
+      
       firestoreCourses.forEach(id => { synced.courses[id] = true; });
       
       saveLocalProgress(synced);
