@@ -297,6 +297,8 @@ function renderLiveAlertCard(id, data) {
     notes,
     createdAt,
     reactions,
+    tpsHit, // ✅ NEW: Track which TPs have been hit
+    status,
   } = data;
 
   const createdDate = createdAt?.toDate
@@ -324,9 +326,32 @@ function renderLiveAlertCard(id, data) {
 
   const dirClass = direction === "Buy" ? "buy" : "sell";
 
+  // ✅ Check which TPs have been hit
+  const tpsHitArray = Array.isArray(tpsHit) ? tpsHit : [];
+  const tp1Hit = tpsHitArray.includes(1);
+  const tp2Hit = tpsHitArray.includes(2);
+  const tp3Hit = tpsHitArray.includes(3);
+
+  // ✅ Add visual indicators for hit TPs
+  const tp1Display = tp1 ? `${tp1} ${tp1Hit ? '✅' : ''}` : '-';
+  const tp2Display = tp2 ? `${tp2} ${tp2Hit ? '✅' : ''}` : '-';
+  const tp3Display = tp3 ? `${tp3} ${tp3Hit ? '✅' : ''}` : '-';
+
+  // ✅ Status badges showing ALL hit TPs
+  let statusBadges = '';
+  if (tp1Hit) {
+    statusBadges += '<div style="display:inline-block; background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.5); color:#22c55e; padding:0.25rem 0.5rem; border-radius:0.375rem; font-size:0.7rem; font-weight:700; margin-left:0.5rem;">TP1 HIT</div>';
+  }
+  if (tp2Hit) {
+    statusBadges += '<div style="display:inline-block; background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.5); color:#22c55e; padding:0.25rem 0.5rem; border-radius:0.375rem; font-size:0.7rem; font-weight:700; margin-left:0.5rem;">TP2 HIT</div>';
+  }
+  if (tp3Hit) {
+    statusBadges += '<div style="display:inline-block; background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.5); color:#22c55e; padding:0.25rem 0.5rem; border-radius:0.375rem; font-size:0.7rem; font-weight:700; margin-left:0.5rem;">TP3 HIT</div>';
+  }
+
   card.innerHTML = `
     <div class="trade-header">
-      <div class="trade-pair">${pair}</div>
+      <div class="trade-pair">${pair}${statusBadges}</div>
       <div class="trade-direction ${dirClass}">${direction.toUpperCase()}</div>
     </div>
 
@@ -341,15 +366,15 @@ function renderLiveAlertCard(id, data) {
       </div>
       <div class="trade-detail">
         <div class="trade-detail-label">TP1</div>
-        <div class="trade-detail-value">${tp1 || "-"}</div>
+        <div class="trade-detail-value" style="${tp1Hit ? 'color:#22c55e; text-decoration:line-through;' : ''}">${tp1Display}</div>
       </div>
       <div class="trade-detail">
         <div class="trade-detail-label">TP2</div>
-        <div class="trade-detail-value">${tp2 || "-"}</div>
+        <div class="trade-detail-value" style="${tp2Hit ? 'color:#22c55e; text-decoration:line-through;' : ''}">${tp2Display}</div>
       </div>
       <div class="trade-detail">
         <div class="trade-detail-label">TP3</div>
-        <div class="trade-detail-value">${tp3 || "-"}</div>
+        <div class="trade-detail-value" style="${tp3Hit ? 'color:#22c55e; text-decoration:line-through;' : ''}">${tp3Display}</div>
       </div>
     </div>
 
@@ -375,10 +400,10 @@ function renderLiveAlertCard(id, data) {
       isAdmin
         ? `
       <div class="admin-actions">
-        <button class="admin-btn tp1" data-id="${id}" data-action="TP1">TP1</button>
-        <button class="admin-btn tp2" data-id="${id}" data-action="TP2">TP2</button>
-        <button class="admin-btn tp3" data-id="${id}" data-action="TP3">TP3</button>
-        <button class="admin-btn loss" data-id="${id}" data-action="LOSS">LOSS</button>
+        <button class="admin-btn tp1" data-id="${id}" data-action="TP1" ${tp1Hit ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>TP1 ${tp1Hit ? '✅' : ''}</button>
+        <button class="admin-btn tp2" data-id="${id}" data-action="TP2" ${tp2Hit ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>TP2 ${tp2Hit ? '✅' : ''}</button>
+        <button class="admin-btn tp3" data-id="${id}" data-action="TP3" ${tp3Hit ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>TP3 ${tp3Hit ? '✅' : ''}</button>
+        <button class="admin-btn loss" data-id="${id}" data-action="LOSS">SL HIT</button>
         <button class="admin-btn be" data-id="${id}" data-action="BE">B/E</button>
       </div>
     `
@@ -437,32 +462,38 @@ async function handleAdminAction(alertId, data, action, customPips, customNotes)
   let tpHit = 0;
   let exit = null;
   let notificationType = null;
+  let shouldCloseTrade = false; // ✅ Only SL/BE close trades
 
   if (action === "TP1") {
-    result = "win";
+    result = "partial_win";
     tpHit = 1;
     exit = tp1 || entry;
     notificationType = "TP1_HIT";
+    shouldCloseTrade = false; // ✅ Keep active - admin adds notes about holding
   } else if (action === "TP2") {
-    result = "win";
+    result = "partial_win";
     tpHit = 2;
     exit = tp2 || tp1 || entry;
     notificationType = "TP2_HIT";
+    shouldCloseTrade = false; // ✅ Keep active - admin adds notes about holding
   } else if (action === "TP3") {
-    result = "win";
+    result = "partial_win";
     tpHit = 3;
     exit = tp3 || tp2 || tp1 || entry;
     notificationType = "TP3_HIT";
+    shouldCloseTrade = false; // ✅ Keep active - admin decides when to fully close
   } else if (action === "LOSS") {
     result = "loss";
     tpHit = 0;
     exit = sl || entry;
     notificationType = "LOSS_HIT";
+    shouldCloseTrade = true; // ✅ SL HIT → Close immediately
   } else if (action === "BE") {
     result = "be";
     tpHit = 0;
     exit = entry;
     notificationType = "BE_HIT";
+    shouldCloseTrade = true; // ✅ BE → Close immediately
   } else {
     return;
   }
@@ -470,22 +501,40 @@ async function handleAdminAction(alertId, data, action, customPips, customNotes)
   const pips = calculatePips(pair, direction, entry, exit);
 
   try {
-    await addDoc(collection(db, HISTORY_COLLECTION), {
-      pair,
-      direction,
-      entry,
-      exit,
-      result,
-      tpHit,
-      pips,
-      customPips: customPips || null,
-      customNotes: customNotes || null,
-      closedAt: serverTimestamp(),
-      openedAt: data.createdAt || null,
-    });
+    const alertRef = doc(db, LIVE_ALERTS_COLLECTION, alertId);
 
-    await deleteDoc(doc(db, LIVE_ALERTS_COLLECTION, alertId));
+    if (shouldCloseTrade) {
+      // ✅ SL/BE: Close and move to history
+      await addDoc(collection(db, HISTORY_COLLECTION), {
+        pair,
+        direction,
+        entry,
+        exit,
+        result,
+        tpHit,
+        pips,
+        customPips: customPips || null,
+        customNotes: customNotes || null,
+        closedAt: serverTimestamp(),
+        openedAt: data.createdAt || null,
+      });
 
+      await deleteDoc(alertRef);
+      console.log(`✅ Trade closed: ${action}`);
+    } else {
+      // ✅ TP HIT: Just mark it and keep trade active
+      const currentTpsHit = data.tpsHit || [];
+      
+      await updateDoc(alertRef, {
+        tpsHit: arrayUnion(tpHit),
+        status: `tp${tpHit}_hit`,
+        updatedAt: serverTimestamp(),
+      });
+
+      console.log(`✅ ${action} marked, trade still active`);
+    }
+
+    // Send Telegram notification
     await sendTelegramNotification(notificationType, {
       pair,
       direction,
@@ -495,9 +544,8 @@ async function handleAdminAction(alertId, data, action, customPips, customNotes)
       customNotes,
     });
 
-    console.log(`✅ Trade closed: ${action}`);
   } catch (e) {
-    console.error("[AA] Failed to close trade", e);
+    console.error("[AA] Failed to update trade", e);
     alert("Could not update trade. Check console for details.");
   }
 }
