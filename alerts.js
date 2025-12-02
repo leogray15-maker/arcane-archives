@@ -477,11 +477,11 @@ async function handleAdminAction(alertId, data, action, customPips, customNotes)
     notificationType = "TP2_HIT";
     shouldCloseTrade = false; // ✅ Keep active - admin adds notes about holding
   } else if (action === "TP3") {
-    result = "partial_win";
+    result = "win";
     tpHit = 3;
     exit = tp3 || tp2 || tp1 || entry;
     notificationType = "TP3_HIT";
-    shouldCloseTrade = false; // ✅ Keep active - admin decides when to fully close
+    shouldCloseTrade = true; // ✅ TP3 closes the trade
   } else if (action === "LOSS") {
     result = "loss";
     tpHit = 0;
