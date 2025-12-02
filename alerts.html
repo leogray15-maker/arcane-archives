@@ -686,28 +686,10 @@
       <div class="chart-section">
         <div class="chart-header">
           <div class="chart-title">📈 XAUUSD Live Chart</div>
-          <div class="chart-subtitle">TradingView • Multi-timeframe</div>
+          <div class="chart-subtitle">TradingView • ICT Killzones • Multi-timeframe</div>
         </div>
         <div class="chart-container">
-          <!-- TradingView Advanced Chart Widget -->
-          <div class="tradingview-widget-container" style="height:100%;width:100%">
-            <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-            {
-              "autosize": true,
-              "symbol": "OANDA:XAUUSD",
-              "interval": "15",
-              "timezone": "America/New_York",
-              "theme": "dark",
-              "style": "1",
-              "locale": "en",
-              "enable_publishing": false,
-              "allow_symbol_change": true,
-              "calendar": false,
-              "support_host": "https://www.tradingview.com"
-            }
-            </script>
-          </div>
+          <div id="tradingview_widget" style="width: 100%; height: 100%;"></div>
         </div>
       </div>
 
@@ -779,6 +761,61 @@
       </div>
     </div>
   </div>
+
+  <!-- TradingView Script -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof TradingView === 'undefined') {
+        console.error('❌ TradingView library failed to load');
+        return;
+      }
+
+      try {
+        new TradingView.widget({
+          container_id: "tradingview_widget",
+          autosize: true,
+          symbol: "OANDA:XAUUSD",
+          interval: "15",
+          timezone: "America/New_York",
+          theme: "dark",
+          style: "1",
+          locale: "en",
+          toolbar_bg: "#020617",
+          enable_publishing: false,
+          hide_side_toolbar: false,
+          allow_symbol_change: true,
+          show_popup_button: true,
+          popup_width: "1000",
+          popup_height: "650",
+          // 🔥 ADD LUXALGO ICT KILLZONE TOOLKIT
+          studies: [
+            "STD;Session%1Breaks"  // Session breaks for killzones
+          ],
+          studies_overrides: {
+            "session.0.color": "rgba(41, 98, 255, 0.25)",
+            "session.1.color": "rgba(255, 152, 0, 0.25)", 
+            "session.2.color": "rgba(120, 123, 134, 0.25)"
+          },
+          overrides: {
+            "mainSeriesProperties.candleStyle.upColor": "#22c55e",
+            "mainSeriesProperties.candleStyle.downColor": "#ef4444",
+            "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
+            "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
+            "mainSeriesProperties.candleStyle.wickUpColor": "#22c55e",
+            "mainSeriesProperties.candleStyle.wickDownColor": "#ef4444",
+            "paneProperties.background": "#020617",
+            "paneProperties.backgroundType": "solid"
+          }
+        });
+        
+        console.log('✅ TradingView widget with ICT Killzones initialized');
+      } catch (error) {
+        console.error('❌ Error initializing TradingView:', error);
+      }
+    });
+  </script>
 
   <!-- Alerts logic -->
   <script type="module" src="alerts.js"></script>
