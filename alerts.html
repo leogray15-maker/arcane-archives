@@ -593,14 +593,17 @@
   
   <!-- Alpha Vantage Price Chart with ICT Killzones -->
   <script>
-    // Wait for Chart.js to load
-    if (typeof Chart === 'undefined') {
-      console.error('❌ Chart.js failed to load!');
-    } else {
+    // Wrap everything in window load event to ensure Chart.js is ready
+    window.addEventListener('load', function() {
+      // Verify Chart.js loaded
+      if (typeof Chart === 'undefined') {
+        console.error('❌ Chart.js failed to load!');
+        document.getElementById('chartStatus').textContent = 'Chart.js failed to load';
+        return;
+      }
       console.log('✅ Chart.js loaded successfully');
-    }
-    
-    let chartInstance = null;
+      
+      let chartInstance = null;
     
     // AlphaVantage API key for live XAUUSD data
     const API_KEY = 'FWVMHUUE6Q721NIO';
@@ -855,23 +858,23 @@
       console.log('✅ Chart initialized successfully with ICT Killzones');
     }
     
-    // Initialize chart when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('🚀 Page loaded, initializing chart...');
-      
-      if (USE_DEMO) {
-        console.warn('⚠️ Using demo API key - replace with your own key for production!');
-        console.log('Get your free key at: https://www.alphavantage.co/support/#api-key');
-      }
-      
+    // Initialize chart immediately
+    console.log('🚀 Initializing chart...');
+    
+    if (USE_DEMO) {
+      console.warn('⚠️ Using demo API key - replace with your own key for production!');
+      console.log('Get your free key at: https://www.alphavantage.co/support/#api-key');
+    }
+    
+    initChart();
+    
+    // Refresh every 15 minutes
+    setInterval(() => {
+      console.log('🔄 Refreshing chart data...');
       initChart();
-      
-      // Refresh every 15 minutes
-      setInterval(() => {
-        console.log('🔄 Refreshing chart data...');
-        initChart();
-      }, 15 * 60 * 1000);
-    });
+    }, 15 * 60 * 1000);
+    
+    }); // End window.onload
   </script>
 
   <!-- Alerts logic -->
