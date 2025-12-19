@@ -131,15 +131,21 @@ async function executeTradeClose(pending, customPips, customNotes) {
 function setupAdminForm() {
   const formEl = document.getElementById("alertForm");
   const postBtn = document.getElementById("postAlertBtn");
+  const manualFormEl = document.getElementById("manualHistoryForm");
+  const manualBtn = document.getElementById("addManualHistoryBtn");
+  
   if (!formEl) return;
 
   if (!isAdmin) {
     formEl.style.display = "none";
+    if (manualFormEl) manualFormEl.style.display = "none";
     return;
   }
 
   formEl.classList.add("visible");
+  if (manualFormEl) manualFormEl.style.display = "block";
 
+  // Setup new trade signal button
   if (!postBtn) return;
 
   postBtn.addEventListener("click", async () => {
@@ -217,6 +223,67 @@ function setupAdminForm() {
       postBtn.textContent = "Post Trade Signal";
     }
   });
+
+  // Setup manual history entry button
+  if (manualBtn) {
+    manualBtn.addEventListener("click", async () => {
+      const dateInput = document.getElementById("manualDate");
+      const pairInput = document.getElementById("manualPair");
+      const directionInput = document.getElementById("manualDirection");
+      const entryInput = document.getElementById("manualEntry");
+      const exitInput = document.getElementById("manualExit");
+      const resultInput = document.getElementById("manualResult");
+      const pipsInput = document.getElementById("manualPips");
+      const notesInput = document.getElementById("manualNotes");
+
+      const date = dateInput?.value || "";
+      const pair = pairInput?.value || "XAUUSD";
+      const direction = directionInput?.value || "Buy";
+      const entry = (entryInput?.value || "").trim();
+      const exit = (exitInput?.value || "").trim();
+      const result = resultInput?.value || "WIN";
+      const pips = (pipsInput?.value || "").trim();
+      const notes = (notesInput?.value || "").trim();
+
+      if (!date || !entry || !exit) {
+        alert("Please fill in Date, Entry, and Exit fields.");
+        return;
+      }
+
+      manualBtn.disabled = true;
+      manualBtn.textContent = "Adding...";
+
+      try {
+        await addDoc(collection(db, HISTORY_COLLECTION), {
+          pair,
+          direction,
+          entry,
+          exit,
+          result,
+          pips: pips || null,
+          notes: notes || null,
+          closedAt: new Date(date),
+          createdBy: currentUser.uid,
+          createdByEmail: currentUser.email || null,
+        });
+
+        // Clear form
+        if (dateInput) dateInput.value = "";
+        if (entryInput) entryInput.value = "";
+        if (exitInput) exitInput.value = "";
+        if (pipsInput) pipsInput.value = "";
+        if (notesInput) notesInput.value = "";
+
+        alert("✅ Trade added to history!");
+      } catch (e) {
+        console.error("[AA] Failed to add manual history entry", e);
+        alert("❌ Could not add trade to history. Check console.");
+      } finally {
+        manualBtn.disabled = false;
+        manualBtn.textContent = "Add to History";
+      }
+    });
+  }
 }
 
 async function sendTelegramNotification(type, payload) {
