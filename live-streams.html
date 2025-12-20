@@ -479,7 +479,7 @@
 
                     <!-- YouTube Live Stream Embed -->
                     <iframe 
-                        src="https://www.youtube.com/embed/live_stream?channel=UCpzvW3anzQ5YGy8W8IV8sHg" 
+                        src="https://www.youtube.com/embed/live_stream?channel=UC3wiwhW6nOHk0t2k1_D84NQ" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen
                         style="display: none;"
@@ -606,41 +606,22 @@
         
         // Function to check stream status
         function checkStreamStatus() {
-            // PLACEHOLDER: Replace with actual stream status check
-            // Options:
-            // 1. Check YouTube/Twitch API for live status
-            // 2. Store stream status in Firebase (public read)
-            // 3. Manually toggle via admin panel
-            
-            const isLive = false; // Change to true when streaming
-
-            const liveStatus = document.getElementById('liveStatus');
-            const statusText = document.getElementById('statusText');
             const streamPlaceholder = document.getElementById('streamPlaceholder');
             const streamEmbed = document.getElementById('streamEmbed');
-
-            if (isLive) {
-                liveStatus.classList.remove('offline');
-                liveStatus.classList.add('live');
-                statusText.textContent = 'LIVE NOW';
-                
-                if (streamPlaceholder) streamPlaceholder.style.display = 'none';
-                if (streamEmbed) streamEmbed.style.display = 'block';
-            } else {
-                liveStatus.classList.remove('live');
-                liveStatus.classList.add('offline');
-                statusText.textContent = 'OFFLINE';
-                
-                if (streamPlaceholder) streamPlaceholder.style.display = 'flex';
-                if (streamEmbed) streamEmbed.style.display = 'none';
-            }
+            
+            // OPTION 1: Always show embed (YouTube handles offline state automatically)
+            // Recommended: Just show the embed, YouTube shows "Stream is offline" when you're not live
+            if (streamPlaceholder) streamPlaceholder.style.display = 'none';
+            if (streamEmbed) streamEmbed.style.display = 'block';
+            
+            // The YouTube embed will automatically:
+            // - Show your stream when you're live
+            // - Show "This live event will begin in a few moments" when starting
+            // - Show offline message when not streaming
         }
 
         // Check status on page load
         window.addEventListener('DOMContentLoaded', checkStreamStatus);
-
-        // Optional: Auto-refresh stream status every 30 seconds
-        setInterval(checkStreamStatus, 30000);
     </script>
 </body>
 </html>
