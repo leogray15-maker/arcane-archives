@@ -1,149 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Live Calls | The Arcane Archives</title>
-<link rel="icon" href="ArcaneA.png" />
-
-<link rel="stylesheet" href="../notion-arcane.css">
+<meta charset="UTF-8">
+<title>Live Calls</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="ArcaneA.png">
 
 <style>
-/* (STYLES UNCHANGED — yours are solid) */
+body {
+  margin:0;
+  font-family: system-ui;
+  background:#02010a;
+  color:#e5e5e5;
+}
+.container {
+  max-width:900px;
+  margin:auto;
+  padding:2rem 1.5rem;
+}
+.card {
+  background:rgba(15,23,42,.96);
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.4);
+  padding:2rem;
+}
+.call {
+  margin-top:1.5rem;
+  padding:1.2rem;
+  border:1px solid rgba(148,163,184,.4);
+  border-radius:14px;
+}
+button {
+  margin-top:.8rem;
+  padding:.6rem 1.4rem;
+  border:none;
+  border-radius:999px;
+  background:#9333ea;
+  color:white;
+  cursor:pointer;
+}
 </style>
-
-<script type="module" src="../notion-protect.js"></script>
 </head>
 
 <body>
-<a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+<div class="container">
+<a href="dashboard.html">← Dashboard</a>
 
-<div class="header">
-  <div class="logo">
-    <img src="ArcaneA.png" alt="Logo">
-    THE ARCANE ARCHIVES
-  </div>
+<div class="card">
+<h1>🎙 Live Calls</h1>
+<p>Members-only real time sessions.</p>
+
+<div class="call">
+<strong>Weekly Masterclass</strong><br>
+Monday · 7PM UK<br>
+<button disabled>Link Coming Soon</button>
 </div>
 
-<div class="main-content">
-  <div class="page-card">
-    <div class="page-card-inner">
-      <div class="page-header">
-        <div class="page-header-eyebrow">Live Rooms</div>
-        <h1>🎙️ <span>Live Calls</span></h1>
-        <p>
-          Join the brotherhood in real time — strategy, accountability, and execution-focused calls.
-        </p>
-      </div>
-
-      <div class="calls-grid">
-
-        <div class="call-card">
-          <div class="call-icon">🔥</div>
-          <div class="call-title">Weekly Masterclass</div>
-          <div class="call-time">📅 Every Monday at 7 PM UK</div>
-          <div class="call-description">
-            Deep dive into advanced strategies for business, wealth creation, and personal mastery.
-          </div>
-          <a href="#" class="call-btn" data-call="weekly">Join Call</a>
-        </div>
-
-        <div class="call-card">
-          <div class="call-icon">💪</div>
-          <div class="call-title">Accountability Check-In</div>
-          <div class="call-time">📅 Every Wednesday at 6 AM UK</div>
-          <div class="call-description">
-            Morning accountability call to set intentions and review progress.
-          </div>
-          <a href="#" class="call-btn" data-call="accountability">Join Call</a>
-        </div>
-
-        <div class="call-card">
-          <div class="call-icon">🎯</div>
-          <div class="call-title">Friday Focus Session</div>
-          <div class="call-time">📅 Every Friday at 5 PM UK</div>
-          <div class="call-description">
-            Weekly review, wins, and planning for the week ahead.
-          </div>
-          <a href="#" class="call-btn" data-call="focus">Join Call</a>
-        </div>
-
-        <div class="call-card">
-          <div class="call-icon">🧠</div>
-          <div class="call-title">Sunday Strategy</div>
-          <div class="call-time">📅 Every Sunday at 8 PM UK</div>
-          <div class="call-description">
-            Strategic planning session for the upcoming week.
-          </div>
-          <a href="#" class="call-btn" data-call="strategy">Join Call</a>
-        </div>
-
-      </div>
-    </div>
-  </div>
+<div class="call">
+<strong>Accountability Call</strong><br>
+Wednesday · 6AM UK<br>
+<button disabled>Link Coming Soon</button>
 </div>
 
-<footer>
-  <div class="footer-links">
-    <a href="index.html">Home</a>
-    <a href="Privacy-policy.html">Privacy Policy</a>
-    <a href="terms-of-service.html">Terms of Service</a>
-    <a href="refund-policy.html">Refund Policy</a>
-  </div>
-  <div class="footer-bottom">
-    &copy; 2024 The Arcane Archives. All rights reserved.
-  </div>
-</footer>
+</div>
+</div>
 
 <script type="module">
-import { protectPage, updateUserAvatar, db } from './auth-guard.js';
-import { doc, updateDoc, increment, serverTimestamp } 
-  from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-let currentUser = null;
-
-protectPage({
-  onSuccess: (user, userData) => {
-    currentUser = user;
-    updateUserAvatar(user, userData);
-    setupCallButtons();
-  },
-  onFailure: () => {
-    window.location.href = 'login.html';
-  }
+const app = initializeApp({
+  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+  projectId: "arcane-archives-3b0f5"
 });
 
-function setupCallButtons() {
-  document.querySelectorAll('.call-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-      if (!currentUser) return;
-
-      try {
-        const userRef = doc(db, 'Users', currentUser.uid);
-
-        await updateDoc(userRef, {
-          totalCallsJoined: increment(1),
-          lastCallJoinedAt: serverTimestamp()
-        });
-
-        const href = btn.getAttribute('href');
-
-        if (href && href !== '#') {
-          window.open(href, '_blank');
-        } else {
-          alert('✅ Call recorded. Link coming soon.');
-        }
-
-      } catch (err) {
-        console.error('Call tracking failed:', err);
-        alert('⚠️ Could not record attendance.');
-      }
-    });
-  });
-}
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return location.href = "login.html";
+  const snap = await getDoc(doc(db,"Users",user.uid));
+  const data = snap.data();
+  if (!(data?.isPaid || data?.subscriptionStatus === "active")) {
+    location.href = "dashboard.html";
+  }
+});
 </script>
-
 </body>
 </html>
