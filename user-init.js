@@ -1,145 +1,109 @@
 // user-init.js
-// Enhanced with referral tracking
+// Clean referral system (NO XP, Stripe-ready)
 
 import { db } from './auth-guard.js';
-import { 
-    doc, 
-    setDoc, 
-    getDoc, 
-    updateDoc,
-    serverTimestamp 
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-import { awardXP } from './xp-system.js';
 
+/**
+ * Create user profile on first signup
+ */
 export async function ensureUserProfile(user) {
-    if (!user) return;
+  if (!user) return;
 
-    const userRef = doc(db, "Users", user.uid);
-    const snap = await getDoc(userRef);
+  const userRef = doc(db, 'Users', user.uid);
+  const snap = await getDoc(userRef);
 
-    if (snap.exists()) {
-        console.log("User profile already exists for:", user.uid);
-        return;
-    }
+  if (snap.exists()) return;
 
-    const email = user.email;
-    const username = user.displayName || email.split("@")[0];
-    
-    // Generate referral code from UID
-    const referralCode = user.uid.slice(0, 8).toUpperCase();
-    
-    // Check URL for referral parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const referredByCode = urlParams.get('ref');
+  const email = user.email;
+  const username = user.displayName || email.split('@')[0];
 
-    const newUserData = {
-        Username: username,
-        Email: email,
-        Xp: 0,
-        Level: "Seeker",          // 🔮 NEW default rank
-        WinsPosted: 0,
-        CallAttended: 0,
-        CoursesCompleted: 0,
-        ModulesCompleted: 0,
-        completedCourseIds: [],
-        completedModuleIds: [],
-        subscriptionStatus: "none",
-        isPaid: false,
-        stripeCustomerId: null,
-        referralCode: referralCode,
-        joinedAt: serverTimestamp(),
-        lastLoginDate: serverTimestamp(),
-        loginStreak: 1
-    };
+  // Clean referral code (short + readable)
+  const referralCode = user.uid.slice(0, 8).toUpperCase();
 
-    // If user was referred, add referredBy field
-    if (referredByCode) {
-        newUserData.referredBy = referredByCode;
-        console.log(`👥 User referred by: ${referredByCode}`);
-    }
+  // Capture referral from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const referredBy = urlParams.get('ref');
 
-    await setDoc(userRef, newUserData);
-    console.log("🔥 New user profile created:", username);
+  await setDoc(userRef, {
+    Username: username,
+    Email: email,
 
-    // Award referral XP to referrer if applicable
-    if (referredByCode) {
-        await awardReferralXP(referredByCode);
-    }
+    // Stripe
+    subscriptionStatus: 'none',
+    isPaid: false,
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+
+    // Referral system
+    referralCode,
+    referredBy: referredBy || null,
+    referralConverted: false,
+    referralConvertedAt: null,
+
+    // Meta
+    joinedAt: serverTimestamp(),
+    lastLoginDate: serverTimestamp(),
+    role: 'member'
+  });
+
+  console.log('🔥 User created:', username);
+
+  if (referredBy) {
+    console.log('👥 Referred by:', referredBy);
+  }
 }
 
-// Award XP to the person who made the referral
-async function awardReferralXP(referralCode) {
-    try {
-        // Find user with this referral code
-        const { collection, query, where, getDocs } = await import(
-            'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js'
-        );
+/**
+ * Call AFTER Stripe subscription becomes ACTIVE
+ * (from webhook or success page)
+ */
+export async function handleReferralConversion(userId) {
+  if (!userId) return;
 
-        const usersRef = collection(db, 'Users');
-        const q = query(usersRef, where('referralCode', '==', referralCode));
-        const snapshot = await getDocs(q);
+  const userRef = doc(db, 'Users', userId);
+  const userSnap = await getDoc(userRef);
 
-        if (snapshot.empty) {
-            console.warn('No user found with referral code:', referralCode);
-            return;
-        }
+  if (!userSnap.exists()) return;
 
-        const referrerDoc = snapshot.docs[0];
-        const referrerId = referrerDoc.id;
+  const userData = userSnap.data();
 
-        // Award signup XP (50 XP)
-        await awardXP(referrerId, 'REFERRAL_SIGNUP');
-        console.log(`✅ Awarded 50 XP to referrer: ${referralCode}`);
+  // Stop if no referral or already converted
+  if (!userData.referredBy || userData.referralConverted) return;
 
-    } catch (err) {
-        console.error('Error awarding referral XP:', err);
-    }
-}
+  // Find referrer by referralCode
+  const usersRef = collection(db, 'Users');
+  const q = query(usersRef, where('referralCode', '==', userData.referredBy));
+  const snapshot = await getDocs(q);
 
-// Call this when a user upgrades to paid
-export async function handleReferralUpgrade(userId) {
-    try {
-        const userRef = doc(db, 'Users', userId);
-        const snap = await getDoc(userRef);
-        
-        if (!snap.exists()) return;
-        
-        const userData = snap.data();
-        const referredByCode = userData.referredBy;
-        
-        if (!referredByCode) {
-            console.log('User was not referred');
-            return;
-        }
+  if (snapshot.empty) {
+    console.warn('Referrer not found:', userData.referredBy);
+    return;
+  }
 
-        // Find referrer and award active referral bonus
-        const { collection, query, where, getDocs } = await import(
-            'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js'
-        );
+  const referrerDoc = snapshot.docs[0];
+  const referrerRef = doc(db, 'Users', referrerDoc.id);
 
-        const usersRef = collection(db, 'Users');
-        const q = query(usersRef, where('referralCode', '==', referredByCode));
-        const snapshot = await getDocs(q);
+  // Mark referral as converted
+  await updateDoc(userRef, {
+    referralConverted: true,
+    referralConvertedAt: serverTimestamp()
+  });
 
-        if (snapshot.empty) {
-            console.warn('Referrer not found:', referredByCode);
-            return;
-        }
+  // Track referral success on referrer
+  await updateDoc(referrerRef, {
+    successfulReferrals: (referrerDoc.data().successfulReferrals || 0) + 1
+  });
 
-        const referrerDoc = snapshot.docs[0];
-        const referrerId = referrerDoc.id;
-
-        // Award active referral bonus (200 XP)
-        await awardXP(referrerId, 'REFERRAL_ACTIVE');
-        console.log(`✅ Awarded 200 XP to referrer for active referral: ${referredByCode}`);
-
-        // Update user to mark referral as processed
-        await updateDoc(userRef, {
-            referralXPAwarded: true,
-            referralAwardedAt: serverTimestamp()
-        });
-
-    } catch (err) {
-        console.error('Error handling referral upgrade:', err);
-    }
+  console.log('✅ Referral conversion completed');
 }
