@@ -111,7 +111,7 @@
             margin-top: 0.5rem;
         }
 
-        .login-btn:hover {
+        .login-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
         }
@@ -243,11 +243,11 @@
         </div>
 
         <div class="signup-link">
-            Don't have an account? <a href="index.html#pricing">Sign Up</a>
+            Don't have an account? <a href="signup.html">Sign Up</a>
         </div>
 
         <div class="info-box">
-            💡 After purchasing, check your email for login credentials
+            💡 After purchasing, use your email to login
         </div>
 
         <div class="back-home">
@@ -267,7 +267,7 @@
             getFirestore, 
             doc, 
             getDoc,
-            setDoc,
+            updateDoc,
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { loginRateLimiter } from "./auth-guard.js";
@@ -296,21 +296,8 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 console.log("✅ User already logged in:", user.email);
-                
-                // Check if they have paid
-                const userRef = doc(db, "Users", user.uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
-                    
-                    if (isPaid) {
-                        window.location.href = "dashboard.html";
-                    } else {
-                        window.location.href = "index.html#pricing";
-                    }
-                }
+                // Always go to dashboard (let dashboard handle paid/unpaid logic)
+                window.location.href = "dashboard.html";
             }
         });
 
@@ -329,32 +316,6 @@
         function hideMessages() {
             errorMessage.style.display = "none";
             successMessage.style.display = "none";
-        }
-
-        // Ensure user profile exists in Firestore
-        async function ensureUserProfile(user) {
-            const userRef = doc(db, "Users", user.uid);
-            const snap = await getDoc(userRef);
-            
-            if (!snap.exists()) {
-                const username = user.displayName || user.email.split('@')[0];
-                await setDoc(userRef, {
-                    Username: username,
-                    Email: user.email,
-                    Xp: 0,
-                    Level: "Seeker",
-                    WinsPosted: 0,
-                    CallAttended: 0,
-                    ModulesCompleted: 0,
-                    completedModuleIds: [],
-                    subscriptionStatus: "none",
-                    isPaid: false,
-                    joinedAt: serverTimestamp(),
-                    lastLoginDate: serverTimestamp(),
-                    loginStreak: 1
-                });
-                console.log("📝 Created user profile");
-            }
         }
 
         // Email/Password Login
@@ -387,32 +348,21 @@
 
                 console.log("✅ Login successful:", user.email);
 
-                // Ensure user profile exists
-                await ensureUserProfile(user);
-
-                // Check subscription status
-                const userRef = doc(db, "Users", user.uid);
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
-
-                    if (isPaid) {
-                        showSuccess("✅ Login successful! Redirecting...");
-                        setTimeout(() => {
-                            window.location.href = "dashboard.html";
-                        }, 1000);
-                    } else {
-                        showSuccess("Please complete your subscription");
-                        setTimeout(() => {
-                            window.location.href = "index.html#pricing";
-                        }, 1500);
-                    }
-                } else {
-                    // No user data, redirect to pricing
-                    window.location.href = "index.html#pricing";
+                // Update last login
+                try {
+                    await updateDoc(doc(db, "Users", user.uid), {
+                        lastLoginDate: serverTimestamp()
+                    });
+                } catch (e) {
+                    console.warn("Could not update last login:", e);
                 }
+
+                showSuccess("✅ Login successful! Redirecting...");
+                
+                // Always redirect to dashboard - let dashboard handle paid/unpaid
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1000);
 
             } catch (error) {
                 console.error("❌ Login error:", error);
