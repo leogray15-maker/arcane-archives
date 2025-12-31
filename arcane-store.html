@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcane Store | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #9ca3af;
+            --border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
+        }
+
+        /* Header */
+        .header {
+            max-width: 1400px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .logo img {
+            height: 32px;
+            width: 32px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem;
+        }
+
+        .page-hero {
+            text-align: center;
+            margin: 2rem 0 3rem;
+        }
+
+        .page-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+
+        .page-hero p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Category Filter */
+        .category-filter {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            border-color: var(--purple);
+            color: #fff;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--purple);
+            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.4);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.3));
+        }
+
+        .new-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 2;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-category {
+            font-size: 0.75rem;
+            color: var(--purple-light);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .product-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .add-to-cart-btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-to-cart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
+        }
+
+        /* Cart Badge */
+        .cart-icon {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 40;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.5);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--gold);
+            color: #000;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-hero h1 {
+                font-size: 2rem;
+            }
+
+            .page-hero p {
+                font-size: 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .product-image {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html" class="back-btn">← Dashboard</a>
+
+    <div class="cart-icon" id="cartIcon">
+        🛒
+        <span class="cart-count" id="cartCount">0</span>
+    </div>
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Arcane Archives">
+            THE ARCANE ARCHIVES
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-hero">
+            <h1>Arcane Store</h1>
+            <p>Exclusive branded merchandise for members of The Archives</p>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-filter">
+            <button class="category-btn active" data-category="all">All Products</button>
+            <button class="category-btn" data-category="apparel">Apparel</button>
+            <button class="category-btn" data-category="drinkware">Drinkware</button>
+            <button class="category-btn" data-category="accessories">Accessories</button>
+            <button class="category-btn" data-category="lifestyle">Lifestyle</button>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="productsGrid"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Product Data
+        const products = [
+            {
+                id: 1,
+                name: 'Arcane Archives Hoodie',
+                category: 'apparel',
+                price: 65,
+                icon: '👕',
+                description: 'Premium heavyweight hoodie with embroidered logo',
+                isNew: true
+            },
+            {
+                id: 2,
+                name: 'Trading Master Coffee Mug',
+                category: 'drinkware',
+                price: 25,
+                icon: '☕',
+                description: 'Ceramic mug perfect for your morning market prep',
+                isNew: true
+            },
+            {
+                id: 3,
+                name: 'Arcane Archives Hat',
+                category: 'apparel',
+                price: 35,
+                icon: '🧢',
+                description: 'Adjustable snapback with subtle branding',
+                isNew: false
+            },
+            {
+                id: 4,
+                name: 'Premium Gaming Mousepad',
+                category: 'accessories',
+                price: 30,
+                icon: '🖱️',
+                description: 'Extra-large desk mat with Arcane design',
+                isNew: true
+            },
+            {
+                id: 5,
+                name: 'Archives Crystal Ashtray',
+                category: 'lifestyle',
+                price: 45,
+                icon: '💎',
+                description: 'Luxury glass ashtray with etched logo',
+                isNew: false
+            },
+            {
+                id: 6,
+                name: 'Arcane T-Shirt',
+                category: 'apparel',
+                price: 35,
+                icon: '👔',
+                description: 'Soft cotton tee with front and back print',
+                isNew: false
+            },
+            {
+                id: 7,
+                name: 'Insulated Water Bottle',
+                category: 'drinkware',
+                price: 40,
+                icon: '🍶',
+                description: '32oz stainless steel, keeps drinks cold 24h',
+                isNew: true
+            },
+            {
+                id: 8,
+                name: 'Trading Journal Notebook',
+                category: 'accessories',
+                price: 28,
+                icon: '📓',
+                description: 'Leather-bound journal for tracking trades',
+                isNew: false
+            },
+            {
+                id: 9,
+                name: 'Arcane Crewneck Sweater',
+                category: 'apparel',
+                price: 55,
+                icon: '🧥',
+                description: 'Cozy fleece crewneck for cold trading days',
+                isNew: false
+            },
+            {
+                id: 10,
+                name: 'Desktop LED Sign',
+                category: 'lifestyle',
+                price: 75,
+                icon: '💡',
+                description: 'Neon-style LED with Arcane Archives logo',
+                isNew: true
+            },
+            {
+                id: 11,
+                name: 'Sticker Pack',
+                category: 'accessories',
+                price: 15,
+                icon: '🎨',
+                description: 'Set of 10 premium vinyl stickers',
+                isNew: false
+            },
+            {
+                id: 12,
+                name: 'Arcane Archives Beanie',
+                category: 'apparel',
+                price: 30,
+                icon: '🎩',
+                description: 'Warm knit beanie with embroidered patch',
+                isNew: false
+            }
+        ];
+
+        let cart = [];
+        let currentFilter = 'all';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                location.href = 'login.html';
+                return;
+            }
+
+            const userDoc = await getDoc(doc(db, 'Users', user.uid));
+            const userData = userDoc.data() || {};
+            const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+
+            if (!isPaid) {
+                alert('⚠️ This page is for premium members only.');
+                location.href = 'dashboard.html';
+                return;
+            }
+
+            renderProducts();
+            setupFilters();
+        });
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const filtered = currentFilter === 'all' 
+                ? products 
+                : products.filter(p => p.category === currentFilter);
+
+            grid.innerHTML = filtered.map(product => `
+                <div class="product-card" onclick="addToCart(${product.id})">
+                    <div class="product-image">
+                        ${product.isNew ? '<span class="new-badge">New</span>' : ''}
+                        <span style="position: relative; z-index: 1;">${product.icon}</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-category">${product.category}</div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-desc">${product.description}</div>
+                        <div class="product-footer">
+                            <div class="product-price">$${product.price}</div>
+                            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${product.id})">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupFilters() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.category;
+                    renderProducts();
+                });
+            });
+        }
+
+        window.addToCart = (productId) => {
+            const product = products.find(p => p.id === productId);
+            cart.push(product);
+            updateCartCount();
+            showNotification(`✓ ${product.name} added to cart!`);
+        };
+
+        function updateCartCount() {
+            document.getElementById('cartCount').textContent = cart.length;
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 6rem;
+                right: 1.5rem;
+                background: linear-gradient(135deg, #22c55e, #15803d);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                font-weight: 600;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        document.getElementById('cartIcon').onclick = () => {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+            } else {
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                const items = cart.map(item => `${item.name} - $${item.price}`).join('\n');
+                alert(`🛒 Your Cart:\n\n${items}\n\nTotal: $${total}\n\n(Checkout coming soon!)`);
+            }
+        };
+    </script>
+
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</body>
+</html>
