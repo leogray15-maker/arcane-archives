@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Streams | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+            --border-color: rgba(148, 163, 184, 0.5);
+            --red: #ef4444;
+            --green: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
+        }
+
+        /* Header */
+        .header {
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .logo img {
+            height: 32px;
+            width: 32px;
+        }
+
+        /* Main layout */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            flex: 1;
+        }
+
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            box-shadow:
+                0 30px 120px rgba(15, 23, 42, 0.9),
+                0 0 40px rgba(147, 51, 234, 0.28);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background:
+                radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.22), transparent 55%),
+                radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.18), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        /* Live Status Badge */
+        .live-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .live-status.live {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+
+        .live-status.offline {
+            background: rgba(163, 163, 163, 0.15);
+            border: 1px solid var(--text-dim);
+            color: var(--text-dim);
+        }
+
+        .live-status .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .live-status.live .pulse {
+            background: var(--red);
+        }
+
+        .live-status.offline .pulse {
+            background: var(--text-dim);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Stream Container */
+        .stream-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .stream-container iframe,
+        .stream-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .stream-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stream-placeholder svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.3;
+        }
+
+        .stream-placeholder h3 {
+            font-size: 1.5rem;
+            color: var(--text-dim);
+        }
+
+        .stream-placeholder p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            max-width: 400px;
+        }
+
+        /* Stream Info Grid */
+        .stream-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .info-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .info-card .highlight {
+            color: var(--purple-light);
+            font-weight: 600;
+        }
+
+        /* Schedule Section */
+        .schedule-section {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .schedule-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--purple-light);
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .schedule-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .schedule-day {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .schedule-time {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 2rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 1rem;
+                padding: 1rem;
+            }
+
+            .logo {
+                justify-content: center;
+                font-size: 0.8rem;
+            }
+
+            .logo img {
+                height: 28px;
+                width: 28px;
+            }
+
+            .main-content {
+                padding: 0 1rem 2rem;
+            }
+
+            .page-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
+
+            .stream-info {
+                grid-template-columns: 1fr;
+            }
+
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: #0a0a0a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        transition: opacity 0.5s, visibility 0.5s;
+    ">
+        <img src="ArcaneA.png" alt="The Arcane Archives" style="width: 150px; height: 150px; margin-bottom: 3rem; animation: pulse 2s ease-in-out infinite;">
+        
+        <div style="width: 300px; margin-bottom: 1rem;">
+            <div style="
+                width: 100%;
+                height: 6px;
+                background: rgba(147, 51, 234, 0.2);
+                border-radius: 10px;
+                overflow: hidden;
+            ">
+                <div id="loadingBar" style="
+                    width: 0%;
+                    height: 100%;
+                    background: linear-gradient(90deg, #9333ea, #a78bfa);
+                    border-radius: 10px;
+                    transition: width 0.3s ease;
+                "></div>
+            </div>
+        </div>
+        
+        <div id="loadingText" style="
+            color: #a78bfa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-height: 30px;
+            text-align: center;
+        ">Connecting to the stream...</div>
+    </div>
+
+    <!-- Optional: Add back to home if needed -->
+    <!-- <a href="index.html" class="back-btn">← Back to Home</a> -->
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
+        </div>
+    </div>
+
+    <main class="main-content">
+        <section class="page-card">
+            <div class="page-card-inner">
+                <header class="page-header">
+                    <div class="page-header-eyebrow">Free Weekly Sales Call</div>
+                    <h1><span>Live Streams</span></h1>
+                    <p>Join Leo every Friday at 7PM UK time for a deep dive into The Arcane Archives. Ask questions, see what's inside, and decide if you're ready to unlock the forbidden knowledge.</p>
+                </header>
+
+                <!-- Live Status Badge -->
+                <div class="live-status offline" id="liveStatus">
+                    <div class="pulse"></div>
+                    <span id="statusText">OFFLINE</span>
+                </div>
+
+                <!-- Stream Container -->
+                <div class="stream-container" id="streamContainer">
+                    <!-- Stream Placeholder (shown when offline) -->
+                    <div class="stream-placeholder" id="streamPlaceholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <h3>Next Stream: Friday 7PM UK Time</h3>
+                        <p>Leo goes live every Friday to break down what's inside The Arcane Archives. Free to watch, no login required. Come see what everyone's talking about.</p>
+                    </div>
+
+                    <!-- VDO.Ninja (OBS.Ninja) Live Stream Embed -->
+                    <iframe 
+                        src="https://vdo.ninja/?view=5JS6frn&bitrate=20000&codec=vp9&stereo&label=Arcane_Sales" 
+                        allow="camera; microphone; autoplay; fullscreen; picture-in-picture; display-capture; geolocation"
+                        allowfullscreen
+                        style="display: block; width: 100%; height: 100%; border: none;"
+                        id="streamEmbed">
+                    </iframe>
+                </div>
+
+                <!-- Stream Info Cards -->
+                <div class="stream-info">
+                    <div class="info-card">
+                        <h3>Next Stream</h3>
+                        <p class="highlight" id="nextStream">TBA</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Last Stream</h3>
+                        <p id="lastStream">3 days ago</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Total Streams</h3>
+                        <p id="totalStreams">24 sessions</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Avg. Duration</h3>
+                        <p id="avgDuration">1h 45m</p>
+                    </div>
+                </div>
+
+                <!-- Stream Schedule -->
+                <div class="schedule-section">
+                    <h2>🔮 Weekly Sales Call Schedule</h2>
+                    <div class="schedule-item">
+                        <span class="schedule-day">Every Friday</span>
+                        <span class="schedule-time">Deep Dive Sales Call • 7:00 PM UK Time</span>
+                    </div>
+                    <p style="color: var(--text-dim); margin-top: 1rem; font-size: 0.95rem;">
+                        <strong style="color: var(--purple-light);">What we cover:</strong> Inside look at the platform, course modules breakdown, live Q&A, member results, how the XP system works, trading signals explained, and whether The Archives is right for you.
+                    </p>
+                </div>
+
+                <!-- Instructions Section -->
+                <div class="schedule-section" style="margin-top: 1.5rem;">
+                    <h2>📡 How to Join</h2>
+                    <p style="color: var(--text-dim); margin-bottom: 1rem;">
+                        <strong style="color: var(--purple-light);">100% Free. No Login Required.</strong><br>
+                        Every Friday at 7PM UK time, this page goes live. Just come back, and the stream embed will be right here. No hoops to jump through.
+                    </p>
+                    <p style="color: var(--text-dim);">
+                        <strong style="color: var(--purple-light);">What to Expect:</strong> Leo breaks down the entire Arcane Archives platform - what's inside, how it works, real member results, and whether it's for you. Bring questions. This isn't a pitch, it's transparency.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-bottom">
+            &copy; 2024 The Arcane Archives. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Loading Screen Script -->
+    <script>
+        (function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loadingBar = document.getElementById('loadingBar');
+            const loadingText = document.getElementById('loadingText');
+            
+            const messages = [
+                'Connecting to the stream...',
+                'Loading the archives...',
+                'Preparing your session...',
+                'Initializing consciousness shift...'
+            ];
+            
+            let progress = 0;
+            let messageIndex = 0;
+            
+            const messageInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % messages.length;
+                loadingText.textContent = messages[messageIndex];
+            }, 800);
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    clearInterval(messageInterval);
+                    loadingText.textContent = 'Welcome...';
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        loadingScreen.style.visibility = 'hidden';
+                        setTimeout(() => {
+                            loadingScreen.remove();
+                        }, 500);
+                    }, 300);
+                }
+                loadingBar.style.width = progress + '%';
+            }, 200);
+            
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    progress = 100;
+                    clearInterval(interval);
+                    clearInterval(messageInterval);
+                    loadingBar.style.width = '100%';
+                    loadingText.textContent = 'Welcome...';
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        loadingScreen.style.visibility = 'hidden';
+                        setTimeout(() => {
+                            loadingScreen.remove();
+                        }, 500);
+                    }, 300);
+                }, 500);
+            });
+        })();
+    </script>
+
+    <!-- Stream Status Check Script -->
+    <script>
+        // PUBLIC PAGE - No authentication required
+        // This is for sales calls and public streams
+        
+        // Function to check stream status
+        function checkStreamStatus() {
+            const streamPlaceholder = document.getElementById('streamPlaceholder');
+            const streamEmbed = document.getElementById('streamEmbed');
+            
+            // OPTION 1: Always show embed (YouTube handles offline state automatically)
+            // Recommended: Just show the embed, YouTube shows "Stream is offline" when you're not live
+            if (streamPlaceholder) streamPlaceholder.style.display = 'none';
+            if (streamEmbed) streamEmbed.style.display = 'block';
+            
+            // The YouTube embed will automatically:
+            // - Show your stream when you're live
+            // - Show "This live event will begin in a few moments" when starting
+            // - Show offline message when not streaming
+        }
+
+        // Check status on page load
+        window.addEventListener('DOMContentLoaded', checkStreamStatus);
+    </script>
+</body>
+</html>

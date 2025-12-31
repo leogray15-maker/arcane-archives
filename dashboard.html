@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .logo img { height: 32px; width: 32px; }
+
+        /* Main */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            flex: 1;
+        }
+
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+            padding: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 0.96rem;
+        }
+
+        /* Status Banner */
+        .status-banner {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .status-banner.unpaid {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-banner.paid {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-banner h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-banner p {
+            margin-bottom: 1rem;
+            color: var(--text-dim);
+        }
+
+        .upgrade-btn {
+            display: inline-block;
+            padding: 0.9rem 2rem;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+        }
+
+        /* Navigation Grid */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .nav-card {
+            background: rgba(15, 23, 42, 0.96);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(147, 51, 234, 0.85);
+            box-shadow: 0 18px 45px rgba(147, 51, 234, 0.35);
+        }
+
+        .nav-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-card.locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .nav-card-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .nav-card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .nav-card-desc { font-size: 0.9rem; color: var(--text-dim); }
+
+        /* Logout */
+        .logout-btn {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 999px;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .header { margin-top: 1rem; padding: 1rem; }
+            .logo { justify-content: center; font-size: 0.8rem; }
+            .logo img { height: 28px; width: 28px; }
+            .main-content { padding: 0 1rem 2rem; }
+            .page-card { padding: 1.5rem 1rem; }
+            .page-header h1 { font-size: 1.6rem; }
+            .logout-btn { position: static; display: block; margin: 1rem auto; width: fit-content; }
+        }
+    </style>
+</head>
+<body>
+    <button class="logout-btn" id="logoutBtn">🚪 Log Out</button>
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
+        </div>
+    </div>
+
+    <main class="main-content">
+        <section class="page-card">
+            <header class="page-header">
+                <h1>Welcome back, <span id="username">Member</span></h1>
+                <p>Your command center for exclusive content and resources.</p>
+            </header>
+
+            <!-- Status Banner -->
+            <div id="statusBanner" class="status-banner unpaid" style="display: none;">
+                <h2>🔒 Unlock Full Access</h2>
+                <p>Subscribe to access all courses, live calls, and premium content.</p>
+                <a href="index.html#pricing" class="upgrade-btn">Upgrade Now - £128/month</a>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-grid">
+                <!-- Public Pages -->
+                <div class="nav-card" onclick="window.location.href='journey.html'">
+                    <div class="nav-card-icon">🧬</div>
+                    <div class="nav-card-title">Journey</div>
+                    <div class="nav-card-desc">See the full story behind The Archives</div>
+                </div>
+
+                <div class="nav-card" onclick="window.location.href='free-signals.html'">
+                    <div class="nav-card-icon">📡</div>
+                    <div class="nav-card-title">Free Signals</div>
+                    <div class="nav-card-desc">Join via IC Markets for free trade alerts</div>
+                </div>
+
+                <div class="nav-card" onclick="window.location.href='bullion.html'">
+                    <div class="nav-card-icon">🪙</div>
+                    <div class="nav-card-title">Bullion Shop</div>
+                    <div class="nav-card-desc">Physical gold & silver (view only)</div>
+                </div>
+
+                <div class="nav-card" onclick="window.location.href='live-streams.html'">
+                    <div class="nav-card-icon">🎥</div>
+                    <div class="nav-card-title">Live Streams</div>
+                    <div class="nav-card-desc">Public sales calls every Friday</div>
+                </div>
+
+                <!-- Member-Only Pages -->
+                <div class="nav-card locked" id="notionCard" data-href="notion-invite.html">
+                    <div class="nav-card-icon">📚</div>
+                    <div class="nav-card-title">Course Access</div>
+                    <div class="nav-card-desc">Notion link + community invites</div>
+                </div>
+
+                <div class="nav-card locked" id="alertsCard" data-href="alerts.html">
+                    <div class="nav-card-icon">📈</div>
+                    <div class="nav-card-title">Trade Alerts</div>
+                    <div class="nav-card-desc">Live signals & TradingView charts</div>
+                </div>
+
+                <div class="nav-card locked" id="callsCard" data-href="live-calls.html">
+                    <div class="nav-card-icon">🎙️</div>
+                    <div class="nav-card-title">Live Calls</div>
+                    <div class="nav-card-desc">Member-only weekly sessions</div>
+                </div>
+
+                <div class="nav-card locked" id="stocksCard" data-href="stock-picks.html">
+                    <div class="nav-card-icon">💼</div>
+                    <div class="nav-card-title">Stock Picks</div>
+                    <div class="nav-card-desc">Private equity watchlist</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+
+        // Check auth
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Get user data
+            const userDoc = await getDoc(doc(db, 'Users', user.uid));
+            const userData = userDoc.data() || {};
+
+            // Display username
+            const username = userData.Username || user.displayName || user.email.split('@')[0];
+            document.getElementById('username').textContent = username;
+
+            // Check if paid
+            const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+
+            if (isPaid) {
+                // ✅ PAID - Unlock everything
+                document.querySelectorAll('.nav-card.locked').forEach(card => {
+                    card.classList.remove('locked');
+                    const href = card.getAttribute('data-href');
+                    card.onclick = () => window.location.href = href;
+                });
+            } else {
+                // 🔒 UNPAID - Show upgrade banner
+                const banner = document.getElementById('statusBanner');
+                banner.style.display = 'block';
+                
+                // Add click handler to locked cards
+                document.querySelectorAll('.nav-card.locked').forEach(card => {
+                    card.onclick = () => {
+                        alert('🔒 This feature requires a subscription. Upgrade to unlock!');
+                        window.location.href = 'index.html#pricing';
+                    };
+                });
+            }
+        });
+    </script>
+</body>
+</html>

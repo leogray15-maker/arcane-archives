@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bullion Shop | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+            --border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: rgba(147, 51, 234, 0.8);
+            transform: translateX(-2px);
+        }
+
+        /* Header */
+        .header {
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .logo img {
+            height: 32px;
+            width: 32px;
+        }
+
+        /* Main layout */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem;
+            flex: 1;
+        }
+
+        .page-card {
+            margin-top: 1.5rem;
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.9), 0 0 40px rgba(147, 51, 234, 0.28);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: radial-gradient(circle at 0 0, rgba(147, 51, 234, 0.22), transparent 55%),
+                        radial-gradient(circle at 100% 0, rgba(79, 70, 229, 0.18), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header-eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 0.96rem;
+            max-width: 640px;
+        }
+
+        /* Live Prices Section */
+        .live-prices {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .price-card {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.15), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .price-card:hover::before {
+            opacity: 1;
+        }
+
+        .price-metal {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+        }
+
+        .tradingview-widget-container {
+            height: 220px;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .product-card {
+            background: rgba(15, 23, 42, 0.94);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(147, 51, 234, 0.9);
+            box-shadow: 0 20px 55px rgba(147, 51, 234, 0.45);
+        }
+
+        .sold-out-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(248, 250, 252, 0.3);
+            color: rgba(248, 250, 252, 0.9);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(147, 51, 234, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .product-body {
+            padding: 1.5rem;
+        }
+
+        .product-type {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .product-weight {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 0.75rem;
+        }
+
+        .product-price {
+            font-size: 0.95rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .product-btn {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            cursor: not-allowed;
+        }
+
+        /* Info Section */
+        .info-section {
+            margin-top: 2.5rem;
+            padding: 1.5rem 1.6rem;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(148, 163, 184, 0.55);
+        }
+
+        .info-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+
+        .info-section p {
+            color: var(--text-dim);
+            line-height: 1.7;
+            margin-bottom: 0.8rem;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            color: var(--text-dim);
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .info-section li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--gold);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            padding: 2rem;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            text-align: center;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static;
+                display: block;
+                margin: 1rem auto;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 1rem;
+                padding: 1rem;
+            }
+
+            .main-content {
+                padding: 0 1rem 2rem;
+            }
+
+            .page-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
+
+            .live-prices {
+                grid-template-columns: 1fr;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer {
+                padding: 1.5rem 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- default back = Home; JS will switch to dashboard if logged in -->
+    <a href="index.html" class="back-btn" id="backBtn">← Back to Home</a>
+
+    <div class="header">
+        <div class="logo">
+            <img src="ArcaneA.png" alt="Logo">
+            THE ARCANE ARCHIVES
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-card">
+            <div class="page-card-inner">
+                <div class="page-header">
+                    <div class="page-header-eyebrow">Precious Metals</div>
+                    <h1>🪙 <span>Bullion Shop</span></h1>
+                    <p>
+                        Invest in physical gold and silver. Store real wealth outside the system.
+                        Live prices updated in real-time.
+                    </p>
+                </div>
+
+                <!-- Live Prices with TradingView -->
+                <div class="live-prices">
+                    <!-- GOLD -->
+                    <div class="price-card">
+                        <div class="price-metal">Gold (XAU/USD)</div>
+                        <div class="tradingview-widget-container">
+                            <div class="tradingview-widget-container__widget"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+{
+  "symbol": "OANDA:XAUUSD",
+  "width": "100%",
+  "height": "220",
+  "locale": "en",
+  "dateRange": "1D",
+  "colorTheme": "dark",
+  "trendLineColor": "#9333ea",
+  "underLineColor": "rgba(147, 51, 234, 0.25)",
+  "isTransparent": true,
+  "autosize": true
+}
+                            </script>
+                        </div>
+                    </div>
+
+                    <!-- SILVER -->
+                    <div class="price-card">
+                        <div class="price-metal">Silver (XAG/USD)</div>
+                        <div class="tradingview-widget-container">
+                            <div class="tradingview-widget-container__widget"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+{
+  "symbol": "OANDA:XAGUSD",
+  "width": "100%",
+  "height": "220",
+  "locale": "en",
+  "dateRange": "1D",
+  "colorTheme": "dark",
+  "trendLineColor": "#9333ea",
+  "underLineColor": "rgba(147, 51, 234, 0.25)",
+  "isTransparent": true,
+  "autosize": true
+}
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products -->
+                <div class="products-grid">
+                    <!-- Gold Products -->
+                    <div class="product-card">
+                        <div class="sold-out-badge">SOLD OUT</div>
+                        <div class="product-image">🥇</div>
+                        <div class="product-body">
+                            <div class="product-type">Gold</div>
+                            <div class="product-name">1 oz Gold Bar</div>
+                            <div class="product-weight">31.1 grams | .9999 Fine Gold</div>
+                            <div class="product-price">-----</div>
+                            <button class="product-btn">Sold Out</button>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="sold-out-badge">SOLD OUT</div>
+                        <div class="product-image">🥇</div>
+                        <div class="product-body">
+                            <div class="product-type">Gold</div>
+                            <div class="product-name">100 g Gold Bar</div>
+                            <div class="product-weight">100 grams | .9999 Fine Gold</div>
+                            <div class="product-price">-----</div>
+                            <button class="product-btn">Sold Out</button>
+                        </div>
+                    </div>
+
+                    <!-- Silver Products -->
+                    <div class="product-card">
+                        <div class="sold-out-badge">SOLD OUT</div>
+                        <div class="product-image">🥈</div>
+                        <div class="product-body">
+                            <div class="product-type">Silver</div>
+                            <div class="product-name">1 oz Silver Coin</div>
+                            <div class="product-weight">31.1 grams | .999 Fine Silver</div>
+                            <div class="product-price">-----</div>
+                            <button class="product-btn">Sold Out</button>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="sold-out-badge">SOLD OUT</div>
+                        <div class="product-image">⚪</div>
+                        <div class="product-body">
+                            <div class="product-type">Silver</div>
+                            <div class="product-name">100 oz Silver Bar</div>
+                            <div class="product-weight">3.11 kg | .999 Fine Silver</div>
+                            <div class="product-price">-----</div>
+                            <button class="product-btn">Sold Out</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Section -->
+                <div class="info-section">
+                    <h3>Why Buy Physical Precious Metals?</h3>
+                    <ul>
+                        <li>Store of value outside the banking system</li>
+                        <li>Hedge against inflation and currency devaluation</li>
+                        <li>Physical ownership - hold real assets</li>
+                        <li>Historically proven wealth preservation</li>
+                        <li>Portable, divisible, and universally recognized</li>
+                    </ul>
+                    <p style="margin-top: 1.5rem; font-style: italic;">
+                        💡 Products will be available soon. Join the community to get notified when stock drops.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="Privacy-policy.html">Privacy Policy</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="refund-policy.html">Refund Policy</a>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2024 The Arcane Archives. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Detect auth + switch back button -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+            measurementId: "G-YGPLQHDXMM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const backBtn = document.getElementById('backBtn');
+
+        onAuthStateChanged(auth, (user) => {
+            if (!backBtn) return;
+
+            if (user) {
+                backBtn.href = "dashboard.html";
+                backBtn.textContent = "← Back to Dashboard";
+            } else {
+                backBtn.href = "index.html";
+                backBtn.textContent = "← Back to Home";
+            }
+        });
+    </script>
+</body>
+</html>
