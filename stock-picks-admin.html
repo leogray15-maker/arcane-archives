@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Picks Admin | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --purple: #9333ea;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --text-light: #e5e5e5;
+      --text-dim: #a3a3a3;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+    }
+
+    .header {
+      max-width: 1400px;
+      margin: 2rem auto 1rem;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+    }
+
+    .back-btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-btn:hover {
+      color: var(--purple-light);
+      border-color: var(--purple);
+    }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .admin-card {
+      background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+    }
+
+    .admin-header {
+      margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--gold), var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .admin-header p {
+      color: var(--text-dim);
+    }
+
+    .form-section {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 18px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-section h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      color: var(--purple-light);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(10, 10, 10, 0.8);
+      color: var(--text-light);
+      font-size: 0.95rem;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      padding: 0.8rem 2rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-light);
+      border-color: rgba(148, 163, 184, 0.7);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: white;
+    }
+
+    .stocks-list {
+      margin-top: 2rem;
+    }
+
+    .stocks-list h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .category-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .category-header {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stock-item {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .stock-info h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .stock-ticker {
+      display: inline-block;
+      background: rgba(147, 51, 234, 0.2);
+      border: 1px solid var(--purple);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-left: 0.5rem;
+    }
+
+    .stock-details {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stock-actions {
+      display: flex;
+      gap: 0.7rem;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .message {
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .success-message {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: var(--green);
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--red);
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stock-item {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <span>🔒 ADMIN PANEL</span>
+    </div>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </div>
+
+  <div class="main">
+    <div class="admin-card">
+      <div class="admin-header">
+        <h1>📊 Stock Picks Manager</h1>
+        <p>Add, edit, and manage stock recommendations for members</p>
+      </div>
+
+      <div id="successMessage" class="message success-message"></div>
+      <div id="errorMessage" class="message error-message"></div>
+
+      <div class="form-section">
+        <h2>Add New Stock</h2>
+        <form id="stockForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ticker Symbol *</label>
+              <input type="text" id="ticker" placeholder="AAPL" required />
+            </div>
+
+            <div class="form-group">
+              <label>Company Name *</label>
+              <input type="text" id="companyName" placeholder="Apple Inc." required />
+            </div>
+
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="category" required>
+                <option value="">Select category</option>
+                <option value="core">Core Holdings</option>
+                <option value="tactical">Tactical / High Conviction</option>
+                <option value="watchlist">Watchlist</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Risk Level *</label>
+              <select id="riskLevel" required>
+                <option value="">Select risk level</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Sector *</label>
+              <input type="text" id="sector" placeholder="Technology" required />
+            </div>
+
+            <div class="form-group">
+              <label>Region</label>
+              <input type="text" id="region" placeholder="USA" />
+            </div>
+
+            <div class="form-group">
+              <label>Timeframe</label>
+              <input type="text" id="timeframe" placeholder="3-5 years" />
+            </div>
+
+            <div class="form-group">
+              <label>Conviction</label>
+              <input type="text" id="conviction" placeholder="High" />
+            </div>
+
+            <div class="form-group">
+              <label>Entry Zone Low</label>
+              <input type="number" step="0.01" id="entryLow" placeholder="150.00" />
+            </div>
+
+            <div class="form-group">
+              <label>Entry Zone High</label>
+              <input type="number" step="0.01" id="entryHigh" placeholder="160.00" />
+            </div>
+
+            <div class="form-group">
+              <label>Target 1</label>
+              <input type="number" step="0.01" id="target1" placeholder="200.00" />
+            </div>
+
+            <div class="form-group">
+              <label>Target 2</label>
+              <input type="number" step="0.01" id="target2" placeholder="250.00" />
+            </div>
+
+            <div class="form-group">
+              <label>Stop Loss / Hard Exit</label>
+              <input type="number" step="0.01" id="stopLoss" placeholder="140.00" />
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label>Investment Thesis *</label>
+            <textarea id="thesis" placeholder="Why this stock? What's the core driver of returns?" required></textarea>
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              ➕ Add Stock
+            </button>
+            <button type="button" class="btn btn-secondary" id="cancelBtn">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="stocks-list">
+        <h2>Current Stock Picks</h2>
+
+        <div class="category-section">
+          <div class="category-header">💎 Core Holdings</div>
+          <div id="coreStocks"></div>
+        </div>
+
+        <div class="category-section">
+          <div class="category-header">⚡ Tactical / High Conviction</div>
+          <div id="tacticalStocks"></div>
+        </div>
+
+        <div class="category-section">
+          <div class="category-header">👀 Watchlist</div>
+          <div id="watchlistStocks"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      doc,
+      updateDoc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const stockForm = document.getElementById('stockForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+
+    let editingStockId = null;
+
+    // Check admin access
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // In production, check if user is admin
+      // For now, load stocks
+      loadStocks();
+    });
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+    }
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+    }
+
+    stockForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const stockData = {
+        ticker: document.getElementById('ticker').value.toUpperCase(),
+        companyName: document.getElementById('companyName').value,
+        category: document.getElementById('category').value,
+        riskLevel: document.getElementById('riskLevel').value,
+        sector: document.getElementById('sector').value,
+        region: document.getElementById('region').value,
+        timeframe: document.getElementById('timeframe').value,
+        conviction: document.getElementById('conviction').value,
+        entryLow: parseFloat(document.getElementById('entryLow').value) || null,
+        entryHigh: parseFloat(document.getElementById('entryHigh').value) || null,
+        target1: parseFloat(document.getElementById('target1').value) || null,
+        target2: parseFloat(document.getElementById('target2').value) || null,
+        stopLoss: parseFloat(document.getElementById('stopLoss').value) || null,
+        thesis: document.getElementById('thesis').value,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+
+        if (editingStockId) {
+          await updateDoc(doc(db, 'StockPicks', editingStockId), stockData);
+          showSuccess('Stock updated successfully!');
+        } else {
+          await addDoc(collection(db, 'StockPicks'), stockData);
+          showSuccess('Stock added successfully!');
+        }
+
+        stockForm.reset();
+        editingStockId = null;
+        submitBtn.textContent = '➕ Add Stock';
+        loadStocks();
+      } catch (error) {
+        console.error('Error saving stock:', error);
+        showError('Failed to save stock');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      stockForm.reset();
+      editingStockId = null;
+      submitBtn.textContent = '➕ Add Stock';
+    });
+
+    async function loadStocks() {
+      try {
+        const q = query(collection(db, 'StockPicks'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        
+        const coreStocks = [];
+        const tacticalStocks = [];
+        const watchlistStocks = [];
+
+        snapshot.forEach((doc) => {
+          const stock = { id: doc.id, ...doc.data() };
+          if (stock.category === 'core') coreStocks.push(stock);
+          else if (stock.category === 'tactical') tacticalStocks.push(stock);
+          else if (stock.category === 'watchlist') watchlistStocks.push(stock);
+        });
+
+        renderStocks('coreStocks', coreStocks);
+        renderStocks('tacticalStocks', tacticalStocks);
+        renderStocks('watchlistStocks', watchlistStocks);
+      } catch (error) {
+        console.error('Error loading stocks:', error);
+        showError('Failed to load stocks');
+      }
+    }
+
+    function renderStocks(containerId, stocks) {
+      const container = document.getElementById(containerId);
+      
+      if (stocks.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No stocks in this category</p>';
+        return;
+      }
+
+      container.innerHTML = stocks.map(stock => `
+        <div class="stock-item">
+          <div class="stock-info">
+            <h3>
+              ${stock.companyName}
+              <span class="stock-ticker">${stock.ticker}</span>
+            </h3>
+            <div class="stock-details">
+              <strong>${stock.sector}</strong> • ${stock.region || 'N/A'} • 
+              Risk: ${stock.riskLevel} • ${stock.timeframe || 'N/A'}
+            </div>
+            <div class="stock-details" style="margin-top: 0.5rem;">
+              ${stock.thesis.substring(0, 100)}${stock.thesis.length > 100 ? '...' : ''}
+            </div>
+          </div>
+          <div class="stock-actions">
+            <button class="btn btn-primary btn-sm" onclick="editStock('${stock.id}')">
+              Edit
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteStock('${stock.id}', '${stock.ticker}')">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.editStock = async (stockId) => {
+      try {
+        const docRef = doc(db, 'StockPicks', stockId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const stock = docSnap.data();
+          
+          document.getElementById('ticker').value = stock.ticker;
+          document.getElementById('companyName').value = stock.companyName;
+          document.getElementById('category').value = stock.category;
+          document.getElementById('riskLevel').value = stock.riskLevel;
+          document.getElementById('sector').value = stock.sector;
+          document.getElementById('region').value = stock.region || '';
+          document.getElementById('timeframe').value = stock.timeframe || '';
+          document.getElementById('conviction').value = stock.conviction || '';
+          document.getElementById('entryLow').value = stock.entryLow || '';
+          document.getElementById('entryHigh').value = stock.entryHigh || '';
+          document.getElementById('target1').value = stock.target1 || '';
+          document.getElementById('target2').value = stock.target2 || '';
+          document.getElementById('stopLoss').value = stock.stopLoss || '';
+          document.getElementById('thesis').value = stock.thesis;
+          
+          editingStockId = stockId;
+          submitBtn.textContent = '💾 Update Stock';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.error('Error loading stock for edit:', error);
+        showError('Failed to load stock details');
+      }
+    };
+
+    window.deleteStock = async (stockId, ticker) => {
+      if (!confirm(`Are you sure you want to delete ${ticker}?`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'StockPicks', stockId));
+        showSuccess(`${ticker} deleted successfully`);
+        loadStocks();
+      } catch (error) {
+        console.error('Error deleting stock:', error);
+        showError('Failed to delete stock');
+      }
+    };
+  </script>
+</body>
+</html>

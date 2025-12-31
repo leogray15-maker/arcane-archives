@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #a3a3a3;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .header {
+            max-width: 1000px;
+            margin: 2rem auto 1rem;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+        }
+
+        .back-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: var(--purple);
+        }
+
+        .main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem;
+        }
+
+        .settings-card {
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+        }
+
+        .settings-header {
+            margin-bottom: 2rem;
+        }
+
+        .settings-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-header p {
+            color: var(--text-dim);
+        }
+
+        .section {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 18px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(10, 10, 10, 0.8);
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+        }
+
+        .form-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--green);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red);
+        }
+
+        .subscription-status {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .subscription-status.active {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .subscription-status.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .status-badge.active {
+            background: var(--green);
+            color: white;
+        }
+
+        .status-badge.inactive {
+            background: var(--red);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .settings-card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .subscription-status {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <span>⚙️ SETTINGS</span>
+        </div>
+        <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+
+    <div class="main">
+        <div class="settings-card">
+            <div class="settings-header">
+                <h1>Account Settings</h1>
+                <p>Manage your profile and account preferences</p>
+            </div>
+
+            <div id="successMessage" class="message success-message"></div>
+            <div id="errorMessage" class="message error-message"></div>
+
+            <!-- Subscription Status -->
+            <div id="subscriptionStatus" class="subscription-status">
+                <div>
+                    <strong>Subscription Status</strong>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.2rem;">
+                        Your membership status
+                    </p>
+                </div>
+                <span class="status-badge" id="statusBadge">Loading...</span>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="section">
+                <div class="section-header">
+                    👤 Personal Information
+                </div>
+                <form id="personalInfoForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="firstName" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="lastName" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" disabled />
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="phone" placeholder="+44 7700 900000" />
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="savePersonalBtn">
+                            💾 Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Address Information -->
+            <div class="section">
+                <div class="section-header">
+                    📍 Address Information
+                </div>
+                <form id="addressForm">
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Street Address</label>
+                            <input type="text" id="address" placeholder="123 Trading Street" />
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="city" placeholder="London" />
+                        </div>
+                        <div class="form-group">
+                            <label>Postcode</label>
+                            <input type="text" id="postcode" placeholder="SW1A 1AA" />
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <select id="country">
+                                <option value="">Select your country</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="AU">Australia</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                                <option value="ES">Spain</option>
+                                <option value="IT">Italy</option>
+                                <option value="NL">Netherlands</option>
+                                <option value="IE">Ireland</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="saveAddressBtn">
+                            💾 Save Address
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security -->
+            <div class="section">
+                <div class="section-header">
+                    🔒 Security
+                </div>
+                <form id="passwordForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" placeholder="••••••••" />
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" id="confirmPassword" placeholder="••••••••" />
+                        </div>
+                    </div>
+                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
+                        Must be at least 8 characters with uppercase, lowercase, and numbers
+                    </p>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="changePasswordBtn">
+                            🔑 Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="section" style="border-color: rgba(239, 68, 68, 0.3);">
+                <div class="section-header" style="color: var(--red);">
+                    ⚠️ Danger Zone
+                </div>
+                <p style="color: var(--text-dim); margin-bottom: 1.5rem;">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <button class="btn btn-danger" id="deleteAccountBtn">
+                    🗑️ Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            updatePassword,
+            deleteUser
+        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const subscriptionStatus = document.getElementById('subscriptionStatus');
+        const statusBadge = document.getElementById('statusBadge');
+
+        let currentUser = null;
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = user;
+            
+            // Load user data
+            const userDoc = await getDoc(doc(db, 'Users', user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                
+                // Personal Info
+                document.getElementById('firstName').value = userData.FirstName || '';
+                document.getElementById('lastName').value = userData.LastName || '';
+                document.getElementById('email').value = userData.Email || user.email;
+                document.getElementById('phone').value = userData.Phone || '';
+                
+                // Address
+                document.getElementById('address').value = userData.Address || '';
+                document.getElementById('city').value = userData.City || '';
+                document.getElementById('postcode').value = userData.Postcode || '';
+                document.getElementById('country').value = userData.Country || '';
+                
+                // Subscription Status
+                const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+                if (isPaid) {
+                    subscriptionStatus.classList.add('active');
+                    subscriptionStatus.classList.remove('inactive');
+                    statusBadge.classList.add('active');
+                    statusBadge.classList.remove('inactive');
+                    statusBadge.textContent = '✓ Active';
+                } else {
+                    subscriptionStatus.classList.add('inactive');
+                    subscriptionStatus.classList.remove('active');
+                    statusBadge.classList.add('inactive');
+                    statusBadge.classList.remove('active');
+                    statusBadge.textContent = '✗ Inactive';
+                }
+            }
+        });
+
+        // Personal Information Form
+        document.getElementById('personalInfoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('savePersonalBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                await updateDoc(doc(db, 'Users', currentUser.uid), {
+                    FirstName: document.getElementById('firstName').value,
+                    LastName: document.getElementById('lastName').value,
+                    Phone: document.getElementById('phone').value,
+                    Username: `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`
+                });
+
+                showSuccess('✓ Personal information updated successfully!');
+            } catch (error) {
+                console.error('Error updating personal info:', error);
+                showError('Failed to update personal information');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Save Changes';
+            }
+        });
+
+        // Address Form
+        document.getElementById('addressForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('saveAddressBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                await updateDoc(doc(db, 'Users', currentUser.uid), {
+                    Address: document.getElementById('address').value,
+                    City: document.getElementById('city').value,
+                    Postcode: document.getElementById('postcode').value,
+                    Country: document.getElementById('country').value
+                });
+
+                showSuccess('✓ Address updated successfully!');
+            } catch (error) {
+                console.error('Error updating address:', error);
+                showError('Failed to update address');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Save Address';
+            }
+        });
+
+        // Password Form
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!newPassword || !confirmPassword) {
+                showError('Please fill in both password fields');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
+            const changeBtn = document.getElementById('changePasswordBtn');
+            changeBtn.disabled = true;
+            changeBtn.textContent = 'Changing...';
+
+            try {
+                await updatePassword(currentUser, newPassword);
+                showSuccess('✓ Password changed successfully!');
+                document.getElementById('passwordForm').reset();
+            } catch (error) {
+                console.error('Error changing password:', error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showError('Please log out and log back in before changing your password');
+                } else {
+                    showError('Failed to change password');
+                }
+            } finally {
+                changeBtn.disabled = false;
+                changeBtn.textContent = '🔑 Change Password';
+            }
+        });
+
+        // Delete Account
+        document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
+            const confirmed = confirm(
+                'Are you absolutely sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.'
+            );
+            
+            if (!confirmed) return;
+
+            const doubleConfirm = prompt('Type "DELETE" to confirm account deletion:');
+            if (doubleConfirm !== 'DELETE') {
+                showError('Account deletion cancelled');
+                return;
+            }
+
+            try {
+                // Delete user document from Firestore
+                await updateDoc(doc(db, 'Users', currentUser.uid), {
+                    deleted: true,
+                    deletedAt: new Date()
+                });
+
+                // Delete Firebase Auth account
+                await deleteUser(currentUser);
+                
+                alert('Your account has been deleted. You will now be logged out.');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showError('Please log out and log back in before deleting your account');
+                } else {
+                    showError('Failed to delete account. Please contact support.');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
