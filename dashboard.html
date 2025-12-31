@@ -85,14 +85,14 @@ body {
   margin-top: 1.5rem;
   padding: 1.3rem;
   border-radius: 14px;
-  background: rgba(239,68,68,.12);
-  border: 1px solid rgba(239,68,68,.35);
+  background: rgba(147, 51, 234, 0.12);
+  border: 1px solid rgba(147, 51, 234, 0.35);
   display: none;
   text-align: center;
 }
 
 .banner a {
-  color: #fb923c;
+  color: #a78bfa;
   font-weight: 600;
   text-decoration: none;
 }
@@ -101,44 +101,36 @@ body {
   text-decoration: underline;
 }
 
-/* Stats Cards */
-.stats-grid {
+/* Navigation Cards */
+.nav-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.nav-card {
   background: rgba(15,23,42,.96);
   border: 1px solid rgba(148,163,184,.4);
   border-radius: 16px;
   padding: 1.5rem;
   text-align: center;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
-.stat-card:hover {
+.nav-card:hover {
   transform: translateY(-3px);
   border-color: #9333ea;
   box-shadow: 0 10px 30px rgba(147,51,234,0.3);
 }
 
-.stat-icon {
+.nav-icon {
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
 
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-  background: linear-gradient(135deg, #a78bfa, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.stat-label {
+.nav-label {
   font-size: 0.85rem;
   color: #a3a3a3;
   text-transform: uppercase;
@@ -243,7 +235,7 @@ body {
     grid-template-columns: 1fr;
   }
   
-  .stats-grid {
+  .nav-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
@@ -253,7 +245,7 @@ body {
 }
 
 @media (max-width: 480px) {
-  .stats-grid {
+  .nav-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -278,28 +270,25 @@ body {
 
     <div id="payBanner" class="banner">
       🔒 <strong>Upgrade to unlock all features</strong><br>
-      <a href="index.html#pricing">View Premium Plans →</a>
+      <a href="index.html#pricing">Enter the Arcane Archives →</a>
     </div>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="stats-grid">
-    <div class="stat-card" onclick="go('alerts.html')">
-      <div class="stat-icon">🏆</div>
-      <div class="stat-value" id="winsCount">0</div>
-      <div class="stat-label">Total Wins</div>
+  <!-- Navigation Cards -->
+  <div class="nav-grid">
+    <div class="nav-card" onclick="go('alerts.html')">
+      <div class="nav-icon">🏆</div>
+      <div class="nav-label">Alerts</div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">🤝</div>
-      <div class="stat-value" id="referralsCount">0</div>
-      <div class="stat-label">Referrals</div>
+    <div class="nav-card" onclick="go('referrals.html')">
+      <div class="nav-icon">🤝</div>
+      <div class="nav-label">Referrals</div>
     </div>
 
-    <div class="stat-card" onclick="go('settings.html')">
-      <div class="stat-icon">⚙️</div>
-      <div class="stat-value">—</div>
-      <div class="stat-label">Settings</div>
+    <div class="nav-card" onclick="go('settings.html')">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label">Settings</div>
     </div>
   </div>
 
@@ -339,11 +328,19 @@ body {
       </div>
     </div>
 
+    <div class="tile premium locked" data-paid="true" data-href="referrals.html">
+      <div class="tile-icon">🎯</div>
+      <div class="tile-content">
+        <div class="tile-title">Referral Program</div>
+        <div class="tile-desc">Earn XP & rewards</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ADMIN ONLY -->
   <div id="adminSection" style="display: none;">
-    <div class="section-header">🔐 Admin Tools</div>
+    <div class="section-header">🔧 Admin Tools</div>
     <div class="grid">
       <div class="tile premium" onclick="go('admin-panel.html')">
         <div class="tile-icon">🛠</div>
@@ -412,7 +409,7 @@ body {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -459,7 +456,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (isAdmin) {
       document.getElementById("adminSection").style.display = "block";
-      console.log("🔐 Admin access granted");
+      console.log("🔧 Admin access granted");
     }
 
     // Check if paid
@@ -486,38 +483,10 @@ onAuthStateChanged(auth, async (user) => {
       });
     }
 
-    // Load stats (wins, referrals)
-    await loadStats(user.uid);
-
   } catch (error) {
     console.error("❌ Error loading dashboard:", error);
   }
 });
-
-async function loadStats(uid) {
-  try {
-    // Load wins from history
-    const historyQuery = query(
-      collection(db, "alerts_history"),
-      where("createdBy", "==", uid)
-    );
-    const historySnap = await getDocs(historyQuery);
-    
-    let wins = 0;
-    historySnap.forEach(doc => {
-      const data = doc.data();
-      if (data.result === "win") wins++;
-    });
-    
-    document.getElementById("winsCount").textContent = wins;
-
-    // Load referrals (placeholder - implement based on your referral system)
-    document.getElementById("referralsCount").textContent = "0";
-
-  } catch (error) {
-    console.error("Error loading stats:", error);
-  }
-}
 </script>
 
 </body>
