@@ -7,6 +7,10 @@
 <link rel="icon" href="ArcaneA.png">
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -38,7 +42,7 @@ p {
   color: #a3a3a3;
 }
 
-input, select, button {
+input, select, button, textarea {
   width: 100%;
   padding: .9rem 1rem;
   border-radius: 12px;
@@ -47,9 +51,15 @@ input, select, button {
   color: #e5e5e5;
   margin-top: .6rem;
   font-family: inherit;
+  font-size: 1rem;
 }
 
-input:focus, select:focus {
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #9333ea;
   box-shadow: 0 0 0 3px rgba(147,51,234,0.2);
@@ -115,9 +125,52 @@ a:hover {
   text-decoration: underline;
 }
 
+.section-title {
+  font-size: .85rem;
+  color: #a78bfa;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: .3rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  margin-top: 1rem;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: auto;
+  margin-top: .25rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-row label {
+  font-size: .9rem;
+  color: #d1d5db;
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.checkbox-row a {
+  color: #a78bfa;
+}
+
 @media(max-width:600px){
-  .row { grid-template-columns: 1fr; }
-  .box { padding: 2rem 1.5rem; }
+  .row { 
+    grid-template-columns: 1fr; 
+  }
+  .box { 
+    padding: 2rem 1.5rem;
+    margin: 0 auto;
+  }
+  body {
+    padding: 1rem;
+  }
 }
 </style>
 </head>
@@ -132,28 +185,56 @@ a:hover {
   <div id="success" class="msg success"></div>
 
   <form id="form">
+    <div class="section-title">Personal Information</div>
+    
     <div class="row">
       <input id="first" placeholder="First name" required>
       <input id="last" placeholder="Last name" required>
     </div>
 
+    <input id="username" placeholder="Username" required>
     <input id="email" type="email" placeholder="Email address" required>
+    <input id="phone" type="tel" placeholder="Phone number" required>
+    <input id="dob" type="date" placeholder="Date of Birth" required>
     <input id="password" type="password" placeholder="Password (min 8 chars)" required minlength="8">
 
-    <select id="country" required>
-      <option value="">Select your country</option>
-      <option value="GB">United Kingdom</option>
-      <option value="US">United States</option>
-      <option value="CA">Canada</option>
-      <option value="AU">Australia</option>
-      <option value="DE">Germany</option>
-      <option value="FR">France</option>
-      <option value="ES">Spain</option>
-      <option value="IT">Italy</option>
-      <option value="NL">Netherlands</option>
-      <option value="IE">Ireland</option>
-      <option value="OTHER">Other</option>
-    </select>
+    <div class="section-title">Address</div>
+    
+    <textarea id="address1" placeholder="Street Address (Line 1)" required></textarea>
+    <textarea id="address2" placeholder="Street Address (Line 2) - Optional"></textarea>
+    
+    <div class="row">
+      <input id="city" placeholder="City" required>
+      <input id="state" placeholder="State/Province" required>
+    </div>
+    
+    <div class="row">
+      <input id="postal" placeholder="Postal/ZIP Code" required>
+      <select id="country" required>
+        <option value="">Select your country</option>
+        <option value="GB">United Kingdom</option>
+        <option value="US">United States</option>
+        <option value="CA">Canada</option>
+        <option value="AU">Australia</option>
+        <option value="DE">Germany</option>
+        <option value="FR">France</option>
+        <option value="ES">Spain</option>
+        <option value="IT">Italy</option>
+        <option value="NL">Netherlands</option>
+        <option value="IE">Ireland</option>
+        <option value="OTHER">Other</option>
+      </select>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="terms" required>
+      <label for="terms">I agree to the <a href="#" target="_blank">Terms & Conditions</a> and <a href="#" target="_blank">Privacy Policy</a></label>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="newsletter">
+      <label for="newsletter">Send me updates and newsletters about The Arcane Archives</label>
+    </div>
 
     <button id="btn">Create Account</button>
   </form>
@@ -204,12 +285,27 @@ form.addEventListener("submit", async (e) => {
 
   const first = document.getElementById("first").value.trim();
   const last = document.getElementById("last").value.trim();
+  const username = document.getElementById("username").value.trim();
   const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const dob = document.getElementById("dob").value;
   const pass = document.getElementById("password").value;
+  const address1 = document.getElementById("address1").value.trim();
+  const address2 = document.getElementById("address2").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const state = document.getElementById("state").value.trim();
+  const postal = document.getElementById("postal").value.trim();
   const country = document.getElementById("country").value;
+  const terms = document.getElementById("terms").checked;
+  const newsletter = document.getElementById("newsletter").checked;
 
-  if (!first || !last || !email || !pass || !country) {
-    showError("Please fill in all fields");
+  if (!first || !last || !username || !email || !phone || !dob || !pass || !address1 || !city || !state || !postal || !country) {
+    showError("Please fill in all required fields");
+    return;
+  }
+
+  if (!terms) {
+    showError("You must agree to the Terms & Conditions");
     return;
   }
 
@@ -227,17 +323,27 @@ form.addEventListener("submit", async (e) => {
     
     console.log("Updating profile...");
     await updateProfile(cred.user, { 
-      displayName: `${first} ${last}` 
+      displayName: username 
     });
 
     console.log("Creating Firestore document...");
-    // IMPORTANT: Wait for Firestore write to complete
     await setDoc(doc(db, "Users", cred.user.uid), {
-      Username: `${first} ${last}`,
+      Username: username,
       FirstName: first,
       LastName: last,
       Email: email,
+      Phone: phone,
+      DateOfBirth: dob,
+      Address: {
+        line1: address1,
+        line2: address2,
+        city: city,
+        state: state,
+        postal: postal,
+        country: country
+      },
       Country: country,
+      NewsletterOptIn: newsletter,
       isPaid: false,
       subscriptionStatus: "none",
       joinedAt: serverTimestamp(),
@@ -247,7 +353,6 @@ form.addEventListener("submit", async (e) => {
     console.log("✅ Account created successfully");
     showSuccess("✅ Account created! Redirecting to dashboard...");
 
-    // Wait longer before redirect to ensure everything is synced
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 1500);
