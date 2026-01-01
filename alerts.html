@@ -144,11 +144,10 @@
       border-radius: 1rem;
       padding: 1.5rem;
       backdrop-filter: blur(20px);
-      height: fit-content;
     }
 
     .chart-header {
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
       display: flex;
       justify-content: space-between;
       gap: 1rem;
@@ -168,41 +167,12 @@
       color: #6b7280;
     }
 
-    .chart-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .chart-controls-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #9ca3af;
-    }
-
-    .chart-pair-select {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(139, 92, 246, 0.6);
-      border-radius: 999px;
-      padding: 0.35rem 0.9rem;
-      color: #e5e7eb;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .chart-pair-select:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.4);
-    }
-
     /* ICT session legend */
     .session-legend {
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
       font-size: 0.75rem;
       color: #9ca3af;
       align-items: center;
@@ -320,35 +290,57 @@
       height: 14px;
     }
 
-    .chart-container {
-      width: 100%;
-      height: 600px;
-      background: #020617;
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .chart-wrapper {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(139, 92, 246, 0.15);
       border-radius: 0.75rem;
       overflow: hidden;
-      position: relative;
-      border: 1px solid rgba(139, 92, 246, 0.1);
+      transition: all 0.3s;
     }
 
-    .tradingview-widget-container {
-      width: 100%;
-      height: 100%;
+    .chart-wrapper:hover {
+      border-color: rgba(139, 92, 246, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
 
-    #tradingview_chart {
-      width: 100%;
-      height: 100%;
-    }
-
-    .chart-status {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #9ca3af;
+    .chart-label {
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      border-bottom: 1px solid rgba(139, 92, 246, 0.2);
       font-size: 0.9rem;
-      text-align: center;
-      pointer-events: none;
+      font-weight: 600;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-label-icon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .chart-iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+      display: block;
     }
 
     /* LIVE TRADES SIDEBAR */
@@ -525,6 +517,9 @@
       .trades-sidebar {
         order: -1;
       }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -536,7 +531,7 @@
 
     <div class="header">
       <h1>Arcane Alerts</h1>
-      <p>Live institutional-grade trade ideas, performance tracking and a clean killzone-ready chart.</p>
+      <p>Live institutional-grade trade ideas, performance tracking and real-time market analysis.</p>
     </div>
 
     <!-- Admin Form (Only visible to admins) -->
@@ -669,34 +664,18 @@
       <button class="post-btn" id="addManualHistoryBtn">Add to History</button>
     </div>
 
-    <!-- Main Layout: Chart + Live Trades -->
+    <!-- Main Layout: Charts + Live Trades -->
     <div class="main-layout">
-      <!-- Left: Chart -->
+      <!-- Left: Charts Grid -->
       <div class="chart-section">
         <div class="chart-header">
           <div>
             <div class="chart-title">
-              <span id="chartPairLabel">XAUUSD</span> Live Chart
+              📊 Live Market Charts
             </div>
             <div class="chart-subtitle">
-              Powered by TradingView • Killzones in UTC
+              Real-time: Gold • Silver • USD • S&P 500 • Dow Jones
             </div>
-          </div>
-
-          <div class="chart-controls">
-            <label for="chartPairSelect" class="chart-controls-label">Pair</label>
-            <select id="chartPairSelect" class="chart-pair-select">
-              <option value="XAUUSD">XAUUSD (Gold)</option>
-              <option value="XAGUSD">XAGUSD (Silver)</option>
-              <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-              <option value="US30">US30 (Dow Jones)</option>
-              <option value="SPX500">SPX500 (S&P 500)</option>
-              <option value="JP225">JP225 (Nikkei)</option>
-              <option value="GER30">GER30 (DAX)</option>
-              <option value="GBPUSD">GBPUSD</option>
-              <option value="EURUSD">EURUSD</option>
-              <option value="USDJPY">USDJPY</option>
-            </select>
           </div>
         </div>
 
@@ -722,11 +701,87 @@
           </div>
         </div>
 
-        <div class="chart-container">
-          <div class="tradingview-widget-container">
-            <div id="tradingview_chart"></div>
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <!-- Gold Chart -->
+          <div class="chart-wrapper">
+            <div class="chart-label">
+              <span class="chart-label-icon"></span>
+              Gold (XAUUSD)
+            </div>
+            <iframe 
+              class="chart-iframe"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_gold&symbol=OANDA%3AXAUUSD&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=OANDA%3AXAUUSD"
+              frameborder="0"
+              allowtransparency="true"
+              scrolling="no"
+              allowfullscreen>
+            </iframe>
           </div>
-          <div id="chartStatus" class="chart-status">Loading chart...</div>
+
+          <!-- Silver Chart -->
+          <div class="chart-wrapper">
+            <div class="chart-label">
+              <span class="chart-label-icon"></span>
+              Silver (XAGUSD)
+            </div>
+            <iframe 
+              class="chart-iframe"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_silver&symbol=OANDA%3AXAGUSD&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=OANDA%3AXAGUSD"
+              frameborder="0"
+              allowtransparency="true"
+              scrolling="no"
+              allowfullscreen>
+            </iframe>
+          </div>
+
+          <!-- US Dollar Index -->
+          <div class="chart-wrapper">
+            <div class="chart-label">
+              <span class="chart-label-icon"></span>
+              US Dollar Index (DXY)
+            </div>
+            <iframe 
+              class="chart-iframe"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_dxy&symbol=TVC%3ADXY&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3ADXY"
+              frameborder="0"
+              allowtransparency="true"
+              scrolling="no"
+              allowfullscreen>
+            </iframe>
+          </div>
+
+          <!-- S&P 500 -->
+          <div class="chart-wrapper">
+            <div class="chart-label">
+              <span class="chart-label-icon"></span>
+              S&P 500 (SPX)
+            </div>
+            <iframe 
+              class="chart-iframe"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_spx&symbol=TVC%3ASPX&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3ASPX"
+              frameborder="0"
+              allowtransparency="true"
+              scrolling="no"
+              allowfullscreen>
+            </iframe>
+          </div>
+
+          <!-- Dow Jones -->
+          <div class="chart-wrapper">
+            <div class="chart-label">
+              <span class="chart-label-icon"></span>
+              Dow Jones (US30)
+            </div>
+            <iframe 
+              class="chart-iframe"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_us30&symbol=TVC%3ADJI&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3ADJI"
+              frameborder="0"
+              allowtransparency="true"
+              scrolling="no"
+              allowfullscreen>
+            </iframe>
+          </div>
         </div>
       </div>
 
@@ -811,32 +866,9 @@
     </div>
   </div>
 
-  <!-- TradingView Widget -->
-  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-  <script type="text/javascript">
-    // TradingView Chart Implementation
+  <!-- Session and Clock Script -->
+  <script>
     (function() {
-      const DEFAULT_PAIR = 'XAUUSD';
-
-      // Map dropdown values -> TradingView symbols
-      const PAIR_MAP = {
-        XAUUSD: 'OANDA:XAUUSD',
-        XAGUSD: 'OANDA:XAGUSD',
-        BTCUSD: 'BITSTAMP:BTCUSD',
-        US30: 'TVC:DJI',
-        SPX500: 'TVC:SPX',
-        JP225: 'TVC:NI225',
-        GER30: 'XETR:DAX',
-        GBPUSD: 'OANDA:GBPUSD',
-        EURUSD: 'OANDA:EURUSD',
-        USDJPY: 'OANDA:USDJPY',
-      };
-
-      let currentWidget = null;
-
-      const statusEl = document.getElementById('chartStatus');
-      const pairLabelEl = document.getElementById('chartPairLabel');
-      const pairSelectEl = document.getElementById('chartPairSelect');
       const sessionPills = {
         asia: document.querySelector('.session-pill.asia'),
         london: document.querySelector('.session-pill.london'),
@@ -880,104 +912,15 @@
         setActive(sessionPills.ny, nyActive);
       }
 
-      function createChart(symbol) {
-        if (!symbol || typeof TradingView === 'undefined') {
-          console.error('TradingView not loaded or invalid symbol');
-          if (statusEl) {
-            statusEl.textContent = 'Chart unavailable';
-            statusEl.style.display = 'block';
-          }
-          return;
-        }
-
-        // Clear existing widget
-        const container = document.getElementById('tradingview_chart');
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        if (statusEl) {
-          statusEl.style.display = 'block';
-          statusEl.textContent = 'Loading chart...';
-        }
-
-        try {
-          currentWidget = new TradingView.widget({
-            autosize: true,
-            symbol: symbol,
-            interval: '15',
-            timezone: 'Etc/UTC',
-            theme: 'dark',
-            style: '1',
-            locale: 'en',
-            toolbar_bg: '#020617',
-            enable_publishing: false,
-            hide_side_toolbar: false,
-            allow_symbol_change: false,
-            container_id: 'tradingview_chart',
-            studies: [],
-            disabled_features: ['use_localstorage_for_settings'],
-            enabled_features: [],
-            overrides: {
-              "paneProperties.background": "#020617",
-              "paneProperties.backgroundType": "solid",
-              "paneProperties.vertGridProperties.color": "rgba(148, 163, 184, 0.06)",
-              "paneProperties.horzGridProperties.color": "rgba(148, 163, 184, 0.06)",
-              "scalesProperties.textColor": "#9ca3af",
-              "scalesProperties.lineColor": "rgba(148, 163, 184, 0.2)",
-              "mainSeriesProperties.candleStyle.upColor": "#22c55e",
-              "mainSeriesProperties.candleStyle.downColor": "#ef4444",
-              "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
-              "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
-              "mainSeriesProperties.candleStyle.wickUpColor": "#22c55e",
-              "mainSeriesProperties.candleStyle.wickDownColor": "#ef4444",
-            },
-          });
-
-          // Hide loading message when chart is ready
-          currentWidget.onChartReady(function() {
-            if (statusEl) {
-              statusEl.style.display = 'none';
-            }
-            console.log('TradingView chart loaded:', symbol);
-          });
-        } catch (error) {
-          console.error('Error creating TradingView chart:', error);
-          if (statusEl) {
-            statusEl.textContent = 'Chart failed to load';
-            statusEl.style.display = 'block';
-          }
-        }
-      }
-
-      function setPair(pair) {
-        const tvSymbol = PAIR_MAP[pair] || PAIR_MAP[DEFAULT_PAIR];
-        if (pairLabelEl) pairLabelEl.textContent = pair;
-        createChart(tvSymbol);
-      }
-
-      // Wait for page load
-      window.addEventListener('load', function() {
-        // Initialize
-        if (pairSelectEl) {
-          pairSelectEl.value = DEFAULT_PAIR;
-          pairSelectEl.addEventListener('change', function() {
-            setPair(this.value || DEFAULT_PAIR);
-          });
-        }
-
-        updateSessionLegend();
-        updateUTCClock();
-        
-        // Update session legend every minute
-        setInterval(updateSessionLegend, 60 * 1000);
-        
-        // Update UTC clock every second
-        setInterval(updateUTCClock, 1000);
-
-        // Load default chart
-        setPair(DEFAULT_PAIR);
-      });
+      // Initialize
+      updateSessionLegend();
+      updateUTCClock();
+      
+      // Update session legend every minute
+      setInterval(updateSessionLegend, 60 * 1000);
+      
+      // Update UTC clock every second
+      setInterval(updateUTCClock, 1000);
     })();
   </script>
 
