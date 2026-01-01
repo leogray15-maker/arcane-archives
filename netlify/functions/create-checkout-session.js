@@ -38,11 +38,11 @@ exports.handler = async (event) => {
     const body = event.body ? JSON.parse(event.body) : {};
     const { priceId: bodyPriceId, uid, email } = body;
 
-    // Use body priceId, env price, or hard-coded fallback
+    // Use body priceId, env price, or hard-coded fallback (NEW £128 PRICE)
     const priceId =
       bodyPriceId ||
       process.env.STRIPE_PRICE_ID ||
-      "price_1SRnIxCXghparoQFb0oQPUes"; // <- change if needed
+      "price_1SkbkNCXghparoQFd6flbwip"; // £128/month price
 
     const baseUrl =
       process.env.URL ||
@@ -51,6 +51,7 @@ exports.handler = async (event) => {
       "https://thearcanearchives.netlify.app";
 
     console.log("🧾 Creating checkout session for:", email, "uid:", uid);
+    console.log("💰 Using price ID:", priceId);
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
