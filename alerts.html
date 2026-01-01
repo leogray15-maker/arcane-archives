@@ -3,19 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Content Security Policy for TradingView and Firebase -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com https://*.firebaseio.com https://s3.tradingview.com https://*.tradingview.com;
-    connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.tradingview.com wss://*.firebaseio.com wss://*.tradingview.com;
-    style-src 'self' 'unsafe-inline' https://*.tradingview.com;
-    img-src 'self' data: https: blob:;
-    font-src 'self' data: https://*.tradingview.com;
-    frame-src 'self' https://*.tradingview.com;
-    worker-src 'self' blob:;
-  ">
-  
   <title>Arcane Alerts | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
 
@@ -343,6 +330,16 @@
       border: 1px solid rgba(139, 92, 246, 0.1);
     }
 
+    .tradingview-widget-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    #tradingview_chart {
+      width: 100%;
+      height: 100%;
+    }
+
     .chart-status {
       position: absolute;
       top: 50%;
@@ -351,6 +348,7 @@
       color: #9ca3af;
       font-size: 0.9rem;
       text-align: center;
+      pointer-events: none;
     }
 
     /* LIVE TRADES SIDEBAR */
@@ -725,7 +723,9 @@
         </div>
 
         <div class="chart-container">
-          <div id="tradingview_widget" style="width: 100%; height: 100%;"></div>
+          <div class="tradingview-widget-container">
+            <div id="tradingview_chart"></div>
+          </div>
           <div id="chartStatus" class="chart-status">Loading chart...</div>
         </div>
       </div>
@@ -812,9 +812,10 @@
   </div>
 
   <!-- TradingView Widget -->
-  <script src="https://s3.tradingview.com/tv.js"></script>
-  <script>
-    window.addEventListener('load', function () {
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+    // TradingView Chart Implementation
+    (function() {
       const DEFAULT_PAIR = 'XAUUSD';
 
       // Map dropdown values -> TradingView symbols
@@ -831,18 +832,16 @@
         USDJPY: 'OANDA:USDJPY',
       };
 
-      let widget = null;
+      let currentWidget = null;
 
       const statusEl = document.getElementById('chartStatus');
       const pairLabelEl = document.getElementById('chartPairLabel');
       const pairSelectEl = document.getElementById('chartPairSelect');
-
       const sessionPills = {
         asia: document.querySelector('.session-pill.asia'),
         london: document.querySelector('.session-pill.london'),
         ny: document.querySelector('.session-pill.ny'),
       };
-
       const utcTimeEl = document.getElementById('utcTime');
 
       function updateUTCClock() {
@@ -871,10 +870,7 @@
           }
         }
 
-        // Killzone times in total minutes from midnight UTC:
-        // Asia:   00:00–03:00 (0-179)
-        // London: 07:00–10:00 (420-599)
-        // NY:     12:00–15:00 (720-899)
+        // Killzone times in total minutes from midnight UTC
         const asiaActive = totalMinutes >= 0 && totalMinutes < 180;
         const londonActive = totalMinutes >= 420 && totalMinutes < 600;
         const nyActive = totalMinutes >= 720 && totalMinutes < 900;
@@ -884,118 +880,105 @@
         setActive(sessionPills.ny, nyActive);
       }
 
-      function createWidget(symbol) {
-        if (!window.TradingView || !symbol) {
-          console.error('TradingView not available or symbol missing.');
-          return;
-        }
-
-        // remove old widget if any
-        if (widget && typeof widget.remove === 'function') {
-          try {
-            widget.remove();
-          } catch (e) {
-            console.warn('Error removing old widget:', e);
+      function createChart(symbol) {
+        if (!symbol || typeof TradingView === 'undefined') {
+          console.error('TradingView not loaded or invalid symbol');
+          if (statusEl) {
+            statusEl.textContent = 'Chart unavailable';
+            statusEl.style.display = 'block';
           }
-        }
-
-        const containerId = 'tradingview_widget';
-        const container = document.getElementById(containerId);
-        if (!container) {
-          console.error('TradingView container not found');
           return;
         }
 
+        // Clear existing widget
+        const container = document.getElementById('tradingview_chart');
+        if (!container) return;
+        
         container.innerHTML = '';
+        
         if (statusEl) {
           statusEl.style.display = 'block';
           statusEl.textContent = 'Loading chart...';
         }
 
-        // Enhanced TradingView widget with studies and better settings
-        widget = new TradingView.widget({
-          symbol: symbol,
-          interval: '15',
-          container_id: containerId,
-          timezone: 'Etc/UTC',
-          theme: 'dark',
-          style: '1',
-          locale: 'en',
-          hide_top_toolbar: false,
-          hide_legend: false,
-          hide_side_toolbar: false,
-          save_image: false,
-          backgroundColor: '#020617',
-          gridColor: 'rgba(148, 163, 184, 0.1)',
-          autosize: true,
-          allow_symbol_change: false,
-          details: false,
-          hotlist: false,
-          calendar: false,
-          // Styling
-          overrides: {
-            "paneProperties.background": "#020617",
-            "paneProperties.backgroundType": "solid",
-            "paneProperties.vertGridProperties.color": "rgba(148, 163, 184, 0.06)",
-            "paneProperties.horzGridProperties.color": "rgba(148, 163, 184, 0.06)",
-            "scalesProperties.textColor": "#9ca3af",
-            "scalesProperties.lineColor": "rgba(148, 163, 184, 0.2)",
-            
-            // Candles
-            "mainSeriesProperties.candleStyle.upColor": "#22c55e",
-            "mainSeriesProperties.candleStyle.downColor": "#ef4444",
-            "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
-            "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
-            "mainSeriesProperties.candleStyle.wickUpColor": "#22c55e",
-            "mainSeriesProperties.candleStyle.wickDownColor": "#ef4444",
-          },
-          // Enable drawing tools
-          enabled_features: ["study_templates"],
-          disabled_features: ["use_localstorage_for_settings", "header_symbol_search", "symbol_search_hot_key"],
-          // Load studies after chart is ready
-          studies_overrides: {},
-        });
-
-        widget.onChartReady(function () {
-          if (statusEl) statusEl.style.display = 'none';
-          
-          // Get the chart object
-          widget.activeChart().onIntervalChanged().subscribe(null, function(interval) {
-            console.log('Chart interval changed to:', interval);
+        try {
+          currentWidget = new TradingView.widget({
+            autosize: true,
+            symbol: symbol,
+            interval: '15',
+            timezone: 'Etc/UTC',
+            theme: 'dark',
+            style: '1',
+            locale: 'en',
+            toolbar_bg: '#020617',
+            enable_publishing: false,
+            hide_side_toolbar: false,
+            allow_symbol_change: false,
+            container_id: 'tradingview_chart',
+            studies: [],
+            disabled_features: ['use_localstorage_for_settings'],
+            enabled_features: [],
+            overrides: {
+              "paneProperties.background": "#020617",
+              "paneProperties.backgroundType": "solid",
+              "paneProperties.vertGridProperties.color": "rgba(148, 163, 184, 0.06)",
+              "paneProperties.horzGridProperties.color": "rgba(148, 163, 184, 0.06)",
+              "scalesProperties.textColor": "#9ca3af",
+              "scalesProperties.lineColor": "rgba(148, 163, 184, 0.2)",
+              "mainSeriesProperties.candleStyle.upColor": "#22c55e",
+              "mainSeriesProperties.candleStyle.downColor": "#ef4444",
+              "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
+              "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
+              "mainSeriesProperties.candleStyle.wickUpColor": "#22c55e",
+              "mainSeriesProperties.candleStyle.wickDownColor": "#ef4444",
+            },
           });
 
-          // Note: Session boxes/killzones can be added manually by users using TradingView's drawing tools
-          // Or you can create custom indicators - but this requires TradingView's advanced features
-          
-          console.log('Chart loaded successfully for', symbol);
-        });
+          // Hide loading message when chart is ready
+          currentWidget.onChartReady(function() {
+            if (statusEl) {
+              statusEl.style.display = 'none';
+            }
+            console.log('TradingView chart loaded:', symbol);
+          });
+        } catch (error) {
+          console.error('Error creating TradingView chart:', error);
+          if (statusEl) {
+            statusEl.textContent = 'Chart failed to load';
+            statusEl.style.display = 'block';
+          }
+        }
       }
 
       function setPair(pair) {
         const tvSymbol = PAIR_MAP[pair] || PAIR_MAP[DEFAULT_PAIR];
         if (pairLabelEl) pairLabelEl.textContent = pair;
-        createWidget(tvSymbol);
+        createChart(tvSymbol);
       }
 
-      if (pairSelectEl) {
-        pairSelectEl.value = DEFAULT_PAIR;
-        pairSelectEl.addEventListener('change', function () {
-          setPair(this.value || DEFAULT_PAIR);
-        });
-      }
+      // Wait for page load
+      window.addEventListener('load', function() {
+        // Initialize
+        if (pairSelectEl) {
+          pairSelectEl.value = DEFAULT_PAIR;
+          pairSelectEl.addEventListener('change', function() {
+            setPair(this.value || DEFAULT_PAIR);
+          });
+        }
 
-      // Init
-      updateSessionLegend();
-      updateUTCClock();
-      
-      // Update session legend every 1 minute (to catch session changes)
-      setInterval(updateSessionLegend, 60 * 1000);
-      
-      // Update UTC clock every second
-      setInterval(updateUTCClock, 1000);
+        updateSessionLegend();
+        updateUTCClock();
+        
+        // Update session legend every minute
+        setInterval(updateSessionLegend, 60 * 1000);
+        
+        // Update UTC clock every second
+        setInterval(updateUTCClock, 1000);
 
-      setPair(DEFAULT_PAIR);
-    });
+        // Load default chart
+        setPair(DEFAULT_PAIR);
+      });
+    })();
   </script>
 
   <!-- Alerts logic -->
