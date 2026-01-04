@@ -246,7 +246,12 @@ a:hover {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  updateProfile,
+  sendEmailVerification 
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const app = initializeApp({
@@ -326,6 +331,9 @@ form.addEventListener("submit", async (e) => {
       displayName: username 
     });
 
+    console.log("Sending verification email...");
+    await sendEmailVerification(cred.user);
+
     console.log("Creating Firestore document...");
     await setDoc(doc(db, "Users", cred.user.uid), {
       Username: username,
@@ -346,16 +354,20 @@ form.addEventListener("submit", async (e) => {
       NewsletterOptIn: newsletter,
       isPaid: false,
       subscriptionStatus: "none",
+      emailVerified: false,
       joinedAt: serverTimestamp(),
       lastLoginDate: serverTimestamp()
     });
 
     console.log("✅ Account created successfully");
-    showSuccess("✅ Account created! Redirecting to dashboard...");
+    showSuccess("✅ Account created! Please check your email to verify your account. Check your spam folder if you don't see it.");
+
+    // Sign out the user so they must verify before logging in
+    await auth.signOut();
 
     setTimeout(() => {
-      window.location.href = "dashboard.html";
-    }, 1500);
+      window.location.href = "login.html";
+    }, 4000);
 
   } catch (err) {
     console.error("Signup error:", err);

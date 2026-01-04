@@ -200,6 +200,24 @@
             color: #22c55e;
         }
 
+        .resend-btn {
+            margin-top: 0.75rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid var(--purple);
+            color: var(--purple-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .resend-btn:hover {
+            background: rgba(147, 51, 234, 0.3);
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 480px) {
             .login-container {
                 padding: 2rem 1.5rem;
@@ -261,6 +279,7 @@
             getAuth, 
             signInWithEmailAndPassword,
             sendPasswordResetEmail,
+            sendEmailVerification,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
         import { 
@@ -294,15 +313,14 @@
 
         // Check if user is already logged in
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
+            if (user && user.emailVerified) {
                 console.log("✅ User already logged in:", user.email);
-                // Always go to dashboard (let dashboard handle paid/unpaid logic)
                 window.location.href = "dashboard.html";
             }
         });
 
         function showError(message) {
-            errorMessage.textContent = message;
+            errorMessage.innerHTML = message; // Changed to innerHTML to support HTML content
             errorMessage.style.display = "block";
             successMessage.style.display = "none";
         }
@@ -348,10 +366,49 @@
 
                 console.log("✅ Login successful:", user.email);
 
-                // Update last login
+                // Check if email is verified
+                if (!user.emailVerified) {
+                    showError(`
+                        ⚠️ Please verify your email before logging in.<br>
+                        Check your inbox for the verification link.
+                        <button class="resend-btn" id="resendVerificationBtn">
+                            Resend Verification Email
+                        </button>
+                    `);
+                    
+                    // Add event listener to resend button
+                    setTimeout(() => {
+                        const resendBtn = document.getElementById('resendVerificationBtn');
+                        if (resendBtn) {
+                            resendBtn.addEventListener('click', async () => {
+                                resendBtn.disabled = true;
+                                resendBtn.textContent = 'Sending...';
+                                try {
+                                    await sendEmailVerification(user);
+                                    showSuccess("✅ Verification email sent! Check your inbox and spam folder.");
+                                } catch (err) {
+                                    console.error("Resend error:", err);
+                                    showError("Failed to send verification email. Please try again in a few minutes.");
+                                }
+                                resendBtn.disabled = false;
+                                resendBtn.textContent = 'Resend Verification Email';
+                            });
+                        }
+                    }, 100);
+                    
+                    // Sign out the unverified user
+                    await auth.signOut();
+                    
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = "Login";
+                    return;
+                }
+
+                // Update last login and verification status
                 try {
                     await updateDoc(doc(db, "Users", user.uid), {
-                        lastLoginDate: serverTimestamp()
+                        lastLoginDate: serverTimestamp(),
+                        emailVerified: true
                     });
                 } catch (e) {
                     console.warn("Could not update last login:", e);
@@ -359,7 +416,6 @@
 
                 showSuccess("✅ Login successful! Redirecting...");
                 
-                // Always redirect to dashboard - let dashboard handle paid/unpaid
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
                 }, 1000);
