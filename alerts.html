@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- NO CSP - Let everything through -->
+  
   <title>Arcane Alerts | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
 
@@ -63,7 +66,6 @@
     .chart-title {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #e5e7ab;
       margin-bottom: 1rem;
     }
 
@@ -88,11 +90,7 @@
     .session-pill.asia { color: #60a5fa; }
     .session-pill.london { color: #fb923c; }
     .session-pill.ny { color: #22c55e; }
-
-    .session-pill.active {
-      font-weight: 700;
-      box-shadow: 0 0 20px currentColor;
-    }
+    .session-pill.active { font-weight: 700; box-shadow: 0 0 20px currentColor; }
 
     .session-indicator {
       width: 6px;
@@ -178,10 +176,98 @@
     }
 
     .alert-card {
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(139, 92, 246, 0.15);
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(139, 92, 246, 0.3);
       border-radius: 0.75rem;
-      padding: 1rem;
+      padding: 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .alert-card:hover {
+      border-color: rgba(139, 92, 246, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .alert-pair {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #a855f7;
+    }
+
+    .alert-direction {
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .alert-direction.buy {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .alert-direction.sell {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+
+    .alert-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .alert-detail {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .alert-detail-label {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .alert-detail-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .alert-notes {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(168, 85, 247, 0.1);
+      border-left: 3px solid #a855f7;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      color: #d1d5db;
+      font-style: italic;
+    }
+
+    .alert-timestamp {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-align: right;
     }
 
     .loading {
@@ -193,6 +279,7 @@
     @media (max-width: 1200px) {
       .main-layout { grid-template-columns: 1fr; }
       .charts-grid { grid-template-columns: 1fr; }
+      .alert-details { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -232,42 +319,42 @@
           <!-- Gold -->
           <div class="chart-wrapper">
             <div class="chart-label">Gold (XAUUSD)</div>
-            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_1&symbol=OANDA%3AXAUUSD&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=OANDA%3AXAUUSD"></iframe>
+            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_1&symbol=OANDA%3AXAUUSD&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&locale=en"></iframe>
           </div>
 
           <!-- Silver -->
           <div class="chart-wrapper">
             <div class="chart-label">Silver (XAGUSD)</div>
-            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_2&symbol=OANDA%3AXAGUSD&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=OANDA%3AXAGUSD"></iframe>
+            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_2&symbol=OANDA%3AXAGUSD&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&locale=en"></iframe>
           </div>
 
           <!-- DXY -->
           <div class="chart-wrapper">
             <div class="chart-label">US Dollar Index (DXY)</div>
-            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_3&symbol=TVC%3ADXY&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3ADXY"></iframe>
+            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_3&symbol=TVC%3ADXY&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&locale=en"></iframe>
           </div>
 
           <!-- S&P 500 -->
           <div class="chart-wrapper">
             <div class="chart-label">S&P 500 (SPX)</div>
-            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_4&symbol=TVC%3ASPX&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3ASPX"></iframe>
+            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_4&symbol=TVC%3ASPX&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&locale=en"></iframe>
           </div>
 
           <!-- Dow Jones -->
           <div class="chart-wrapper">
             <div class="chart-label">Dow Jones (US30)</div>
-            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_5&symbol=TVC%3ADJI&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3ADJI"></iframe>
+            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_5&symbol=TVC%3ADJI&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&locale=en"></iframe>
           </div>
 
           <!-- Nasdaq -->
           <div class="chart-wrapper">
             <div class="chart-label">Nasdaq (NQ)</div>
-            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart_6&symbol=TVC%3AIXIC&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=&utm_medium=widget&utm_campaign=chart&utm_term=TVC%3AIXIC"></iframe>
+            <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_6&symbol=TVC%3AIXIC&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&locale=en"></iframe>
           </div>
         </div>
       </div>
 
-      <!-- Live Signals Sidebar -->
+      <!-- Live Signals -->
       <div class="trades-sidebar">
         <div class="section-title">
           <span class="live-badge"></span>
@@ -281,7 +368,7 @@
   </div>
 
   <script>
-    // UTC Clock & Session tracking
+    // UTC Clock & Sessions
     (function() {
       const utcTimeEl = document.getElementById('utcTime');
       const sessionPills = {
@@ -300,8 +387,7 @@
 
       function updateSessions() {
         const now = new Date();
-        const hour = now.getUTCHours();
-        const totalMin = (hour * 60) + now.getUTCMinutes();
+        const totalMin = (now.getUTCHours() * 60) + now.getUTCMinutes();
 
         const asia = totalMin >= 0 && totalMin < 180;
         const london = totalMin >= 420 && totalMin < 600;
@@ -319,7 +405,134 @@
     })();
   </script>
 
-  <!-- Load your alerts from Firebase -->
-  <script type="module" src="alerts.js"></script>
+  <!-- Firebase & Alerts Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+      limit
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    console.log('✅ Firebase initialized');
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        console.log('❌ No user logged in, redirecting...');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      console.log('✅ User logged in:', user.email);
+      loadLiveAlerts();
+    });
+
+    function loadLiveAlerts() {
+      const alertsContainer = document.getElementById('alertsContainer');
+      
+      console.log('📡 Loading alerts from Firestore...');
+      
+      const q = query(
+        collection(db, 'alerts_live'),
+        orderBy('createdAt', 'desc'),
+        limit(20)
+      );
+
+      onSnapshot(q, (snapshot) => {
+        console.log('📊 Alerts received:', snapshot.size);
+        
+        if (snapshot.empty) {
+          alertsContainer.innerHTML = '<div class="loading">No active signals right now</div>';
+          return;
+        }
+
+        alertsContainer.innerHTML = '';
+        
+        snapshot.forEach((doc) => {
+          const alert = doc.data();
+          console.log('Alert:', alert);
+          const card = createAlertCard(alert);
+          alertsContainer.appendChild(card);
+        });
+      }, (error) => {
+        console.error('❌ Error loading alerts:', error);
+        alertsContainer.innerHTML = '<div class="loading">Error loading signals</div>';
+      });
+    }
+
+    function createAlertCard(alert) {
+      const div = document.createElement('div');
+      div.className = 'alert-card';
+      
+      const directionClass = alert.direction === 'Buy' ? 'buy' : 'sell';
+      const timestamp = alert.createdAt ? new Date(alert.createdAt.seconds * 1000).toLocaleString() : 'Just now';
+      
+      div.innerHTML = `
+        <div class="alert-header">
+          <div class="alert-pair">${alert.pair || 'N/A'}</div>
+          <div class="alert-direction ${directionClass}">${alert.direction || 'N/A'}</div>
+        </div>
+        
+        <div class="alert-details">
+          <div class="alert-detail">
+            <div class="alert-detail-label">Entry</div>
+            <div class="alert-detail-value">${alert.entry || 'N/A'}</div>
+          </div>
+          
+          <div class="alert-detail">
+            <div class="alert-detail-label">Stop Loss</div>
+            <div class="alert-detail-value">${alert.sl || 'N/A'}</div>
+          </div>
+          
+          ${alert.tp1 ? `
+            <div class="alert-detail">
+              <div class="alert-detail-label">TP1</div>
+              <div class="alert-detail-value">${alert.tp1}</div>
+            </div>
+          ` : ''}
+          
+          ${alert.tp2 ? `
+            <div class="alert-detail">
+              <div class="alert-detail-label">TP2</div>
+              <div class="alert-detail-value">${alert.tp2}</div>
+            </div>
+          ` : ''}
+          
+          ${alert.tp3 ? `
+            <div class="alert-detail">
+              <div class="alert-detail-label">TP3</div>
+              <div class="alert-detail-value">${alert.tp3}</div>
+            </div>
+          ` : ''}
+        </div>
+        
+        ${alert.notes ? `
+          <div class="alert-notes">
+            💡 ${alert.notes}
+          </div>
+        ` : ''}
+        
+        <div class="alert-timestamp">
+          ${timestamp}
+        </div>
+      `;
+      
+      return div;
+    }
+  </script>
 </body>
 </html>
