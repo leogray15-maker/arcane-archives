@@ -159,9 +159,10 @@
             background: rgba(147, 51, 234, 0.1);
             border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 12px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-dim);
             text-align: center;
+            line-height: 1.5;
         }
 
         .back-home {
@@ -190,15 +191,21 @@
         }
 
         .error-message {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: #ef4444;
         }
 
         .success-message {
-            background: rgba(34, 197, 94, 0.1);
+            background: rgba(34, 197, 94, 0.15);
             border: 1px solid rgba(34, 197, 94, 0.3);
             color: #22c55e;
+        }
+
+        .warning-message {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
         }
 
         .resend-btn {
@@ -214,9 +221,29 @@
             transition: all 0.2s;
         }
 
-        .resend-btn:hover {
+        .resend-btn:hover:not(:disabled) {
             background: rgba(147, 51, 234, 0.3);
             transform: translateY(-1px);
+        }
+
+        .resend-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 480px) {
@@ -234,22 +261,35 @@
     <div class="login-container">
         <div class="logo-section">
             <img src="ArcaneA.png" alt="The Arcane Archives">
-            <h1>The Arcane Archives</h1>
-            <p>Welcome back</p>
+            <h1>Welcome Back</h1>
+            <p>Sign in to access The Arcane Archives</p>
         </div>
 
         <div id="errorMessage" class="message error-message"></div>
         <div id="successMessage" class="message success-message"></div>
+        <div id="warningMessage" class="message warning-message"></div>
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="your@email.com" required autocomplete="email">
+                <label for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="your@email.com" 
+                    required
+                    autocomplete="email"
+                >
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="Enter your password" 
+                    required
+                    autocomplete="current-password"
+                >
             </div>
 
             <button type="submit" class="login-btn" id="loginBtn">
@@ -266,7 +306,7 @@
         </div>
 
         <div class="info-box">
-            💡 After purchasing, use your email to login
+            💡 <strong>First time?</strong> Sign up first, then verify your email before logging in
         </div>
 
         <div class="back-home">
@@ -309,12 +349,13 @@
         const loginBtn = document.getElementById("loginBtn");
         const errorMessage = document.getElementById("errorMessage");
         const successMessage = document.getElementById("successMessage");
+        const warningMessage = document.getElementById("warningMessage");
         const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
         // Check if user is already logged in
         onAuthStateChanged(auth, (user) => {
             if (user && user.emailVerified) {
-                console.log("✅ User already logged in:", user.email);
+                console.log("✅ User already logged in and verified:", user.email);
                 window.location.href = "dashboard.html";
             }
         });
@@ -324,18 +365,29 @@
             errorMessage.innerHTML = message;
             errorMessage.style.display = "block";
             successMessage.style.display = "none";
+            warningMessage.style.display = "none";
         }
 
         function showSuccess(message) {
             console.log("✅ LOGIN SUCCESS:", message);
-            successMessage.textContent = message;
+            successMessage.innerHTML = message;
             successMessage.style.display = "block";
             errorMessage.style.display = "none";
+            warningMessage.style.display = "none";
+        }
+
+        function showWarning(message) {
+            console.warn("⚠️ WARNING:", message);
+            warningMessage.innerHTML = message;
+            warningMessage.style.display = "block";
+            errorMessage.style.display = "none";
+            successMessage.style.display = "none";
         }
 
         function hideMessages() {
             errorMessage.style.display = "none";
             successMessage.style.display = "none";
+            warningMessage.style.display = "none";
         }
 
         // Email/Password Login
@@ -351,12 +403,18 @@
             console.log("Login attempt for:", email);
 
             if (!email || !password) {
-                showError("Please enter both email and password");
+                showError("⚠️ Please enter both email and password");
+                return;
+            }
+
+            // Basic email validation
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError("⚠️ Please enter a valid email address");
                 return;
             }
 
             loginBtn.disabled = true;
-            loginBtn.textContent = "Signing in...";
+            loginBtn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
 
             try {
                 console.log("Step 1: Signing in with Firebase Auth...");
@@ -369,11 +427,12 @@
                 // Check if email is verified
                 if (!user.emailVerified) {
                     console.warn("⚠️ Email not verified");
-                    showError(`
-                        ⚠️ Please verify your email before logging in.<br>
-                        Check your inbox (and spam folder) for the verification link.
+                    showWarning(`
+                        <strong>📧 Email Verification Required</strong><br><br>
+                        Please verify your email before logging in.<br>
+                        Check your inbox (and <strong>spam folder</strong>) for the verification link.<br><br>
                         <button class="resend-btn" id="resendVerificationBtn">
-                            Resend Verification Email
+                            📨 Resend Verification Email
                         </button>
                     `);
                     
@@ -383,18 +442,26 @@
                         if (resendBtn) {
                             resendBtn.addEventListener('click', async () => {
                                 resendBtn.disabled = true;
-                                resendBtn.textContent = 'Sending...';
+                                resendBtn.innerHTML = '<span class="loading-spinner"></span>Sending...';
                                 try {
                                     console.log("Resending verification email...");
                                     await sendEmailVerification(user);
                                     console.log("✅ Verification email sent");
-                                    showSuccess("✅ Verification email sent! Check your inbox and spam folder.");
+                                    showSuccess(`
+                                        <strong>✅ Verification Email Sent!</strong><br><br>
+                                        Check your inbox and spam folder for the verification link.<br>
+                                        <small>The email may take a few minutes to arrive.</small>
+                                    `);
                                 } catch (err) {
                                     console.error("Resend error:", err);
-                                    showError("Failed to send verification email. Please try again in a few minutes.");
+                                    let errorMsg = "Failed to send verification email.";
+                                    if (err.code === 'auth/too-many-requests') {
+                                        errorMsg = "Too many requests. Please try again in a few minutes.";
+                                    }
+                                    showError(errorMsg);
+                                    resendBtn.disabled = false;
+                                    resendBtn.textContent = '📨 Resend Verification Email';
                                 }
-                                resendBtn.disabled = false;
-                                resendBtn.textContent = 'Resend Verification Email';
                             });
                         }
                     }, 100);
@@ -421,37 +488,52 @@
                 }
 
                 console.log("=== LOGIN COMPLETE ===");
-                showSuccess("✅ Login successful! Redirecting...");
+                showSuccess(`
+                    <strong>🎉 Login Successful!</strong><br>
+                    Redirecting to your dashboard...
+                `);
                 
                 setTimeout(() => {
                     console.log("Redirecting to dashboard...");
                     window.location.href = "dashboard.html";
-                }, 1000);
+                }, 1500);
 
             } catch (error) {
                 console.error("❌ LOGIN ERROR:", error);
                 console.error("Error code:", error.code);
                 console.error("Error message:", error.message);
 
-                let errorMsg = "Login failed. Please check your credentials.";
+                let errorMsg = "❌ Login failed. Please check your credentials.";
                 
                 if (error.code === 'auth/invalid-email') {
-                    errorMsg = "Invalid email address format";
+                    errorMsg = "❌ Invalid email address format";
                 } else if (error.code === 'auth/user-disabled') {
-                    errorMsg = "This account has been disabled";
+                    errorMsg = "❌ This account has been disabled. Please contact support.";
                 } else if (error.code === 'auth/user-not-found') {
-                    errorMsg = "No account found with this email. Please sign up first.";
+                    errorMsg = "❌ No account found with this email. <a href='signup.html' style='color: #a78bfa; text-decoration: underline;'>Sign up here</a>";
                 } else if (error.code === 'auth/wrong-password') {
-                    errorMsg = "Incorrect password";
+                    errorMsg = "❌ Incorrect password. <a href='#' id='resetPasswordLink' style='color: #a78bfa; text-decoration: underline;'>Reset password?</a>";
                 } else if (error.code === 'auth/invalid-credential') {
-                    errorMsg = "Invalid email or password";
+                    errorMsg = "❌ Invalid email or password. Please try again.";
                 } else if (error.code === 'auth/too-many-requests') {
-                    errorMsg = "Too many failed attempts. Please reset your password or try again later.";
+                    errorMsg = "❌ Too many failed login attempts. Please reset your password or try again later.";
                 } else if (error.code === 'auth/network-request-failed') {
-                    errorMsg = "Network error. Check your internet connection.";
+                    errorMsg = "❌ Network error. Please check your internet connection.";
                 }
 
                 showError(errorMsg);
+                
+                // Add click handler for inline reset password link
+                setTimeout(() => {
+                    const resetLink = document.getElementById('resetPasswordLink');
+                    if (resetLink) {
+                        resetLink.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            forgotPasswordLink.click();
+                        });
+                    }
+                }, 100);
+                
                 loginBtn.disabled = false;
                 loginBtn.textContent = "Login";
             }
@@ -464,7 +546,13 @@
             const email = document.getElementById("email").value.trim();
             
             if (!email) {
-                showError("Please enter your email address first");
+                showWarning("⚠️ Please enter your email address first, then click 'Forgot password?'");
+                document.getElementById("email").focus();
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError("⚠️ Please enter a valid email address");
                 return;
             }
 
@@ -472,15 +560,32 @@
                 console.log("Sending password reset email to:", email);
                 await sendPasswordResetEmail(auth, email);
                 console.log("✅ Password reset email sent");
-                showSuccess("Password reset email sent! Check your inbox.");
+                showSuccess(`
+                    <strong>✅ Password Reset Email Sent!</strong><br><br>
+                    Check your inbox at <strong>${email}</strong><br>
+                    <small>(Don't forget to check spam folder)</small>
+                `);
             } catch (error) {
                 console.error("Password reset error:", error);
                 
+                let errorMsg = "❌ Could not send reset email. Please try again.";
+                
                 if (error.code === 'auth/user-not-found') {
-                    showError("No account found with this email");
-                } else {
-                    showError("Could not send reset email. Please try again.");
+                    errorMsg = "❌ No account found with this email. <a href='signup.html' style='color: #a78bfa; text-decoration: underline;'>Sign up here</a>";
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMsg = "❌ Too many requests. Please try again in a few minutes.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = "❌ Invalid email address";
                 }
+                
+                showError(errorMsg);
+            }
+        });
+
+        // Handle Enter key in password field
+        document.getElementById("password").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                loginForm.dispatchEvent(new Event("submit"));
             }
         });
     </script>
