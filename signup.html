@@ -54,7 +54,7 @@ input, select, button, textarea {
   font-size: 1rem;
 }
 
-/* Fix for date input to show placeholder-like text */
+/* Fix for date input */
 input[type="date"] {
   color: #a3a3a3;
 }
@@ -64,7 +64,6 @@ input[type="date"]:valid {
   color: #e5e5e5;
 }
 
-/* Add label for date of birth */
 .date-label {
   display: block;
   font-size: 0.85rem;
@@ -289,6 +288,8 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+console.log('✅ Firebase initialized');
+
 const form = document.getElementById("form");
 const btn = document.getElementById("btn");
 const error = document.getElementById("error");
@@ -299,15 +300,15 @@ function showError(msg) {
   error.textContent = msg;
   error.style.display = "block";
   success.style.display = "none";
-  // Scroll to error message
   error.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function showSuccess(msg) {
   console.log("✅ SUCCESS:", msg);
-  success.textContent = msg;
+  success.innerHTML = msg;
   success.style.display = "block";
   error.style.display = "none";
+  success.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 form.addEventListener("submit", async (e) => {
@@ -389,7 +390,7 @@ form.addEventListener("submit", async (e) => {
       lastLoginDate: serverTimestamp()
     };
     
-    console.log("Creating Firestore doc with data:", userData);
+    console.log("Creating Firestore doc...");
     await setDoc(doc(db, "Users", cred.user.uid), userData);
     console.log("✅ Firestore document created");
 
@@ -403,20 +404,14 @@ form.addEventListener("submit", async (e) => {
 
     console.log("=== SIGNUP COMPLETE ===");
     
-    // Show prominent spam warning
-    success.innerHTML = `
+    showSuccess(`
       <strong>✅ Account created!</strong><br>
       <br>
       📧 <strong>Check your email to verify your account</strong><br>
       ⚠️ <strong style="color: #fbbf24;">IMPORTANT:</strong> Check your SPAM folder!<br>
       <br>
       <small>The email might take a few minutes to arrive. If you don't see it, check spam or contact us on Telegram.</small>
-    `;
-    success.style.display = "block";
-    error.style.display = "none";
-
-    // Scroll to success message (important for mobile)
-    success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    `);
 
     setTimeout(() => {
       console.log("Redirecting to login...");
@@ -427,7 +422,6 @@ form.addEventListener("submit", async (e) => {
     console.error("❌ SIGNUP ERROR:", err);
     console.error("Error code:", err.code);
     console.error("Error message:", err.message);
-    console.error("Full error:", JSON.stringify(err, null, 2));
     
     let errorMsg = "Failed to create account. Please try again.";
     
@@ -439,9 +433,6 @@ form.addEventListener("submit", async (e) => {
       errorMsg = "Password is too weak. Use at least 8 characters.";
     } else if (err.code === 'auth/network-request-failed') {
       errorMsg = "Network error. Check your internet connection.";
-    } else if (err.message) {
-      // Show actual error message for debugging
-      errorMsg = `Error: ${err.message}`;
     }
     
     showError(errorMsg);

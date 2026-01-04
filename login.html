@@ -296,13 +296,14 @@
             projectId: "arcane-archives-3b0f5",
             storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
             messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
-            measurementId: "G-YGPLQHDXMM"
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        console.log('✅ Firebase initialized');
 
         const loginForm = document.getElementById("loginForm");
         const loginBtn = document.getElementById("loginBtn");
@@ -311,7 +312,7 @@
         const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
         // Check if user is already logged in
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user && user.emailVerified) {
                 console.log("✅ User already logged in:", user.email);
                 window.location.href = "dashboard.html";
@@ -370,7 +371,7 @@
                     console.warn("⚠️ Email not verified");
                     showError(`
                         ⚠️ Please verify your email before logging in.<br>
-                        Check your inbox for the verification link.
+                        Check your inbox (and spam folder) for the verification link.
                         <button class="resend-btn" id="resendVerificationBtn">
                             Resend Verification Email
                         </button>
