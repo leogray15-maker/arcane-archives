@@ -4,8 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <!-- COMPLETE CSP OVERRIDE - Allow TradingView Scripts -->
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; script-src-elem * 'unsafe-inline'; connect-src * wss://*; img-src * data: blob:; frame-src *; style-src * 'unsafe-inline'; font-src *; worker-src * blob:;">
+  <!-- RELAXED CSP - Allows TradingView and Firebase -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self' https: data: blob:;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://www.gstatic.com https://*.firebaseio.com https://*.googleapis.com;
+    script-src-elem 'self' 'unsafe-inline' https://s3.tradingview.com https://www.gstatic.com;
+    connect-src 'self' https: wss: https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com;
+    img-src 'self' https: data: blob:;
+    frame-src 'self' https://s.tradingview.com;
+    style-src 'self' 'unsafe-inline';
+    font-src 'self' data:;
+    worker-src 'self' blob:;
+  ">
   
   <title>Arcane Alerts | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
@@ -51,89 +61,7 @@
     }
     .header p { color: #9ca3af; font-size: clamp(0.9rem, 2vw, 1rem); }
 
-    /* ADMIN FORM */
-    #alertForm {
-      display: none;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      backdrop-filter: blur(20px);
-    }
-    #alertForm.visible { display: block; }
-
-    .form-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #a855f7;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-group label {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      border-radius: 0.5rem;
-      padding: 0.875rem;
-      color: #e5e7eb;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #a855f7;
-      background: rgba(30, 41, 59, 0.8);
-      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 100px;
-      grid-column: 1 / -1;
-    }
-
-    .post-btn {
-      background: linear-gradient(135deg, #a855f7, #ec4899);
-      border: none;
-      border-radius: 0.5rem;
-      padding: 1rem 2rem;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      width: 100%;
-      font-size: 1rem;
-    }
-    .post-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
-    }
-    .post-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* MAIN LAYOUT */
+    /* Main Layout */
     .main-layout {
       display: grid;
       grid-template-columns: 1fr 450px;
@@ -141,7 +69,7 @@
       margin-bottom: 2rem;
     }
 
-    /* CHART SECTION */
+    /* Chart Section */
     .chart-section {
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(139, 92, 246, 0.3);
@@ -171,7 +99,7 @@
       color: #6b7280;
     }
 
-    /* ICT session legend */
+    /* Session Legend */
     .session-legend {
       display: flex;
       flex-wrap: wrap;
@@ -195,54 +123,30 @@
       font-weight: 500;
     }
 
-    .session-pill span {
-      opacity: 0.7;
-      font-size: 0.7rem;
-    }
+    .session-pill span { opacity: 0.7; font-size: 0.7rem; }
 
-    .session-pill.asia {
-      border-color: rgba(59, 130, 246, 0.5);
-      color: #60a5fa;
-    }
+    .session-pill.asia { border-color: rgba(59, 130, 246, 0.5); color: #60a5fa; }
+    .session-pill.london { border-color: rgba(251, 146, 60, 0.5); color: #fb923c; }
+    .session-pill.ny { border-color: rgba(34, 197, 94, 0.5); color: #22c55e; }
 
-    .session-pill.london {
-      border-color: rgba(251, 146, 60, 0.5);
-      color: #fb923c;
-    }
-
-    .session-pill.ny {
-      border-color: rgba(34, 197, 94, 0.5);
-      color: #22c55e;
-    }
-
-    .session-pill.active {
-      transform: scale(1.05);
-      font-weight: 600;
-    }
-
+    .session-pill.active { transform: scale(1.05); font-weight: 600; }
     .session-pill.asia.active {
       background: rgba(59, 130, 246, 0.15);
       border-color: #3b82f6;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
       color: #93c5fd;
     }
-
     .session-pill.london.active {
       background: rgba(251, 146, 60, 0.15);
       border-color: #fb923c;
-      box-shadow: 0 0 20px rgba(251, 146, 60, 0.3), 0 0 0 1px rgba(251, 146, 60, 0.2);
+      box-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
       color: #fdba74;
     }
-
     .session-pill.ny.active {
       background: rgba(34, 197, 94, 0.15);
       border-color: #22c55e;
-      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), 0 0 0 1px rgba(34, 197, 94, 0.2);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
       color: #4ade80;
-    }
-
-    .session-pill.active .session-indicator {
-      animation: pulse-indicator 2s ease-in-out infinite;
     }
 
     .session-indicator {
@@ -252,27 +156,15 @@
       margin-right: 2px;
     }
 
-    .session-pill.asia .session-indicator {
-      background: #60a5fa;
-    }
+    .session-pill.asia .session-indicator { background: #60a5fa; }
+    .session-pill.london .session-indicator { background: #fb923c; }
+    .session-pill.ny .session-indicator { background: #22c55e; }
 
-    .session-pill.london .session-indicator {
-      background: #fb923c;
-    }
-
-    .session-pill.ny .session-indicator {
-      background: #22c55e;
-    }
+    .session-pill.active .session-indicator { animation: pulse-indicator 2s ease-in-out infinite; }
 
     @keyframes pulse-indicator {
-      0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.6;
-        transform: scale(1.3);
-      }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.3); }
     }
 
     .utc-clock {
@@ -287,11 +179,6 @@
       color: #a855f7;
       font-size: 0.85rem;
       margin-left: auto;
-    }
-
-    .utc-clock .clock-icon {
-      width: 14px;
-      height: 14px;
     }
 
     /* Charts Grid */
@@ -345,7 +232,7 @@
       width: 100%;
     }
 
-    /* LIVE TRADES SIDEBAR */
+    /* Live Trades Sidebar */
     .trades-sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
     .live-trades-section {
       background: rgba(15, 23, 42, 0.8);
@@ -361,6 +248,7 @@
       align-items: center;
       margin-bottom: 1.25rem;
     }
+
     .section-title {
       font-size: 1.25rem;
       font-weight: 700;
@@ -377,6 +265,7 @@
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
+
     @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
 
     #alertsContainer {
@@ -387,6 +276,7 @@
       overflow-y: auto;
       padding-right: 0.5rem;
     }
+
     #alertsContainer::-webkit-scrollbar { width: 6px; }
     #alertsContainer::-webkit-scrollbar-track {
       background: rgba(30, 41, 59, 0.3);
@@ -396,11 +286,7 @@
       background: rgba(139, 92, 246, 0.4);
       border-radius: 3px;
     }
-    #alertsContainer::-webkit-scrollbar-thumb:hover {
-      background: rgba(139, 92, 246, 0.6);
-    }
 
-    /* TRADE CARDS */
     .alert-card {
       background: rgba(30, 41, 59, 0.5);
       border: 1px solid rgba(139, 92, 246, 0.15);
@@ -408,262 +294,33 @@
       padding: 1rem;
       transition: all 0.2s;
     }
+
     .alert-card:hover {
       border-color: rgba(139, 92, 246, 0.4);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
-    /* STATS SECTION */
-    .stats-section {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      backdrop-filter: blur(20px);
-      margin-bottom: 2rem;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .stat-card {
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(139, 92, 246, 0.15);
-      border-radius: 0.75rem;
-      padding: 1rem;
+    .loading {
       text-align: center;
-    }
-    .stat-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-    .stat-value { font-size: 1.75rem; font-weight: 700; color: #e5e7eb; }
-    .stat-value.positive { color: #22c55e; }
-    .stat-value.negative { color: #ef4444; }
-
-    /* HISTORY TABLE */
-    .history-section {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      backdrop-filter: blur(20px);
-    }
-
-    .trade-history {
-      overflow-x: auto;
-      margin-top: 1.5rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead tr {
-      border-bottom: 2px solid rgba(139, 92, 246, 0.3);
-    }
-
-    th {
-      padding: 0.75rem;
-      text-align: left;
-      font-size: 0.8rem;
+      padding: 2rem;
       color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-    }
-
-    td {
-      padding: 0.75rem;
-      color: #e5e7eb;
-      font-size: 0.9rem;
-      border-bottom: 1px solid rgba(139, 92, 246, 0.1);
-    }
-
-    tbody tr:hover {
-      background: rgba(139, 92, 246, 0.05);
-    }
-
-    .result-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 0.375rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .result-badge.win {
-      background: rgba(34,197,94,0.15);
-      color: #22c55e;
-      border: 1px solid rgba(34,197,94,0.3);
-    }
-    .result-badge.loss {
-      background: rgba(239,68,68,0.15);
-      color: #ef4444;
-      border: 1px solid rgba(239,68,68,0.3);
-    }
-    .result-badge.be {
-      background: rgba(59,130,246,0.15);
-      color: #3b82f6;
-      border: 1px solid rgba(59,130,246,0.3);
     }
 
     @media (max-width: 1200px) {
-      .main-layout {
-        grid-template-columns: 1fr;
-      }
-      .trades-sidebar {
-        order: -1;
-      }
-      .charts-grid {
-        grid-template-columns: 1fr;
-      }
+      .main-layout { grid-template-columns: 1fr; }
+      .trades-sidebar { order: -1; }
+      .charts-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="courses.html" class="back-btn">
-      ← Back to Platform
-    </a>
+    <a href="courses.html" class="back-btn">← Back to Platform</a>
 
     <div class="header">
       <h1>Arcane Alerts</h1>
-      <p>Live institutional-grade trade ideas, performance tracking and real-time market analysis.</p>
-    </div>
-
-    <!-- Admin Form (Only visible to admins) -->
-    <div id="alertForm">
-      <div class="form-title">📡 Post New Trade Signal</div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Pair</label>
-          <select id="pairInput">
-            <option value="XAUUSD">XAUUSD (Gold)</option>
-            <option value="XAGUSD">XAGUSD (Silver)</option>
-            <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-            <option value="US30">US30 (Dow Jones)</option>
-            <option value="SPX500">SPX500 (S&P 500)</option>
-            <option value="JP225">JP225 (Nikkei)</option>
-            <option value="GER30">GER30 (DAX)</option>
-            <option value="GBPUSD">GBPUSD</option>
-            <option value="EURUSD">EURUSD</option>
-            <option value="USDJPY">USDJPY</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Direction</label>
-          <select id="directionSelect">
-            <option value="Buy">Buy</option>
-            <option value="Sell">Sell</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Entry</label>
-          <input type="text" id="entryInput" placeholder="2650.00" />
-        </div>
-
-        <div class="form-group">
-          <label>Stop Loss</label>
-          <input type="text" id="slInput" placeholder="2640.00" />
-        </div>
-
-        <div class="form-group">
-          <label>TP1 (Optional)</label>
-          <input type="text" id="tp1Input" placeholder="2660.00" />
-        </div>
-
-        <div class="form-group">
-          <label>TP2 (Optional)</label>
-          <input type="text" id="tp2Input" placeholder="2670.00" />
-        </div>
-
-        <div class="form-group">
-          <label>TP3 (Optional)</label>
-          <input type="text" id="tp3Input" placeholder="2680.00" />
-        </div>
-
-        <div class="form-group" style="grid-column: 1 / -1;">
-          <label>Notes (Optional)</label>
-          <textarea id="notesInput" placeholder="Setup details, confluence, etc."></textarea>
-        </div>
-      </div>
-
-      <button class="post-btn" id="postAlertBtn">Post Trade Signal</button>
-    </div>
-
-    <!-- Manual History Entry Form (Admin Only) -->
-    <div id="manualHistoryForm" style="display:none;">
-      <div class="form-title">📝 Add Closed Trade to History</div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="manualDate" />
-        </div>
-
-        <div class="form-group">
-          <label>Pair</label>
-          <select id="manualPair">
-            <option value="XAUUSD">XAUUSD (Gold)</option>
-            <option value="XAGUSD">XAGUSD (Silver)</option>
-            <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-            <option value="US30">US30 (Dow Jones)</option>
-            <option value="SPX500">SPX500 (S&P 500)</option>
-            <option value="JP225">JP225 (Nikkei)</option>
-            <option value="GER30">GER30 (DAX)</option>
-            <option value="GBPUSD">GBPUSD</option>
-            <option value="EURUSD">EURUSD</option>
-            <option value="USDJPY">USDJPY</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Direction</label>
-          <select id="manualDirection">
-            <option value="Buy">Buy</option>
-            <option value="Sell">Sell</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Entry</label>
-          <input type="text" id="manualEntry" placeholder="2650.00" />
-        </div>
-
-        <div class="form-group">
-          <label>Exit</label>
-          <input type="text" id="manualExit" placeholder="2660.00" />
-        </div>
-
-        <div class="form-group">
-          <label>Result</label>
-          <select id="manualResult">
-            <option value="WIN">WIN</option>
-            <option value="LOSS">LOSS</option>
-            <option value="BE">BREAK EVEN</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Pips (Optional)</label>
-          <input type="text" id="manualPips" placeholder="+100 pips" />
-        </div>
-
-        <div class="form-group" style="grid-column: 1 / -1;">
-          <label>Notes (Optional)</label>
-          <textarea id="manualNotes" placeholder="Trade notes..."></textarea>
-        </div>
-      </div>
-
-      <button class="post-btn" id="addManualHistoryBtn">Add to History</button>
+      <p>Live institutional-grade trade ideas and real-time market analysis</p>
     </div>
 
     <!-- Main Layout: Charts + Live Trades -->
@@ -672,12 +329,8 @@
       <div class="chart-section">
         <div class="chart-header">
           <div>
-            <div class="chart-title">
-              📊 Live Market Charts
-            </div>
-            <div class="chart-subtitle">
-              Real-time: Gold • Silver • USD • S&P 500 • Dow Jones • Nasdaq
-            </div>
+            <div class="chart-title">📊 Live Market Charts</div>
+            <div class="chart-subtitle">Real-time: Gold • Silver • USD • S&P 500 • Dow Jones • Nasdaq</div>
           </div>
         </div>
 
@@ -696,7 +349,7 @@
             New York Killzone <span>12:00 – 15:00 UTC</span>
           </div>
           <div class="utc-clock">
-            <svg class="clock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <span id="utcTime">--:--:-- UTC</span>
@@ -711,8 +364,8 @@
               <span class="chart-label-icon"></span>
               Gold (XAUUSD)
             </div>
-            <div class="tradingview-widget-container" style="height:400px;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
               {
                 "autosize": true,
@@ -738,8 +391,8 @@
               <span class="chart-label-icon"></span>
               Silver (XAGUSD)
             </div>
-            <div class="tradingview-widget-container" style="height:400px;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
               {
                 "autosize": true,
@@ -765,8 +418,8 @@
               <span class="chart-label-icon"></span>
               US Dollar Index (DXY)
             </div>
-            <div class="tradingview-widget-container" style="height:400px;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
               {
                 "autosize": true,
@@ -792,8 +445,8 @@
               <span class="chart-label-icon"></span>
               S&P 500 (SPX)
             </div>
-            <div class="tradingview-widget-container" style="height:400px;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
               {
                 "autosize": true,
@@ -813,14 +466,14 @@
             </div>
           </div>
 
-          <!-- Dow Jones (US30) -->
+          <!-- Dow Jones -->
           <div class="chart-wrapper">
             <div class="chart-label">
               <span class="chart-label-icon"></span>
               Dow Jones (US30)
             </div>
-            <div class="tradingview-widget-container" style="height:400px;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
               {
                 "autosize": true,
@@ -840,14 +493,14 @@
             </div>
           </div>
 
-          <!-- Nasdaq (NQ) -->
+          <!-- Nasdaq -->
           <div class="chart-wrapper">
             <div class="chart-label">
               <span class="chart-label-icon"></span>
               Nasdaq (NQ)
             </div>
-            <div class="tradingview-widget-container" style="height:400px;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
               {
                 "autosize": true,
@@ -880,72 +533,9 @@
           </div>
 
           <div id="alertsContainer">
-            <div class="alert-card">
-              <div style="text-align:center; color:#9ca3af; padding: 1rem;">
-                Loading live signals...
-              </div>
-            </div>
+            <div class="loading">Loading live signals...</div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Performance Stats -->
-    <div class="stats-section">
-      <div class="section-header">
-        <div class="section-title">📊 Performance Stats</div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Wins</div>
-          <div class="stat-value positive" id="winsCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Losses</div>
-          <div class="stat-value negative" id="lossesCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Break Even</div>
-          <div class="stat-value" id="beCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value" id="winRate">0%</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Net Pips</div>
-          <div class="stat-value" id="netPips">0</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Trade History Table -->
-    <div class="history-section">
-      <div class="section-header">
-        <div class="section-title">📜 Trade History</div>
-      </div>
-
-      <div class="trade-history">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Pair</th>
-              <th>Direction</th>
-              <th>Entry</th>
-              <th>Exit</th>
-              <th>Result</th>
-              <th>Pips</th>
-            </tr>
-          </thead>
-          <tbody id="historyTableBody">
-            <tr>
-              <td colspan="7" style="text-align: center; color: #9ca3af; padding: 2rem;">
-                No closed trades yet. Mark live signals as WIN/LOSS/BE to track performance.
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
@@ -986,7 +576,6 @@
           }
         }
 
-        // Killzone times in total minutes from midnight UTC
         const asiaActive = totalMinutes >= 0 && totalMinutes < 180;
         const londonActive = totalMinutes >= 420 && totalMinutes < 600;
         const nyActive = totalMinutes >= 720 && totalMinutes < 900;
@@ -996,19 +585,15 @@
         setActive(sessionPills.ny, nyActive);
       }
 
-      // Initialize
       updateSessionLegend();
       updateUTCClock();
       
-      // Update session legend every minute
       setInterval(updateSessionLegend, 60 * 1000);
-      
-      // Update UTC clock every second
       setInterval(updateUTCClock, 1000);
     })();
   </script>
 
-  <!-- Alerts logic -->
+  <!-- Load alerts from your alerts.js file -->
   <script type="module" src="alerts.js"></script>
 </body>
 </html>
