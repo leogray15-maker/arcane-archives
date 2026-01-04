@@ -201,9 +201,6 @@ a:hover {
   <h1>Join The Arcane Archives</h1>
   <p>Create your account to get started</p>
 
-  <div id="error" class="msg error"></div>
-  <div id="success" class="msg success"></div>
-
   <form id="form">
     <div class="section-title">Personal Information</div>
     
@@ -261,6 +258,9 @@ a:hover {
 
     <button id="btn">Create Account</button>
   </form>
+
+  <div id="error" class="msg error"></div>
+  <div id="success" class="msg success"></div>
 
   <div class="small">
     Already have an account? <a href="login.html">Log in</a>
@@ -402,12 +402,26 @@ form.addEventListener("submit", async (e) => {
     console.log("✅ User signed out");
 
     console.log("=== SIGNUP COMPLETE ===");
-    showSuccess("✅ Account created! Please check your email to verify your account. Check your spam folder if you don't see it.");
+    
+    // Show prominent spam warning
+    success.innerHTML = `
+      <strong>✅ Account created!</strong><br>
+      <br>
+      📧 <strong>Check your email to verify your account</strong><br>
+      ⚠️ <strong style="color: #fbbf24;">IMPORTANT:</strong> Check your SPAM folder!<br>
+      <br>
+      <small>The email might take a few minutes to arrive. If you don't see it, check spam or contact us on Telegram.</small>
+    `;
+    success.style.display = "block";
+    error.style.display = "none";
+
+    // Scroll to success message (important for mobile)
+    success.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     setTimeout(() => {
       console.log("Redirecting to login...");
       window.location.href = "login.html";
-    }, 4000);
+    }, 5000);
 
   } catch (err) {
     console.error("❌ SIGNUP ERROR:", err);
