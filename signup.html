@@ -54,6 +54,25 @@ input, select, button, textarea {
   font-size: 1rem;
 }
 
+/* Fix for date input to show placeholder-like text */
+input[type="date"] {
+  color: #a3a3a3;
+}
+
+input[type="date"]:focus,
+input[type="date"]:valid {
+  color: #e5e5e5;
+}
+
+/* Add label for date of birth */
+.date-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #a3a3a3;
+  margin-top: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
 textarea {
   resize: vertical;
   min-height: 80px;
@@ -96,6 +115,7 @@ button:disabled {
   border-radius: 12px;
   display: none;
   text-align: center;
+  line-height: 1.6;
 }
 
 .error { 
@@ -195,7 +215,10 @@ a:hover {
     <input id="username" placeholder="Username" required>
     <input id="email" type="email" placeholder="Email address" required>
     <input id="phone" type="tel" placeholder="Phone number" required>
-    <input id="dob" type="date" placeholder="Date of Birth" required>
+    
+    <label class="date-label">Date of Birth</label>
+    <input id="dob" type="date" required>
+    
     <input id="password" type="password" placeholder="Password (min 8 chars)" required minlength="8">
 
     <div class="section-title">Address</div>
@@ -272,12 +295,16 @@ const error = document.getElementById("error");
 const success = document.getElementById("success");
 
 function showError(msg) {
+  console.error("❌ ERROR:", msg);
   error.textContent = msg;
   error.style.display = "block";
   success.style.display = "none";
+  // Scroll to error message
+  error.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function showSuccess(msg) {
+  console.log("✅ SUCCESS:", msg);
   success.textContent = msg;
   success.style.display = "block";
   error.style.display = "none";
@@ -287,6 +314,8 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   error.style.display = "none";
   success.style.display = "none";
+
+  console.log("=== STARTING SIGNUP PROCESS ===");
 
   const first = document.getElementById("first").value.trim();
   const last = document.getElementById("last").value.trim();
@@ -303,6 +332,8 @@ form.addEventListener("submit", async (e) => {
   const country = document.getElementById("country").value;
   const terms = document.getElementById("terms").checked;
   const newsletter = document.getElementById("newsletter").checked;
+
+  console.log("Form values:", { email, username, first, last, dob, country });
 
   if (!first || !last || !username || !email || !phone || !dob || !pass || !address1 || !city || !state || !postal || !country) {
     showError("Please fill in all required fields");
@@ -323,19 +354,18 @@ form.addEventListener("submit", async (e) => {
   btn.textContent = "Creating account...";
 
   try {
-    console.log("Creating Firebase Auth user...");
+    console.log("Step 1: Creating Firebase Auth user...");
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    console.log("✅ Auth user created:", cred.user.uid);
     
-    console.log("Updating profile...");
+    console.log("Step 2: Updating profile...");
     await updateProfile(cred.user, { 
       displayName: username 
     });
+    console.log("✅ Profile updated");
 
-    console.log("Sending verification email...");
-    await sendEmailVerification(cred.user);
-
-    console.log("Creating Firestore document...");
-    await setDoc(doc(db, "Users", cred.user.uid), {
+    console.log("Step 3: Creating Firestore document...");
+    const userData = {
       Username: username,
       FirstName: first,
       LastName: last,
@@ -357,20 +387,33 @@ form.addEventListener("submit", async (e) => {
       emailVerified: false,
       joinedAt: serverTimestamp(),
       lastLoginDate: serverTimestamp()
-    });
+    };
+    
+    console.log("Creating Firestore doc with data:", userData);
+    await setDoc(doc(db, "Users", cred.user.uid), userData);
+    console.log("✅ Firestore document created");
 
-    console.log("✅ Account created successfully");
+    console.log("Step 4: Sending verification email...");
+    await sendEmailVerification(cred.user);
+    console.log("✅ Verification email sent");
+
+    console.log("Step 5: Signing out user...");
+    await auth.signOut();
+    console.log("✅ User signed out");
+
+    console.log("=== SIGNUP COMPLETE ===");
     showSuccess("✅ Account created! Please check your email to verify your account. Check your spam folder if you don't see it.");
 
-    // Sign out the user so they must verify before logging in
-    await auth.signOut();
-
     setTimeout(() => {
+      console.log("Redirecting to login...");
       window.location.href = "login.html";
     }, 4000);
 
   } catch (err) {
-    console.error("Signup error:", err);
+    console.error("❌ SIGNUP ERROR:", err);
+    console.error("Error code:", err.code);
+    console.error("Error message:", err.message);
+    console.error("Full error:", JSON.stringify(err, null, 2));
     
     let errorMsg = "Failed to create account. Please try again.";
     
@@ -380,6 +423,11 @@ form.addEventListener("submit", async (e) => {
       errorMsg = "Invalid email address format";
     } else if (err.code === 'auth/weak-password') {
       errorMsg = "Password is too weak. Use at least 8 characters.";
+    } else if (err.code === 'auth/network-request-failed') {
+      errorMsg = "Network error. Check your internet connection.";
+    } else if (err.message) {
+      // Show actual error message for debugging
+      errorMsg = `Error: ${err.message}`;
     }
     
     showError(errorMsg);
