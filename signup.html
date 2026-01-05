@@ -1,216 +1,654 @@
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-    import { 
-        getAuth, 
-        createUserWithEmailAndPassword, 
-        updateProfile 
-    } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-    import { 
-        getFirestore, 
-        doc, 
-        setDoc, 
-        serverTimestamp,
-        query,
-        collection,
-        where,
-        getDocs
-    } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-        projectId: "arcane-archives-3b0f5",
-        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-        messagingSenderId: "264237235055",
-        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Check for referral code in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const referralCode = urlParams.get('ref');
-
-    if (referralCode) {
-        // Store in sessionStorage
-        sessionStorage.setItem('referralCode', referralCode);
-        
-        // Display referral info
-        const referralInfo = document.createElement('div');
-        referralInfo.className = 'referral-banner';
-        referralInfo.innerHTML = `
-            <div class="referral-content">
-                <span class="referral-icon">🎯</span>
-                <div>
-                    <strong>Referred by: ${referralCode}</strong>
-                    <p>Sign up now to join their community</p>
-                </div>
-            </div>
-        `;
-        document.querySelector('.signup-container').prepend(referralInfo);
-    }
-
-    const form = document.getElementById('signupForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const statusMsg = document.getElementById('statusMsg');
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const username = document.getElementById('username').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const termsAccepted = document.getElementById('terms').checked;
-
-        // Validation
-        if (!username || !email || !password || !confirmPassword) {
-            statusMsg.textContent = '❌ Please fill in all fields';
-            statusMsg.style.color = '#ef4444';
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            statusMsg.textContent = '❌ Passwords do not match';
-            statusMsg.style.color = '#ef4444';
-            return;
-        }
-
-        if (password.length < 6) {
-            statusMsg.textContent = '❌ Password must be at least 6 characters';
-            statusMsg.style.color = '#ef4444';
-            return;
-        }
-
-        if (!termsAccepted) {
-            statusMsg.textContent = '❌ Please accept the Terms of Service';
-            statusMsg.style.color = '#ef4444';
-            return;
-        }
-
-        // Disable button
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating account...';
-        statusMsg.textContent = '⏳ Creating your account...';
-        statusMsg.style.color = '#fbbf24';
-
-        try {
-            // Create auth account
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // Update display name
-            await updateProfile(user, { displayName: username });
-
-            // Generate default referral code
-            const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
-
-            // Get referral code from session (if referred)
-            const referredByCode = sessionStorage.getItem('referralCode');
-            let referredBy = null;
-
-            // Validate referral code
-            if (referredByCode) {
-                const referrerQuery = query(
-                    collection(db, 'Users'),
-                    where('referralCode', '==', referredByCode.toUpperCase())
-                );
-                const referrerSnapshot = await getDocs(referrerQuery);
-                
-                if (!referrerSnapshot.empty) {
-                    referredBy = referredByCode.toUpperCase();
-                }
-            }
-
-            // Create Firestore user profile
-            const userData = {
-                Username: username,
-                Email: email,
-                referralCode: defaultReferralCode,
-                subscriptionStatus: "none",
-                isPaid: false,
-                stripeCustomerId: null,
-                joinedAt: serverTimestamp(),
-                lastLoginDate: serverTimestamp()
-            };
-
-            // Add referral info if valid
-            if (referredBy) {
-                userData.referredBy = referredBy;
-                userData.referredAt = serverTimestamp();
-            }
-
-            await setDoc(doc(db, 'Users', user.uid), userData);
-
-            // Clear referral code from session
-            sessionStorage.removeItem('referralCode');
-
-            // Success
-            statusMsg.textContent = '✅ Account created successfully!';
-            statusMsg.style.color = '#22c55e';
-
-            // Redirect to payment
-            setTimeout(() => {
-                window.location.href = 'payment.html';
-            }, 1500);
-
-        } catch (error) {
-            console.error('Signup error:', error);
-            
-            let errorMsg = '❌ ';
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    errorMsg += 'This email is already registered';
-                    break;
-                case 'auth/invalid-email':
-                    errorMsg += 'Invalid email address';
-                    break;
-                case 'auth/weak-password':
-                    errorMsg += 'Password is too weak';
-                    break;
-                default:
-                    errorMsg += 'Signup failed: ' + error.message;
-            }
-            
-            statusMsg.textContent = errorMsg;
-            statusMsg.style.color = '#ef4444';
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Create Account';
-        }
-    });
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Sign Up | The Arcane Archives</title>
+<link rel="icon" href="ArcaneA.png">
 
 <style>
-.referral-banner {
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(76, 29, 149, 0.2));
-    border: 1px solid rgba(147, 51, 234, 0.4);
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.referral-content {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
+  color: #e5e5e5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.container {
+  width: 100%;
+  max-width: 520px;
+  padding: 1.5rem;
+}
+
+.referral-banner {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(76, 29, 149, 0.2));
+  border: 1px solid rgba(147, 51, 234, 0.4);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .referral-icon {
-    font-size: 2rem;
+  font-size: 2rem;
+}
+
+.referral-content {
+  flex: 1;
 }
 
 .referral-content strong {
-    display: block;
-    color: var(--purple-light);
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
+  display: block;
+  color: #a78bfa;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
 }
 
 .referral-content p {
-    color: var(--text-dim);
-    font-size: 0.85rem;
-    margin: 0;
+  color: #a3a3a3;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: left;
+}
+
+.box {
+  width: 100%;
+  background: rgba(15,23,42,.96);
+  border-radius: 22px;
+  border: 1px solid rgba(148,163,184,.4);
+  padding: 2.5rem;
+  box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #a78bfa, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+p {
+  text-align: center;
+  color: #a3a3a3;
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: #a3a3a3;
+  margin-top: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+input, select, button, textarea {
+  width: 100%;
+  padding: .9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148,163,184,.4);
+  background: rgba(15,23,42,.95);
+  color: #e5e5e5;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+input[type="date"] {
+  color: #a3a3a3;
+}
+
+input[type="date"]:focus,
+input[type="date"]:valid {
+  color: #e5e5e5;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #9333ea;
+  box-shadow: 0 0 0 3px rgba(147,51,234,0.2);
+}
+
+button {
+  margin-top: 1.2rem;
+  background: linear-gradient(135deg,#9333ea,#7e22ce);
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(147,51,234,.4);
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.progress {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(10,10,10,.8);
+  border-radius: 12px;
+  display: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem 0;
+  color: #a3a3a3;
+}
+
+.step.active {
+  color: #a78bfa;
+}
+
+.step.done {
+  color: #22c55e;
+}
+
+.success {
+  background: rgba(34,197,94,.1);
+  border: 1px solid rgba(34,197,94,.3);
+  color: #22c55e;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  display: none;
+  margin-top: 1rem;
+}
+
+.error {
+  background: rgba(239,68,68,.1);
+  border: 1px solid rgba(239,68,68,.3);
+  color: #ef4444;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  display: none;
+  margin-top: 1rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-top: 0.2rem;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  margin: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #a3a3a3;
+}
+
+.login-link a {
+  color: #a78bfa;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .box {
+    padding: 2rem 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
 }
 </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="referralBanner"></div>
+
+  <div class="box">
+    <h1>Create Your Account</h1>
+    <p>Join The Arcane Archives</p>
+
+    <form id="signupForm">
+      <label>Username *</label>
+      <input type="text" id="username" required placeholder="Choose a username">
+
+      <label>First Name *</label>
+      <input type="text" id="firstName" required placeholder="Your first name">
+
+      <label>Last Name *</label>
+      <input type="text" id="lastName" required placeholder="Your last name">
+
+      <label>Email *</label>
+      <input type="email" id="email" required placeholder="your@email.com">
+
+      <label>Phone Number</label>
+      <input type="tel" id="phone" placeholder="+44 7700 900000">
+
+      <label>Date of Birth *</label>
+      <input type="date" id="dob" required>
+
+      <label>Address Line 1 *</label>
+      <input type="text" id="address1" required placeholder="Street address">
+
+      <label>Address Line 2</label>
+      <input type="text" id="address2" placeholder="Apartment, suite, etc. (optional)">
+
+      <label>City *</label>
+      <input type="text" id="city" required placeholder="City">
+
+      <label>State/County *</label>
+      <input type="text" id="state" required placeholder="State or County">
+
+      <label>Postal Code *</label>
+      <input type="text" id="postal" required placeholder="Postcode">
+
+      <label>Country *</label>
+      <select id="country" required>
+        <option value="">Select your country</option>
+        <option value="GB">United Kingdom</option>
+        <option value="US">United States</option>
+        <option value="CA">Canada</option>
+        <option value="AU">Australia</option>
+        <option value="DE">Germany</option>
+        <option value="FR">France</option>
+        <option value="ES">Spain</option>
+        <option value="IT">Italy</option>
+        <option value="NL">Netherlands</option>
+        <option value="IE">Ireland</option>
+        <option value="OTHER">Other</option>
+      </select>
+
+      <label>Password *</label>
+      <input type="password" id="password" required placeholder="Create a strong password">
+
+      <label>Confirm Password *</label>
+      <input type="password" id="confirmPassword" required placeholder="Confirm your password">
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="newsletter">
+        <label for="newsletter">I want to receive updates and newsletters</label>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="terms" required>
+        <label for="terms">I agree to the <a href="terms-of-service.html" target="_blank" style="color: #a78bfa;">Terms of Service</a> *</label>
+      </div>
+
+      <button type="submit" id="submitBtn">Create Account</button>
+    </form>
+
+    <div class="progress" id="progressBox">
+      <div class="step" id="step1">⏳ Creating account...</div>
+      <div class="step" id="step2">⏳ Setting up profile...</div>
+      <div class="step" id="step3">⏳ Saving your data...</div>
+      <div class="step" id="step4">⏳ Sending verification email...</div>
+      <div class="step" id="step5">⏳ Finishing up...</div>
+    </div>
+
+    <div class="success" id="successBox"></div>
+    <div class="error" id="errorBox"></div>
+
+    <div class="login-link">
+      Already have an account? <a href="login.html">Log in</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword,
+  updateProfile,
+  sendEmailVerification
+} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+import { 
+  getFirestore, 
+  doc, 
+  setDoc,
+  serverTimestamp,
+  query,
+  collection,
+  where,
+  getDocs,
+  updateDoc,
+  increment,
+  getDoc
+} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+  projectId: "arcane-archives-3b0f5",
+  storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+  messagingSenderId: "264237235055",
+  appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Check for referral code in URL
+const urlParams = new URLSearchParams(window.location.search);
+const referralCode = urlParams.get('ref');
+
+if (referralCode) {
+  sessionStorage.setItem('referralCode', referralCode);
+  
+  const banner = document.getElementById('referralBanner');
+  banner.innerHTML = `
+    <div class="referral-banner">
+      <span class="referral-icon">🎯</span>
+      <div class="referral-content">
+        <strong>Referred by: ${referralCode}</strong>
+        <p>Sign up now to join their community</p>
+      </div>
+    </div>
+  `;
+}
+
+function showProgress(stepNum) {
+  document.getElementById('progressBox').style.display = 'block';
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById(`step${i}`);
+    if (i < stepNum) {
+      el.classList.add('done');
+      el.classList.remove('active');
+      el.innerHTML = el.innerHTML.replace('⏳', '✅');
+    } else if (i === stepNum) {
+      el.classList.add('active');
+      el.classList.remove('done');
+    } else {
+      el.classList.remove('active', 'done');
+    }
+  }
+}
+
+function showSuccess(msg) {
+  const box = document.getElementById('successBox');
+  box.innerHTML = msg;
+  box.style.display = 'block';
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.innerHTML = msg;
+  box.style.display = 'block';
+  document.getElementById('successBox').style.display = 'none';
+  document.getElementById('progressBox').style.display = 'none';
+}
+
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById('username').value.trim();
+  const first = document.getElementById('firstName').value.trim();
+  const last = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const dob = document.getElementById('dob').value;
+  const address1 = document.getElementById('address1').value.trim();
+  const address2 = document.getElementById('address2').value.trim();
+  const city = document.getElementById('city').value.trim();
+  const state = document.getElementById('state').value.trim();
+  const postal = document.getElementById('postal').value.trim();
+  const country = document.getElementById('country').value;
+  const pass = document.getElementById('password').value;
+  const confirmPass = document.getElementById('confirmPassword').value;
+  const newsletter = document.getElementById('newsletter').checked;
+  const terms = document.getElementById('terms').checked;
+
+  const btn = document.getElementById('submitBtn');
+
+  // Validation
+  if (!username || !first || !last || !email || !dob || !address1 || !city || !state || !postal || !country || !pass || !confirmPass) {
+    showError('❌ Please fill in all required fields');
+    return;
+  }
+
+  if (pass !== confirmPass) {
+    showError('❌ Passwords do not match');
+    return;
+  }
+
+  if (pass.length < 8) {
+    showError('❌ Password must be at least 8 characters');
+    return;
+  }
+
+  if (!terms) {
+    showError('❌ You must agree to the Terms of Service');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    // Step 1: Create auth account
+    showProgress(1);
+    console.log("Step 1: Creating Firebase Auth account");
+    
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const user = cred.user;
+    
+    console.log("✅ Auth user created:", user.uid);
+    
+    // Step 2: Update profile
+    showProgress(2);
+    console.log("Step 2: Updating profile");
+    
+    await updateProfile(user, { 
+      displayName: username 
+    });
+    
+    console.log("✅ Profile updated");
+
+    // Step 3: Create Firestore document
+    showProgress(3);
+    console.log("Step 3: Creating Firestore document");
+    
+    // Generate default referral code
+    const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
+
+    // Get referral code from session
+    const referredByCode = sessionStorage.getItem('referralCode');
+    let referredBy = null;
+
+    // Validate referral code
+    if (referredByCode) {
+      const referrerQuery = query(
+        collection(db, 'Users'),
+        where('referralCode', '==', referredByCode.toUpperCase())
+      );
+      const referrerSnapshot = await getDocs(referrerQuery);
+      
+      if (!referrerSnapshot.empty) {
+        referredBy = referredByCode.toUpperCase();
+        console.log("✅ Valid referral code:", referredBy);
+      } else {
+        console.log("⚠️ Invalid referral code:", referredByCode);
+      }
+    }
+    
+    const userData = {
+      Username: username,
+      FirstName: first,
+      LastName: last,
+      Email: email,
+      Phone: phone,
+      DateOfBirth: dob,
+      Address: {
+        line1: address1,
+        line2: address2 || "",
+        city: city,
+        state: state,
+        postal: postal,
+        country: country
+      },
+      Country: country,
+      NewsletterOptIn: newsletter,
+      referralCode: defaultReferralCode,
+      isPaid: false,
+      subscriptionStatus: "none",
+      emailVerified: false,
+      joinedAt: serverTimestamp(),
+      lastLoginDate: serverTimestamp()
+    };
+
+    // Add referral info if valid
+    if (referredBy) {
+      userData.referredBy = referredBy;
+      userData.referredAt = serverTimestamp();
+    }
+    
+    await setDoc(doc(db, "Users", user.uid), userData);
+    console.log("✅ Firestore document created");
+
+    // Update referrer stats if referred
+    if (referredBy) {
+      try {
+        const referrerQuery = query(
+          collection(db, 'Users'),
+          where('referralCode', '==', referredBy)
+        );
+        const referrerSnapshot = await getDocs(referrerQuery);
+        
+        if (!referrerSnapshot.empty) {
+          const referrerId = referrerSnapshot.docs[0].id;
+          
+          // Update or create Affiliates document
+          const affiliateRef = doc(db, 'Affiliates', referrerId);
+          const affiliateDoc = await getDoc(affiliateRef);
+          
+          if (affiliateDoc.exists()) {
+            await updateDoc(affiliateRef, {
+              totalReferrals: increment(1),
+              lastUpdated: serverTimestamp()
+            });
+          } else {
+            await setDoc(affiliateRef, {
+              userId: referrerId,
+              referralCode: referredBy,
+              availableBalance: 0,
+              pendingBalance: 0,
+              totalEarnings: 0,
+              totalWithdrawn: 0,
+              activeReferrals: 0,
+              totalReferrals: 1,
+              createdAt: serverTimestamp(),
+              lastUpdated: serverTimestamp()
+            });
+          }
+          console.log("✅ Updated referrer stats");
+        }
+      } catch (error) {
+        console.error("Error updating referrer stats:", error);
+      }
+    }
+
+    // Clear referral code from session
+    sessionStorage.removeItem('referralCode');
+
+    // Step 4: Send verification email
+    showProgress(4);
+    console.log("Step 4: Sending verification email");
+    
+    await sendEmailVerification(user);
+    console.log("✅ Verification email sent");
+
+    // Step 5: Sign out user
+    console.log("Step 5: Signing out user");
+    await auth.signOut();
+    console.log("✅ User signed out");
+
+    showProgress(5);
+    console.log("=== SIGNUP COMPLETE ===");
+    
+    showSuccess(`
+      <strong>🎉 Account created successfully!</strong><br><br>
+      <strong>📧 IMPORTANT: Verify your email to login</strong><br>
+      We've sent a verification link to <strong>${email}</strong><br><br>
+      ⚠️ <strong style="color: #fbbf24;">Check your SPAM folder if you don't see it!</strong><br><br>
+      <small style="color: #a3a3a3;">Redirecting to login page in 5 seconds...</small>
+    `);
+
+    setTimeout(() => {
+      console.log("Redirecting to login");
+      window.location.href = "login.html";
+    }, 5000);
+
+  } catch (err) {
+    console.error("❌ SIGNUP ERROR:", err);
+    
+    let errorMsg = "❌ Failed to create account. Please try again.";
+    
+    if (err.code === 'auth/email-already-in-use') {
+      errorMsg = "❌ This email is already registered. <a href='login.html' style='color: #a78bfa; text-decoration: underline;'>Log in instead</a>";
+    } else if (err.code === 'auth/invalid-email') {
+      errorMsg = "❌ Invalid email address format";
+    } else if (err.code === 'auth/weak-password') {
+      errorMsg = "❌ Password is too weak. Use at least 8 characters.";
+    } else if (err.code === 'auth/network-request-failed') {
+      errorMsg = "❌ Network error. Please check your connection.";
+    }
+    
+    showError(errorMsg);
+    btn.disabled = false;
+    btn.textContent = "Create Account";
+  }
+});
+</script>
+
+</body>
+</html>
