@@ -1,603 +1,216 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up | The Arcane Archives</title>
-<link rel="icon" href="ArcaneA.png">
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
-  color: #e5e5e5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 1.5rem;
-}
-
-.box {
-  width: 100%;
-  max-width: 520px;
-  background: rgba(15,23,42,.96);
-  border-radius: 22px;
-  border: 1px solid rgba(148,163,184,.4);
-  padding: 2.5rem;
-  box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
-}
-
-h1 {
-  margin-top: 0;
-  text-align: center;
-  font-size: 1.8rem;
-  background: linear-gradient(135deg, #a78bfa, #fbbf24);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-p {
-  text-align: center;
-  color: #a3a3a3;
-  margin-bottom: 1.5rem;
-}
-
-input, select, button, textarea {
-  width: 100%;
-  padding: .9rem 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(148,163,184,.4);
-  background: rgba(15,23,42,.95);
-  color: #e5e5e5;
-  margin-top: .6rem;
-  font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-input[type="date"] {
-  color: #a3a3a3;
-}
-
-input[type="date"]:focus,
-input[type="date"]:valid {
-  color: #e5e5e5;
-}
-
-.date-label {
-  display: block;
-  font-size: 0.85rem;
-  color: #a3a3a3;
-  margin-top: 0.6rem;
-  margin-bottom: 0.2rem;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #9333ea;
-  box-shadow: 0 0 0 3px rgba(147,51,234,0.2);
-}
-
-button {
-  margin-top: 1.2rem;
-  background: linear-gradient(135deg,#9333ea,#7e22ce);
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(147,51,234,0.4);
-}
-
-button:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .8rem;
-}
-
-.msg {
-  margin-top: 1rem;
-  padding: .8rem;
-  border-radius: 12px;
-  display: none;
-  text-align: center;
-  line-height: 1.6;
-}
-
-.error { 
-  background: rgba(239,68,68,.15); 
-  color: #ef4444;
-  border: 1px solid rgba(239,68,68,0.3);
-}
-
-.success { 
-  background: rgba(34,197,94,.15); 
-  color: #22c55e;
-  border: 1px solid rgba(34,197,94,0.3);
-}
-
-.small {
-  margin-top: 1rem;
-  text-align: center;
-  font-size: .9rem;
-}
-
-a { 
-  color: #a78bfa; 
-  text-decoration: none; 
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-.section-title {
-  font-size: .85rem;
-  color: #a78bfa;
-  font-weight: 600;
-  margin-top: 1.5rem;
-  margin-bottom: .3rem;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: flex-start;
-  gap: .7rem;
-  margin-top: 1rem;
-}
-
-.checkbox-row input[type="checkbox"] {
-  width: auto;
-  margin-top: .25rem;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.checkbox-row label {
-  font-size: .9rem;
-  color: #d1d5db;
-  cursor: pointer;
-  line-height: 1.5;
-}
-
-.checkbox-row a {
-  color: #a78bfa;
-}
-
-.progress-indicator {
-  display: none;
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(147, 51, 234, 0.1);
-  border: 1px solid rgba(147, 51, 234, 0.3);
-  border-radius: 12px;
-}
-
-.progress-step {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.progress-step:last-child {
-  margin-bottom: 0;
-}
-
-.progress-step .icon {
-  width: 20px;
-  text-align: center;
-}
-
-.back-home {
-  text-align: center;
-  margin-top: 1.5rem;
-}
-
-.back-home a {
-  color: #a3a3a3;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.back-home a:hover {
-  color: #a78bfa;
-}
-
-@media(max-width:600px){
-  .row { 
-    grid-template-columns: 1fr; 
-  }
-  .box { 
-    padding: 2rem 1.5rem;
-    margin: 0 auto;
-  }
-  body {
-    padding: 1rem;
-  }
-  h1 {
-    font-size: 1.5rem;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<div class="box">
-  <h1>Join The Arcane Archives</h1>
-  <p>Create your account to unlock premium trading education</p>
-
-  <form id="form">
-    <div class="section-title">Personal Information</div>
-    
-    <div class="row">
-      <input id="first" placeholder="First name" required autocomplete="given-name">
-      <input id="last" placeholder="Last name" required autocomplete="family-name">
-    </div>
-
-    <input id="username" placeholder="Username" required autocomplete="username">
-    <input id="email" type="email" placeholder="Email address" required autocomplete="email">
-    <input id="phone" type="tel" placeholder="Phone number" required autocomplete="tel">
-    
-    <label class="date-label">Date of Birth</label>
-    <input id="dob" type="date" required autocomplete="bday">
-    
-    <input id="password" type="password" placeholder="Password (min 8 chars)" required minlength="8" autocomplete="new-password">
-
-    <div class="section-title">Address</div>
-    
-    <textarea id="address1" placeholder="Street Address (Line 1)" required autocomplete="address-line1"></textarea>
-    <textarea id="address2" placeholder="Street Address (Line 2) - Optional" autocomplete="address-line2"></textarea>
-    
-    <div class="row">
-      <input id="city" placeholder="City" required autocomplete="address-level2">
-      <input id="state" placeholder="State/Province" required autocomplete="address-level1">
-    </div>
-    
-    <div class="row">
-      <input id="postal" placeholder="Postal/ZIP Code" required autocomplete="postal-code">
-      <select id="country" required autocomplete="country">
-        <option value="">Select your country</option>
-        <option value="GB">United Kingdom</option>
-        <option value="US">United States</option>
-        <option value="CA">Canada</option>
-        <option value="AU">Australia</option>
-        <option value="DE">Germany</option>
-        <option value="FR">France</option>
-        <option value="ES">Spain</option>
-        <option value="IT">Italy</option>
-        <option value="NL">Netherlands</option>
-        <option value="IE">Ireland</option>
-        <option value="OTHER">Other</option>
-      </select>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="terms" required>
-      <label for="terms">I agree to the <a href="terms-of-service.html" target="_blank">Terms & Conditions</a> and <a href="terms-of-service.html" target="_blank">Privacy Policy</a></label>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="newsletter">
-      <label for="newsletter">Send me updates and newsletters about The Arcane Archives</label>
-    </div>
-
-    <button id="btn" type="submit">Create Account</button>
-  </form>
-
-  <div id="progress" class="progress-indicator">
-    <div class="progress-step" id="step1">
-      <span class="icon">⏳</span>
-      <span>Creating your account...</span>
-    </div>
-    <div class="progress-step" id="step2" style="display:none;">
-      <span class="icon">⏳</span>
-      <span>Setting up your profile...</span>
-    </div>
-    <div class="progress-step" id="step3" style="display:none;">
-      <span class="icon">⏳</span>
-      <span>Saving your information...</span>
-    </div>
-    <div class="progress-step" id="step4" style="display:none;">
-      <span class="icon">⏳</span>
-      <span>Sending verification email...</span>
-    </div>
-    <div class="progress-step" id="step5" style="display:none;">
-      <span class="icon">✅</span>
-      <span>All done!</span>
-    </div>
-  </div>
-
-  <div id="error" class="msg error"></div>
-  <div id="success" class="msg success"></div>
-
-  <div class="small">
-    Already have an account? <a href="login.html">Log in</a>
-  </div>
-
-  <div class="back-home">
-    <a href="index.html">← Back to Home</a>
-  </div>
-</div>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  updateProfile,
-  sendEmailVerification
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        updateProfile 
+    } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+    import { 
+        getFirestore, 
+        doc, 
+        setDoc, 
+        serverTimestamp,
+        query,
+        collection,
+        where,
+        getDocs
+    } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-const app = initializeApp({
-  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-  projectId: "arcane-archives-3b0f5",
-  storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-  messagingSenderId: "264237235055",
-  appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-});
-
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Silent console logging (visible in dev tools, not to users)
-console.log('✅ Firebase initialized');
-
-const form = document.getElementById("form");
-const btn = document.getElementById("btn");
-const error = document.getElementById("error");
-const success = document.getElementById("success");
-const progress = document.getElementById("progress");
-
-function showError(msg) {
-  console.error("❌ ERROR:", msg);
-  error.textContent = msg;
-  error.style.display = "block";
-  success.style.display = "none";
-  progress.style.display = "none";
-  error.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function showSuccess(msg) {
-  console.log("✅ SUCCESS:", msg);
-  success.innerHTML = msg;
-  success.style.display = "block";
-  error.style.display = "none";
-  progress.style.display = "none";
-  success.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function showProgress(step) {
-  progress.style.display = "block";
-  error.style.display = "none";
-  success.style.display = "none";
-  
-  for (let i = 1; i <= step; i++) {
-    const stepEl = document.getElementById(`step${i}`);
-    if (stepEl) {
-      stepEl.style.display = "flex";
-      const icon = stepEl.querySelector('.icon');
-      if (i < step) {
-        icon.textContent = "✅";
-      } else {
-        icon.textContent = "⏳";
-      }
-    }
-  }
-}
-
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validatePhone(phone) {
-  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-  return /^\+?\d{10,}$/.test(cleaned);
-}
-
-function validateAge(dob) {
-  const birthDate = new Date(dob);
-  const today = new Date();
-  const age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    return age - 1;
-  }
-  return age;
-}
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  error.style.display = "none";
-  success.style.display = "none";
-  progress.style.display = "none";
-
-  console.log("=== STARTING SIGNUP PROCESS ===");
-
-  // Get form values
-  const first = document.getElementById("first").value.trim();
-  const last = document.getElementById("last").value.trim();
-  const username = document.getElementById("username").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const dob = document.getElementById("dob").value;
-  const pass = document.getElementById("password").value;
-  const address1 = document.getElementById("address1").value.trim();
-  const address2 = document.getElementById("address2").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const state = document.getElementById("state").value.trim();
-  const postal = document.getElementById("postal").value.trim();
-  const country = document.getElementById("country").value;
-  const terms = document.getElementById("terms").checked;
-  const newsletter = document.getElementById("newsletter").checked;
-
-  // Enhanced validation
-  if (!first || !last || !username || !email || !phone || !dob || !pass || !address1 || !city || !state || !postal || !country) {
-    showError("⚠️ Please fill in all required fields");
-    return;
-  }
-
-  if (!validateEmail(email)) {
-    showError("⚠️ Please enter a valid email address");
-    return;
-  }
-
-  if (!validatePhone(phone)) {
-    showError("⚠️ Please enter a valid phone number (at least 10 digits)");
-    return;
-  }
-
-  const age = validateAge(dob);
-  if (age < 18) {
-    showError("⚠️ You must be at least 18 years old to sign up");
-    return;
-  }
-
-  if (pass.length < 8) {
-    showError("⚠️ Password must be at least 8 characters");
-    return;
-  }
-
-  if (!terms) {
-    showError("⚠️ You must agree to the Terms & Conditions");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Creating account...";
-
-  try {
-    // Step 1: Create Firebase Auth user
-    showProgress(1);
-    console.log("Step 1: Creating Firebase Auth user");
-    
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    const user = cred.user;
-    
-    console.log("✅ Auth user created:", user.uid);
-    
-    // Step 2: Update profile
-    showProgress(2);
-    console.log("Step 2: Updating profile");
-    
-    await updateProfile(user, { 
-      displayName: username 
-    });
-    
-    console.log("✅ Profile updated");
-
-    // Step 3: Create Firestore document
-    showProgress(3);
-    console.log("Step 3: Creating Firestore document");
-    
-    const userData = {
-      Username: username,
-      FirstName: first,
-      LastName: last,
-      Email: email,
-      Phone: phone,
-      DateOfBirth: dob,
-      Address: {
-        line1: address1,
-        line2: address2 || "",
-        city: city,
-        state: state,
-        postal: postal,
-        country: country
-      },
-      Country: country,
-      NewsletterOptIn: newsletter,
-      isPaid: false,
-      subscriptionStatus: "none",
-      emailVerified: false,
-      joinedAt: serverTimestamp(),
-      lastLoginDate: serverTimestamp()
+    const firebaseConfig = {
+        apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+        authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+        projectId: "arcane-archives-3b0f5",
+        storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+        messagingSenderId: "264237235055",
+        appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
     };
-    
-    await setDoc(doc(db, "Users", user.uid), userData);
-    console.log("✅ Firestore document created");
 
-    // Step 4: Send verification email
-    showProgress(4);
-    console.log("Step 4: Sending verification email");
-    
-    await sendEmailVerification(user);
-    console.log("✅ Verification email sent");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Step 5: Sign out user
-    console.log("Step 5: Signing out user");
-    await auth.signOut();
-    console.log("✅ User signed out");
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralCode = urlParams.get('ref');
 
-    showProgress(5);
-    console.log("=== SIGNUP COMPLETE ===");
-    
-    showSuccess(`
-      <strong>🎉 Account created successfully!</strong><br><br>
-      <strong>📧 IMPORTANT: Verify your email to login</strong><br>
-      We've sent a verification link to <strong>${email}</strong><br><br>
-      ⚠️ <strong style="color: #fbbf24;">Check your SPAM folder if you don't see it!</strong><br><br>
-      <small style="color: #a3a3a3;">Redirecting to login page in 5 seconds...</small>
-    `);
-
-    setTimeout(() => {
-      console.log("Redirecting to login");
-      window.location.href = "login.html";
-    }, 5000);
-
-  } catch (err) {
-    console.error("❌ SIGNUP ERROR:", err);
-    console.error("Error code:", err.code);
-    console.error("Error message:", err.message);
-    
-    let errorMsg = "❌ Failed to create account. Please try again.";
-    
-    if (err.code === 'auth/email-already-in-use') {
-      errorMsg = "❌ This email is already registered. <a href='login.html' style='color: #a78bfa; text-decoration: underline;'>Log in instead</a>";
-    } else if (err.code === 'auth/invalid-email') {
-      errorMsg = "❌ Invalid email address format";
-    } else if (err.code === 'auth/weak-password') {
-      errorMsg = "❌ Password is too weak. Use at least 8 characters with a mix of letters and numbers.";
-    } else if (err.code === 'auth/network-request-failed') {
-      errorMsg = "❌ Network error. Please check your internet connection and try again.";
-    } else if (err.code === 'auth/operation-not-allowed') {
-      errorMsg = "❌ Email/password sign up is not enabled. Please contact support.";
-    } else if (err.code === 'permission-denied' || err.message.includes('permission-denied')) {
-      errorMsg = "❌ Database permission error. Please contact support.";
+    if (referralCode) {
+        // Store in sessionStorage
+        sessionStorage.setItem('referralCode', referralCode);
+        
+        // Display referral info
+        const referralInfo = document.createElement('div');
+        referralInfo.className = 'referral-banner';
+        referralInfo.innerHTML = `
+            <div class="referral-content">
+                <span class="referral-icon">🎯</span>
+                <div>
+                    <strong>Referred by: ${referralCode}</strong>
+                    <p>Sign up now to join their community</p>
+                </div>
+            </div>
+        `;
+        document.querySelector('.signup-container').prepend(referralInfo);
     }
-    
-    showError(errorMsg);
-    btn.disabled = false;
-    btn.textContent = "Create Account";
-  }
-});
+
+    const form = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const termsAccepted = document.getElementById('terms').checked;
+
+        // Validation
+        if (!username || !email || !password || !confirmPassword) {
+            statusMsg.textContent = '❌ Please fill in all fields';
+            statusMsg.style.color = '#ef4444';
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            statusMsg.textContent = '❌ Passwords do not match';
+            statusMsg.style.color = '#ef4444';
+            return;
+        }
+
+        if (password.length < 6) {
+            statusMsg.textContent = '❌ Password must be at least 6 characters';
+            statusMsg.style.color = '#ef4444';
+            return;
+        }
+
+        if (!termsAccepted) {
+            statusMsg.textContent = '❌ Please accept the Terms of Service';
+            statusMsg.style.color = '#ef4444';
+            return;
+        }
+
+        // Disable button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account...';
+        statusMsg.textContent = '⏳ Creating your account...';
+        statusMsg.style.color = '#fbbf24';
+
+        try {
+            // Create auth account
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Update display name
+            await updateProfile(user, { displayName: username });
+
+            // Generate default referral code
+            const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
+
+            // Get referral code from session (if referred)
+            const referredByCode = sessionStorage.getItem('referralCode');
+            let referredBy = null;
+
+            // Validate referral code
+            if (referredByCode) {
+                const referrerQuery = query(
+                    collection(db, 'Users'),
+                    where('referralCode', '==', referredByCode.toUpperCase())
+                );
+                const referrerSnapshot = await getDocs(referrerQuery);
+                
+                if (!referrerSnapshot.empty) {
+                    referredBy = referredByCode.toUpperCase();
+                }
+            }
+
+            // Create Firestore user profile
+            const userData = {
+                Username: username,
+                Email: email,
+                referralCode: defaultReferralCode,
+                subscriptionStatus: "none",
+                isPaid: false,
+                stripeCustomerId: null,
+                joinedAt: serverTimestamp(),
+                lastLoginDate: serverTimestamp()
+            };
+
+            // Add referral info if valid
+            if (referredBy) {
+                userData.referredBy = referredBy;
+                userData.referredAt = serverTimestamp();
+            }
+
+            await setDoc(doc(db, 'Users', user.uid), userData);
+
+            // Clear referral code from session
+            sessionStorage.removeItem('referralCode');
+
+            // Success
+            statusMsg.textContent = '✅ Account created successfully!';
+            statusMsg.style.color = '#22c55e';
+
+            // Redirect to payment
+            setTimeout(() => {
+                window.location.href = 'payment.html';
+            }, 1500);
+
+        } catch (error) {
+            console.error('Signup error:', error);
+            
+            let errorMsg = '❌ ';
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    errorMsg += 'This email is already registered';
+                    break;
+                case 'auth/invalid-email':
+                    errorMsg += 'Invalid email address';
+                    break;
+                case 'auth/weak-password':
+                    errorMsg += 'Password is too weak';
+                    break;
+                default:
+                    errorMsg += 'Signup failed: ' + error.message;
+            }
+            
+            statusMsg.textContent = errorMsg;
+            statusMsg.style.color = '#ef4444';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+        }
+    });
 </script>
 
-</body>
-</html>
+<style>
+.referral-banner {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(76, 29, 149, 0.2));
+    border: 1px solid rgba(147, 51, 234, 0.4);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.referral-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.referral-icon {
+    font-size: 2rem;
+}
+
+.referral-content strong {
+    display: block;
+    color: var(--purple-light);
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.referral-content p {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin: 0;
+}
+</style>
