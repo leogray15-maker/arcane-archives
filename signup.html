@@ -226,19 +226,6 @@ a:hover {
   color: #a78bfa;
 }
 
-.debug-info {
-  margin-top: 1rem;
-  padding: 0.8rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 8px;
-  font-size: 0.8rem;
-  color: #60a5fa;
-  display: none;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
 @media(max-width:600px){
   .row { 
     grid-template-columns: 1fr; 
@@ -346,7 +333,6 @@ a:hover {
 
   <div id="error" class="msg error"></div>
   <div id="success" class="msg success"></div>
-  <div id="debug" class="debug-info"></div>
 
   <div class="small">
     Already have an account? <a href="login.html">Log in</a>
@@ -363,8 +349,7 @@ import {
   getAuth, 
   createUserWithEmailAndPassword, 
   updateProfile,
-  sendEmailVerification,
-  onAuthStateChanged
+  sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -380,29 +365,17 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Silent console logging (visible in dev tools, not to users)
+console.log('✅ Firebase initialized');
+
 const form = document.getElementById("form");
 const btn = document.getElementById("btn");
 const error = document.getElementById("error");
 const success = document.getElementById("success");
 const progress = document.getElementById("progress");
-const debug = document.getElementById("debug");
-
-let debugLogs = [];
-
-function addDebugLog(msg) {
-  const timestamp = new Date().toLocaleTimeString();
-  debugLogs.push(`[${timestamp}] ${msg}`);
-  debug.innerHTML = debugLogs.join('<br>');
-  debug.style.display = 'block';
-  console.log(`[SIGNUP DEBUG] ${msg}`);
-}
-
-console.log('🔧 Firebase initialized');
-addDebugLog('Firebase initialized');
 
 function showError(msg) {
   console.error("❌ ERROR:", msg);
-  addDebugLog(`ERROR: ${msg}`);
   error.textContent = msg;
   error.style.display = "block";
   success.style.display = "none";
@@ -412,7 +385,6 @@ function showError(msg) {
 
 function showSuccess(msg) {
   console.log("✅ SUCCESS:", msg);
-  addDebugLog(`SUCCESS: ${msg}`);
   success.innerHTML = msg;
   success.style.display = "block";
   error.style.display = "none";
@@ -465,11 +437,8 @@ form.addEventListener("submit", async (e) => {
   error.style.display = "none";
   success.style.display = "none";
   progress.style.display = "none";
-  debug.style.display = "none";
-  debugLogs = [];
 
   console.log("=== STARTING SIGNUP PROCESS ===");
-  addDebugLog("Starting signup process");
 
   // Get form values
   const first = document.getElementById("first").value.trim();
@@ -487,8 +456,6 @@ form.addEventListener("submit", async (e) => {
   const country = document.getElementById("country").value;
   const terms = document.getElementById("terms").checked;
   const newsletter = document.getElementById("newsletter").checked;
-
-  addDebugLog(`Email: ${email}, Username: ${username}`);
 
   // Enhanced validation
   if (!first || !last || !username || !email || !phone || !dob || !pass || !address1 || !city || !state || !postal || !country) {
@@ -528,31 +495,26 @@ form.addEventListener("submit", async (e) => {
   try {
     // Step 1: Create Firebase Auth user
     showProgress(1);
-    addDebugLog("Creating Firebase Auth user...");
-    console.log("Step 1: Creating Firebase Auth user for:", email);
+    console.log("Step 1: Creating Firebase Auth user");
     
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const user = cred.user;
     
     console.log("✅ Auth user created:", user.uid);
-    addDebugLog(`Auth user created: ${user.uid}`);
     
     // Step 2: Update profile
     showProgress(2);
-    addDebugLog("Updating user profile...");
-    console.log("Step 2: Updating profile with username:", username);
+    console.log("Step 2: Updating profile");
     
     await updateProfile(user, { 
       displayName: username 
     });
     
     console.log("✅ Profile updated");
-    addDebugLog("Profile updated successfully");
 
     // Step 3: Create Firestore document
     showProgress(3);
-    addDebugLog("Creating Firestore document...");
-    console.log("Step 3: Creating Firestore document in Users collection");
+    console.log("Step 3: Creating Firestore document");
     
     const userData = {
       Username: username,
@@ -578,36 +540,23 @@ form.addEventListener("submit", async (e) => {
       lastLoginDate: serverTimestamp()
     };
     
-    console.log("Firestore data prepared:", { email, username, country });
-    addDebugLog("Writing to Firestore...");
-    
     await setDoc(doc(db, "Users", user.uid), userData);
-    
-    console.log("✅ Firestore document created successfully");
-    addDebugLog("Firestore document created!");
+    console.log("✅ Firestore document created");
 
     // Step 4: Send verification email
     showProgress(4);
-    addDebugLog("Sending verification email...");
-    console.log("Step 4: Sending verification email to:", email);
+    console.log("Step 4: Sending verification email");
     
     await sendEmailVerification(user);
-    
     console.log("✅ Verification email sent");
-    addDebugLog("Verification email sent!");
 
-    // Step 5: Sign out user (security measure)
-    console.log("Step 5: Signing out user for security");
-    addDebugLog("Signing out user...");
-    
+    // Step 5: Sign out user
+    console.log("Step 5: Signing out user");
     await auth.signOut();
-    
     console.log("✅ User signed out");
-    addDebugLog("User signed out successfully");
 
     showProgress(5);
     console.log("=== SIGNUP COMPLETE ===");
-    addDebugLog("=== SIGNUP COMPLETE ===");
     
     showSuccess(`
       <strong>🎉 Account created successfully!</strong><br><br>
@@ -618,7 +567,7 @@ form.addEventListener("submit", async (e) => {
     `);
 
     setTimeout(() => {
-      console.log("Redirecting to login...");
+      console.log("Redirecting to login");
       window.location.href = "login.html";
     }, 5000);
 
@@ -626,10 +575,6 @@ form.addEventListener("submit", async (e) => {
     console.error("❌ SIGNUP ERROR:", err);
     console.error("Error code:", err.code);
     console.error("Error message:", err.message);
-    console.error("Full error:", JSON.stringify(err, null, 2));
-    
-    addDebugLog(`ERROR CODE: ${err.code}`);
-    addDebugLog(`ERROR MESSAGE: ${err.message}`);
     
     let errorMsg = "❌ Failed to create account. Please try again.";
     
@@ -644,8 +589,7 @@ form.addEventListener("submit", async (e) => {
     } else if (err.code === 'auth/operation-not-allowed') {
       errorMsg = "❌ Email/password sign up is not enabled. Please contact support.";
     } else if (err.code === 'permission-denied' || err.message.includes('permission-denied')) {
-      errorMsg = "❌ Database permission error. Please contact support with error code: PERM-001";
-      addDebugLog("FIRESTORE PERMISSION DENIED - Check Firestore rules");
+      errorMsg = "❌ Database permission error. Please contact support.";
     }
     
     showError(errorMsg);
