@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Management | Admin Panel</title>
+    <link rel="icon" href="ArcaneA.png">
+    
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text-light: #e5e5e5;
+            --text-dim: #9ca3af;
+            --border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            color: var(--purple-light);
+            border-color: var(--purple);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card.total .value { color: var(--purple-light); }
+        .stat-card.pending .value { color: var(--gold); }
+        .stat-card.paid .value { color: var(--green); }
+        .stat-card.revenue .value { color: var(--text-light); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-dim);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            bottom: -1px;
+        }
+
+        .tab-btn.active {
+            color: var(--purple-light);
+            border-bottom-color: var(--purple);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tables */
+        .data-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-table h2 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--purple);
+            color: var(--purple-light);
+        }
+
+        .filter-btn.active {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: var(--purple);
+            color: var(--purple-light);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            color: var(--text-light);
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-badge.pending { background: rgba(251, 191, 36, 0.2); color: var(--gold); }
+        .status-badge.completed { background: rgba(34, 197, 94, 0.2); color: var(--green); }
+        .status-badge.rejected { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+        .status-badge.active { background: rgba(34, 197, 94, 0.2); color: var(--green); }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, var(--green), #15803d);
+            color: white;
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, var(--red), #b91c1c);
+            color: white;
+        }
+
+        .btn-view {
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--purple-light);
+            border: 1px solid var(--purple);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--purple-light);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: var(--text-light);
+        }
+
+        .detail-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-group label {
+            display: block;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-group .value {
+            color: var(--text-light);
+            font-size: 1rem;
+            padding: 0.7rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            padding: 0.9rem;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab-btn {
+                white-space: nowrap;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Affiliate Management</h1>
+            <a href="admin-panel.html" class="back-btn">← Back to Admin</a>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="value" id="totalAffiliates">0</div>
+                <div class="label">Total Affiliates</div>
+            </div>
+
+            <div class="stat-card pending">
+                <div class="value" id="pendingWithdrawals">0</div>
+                <div class="label">Pending Withdrawals</div>
+            </div>
+
+            <div class="stat-card paid">
+                <div class="value" id="totalPaid">£0</div>
+                <div class="label">Total Paid Out</div>
+            </div>
+
+            <div class="stat-card revenue">
+                <div class="value" id="monthlyRevenue">£0</div>
+                <div class="label">Monthly Revenue</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="withdrawals">Pending Withdrawals</button>
+            <button class="tab-btn" data-tab="affiliates">All Affiliates</button>
+            <button class="tab-btn" data-tab="history">Payment History</button>
+            <button class="tab-btn" data-tab="commissions">Commissions</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="withdrawals" class="tab-content active">
+            <div class="data-table">
+                <h2>💸 Pending Withdrawal Requests</h2>
+                <div class="table-controls">
+                    <div class="search-box">
+                        <input type="text" id="withdrawalSearch" placeholder="Search by email or username...">
+                    </div>
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="pending">Pending</button>
+                        <button class="filter-btn" data-filter="completed">Completed</button>
+                        <button class="filter-btn" data-filter="rejected">Rejected</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawalsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="affiliates" class="tab-content">
+            <div class="data-table">
+                <h2>👥 All Affiliates</h2>
+                <div class="table-controls">
+                    <div class="search-box">
+                        <input type="text" id="affiliateSearch" placeholder="Search affiliates...">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Referral Code</th>
+                                <th>Active Refs</th>
+                                <th>Total Earned</th>
+                                <th>Available</th>
+                                <th>Total Withdrawn</th>
+                            </tr>
+                        </thead>
+                        <tbody id="affiliatesTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="history" class="tab-content">
+            <div class="data-table">
+                <h2>📜 Payment History</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date Paid</th>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Processed By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-dim);">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="commissions" class="tab-content">
+            <div class="data-table">
+                <h2>💰 Commission Overview</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Affiliate</th>
+                                <th>Type</th>
+                                <th>From User</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commissionsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Detail Modal -->
+    <div id="withdrawalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Withdrawal Request Details</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+
+            <div class="detail-group">
+                <label>User</label>
+                <div class="value" id="modalUser"></div>
+            </div>
+
+            <div class="detail-group">
+                <label>Email</label>
+                <div class="value" id="modalEmail"></div>
+            </div>
+
+            <div class="detail-group">
+                <label>Amount</label>
+                <div class="value" id="modalAmount"></div>
+            </div>
+
+            <div class="detail-group">
+                <label>Payment Method</label>
+                <div class="value" id="modalMethod"></div>
+            </div>
+
+            <div class="detail-group">
+                <label>Payment Details</label>
+                <div class="value" id="modalDetails"></div>
+            </div>
+
+            <div class="detail-group">
+                <label>Request Date</label>
+                <div class="value" id="modalDate"></div>
+            </div>
+
+            <div class="detail-group">
+                <label>Status</label>
+                <div class="value" id="modalStatus"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-approve" id="modalApprove">✓ Approve & Pay</button>
+                <button class="btn btn-reject" id="modalReject">✗ Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+        import { 
+            getFirestore, 
+            collection, 
+            query, 
+            where, 
+            orderBy,
+            getDocs,
+            doc,
+            getDoc,
+            updateDoc,
+            serverTimestamp,
+            onSnapshot
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92'];
+        const ADMIN_EMAILS = ['leogray15@gmail.com'];
+
+        let currentUser = null;
+        let selectedWithdrawal = null;
+
+        // Check admin access
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const userDoc = await getDoc(doc(db, 'Users', user.uid));
+            const userData = userDoc.data() || {};
+            const email = (user.email || '').toLowerCase();
+            const isAdmin = ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email) || userData.isAdmin === true;
+
+            if (!isAdmin) {
+                alert('🔒 Access denied. Admin only.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = user;
+            initializeDashboard();
+        });
+
+        function initializeDashboard() {
+            setupTabs();
+            loadStats();
+            loadWithdrawals();
+            loadAffiliates();
+            loadPaymentHistory();
+            loadCommissions();
+        }
+
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        async function loadStats() {
+            try {
+                // Get all affiliates
+                const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
+                const totalAffiliates = affiliatesSnapshot.size;
+
+                // Get pending withdrawals
+                const pendingQuery = query(
+                    collection(db, 'WithdrawalRequests'),
+                    where('status', '==', 'pending')
+                );
+                const pendingSnapshot = await getDocs(pendingQuery);
+                const pendingCount = pendingSnapshot.size;
+
+                // Calculate total paid
+                let totalPaid = 0;
+                affiliatesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalPaid += data.totalWithdrawn || 0;
+                });
+
+                // Calculate monthly revenue (example - you'd integrate with actual subscription data)
+                const monthlyRevenue = 0; // Calculate from active subscriptions
+
+                document.getElementById('totalAffiliates').textContent = totalAffiliates;
+                document.getElementById('pendingWithdrawals').textContent = pendingCount;
+                document.getElementById('totalPaid').textContent = `£${totalPaid.toFixed(0)}`;
+                document.getElementById('monthlyRevenue').textContent = `£${monthlyRevenue}`;
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadWithdrawals() {
+            const q = query(
+                collection(db, 'WithdrawalRequests'),
+                orderBy('createdAt', 'desc')
+            );
+
+            onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('withdrawalsTable');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                                No withdrawal requests yet
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const withdrawalId = docSnap.id;
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${formatDate(data.createdAt)}</td>
+                        <td>${data.username}</td>
+                        <td>£${data.amount.toFixed(2)}</td>
+                        <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + (data.paymentDetails?.cryptoType || 'Crypto')}</td>
+                        <td><span class="status-badge ${data.status}">${data.status}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn btn-view" onclick="viewWithdrawal('${withdrawalId}')">View</button>
+                                ${data.status === 'pending' ? `
+                                    <button class="btn btn-approve" onclick="approveWithdrawal('${withdrawalId}')">Approve</button>
+                                    <button class="btn btn-reject" onclick="rejectWithdrawal('${withdrawalId}')">Reject</button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    `;
+
+                    tbody.appendChild(tr);
+                });
+
+                // Expose functions to window for onclick handlers
+                window.viewWithdrawal = viewWithdrawal;
+                window.approveWithdrawal = approveWithdrawal;
+                window.rejectWithdrawal = rejectWithdrawal;
+            });
+        }
+
+        async function loadAffiliates() {
+            const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
+            const tbody = document.getElementById('affiliatesTable');
+
+            if (affiliatesSnapshot.empty) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                            No affiliates yet
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            for (const docSnap of affiliatesSnapshot.docs) {
+                const data = docSnap.data();
+                const userId = docSnap.id;
+
+                // Get user data
+                const userDoc = await getDoc(doc(db, 'Users', userId));
+                const userData = userDoc.data() || {};
+                const username = userData.Username || userData.email || 'Unknown';
+                const referralCode = userData.referralCode || userId.slice(0, 8).toUpperCase();
+
+                // Count active referrals
+                const refQuery = query(
+                    collection(db, 'Users'),
+                    where('referredBy', '==', referralCode)
+                );
+                const refSnapshot = await getDocs(refQuery);
+                let activeRefs = 0;
+                refSnapshot.forEach(doc => {
+                    const refData = doc.data();
+                    if (refData.subscriptionStatus === 'active' || refData.isPaid === true) {
+                        activeRefs++;
+                    }
+                });
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${username}</td>
+                    <td><code style="color: var(--purple-light); background: rgba(147, 51, 234, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px;">${referralCode}</code></td>
+                    <td>${activeRefs}</td>
+                    <td>£${(data.totalEarnings || 0).toFixed(2)}</td>
+                    <td>£${(data.availableBalance || 0).toFixed(2)}</td>
+                    <td>£${(data.totalWithdrawn || 0).toFixed(2)}</td>
+                `;
+
+                tbody.appendChild(tr);
+            }
+        }
+
+        async function loadPaymentHistory() {
+            const q = query(
+                collection(db, 'WithdrawalRequests'),
+                where('status', '==', 'completed'),
+                orderBy('processedAt', 'desc')
+            );
+
+            const snapshot = await getDocs(q);
+            const tbody = document.getElementById('historyTable');
+
+            if (snapshot.empty) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-dim);">
+                            No payment history yet
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(data.processedAt)}</td>
+                    <td>${data.username}</td>
+                    <td>£${data.amount.toFixed(2)}</td>
+                    <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + (data.paymentDetails?.cryptoType || 'Crypto')}</td>
+                    <td>${data.processedBy || 'Admin'}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function loadCommissions() {
+            const q = query(
+                collection(db, 'CommissionHistory'),
+                orderBy('createdAt', 'desc')
+            );
+
+            const snapshot = await getDocs(q);
+            const tbody = document.getElementById('commissionsTable');
+
+            if (snapshot.empty) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                            No commission history yet
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            for (const docSnap of snapshot.docs) {
+                const data = docSnap.data();
+
+                // Get affiliate name
+                const affiliateDoc = await getDoc(doc(db, 'Users', data.affiliateId));
+                const affiliateData = affiliateDoc.data() || {};
+                const affiliateName = affiliateData.Username || affiliateData.email || 'Unknown';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(data.createdAt)}</td>
+                    <td>${affiliateName}</td>
+                    <td>${data.type}</td>
+                    <td>${data.fromUser || '-'}</td>
+                    <td>£${data.amount.toFixed(2)}</td>
+                    <td><span class="status-badge ${data.status}">${data.status}</span></td>
+                `;
+
+                tbody.appendChild(tr);
+            }
+        }
+
+        async function viewWithdrawal(withdrawalId) {
+            try {
+                const withdrawalDoc = await getDoc(doc(db, 'WithdrawalRequests', withdrawalId));
+                const data = withdrawalDoc.data();
+
+                document.getElementById('modalUser').textContent = data.username;
+                document.getElementById('modalEmail').textContent = data.userEmail;
+                document.getElementById('modalAmount').textContent = `£${data.amount.toFixed(2)}`;
+                document.getElementById('modalMethod').textContent = data.method === 'bank' ? '🏦 Bank Transfer' : '₿ Cryptocurrency';
+                document.getElementById('modalDate').textContent = formatDate(data.createdAt);
+                document.getElementById('modalStatus').innerHTML = `<span class="status-badge ${data.status}">${data.status}</span>`;
+
+                // Format payment details
+                let detailsHtml = '';
+                if (data.method === 'bank') {
+                    detailsHtml = `
+                        <div style="font-size: 0.9rem; line-height: 1.6;">
+                            <strong>Account Name:</strong> ${data.paymentDetails.accountName}<br>
+                            <strong>Bank:</strong> ${data.paymentDetails.bankName}<br>
+                            <strong>Account Number:</strong> ${data.paymentDetails.accountNumber}<br>
+                            <strong>Sort Code:</strong> ${data.paymentDetails.sortCode}
+                        </div>
+                    `;
+                } else {
+                    detailsHtml = `
+                        <div style="font-size: 0.9rem; line-height: 1.6;">
+                            <strong>Currency:</strong> ${data.paymentDetails.cryptoType}<br>
+                            <strong>Wallet:</strong> ${data.paymentDetails.walletAddress}<br>
+                            <strong>Network:</strong> ${data.paymentDetails.network}
+                        </div>
+                    `;
+                }
+                document.getElementById('modalDetails').innerHTML = detailsHtml;
+
+                selectedWithdrawal = withdrawalId;
+
+                // Set up modal actions
+                document.getElementById('modalApprove').onclick = () => approveWithdrawal(withdrawalId);
+                document.getElementById('modalReject').onclick = () => rejectWithdrawal(withdrawalId);
+
+                // Show modal
+                document.getElementById('withdrawalModal').classList.add('active');
+
+            } catch (error) {
+                console.error('Error viewing withdrawal:', error);
+                alert('Error loading withdrawal details');
+            }
+        }
+
+        async function approveWithdrawal(withdrawalId) {
+            if (!confirm('Approve this withdrawal? Make sure you\'ve processed the payment!')) {
+                return;
+            }
+
+            try {
+                const withdrawalDoc = await getDoc(doc(db, 'WithdrawalRequests', withdrawalId));
+                const data = withdrawalDoc.data();
+
+                // Update withdrawal status
+                await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
+                    status: 'completed',
+                    processedAt: serverTimestamp(),
+                    processedBy: currentUser.email
+                });
+
+                // Update affiliate balance
+                const affiliateRef = doc(db, 'Affiliates', data.userId);
+                const affiliateDoc = await getDoc(affiliateRef);
+                
+                if (affiliateDoc.exists()) {
+                    const affiliateData = affiliateDoc.data();
+                    const newAvailable = (affiliateData.availableBalance || 0) - data.amount;
+                    const newWithdrawn = (affiliateData.totalWithdrawn || 0) + data.amount;
+
+                    await updateDoc(affiliateRef, {
+                        availableBalance: Math.max(0, newAvailable),
+                        totalWithdrawn: newWithdrawn
+                    });
+                }
+
+                alert('✅ Withdrawal approved and processed!');
+                closeModal();
+                loadStats();
+
+            } catch (error) {
+                console.error('Error approving withdrawal:', error);
+                alert('❌ Error approving withdrawal');
+            }
+        }
+
+        async function rejectWithdrawal(withdrawalId) {
+            const reason = prompt('Enter rejection reason (optional):');
+            
+            try {
+                await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
+                    status: 'rejected',
+                    processedAt: serverTimestamp(),
+                    processedBy: currentUser.email,
+                    rejectionReason: reason || 'No reason provided'
+                });
+
+                alert('✅ Withdrawal rejected');
+                closeModal();
+
+            } catch (error) {
+                console.error('Error rejecting withdrawal:', error);
+                alert('❌ Error rejecting withdrawal');
+            }
+        }
+
+        window.closeModal = function() {
+            document.getElementById('withdrawalModal').classList.remove('active');
+            selectedWithdrawal = null;
+        };
+
+        // Close modal on outside click
+        document.getElementById('withdrawalModal').addEventListener('click', (e) => {
+            if (e.target.id === 'withdrawalModal') {
+                closeModal();
+            }
+        });
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Recently';
+            const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-GB', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>
