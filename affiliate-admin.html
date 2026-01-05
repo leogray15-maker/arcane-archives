@@ -869,6 +869,8 @@
 
         function initializeDashboard() {
             setupTabs();
+            setupFilterButtons();
+            setupSearch();
             loadStats();
             loadWithdrawals();
             loadAffiliates();
@@ -925,6 +927,9 @@
             }
         }
 
+        let allWithdrawals = [];
+        let currentFilter = 'all';
+
         async function loadWithdrawals() {
             const q = query(
                 collection(db, 'WithdrawalRequests'),
@@ -932,50 +937,99 @@
             );
 
             onSnapshot(q, (snapshot) => {
-                const tbody = document.getElementById('withdrawalsTable');
-                
-                if (snapshot.empty) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                                No withdrawal requests yet
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                tbody.innerHTML = '';
-
+                // Store all withdrawals
+                allWithdrawals = [];
                 snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const withdrawalId = docSnap.id;
-                    
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${formatDate(data.createdAt)}</td>
-                        <td>${data.username}</td>
-                        <td>£${data.amount.toFixed(2)}</td>
-                        <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + (data.paymentDetails?.cryptoType || 'Crypto')}</td>
-                        <td><span class="status-badge ${data.status}">${data.status}</span></td>
-                        <td>
-                            <div class="action-btns">
-                                <button class="btn btn-view" onclick="viewWithdrawal('${withdrawalId}')">View</button>
-                                ${data.status === 'pending' ? `
-                                    <button class="btn btn-approve" onclick="approveWithdrawal('${withdrawalId}')">Approve</button>
-                                    <button class="btn btn-reject" onclick="rejectWithdrawal('${withdrawalId}')">Reject</button>
-                                ` : ''}
-                            </div>
-                        </td>
-                    `;
-
-                    tbody.appendChild(tr);
+                    allWithdrawals.push({
+                        id: docSnap.id,
+                        ...docSnap.data()
+                    });
                 });
 
-                // Expose functions to window for onclick handlers
-                window.viewWithdrawal = viewWithdrawal;
-                window.approveWithdrawal = approveWithdrawal;
-                window.rejectWithdrawal = rejectWithdrawal;
+                // Render based on current filter
+                renderWithdrawals(currentFilter);
+            });
+        }
+
+        function renderWithdrawals(filter) {
+            const tbody = document.getElementById('withdrawalsTable');
+            
+            // Filter withdrawals based on status
+            const filteredWithdrawals = filter === 'all' 
+                ? allWithdrawals 
+                : allWithdrawals.filter(w => w.status === filter);
+
+            if (filteredWithdrawals.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-dim);">
+                            No ${filter === 'all' ? '' : filter} withdrawal requests
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            filteredWithdrawals.forEach((data) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(data.createdAt)}</td>
+                    <td>${data.username}</td>
+                    <td>£${data.amount.toFixed(2)}</td>
+                    <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + (data.paymentDetails?.cryptoType || 'Crypto')}</td>
+                    <td><span class="status-badge ${data.status}">${data.status}</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-view" onclick="viewWithdrawal('${data.id}')">View</button>
+                            ${data.status === 'pending' ? `
+                                <button class="btn btn-approve" onclick="approveWithdrawal('${data.id}')">Approve</button>
+                                <button class="btn btn-reject" onclick="rejectWithdrawal('${data.id}')">Reject</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            // Expose functions to window for onclick handlers
+            window.viewWithdrawal = viewWithdrawal;
+            window.approveWithdrawal = approveWithdrawal;
+            window.rejectWithdrawal = rejectWithdrawal;
+        }
+
+        // Setup filter buttons
+        function setupFilterButtons() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Update active button
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Update current filter and re-render
+                    currentFilter = btn.dataset.filter;
+                    renderWithdrawals(currentFilter);
+                });
+            });
+        }
+
+        // Setup search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('withdrawalSearch');
+            
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const tbody = document.getElementById('withdrawalsTable');
+                const rows = tbody.getElementsByTagName('tr');
+                
+                Array.from(rows).forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
             });
         }
 
