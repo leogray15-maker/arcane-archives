@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Referrals & Rewards | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     
@@ -25,6 +27,12 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
         }
 
         body {
@@ -32,12 +40,13 @@
             background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
             color: var(--text-light);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
         }
 
-        /* Back Button */
         .back-btn {
             position: fixed;
-            top: 1.5rem;
+            top: calc(1.5rem + env(safe-area-inset-top, 0));
             left: 1.5rem;
             z-index: 40;
             padding: 0.4rem 0.9rem;
@@ -57,10 +66,8 @@
         .back-btn:hover {
             color: var(--purple-light);
             border-color: rgba(147, 51, 234, 0.8);
-            transform: translateX(-2px);
         }
 
-        /* Header */
         .header {
             max-width: 1200px;
             margin: 2.5rem auto 0;
@@ -76,12 +83,6 @@
             font-size: 0.9rem;
         }
 
-        .logo img {
-            height: 32px;
-            width: 32px;
-        }
-
-        /* Main layout */
         .main-content {
             max-width: 1200px;
             margin: 0 auto 4rem;
@@ -102,46 +103,34 @@
         }
 
         .page-hero p {
-            font-size: 1.1rem;
             color: var(--text-dim);
-            max-width: 600px;
-            margin: 0 auto;
+            font-size: 1.1rem;
         }
 
-        /* Tab Navigation */
-        .tab-nav {
+        /* Tabs */
+        .tabs {
             display: flex;
             gap: 1rem;
-            justify-content: center;
-            margin: 2rem 0 2.5rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.3);
-            padding-bottom: 0;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 0.8rem 1.8rem;
-            background: transparent;
+            padding: 1rem 2rem;
+            background: none;
             border: none;
-            border-bottom: 2px solid transparent;
             color: var(--text-dim);
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            border-bottom: 3px solid transparent;
             transition: all 0.2s;
-            position: relative;
-            bottom: -1px;
-            white-space: nowrap;
         }
 
         .tab-btn.active {
             color: var(--purple-light);
             border-bottom-color: var(--purple);
-        }
-
-        .tab-btn:hover:not(.active) {
-            color: var(--text-light);
         }
 
         .tab-content {
@@ -152,408 +141,30 @@
             display: block;
         }
 
-        /* Referral Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.25rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .stat-card {
+        /* Section Card */
+        .section-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .stat-card .number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-card .label {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 640px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-        }
-
-        /* Referral Link Section */
-        .link-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 2rem;
             margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
-        .link-section h2 {
-            font-size: 1.4rem;
-            margin-bottom: 0.5rem;
-            color: var(--purple-light);
-        }
-
-        .link-section p {
-            color: var(--text-dim);
-            margin-bottom: 1rem;
-        }
-
-        .link-input-group {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .link-input-group input {
-            flex: 1;
-            padding: 0.9rem 1.2rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-light);
-            font-size: 0.95rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .copy-btn {
-            padding: 0.9rem 1.8rem;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .copy-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4);
-        }
-
-        /* Commission Breakdown */
-        .commission-breakdown {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .commission-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
-
-        .commission-card h3 {
-            color: var(--purple-light);
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        .commission-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-        }
-
-        .commission-item:last-child {
-            border-bottom: none;
-        }
-
-        .commission-item .name {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        .commission-item .value {
-            font-weight: 600;
-            color: var(--text-light);
-        }
-
-        /* Withdrawal Section */
-        .withdrawal-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .withdrawal-section h2 {
-            font-size: 1.4rem;
-            margin-bottom: 1rem;
-            color: var(--gold);
-        }
-
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .payment-method {
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .payment-method:hover {
-            border-color: var(--purple);
-        }
-
-        .payment-method.selected {
-            border-color: var(--purple);
-            background: rgba(147, 51, 234, 0.15);
-        }
-
-        .payment-method .icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .payment-method .name {
-            font-weight: 600;
-            color: var(--text-light);
-        }
-
-        .payment-method .description {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            margin-top: 0.25rem;
-        }
-
-        .payment-details {
-            display: none;
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-        }
-
-        .payment-details.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-light);
-            font-size: 0.95rem;
-            font-family: inherit;
-        }
-
-        .withdrawal-info {
-            padding: 1rem;
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-        }
-
-        .withdrawal-info ul {
-            margin-left: 1.5rem;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        .withdrawal-info li {
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--green), #15803d);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
-        }
-
-        /* Referrals Table */
-        .referrals-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            overflow: hidden;
-        }
-
-        .referrals-section h2 {
-            font-size: 1.4rem;
-            margin-bottom: 1.25rem;
-            color: var(--text-light);
-            text-align: center;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .referrals-table {
-            width: 100%;
-            min-width: 500px;
-            border-collapse: collapse;
-        }
-
-        @media (max-width: 640px) {
-            .referrals-table {
-                min-width: 100%;
-                font-size: 0.85rem;
-            }
-        }
-
-        .referrals-table th {
-            text-align: left;
-            padding: 0.9rem;
-            border-bottom: 2px solid var(--border-color);
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .referrals-table td {
-            padding: 1rem 0.9rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-            color: var(--text-light);
-        }
-
-        @media (max-width: 640px) {
-            .referrals-table th,
-            .referrals-table td {
-                padding: 0.7rem 0.5rem;
-            }
-        }
-
-        .status-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-badge.active {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--green);
-        }
-
-        .status-badge.pending {
-            background: rgba(251, 191, 36, 0.2);
-            color: var(--gold);
-        }
-
-        .status-badge.completed {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--green);
-        }
-
-        .status-badge.rejected {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--red);
-        }
-        /* IC Markets Section */
-        .ic-markets-section {
-            margin-top: 2rem;
-        }
-
-        .section-header-custom {
-            margin-bottom: 2rem;
-        }
-
-        .section-header-custom h2 {
+        .section-card h2 {
             font-size: 1.6rem;
             margin-bottom: 0.5rem;
-        }
-
-        .section-subtitle-custom {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-        }
-
-        .ic-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-
-        .stat-box {
-            text-align: center;
-            padding: 1.2rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            border-radius: 12px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
             color: var(--purple-light);
-            margin-bottom: 0.25rem;
         }
 
-        .stat-desc {
-            font-size: 0.8rem;
+        .section-subtitle {
             color: var(--text-dim);
+            margin-bottom: 2rem;
         }
 
+        /* Link Box */
         .link-box {
-            margin-bottom: 1.5rem;
+            margin: 2rem 0;
         }
 
         .link-box label {
@@ -574,7 +185,7 @@
             flex: 1;
             padding: 0.75rem 1rem;
             background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(148, 163, 184, 0.3);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-light);
             font-family: monospace;
@@ -590,115 +201,233 @@
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
+            font-size: 16px;
         }
 
-        .copy-btn:hover {
-            background: #7c3aed;
+        .copy-btn:active {
+            transform: scale(0.98);
         }
 
-        .empty-state-box {
-            text-align: center;
-            padding: 2.5rem 2rem;
-        }
-
-        .empty-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state-box h3 {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state-box p {
-            color: var(--text-dim);
-            margin-bottom: 2rem;
-        }
-
-        .benefits-grid {
+        /* Stats Grid */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin: 2rem 0;
         }
 
-        .benefit-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1.2rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(148, 163, 184, 0.3);
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
         }
 
-        .benefit-icon {
-            font-size: 2.5rem;
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
         }
 
-        .benefit-box strong {
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
-            color: var(--text-light);
-        }
-
-        .benefit-box span:last-child {
-            font-size: 0.8rem;
+        .stat-card .label {
             color: var(--text-dim);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-secondary {
-            padding: 0.7rem 1.5rem;
-            background: transparent;
-            border: 1px solid rgba(147, 51, 234, 0.5);
-            border-radius: 8px;
-            color: var(--purple-light);
-            text-decoration: none;
-            font-size: 0.9rem;
-            display: inline-block;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(147, 51, 234, 0.1);
-        }
-
-        .help-box {
-            padding: 1.5rem;
+        /* Info Box */
+        .info-box {
             background: rgba(147, 51, 234, 0.1);
             border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
         }
 
-        .help-box strong {
+        .info-box h3 {
             color: var(--purple-light);
+            margin-bottom: 1rem;
         }
 
-        .help-box ul {
-            margin: 1rem 0 0 1.5rem;
+        .info-box ul {
+            margin-left: 1.5rem;
             line-height: 1.8;
         }
 
-        .help-box li {
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        .referrals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .referrals-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .referrals-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+
+        .status-badge.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--gold);
+        }
+
+        /* Withdrawal Section */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .payment-method {
+            padding: 1.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .payment-method:active {
+            transform: scale(0.98);
+        }
+
+        .payment-method.selected {
+            border-color: var(--purple);
+            background: rgba(147, 51, 234, 0.2);
+        }
+
+        .payment-method .icon {
+            font-size: 2rem;
             margin-bottom: 0.5rem;
+        }
+
+        .payment-method .name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-method .description {
+            font-size: 0.85rem;
             color: var(--text-dim);
         }
 
+        .payment-details {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .payment-details.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: var(--purple);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .withdrawal-info {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .withdrawal-info ul {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+
         @media (max-width: 768px) {
-            .ic-stats-grid {
-                grid-template-columns: 1fr;
+            .page-hero h1 {
+                font-size: 2rem;
             }
-            
-            .benefits-grid {
-                grid-template-columns: 1fr;
+
+            .tabs {
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .section-card {
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
             }
 
             .link-display {
@@ -710,6 +439,11 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -717,7 +451,6 @@
 
     <div class="header">
         <div class="logo">
-            <img src="ArcaneA.png" alt="Arcane" />
             <span>THE ARCANE ARCHIVES</span>
         </div>
     </div>
@@ -728,95 +461,100 @@
             <p>Earn £25/month for every active referral + trade rebates from IC Markets</p>
         </div>
 
-        <!-- Tab Navigation -->
-        <div class="tab-nav">
-            <button class="tab-btn active" data-tab="overview">Referral Program</button>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="program">Referral Program</button>
             <button class="tab-btn" data-tab="earnings">Affiliate Earnings</button>
         </div>
 
-        <!-- Tab 1: Referral Program -->
-        <div id="overview" class="tab-content active">
-            <!-- Referral Link -->
-            <div class="link-section">
-                <h2>🔗 Your Referral Link</h2>
-                <p>Share this link to earn £25/month per active member</p>
-                <div class="link-input-group">
-                    <input type="text" id="referralLink" readonly>
-                    <button class="copy-btn" id="copyBtn">Copy Link</button>
+        <!-- ==================== TAB 1: REFERRAL PROGRAM (INFORMATION & LINKS ONLY) ==================== -->
+        <div id="program" class="tab-content active">
+            
+            <!-- ARCANE ARCHIVES REFERRALS -->
+            <div class="section-card">
+                <h2>🔗 Arcane Archives Referrals</h2>
+                <p class="section-subtitle">Earn £25/month for every active member you refer</p>
+
+                <div class="link-box">
+                    <label>Your Referral Link</label>
+                    <div class="link-display">
+                        <input 
+                            type="text" 
+                            id="arcaneRefLink" 
+                            readonly 
+                            class="link-input"
+                        />
+                        <button class="copy-btn" id="copyArcaneBtn">📋 Copy</button>
+                    </div>
                 </div>
-                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
-                    Your Code: <strong id="referralCode" style="color: var(--purple-light);">LOADING...</strong>
-                </p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number" id="totalReferrals">0</div>
+                        <div class="label">Total Referrals</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" style="color: var(--green);" id="activeMembers">0</div>
+                        <div class="label">Active Members</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" style="color: var(--gold);" id="pendingReferrals">0</div>
+                        <div class="label">Pending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" style="color: var(--purple-light);" id="monthlyEarnings">£0</div>
+                        <div class="label">Monthly Earnings</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 How It Works</h3>
+                    <ul>
+                        <li><strong>Per Member:</strong> Earn £25/month per active subscriber</li>
+                        <li><strong>Payment Schedule:</strong> Monthly recurring commissions</li>
+                        <li><strong>Minimum Withdrawal:</strong> £50</li>
+                        <li><strong>Processing:</strong> Withdrawals processed twice weekly (Mon & Thu)</li>
+                        <li><strong>Withdraw:</strong> Go to "Affiliate Earnings" tab to request withdrawals</li>
+                    </ul>
+                </div>
             </div>
 
-            <!-- Stats Grid -->
+            <!-- IC MARKETS IB PROGRAM -->
+            <div class="section-card">
+                <h2>🏦 IC Markets Trading Referrals</h2>
+                <p class="section-subtitle">Earn 70% commission on trading volume (paid directly by IC Markets)</p>
+
+                <div id="icMarketsContent">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: AFFILIATE EARNINGS (MONEY & WITHDRAWALS) ==================== -->
+        <div id="earnings" class="tab-content">
+            
+            <!-- BALANCE STATS -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="number" id="totalReferrals" style="color: var(--purple-light);">0</div>
-                    <div class="label">Total Referrals</div>
+                    <div class="number" style="color: var(--green);" id="availableBalance">£0.00</div>
+                    <div class="label">Available to Withdraw</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="number" id="activeMembers" style="color: var(--green);">0</div>
-                    <div class="label">Active Members</div>
+                    <div class="number" style="color: var(--gold);" id="pendingBalance">£0.00</div>
+                    <div class="label">Pending Earnings</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="number" id="pendingReferrals" style="color: var(--gold);">0</div>
-                    <div class="label">Pending</div>
+                    <div class="number" style="color: var(--purple-light);" id="totalEarned">£0.00</div>
+                    <div class="label">Total Earned</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="number" id="totalEarnings" style="color: var(--gold);">£0</div>
-                    <div class="label">Monthly Earnings</div>
+                    <div class="number" style="color: var(--text-dim);" id="totalWithdrawn">£0.00</div>
+                    <div class="label">Total Withdrawn</div>
                 </div>
             </div>
 
-            <!-- Commission Breakdown -->
-            <div class="commission-breakdown">
-                <div class="commission-card">
-                    <h3>📊 This Month's Performance</h3>
-                    <div class="commission-item">
-                        <span class="name">Active Referrals</span>
-                        <span class="value" id="activeCount">0</span>
-                    </div>
-                    <div class="commission-item">
-                        <span class="name">Recurring Commission</span>
-                        <span class="value" id="recurringAmount">£0.00</span>
-                    </div>
-                    <div class="commission-item">
-                        <span class="name">Trade Rebates</span>
-                        <span class="value" id="tradeRebates">£0.00</span>
-                    </div>
-                    <div class="commission-item" style="border-top: 2px solid var(--border-color); margin-top: 0.5rem; padding-top: 1rem;">
-                        <span class="name"><strong>Total This Month</strong></span>
-                        <span class="value" style="color: var(--green); font-size: 1.2rem;" id="monthTotal">£0.00</span>
-                    </div>
-                </div>
-
-                <div class="commission-card">
-                    <h3>💡 How It Works</h3>
-                    <div class="commission-item">
-                        <span class="name">Per Member</span>
-                        <span class="value">£25/month</span>
-                    </div>
-                    <div class="commission-item">
-                        <span class="name">Payment Schedule</span>
-                        <span class="value">Monthly</span>
-                    </div>
-                    <div class="commission-item">
-                        <span class="name">Trade Rebates</span>
-                        <span class="value">Per lot</span>
-                    </div>
-                    <div class="commission-item">
-                        <span class="name">Min Withdrawal</span>
-                        <span class="value">£50</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Referrals Table -->
-            <div class="referrals-section">
+            <!-- YOUR REFERRALS TABLE -->
+            <div class="section-card">
                 <h2>👥 Your Referrals</h2>
                 <div class="table-wrapper">
                     <table class="referrals-table">
@@ -838,47 +576,9 @@
                     </table>
                 </div>
             </div>
-        </div>
 
-        <!-- IC Markets IB Section -->
-        <div class="section-card ic-markets-section">
-            <div class="section-header-custom">
-                <h2>🏦 IC Markets Trading Referrals</h2>
-                <p class="section-subtitle-custom">Share your Sub-IB link to earn 70% commission on trades</p>
-            </div>
-
-            <div id="icMarketsContent">
-                <!-- Populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- Tab 2: Affiliate Earnings -->
-        <div id="earnings" class="tab-content">
-            <!-- Available Balance -->
-            <div class="stats-grid" style="margin-bottom: 3rem;">
-                <div class="stat-card">
-                    <div class="number" style="color: var(--green);" id="availableBalance">£0.00</div>
-                    <div class="label">Available to Withdraw</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="number" style="color: var(--gold);" id="pendingBalance">£0.00</div>
-                    <div class="label">Pending Earnings</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="number" style="color: var(--purple-light);" id="totalEarnedLifetime">£0.00</div>
-                    <div class="label">Total Earned</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="number" style="color: var(--text-dim);" id="totalWithdrawnAmount">£0.00</div>
-                    <div class="label">Total Withdrawn</div>
-                </div>
-            </div>
-
-            <!-- Withdrawal Section -->
-            <div class="withdrawal-section">
+            <!-- REQUEST WITHDRAWAL -->
+            <div class="section-card">
                 <h2>💸 Request Withdrawal</h2>
                 
                 <div class="withdrawal-info">
@@ -963,8 +663,8 @@
                 </div>
             </div>
 
-            <!-- Withdrawal History -->
-            <div class="referrals-section">
+            <!-- WITHDRAWAL HISTORY -->
+            <div class="section-card">
                 <h2>📜 Withdrawal History</h2>
                 <div class="table-wrapper">
                     <table class="referrals-table">
@@ -995,24 +695,21 @@
         import { 
             getFirestore, 
             doc, 
-            getDoc, 
-            collection, 
-            query, 
-            where, 
-            orderBy, 
-            limit, 
+            getDoc,
+            collection,
+            query,
+            where,
+            orderBy,
+            limit,
             onSnapshot,
-            addDoc,
+            setDoc,
             serverTimestamp
         } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
             authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+            projectId: "arcane-archives-3b0f5"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -1020,147 +717,102 @@
         const db = getFirestore(app);
 
         let currentUser = null;
-        let currentUserData = null;
-        let selectedPaymentMethod = null;
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabName).classList.add('active');
+
+                if (tabName === 'earnings') {
+                    loadAffiliateEarnings();
+                    loadWithdrawalHistory();
+                }
+            });
+        });
+
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', () => {
+                const methodType = method.dataset.method;
+                
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                method.classList.add('selected');
+                
+                document.querySelectorAll('.payment-details').forEach(detail => {
+                    detail.classList.remove('active');
+                });
+                document.getElementById(methodType + 'Details').classList.add('active');
+            });
+        });
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                location.href = 'login.html';
+                window.location.href = 'login.html';
                 return;
             }
 
             currentUser = user;
             
-            // Get user data
             const userDoc = await getDoc(doc(db, 'Users', user.uid));
-            currentUserData = userDoc.data() || {};
+            const userData = userDoc.data();
             
-            // Use stored referralCode if exists, else fallback to UID slice
-            const referralCode = currentUserData.referralCode || user.uid.slice(0, 8).toUpperCase();
-
-            // Set up referral link
-            const referralLink = `https://arcanearchives.netlify.app?ref=${referralCode}`;
-            document.getElementById('referralLink').value = referralLink;
-            document.getElementById('referralCode').textContent = referralCode;
-
-            // Load referral stats + referred members
-            loadReferralStats(referralCode);
+            const referralCode = userData.referralCode || user.uid.slice(0, 8).toUpperCase();
+            const arcaneRefLink = `https://arcanearchives.netlify.app/?ref=${referralCode}`;
+            
+            document.getElementById('arcaneRefLink').value = arcaneRefLink;
+            
+            await loadReferralStats(referralCode);
+            await loadICMarketsSection(userData);
             loadReferredMembers(referralCode);
-            
-            // Load IC Markets section
-            await loadICMarketsSection();
-            loadAffiliateEarnings();
-            loadWithdrawalHistory();
-
-            // Set up tab switching
-            setupTabs();
-
-            // Set up payment methods
-            setupPaymentMethods();
-
-            // Copy button
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                const input = document.getElementById('referralLink');
-                input.select();
-                document.execCommand('copy');
-                
-                const btn = document.getElementById('copyBtn');
-                btn.textContent = '✓ Copied!';
-                btn.style.background = 'linear-gradient(135deg, #22c55e, #15803d)';
-                
-                setTimeout(() => {
-                    btn.textContent = 'Copy Link';
-                    btn.style.background = 'linear-gradient(135deg, var(--purple), var(--purple-dark))';
-                }, 2000);
-            });
-
-            // Withdrawal forms
-            document.getElementById('bankForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleWithdrawalRequest('bank');
-            });
-
-            document.getElementById('cryptoForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                handleWithdrawalRequest('crypto');
-            });
         });
 
-        function setupTabs() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
+        // Copy Arcane link
+        document.getElementById('copyArcaneBtn').addEventListener('click', () => {
+            const input = document.getElementById('arcaneRefLink');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            
+            const btn = document.getElementById('copyArcaneBtn');
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => {
+                btn.textContent = '📋 Copy';
+            }, 2000);
+        });
 
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetTab = btn.getAttribute('data-tab');
-
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-
-                    btn.classList.add('active');
-                    document.getElementById(targetTab).classList.add('active');
-                });
-            });
-        }
-
-        function setupPaymentMethods() {
-            document.querySelectorAll('.payment-method').forEach(method => {
-                method.addEventListener('click', () => {
-                    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
-                    document.querySelectorAll('.payment-details').forEach(d => d.classList.remove('active'));
-                    
-                    method.classList.add('selected');
-                    selectedPaymentMethod = method.dataset.method;
-                    
-                    if (selectedPaymentMethod === 'bank') {
-                        document.getElementById('bankDetails').classList.add('active');
-                    } else {
-                        document.getElementById('cryptoDetails').classList.add('active');
-                    }
-                });
-            });
-        }
-
-        function loadReferralStats(referralCode) {
+        async function loadReferralStats(referralCode) {
             const q = query(
                 collection(db, 'Users'),
                 where('referredBy', '==', referralCode)
             );
 
-            onSnapshot(q, async (snapshot) => {
+            onSnapshot(q, (snapshot) => {
                 const total = snapshot.size;
                 let active = 0;
                 let pending = 0;
-                let monthlyEarnings = 0;
 
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const isActive = data.subscriptionStatus === 'active' || data.isPaid === true;
-                    
-                    if (isActive) {
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.isPaid || data.subscriptionStatus === 'active') {
                         active++;
-                        monthlyEarnings += 25; // £25 per active member
                     } else {
                         pending++;
                     }
                 });
 
-                // Get trade rebates
-                const rebateDoc = await getDoc(doc(db, 'TradeRebates', currentUser.uid));
-                const tradeRebates = rebateDoc.exists() ? (rebateDoc.data().currentMonthRebates || 0) : 0;
-
-                const totalMonth = monthlyEarnings + tradeRebates;
+                const monthlyEarnings = active * 25;
 
                 document.getElementById('totalReferrals').textContent = total;
                 document.getElementById('activeMembers').textContent = active;
                 document.getElementById('pendingReferrals').textContent = pending;
-                document.getElementById('totalEarnings').textContent = `£${monthlyEarnings}`;
-                
-                // Commission breakdown
-                document.getElementById('activeCount').textContent = active;
-                document.getElementById('recurringAmount').textContent = `£${monthlyEarnings.toFixed(2)}`;
-                document.getElementById('tradeRebates').textContent = `£${tradeRebates.toFixed(2)}`;
-                document.getElementById('monthTotal').textContent = `£${totalMonth.toFixed(2)}`;
+                document.getElementById('monthlyEarnings').textContent = `£${monthlyEarnings}`;
             });
         }
 
@@ -1174,7 +826,6 @@
 
             onSnapshot(q, (snapshot) => {
                 const tbody = document.getElementById('referralsTableBody');
-                if (!tbody) return;
 
                 if (snapshot.empty) {
                     tbody.innerHTML = `
@@ -1208,71 +859,57 @@
             });
         }
 
-        async function loadICMarketsSection() {
+        async function loadICMarketsSection(userData) {
             const icContent = document.getElementById('icMarketsContent');
             
-            const userDoc = await getDoc(doc(db, 'Users', currentUser.uid));
-            const userData = userDoc.data();
-            
             if (userData.icMarketsIBLink) {
-                // User has IC Markets connected
                 icContent.innerHTML = `
-                    <div class="ic-connected">
-                        <div class="link-box">
-                            <label>Your Sub-IB Link</label>
-                            <div class="link-display">
-                                <input 
-                                    type="text" 
-                                    id="icMarketsLinkDisplay" 
-                                    readonly 
-                                    value="${userData.icMarketsIBLink}"
-                                    class="link-input"
-                                />
-                                <button class="copy-btn" id="copyICMarketsBtn">
-                                    📋 Copy
-                                </button>
-                            </div>
+                    <div class="link-box">
+                        <label>Your Sub-IB Link</label>
+                        <div class="link-display">
+                            <input 
+                                type="text" 
+                                id="icMarketsLinkDisplay" 
+                                readonly 
+                                value="${userData.icMarketsIBLink}"
+                                class="link-input"
+                            />
+                            <button class="copy-btn" id="copyICMarketsBtn">📋 Copy</button>
                         </div>
+                    </div>
 
-                        <div class="ic-stats-grid">
-                            <div class="stat-box">
-                                <div class="stat-label">Your Commission</div>
-                                <div class="stat-value">70%</div>
-                                <div class="stat-desc">From your direct traders</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-label">Override Commission</div>
-                                <div class="stat-value">30%</div>
-                                <div class="stat-desc">From your Sub-IBs' volume</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-label">Payment</div>
-                                <div class="stat-value">Direct</div>
-                                <div class="stat-desc">IC Markets pays you monthly</div>
-                            </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number" style="color: var(--purple-light);">70%</div>
+                            <div class="label">Your Commission</div>
                         </div>
+                        <div class="stat-card">
+                            <div class="number" style="color: var(--gold);">30%</div>
+                            <div class="label">Override Commission</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" style="color: var(--green);">Direct</div>
+                            <div class="label">Payment Method</div>
+                        </div>
+                    </div>
 
-                        <div class="help-box">
-                            <strong>💡 Maximize Your IC Markets Earnings:</strong>
-                            <ul>
-                                <li>Share your Sub-IB link with active traders</li>
-                                <li>Recruit affiliates to become Sub-IBs under you (you earn 30% override)</li>
-                                <li>Track earnings in your IC Markets IB dashboard</li>
-                                <li>Withdraw directly from IC Markets (separate from this platform)</li>
-                            </ul>
-                            <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim);">
-                                <strong>Note:</strong> IC Markets rebates are paid directly to your IC Markets account.
-                                They are NOT tracked or withdrawn through The Arcane Archives.
-                            </p>
-                        </div>
+                    <div class="info-box">
+                        <h3>💡 How IC Markets Works</h3>
+                        <ul>
+                            <li><strong>Your Commission:</strong> Earn 70% on trades from your direct referrals</li>
+                            <li><strong>Override:</strong> Earn 30% on trades from your Sub-IBs</li>
+                            <li><strong>Leo's Override:</strong> Leo earns 30% from your volume (parent IB)</li>
+                            <li><strong>Payment:</strong> IC Markets pays you DIRECTLY to your IC Markets account</li>
+                            <li><strong>Separate System:</strong> IC Markets rebates are NOT withdrawn through this platform</li>
+                            <li><strong>Connect in Settings:</strong> Add your IC Markets Sub-IB link in the Settings page</li>
+                        </ul>
                     </div>
                 `;
 
-                // Copy button functionality
                 document.getElementById('copyICMarketsBtn').addEventListener('click', () => {
-                    const linkInput = document.getElementById('icMarketsLinkDisplay');
-                    linkInput.select();
-                    navigator.clipboard.writeText(linkInput.value);
+                    const input = document.getElementById('icMarketsLinkDisplay');
+                    input.select();
+                    navigator.clipboard.writeText(input.value);
                     
                     const btn = document.getElementById('copyICMarketsBtn');
                     btn.textContent = '✅ Copied!';
@@ -1282,40 +919,38 @@
                 });
 
             } else {
-                // User hasn't connected IC Markets yet
                 icContent.innerHTML = `
-                    <div class="ic-not-connected">
-                        <div class="empty-state-box">
-                            <div class="empty-icon">🏦</div>
-                            <h3>IC Markets Not Connected</h3>
-                            <p>Unlock unlimited earning potential by becoming a Sub-IB</p>
-                            
-                            <div class="benefits-grid">
-                                <div class="benefit-box">
-                                    <span class="benefit-icon">💰</span>
-                                    <strong>Earn 70%</strong>
-                                    <span>Commission on all trades</span>
-                                </div>
-                                <div class="benefit-box">
-                                    <span class="benefit-icon">📈</span>
-                                    <strong>Scale Infinitely</strong>
-                                    <span>Recruit Sub-IBs, earn overrides</span>
-                                </div>
-                                <div class="benefit-box">
-                                    <span class="benefit-icon">💸</span>
-                                    <strong>Direct Payment</strong>
-                                    <span>IC Markets pays you monthly</span>
-                                </div>
+                    <div class="info-box" style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏦</div>
+                        <h3 style="margin-bottom: 1rem;">IC Markets Not Connected</h3>
+                        <p style="margin-bottom: 2rem;">Unlock unlimited earning potential by becoming a Sub-IB</p>
+                        
+                        <div class="stats-grid" style="margin: 2rem 0;">
+                            <div class="stat-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💰</div>
+                                <strong>Earn 70%</strong>
+                                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.25rem;">Commission on trades</p>
                             </div>
+                            <div class="stat-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+                                <strong>Scale Infinitely</strong>
+                                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.25rem;">Recruit Sub-IBs</p>
+                            </div>
+                            <div class="stat-card">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💸</div>
+                                <strong>Direct Payment</strong>
+                                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.25rem;">IC Markets pays you</p>
+                            </div>
+                        </div>
 
-                            <div class="cta-buttons">
-                                <button class="btn btn-primary" onclick="window.location.href='settings.html'" style="padding: 0.7rem 1.5rem; border-radius: 8px;">
-                                    ⚙️ Connect IC Markets
-                                </button>
-                                <a href="https://icmarkets.com/ib-program" target="_blank" class="btn-secondary">
-                                    📋 Learn More
-                                </a>
-                            </div>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <button onclick="window.location.href='settings.html'" class="btn-submit" style="width: auto; padding: 0.75rem 2rem;">
+                                ⚙️ Connect in Settings
+                            </button>
+                            <a href="https://icmarkets.com/ib-program" target="_blank" class="btn-submit" 
+                               style="width: auto; padding: 0.75rem 2rem; background: transparent; border: 1px solid var(--purple); text-decoration: none; display: inline-block;">
+                                📋 Learn More
+                            </a>
                         </div>
                     </div>
                 `;
@@ -1329,8 +964,8 @@
                 const data = affiliateDoc.data();
                 document.getElementById('availableBalance').textContent = `£${(data.availableBalance || 0).toFixed(2)}`;
                 document.getElementById('pendingBalance').textContent = `£${(data.pendingBalance || 0).toFixed(2)}`;
-                document.getElementById('totalEarnedLifetime').textContent = `£${(data.totalEarnings || 0).toFixed(2)}`;
-                document.getElementById('totalWithdrawnAmount').textContent = `£${(data.totalWithdrawn || 0).toFixed(2)}`;
+                document.getElementById('totalEarned').textContent = `£${(data.totalEarnings || 0).toFixed(2)}`;
+                document.getElementById('totalWithdrawn').textContent = `£${(data.totalWithdrawn || 0).toFixed(2)}`;
             }
         }
 
@@ -1365,88 +1000,96 @@
                     tr.innerHTML = `
                         <td>${formatDate(data.createdAt)}</td>
                         <td>£${data.amount.toFixed(2)}</td>
-                        <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + data.paymentDetails.cryptoType}</td>
-                        <td><span class="status-badge ${data.status}">${data.status}</span></td>
+                        <td>${data.method.toUpperCase()}</td>
+                        <td><span class="status-badge ${data.status}">${capitalizeFirst(data.status)}</span></td>
                     `;
-
                     tbody.appendChild(tr);
                 });
             });
         }
 
-        async function handleWithdrawalRequest(method) {
-            try {
-                // Get available balance
-                const affiliateDoc = await getDoc(doc(db, 'Affiliates', currentUser.uid));
-                const availableBalance = affiliateDoc.exists() ? (affiliateDoc.data().availableBalance || 0) : 0;
+        // Bank form
+        document.getElementById('bankForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-                let amount, paymentDetails;
+            const amount = parseFloat(document.getElementById('bankAmount').value);
 
-                if (method === 'bank') {
-                    amount = parseFloat(document.getElementById('bankAmount').value);
-                    paymentDetails = {
-                        accountName: document.getElementById('accountName').value,
-                        bankName: document.getElementById('bankName').value,
-                        accountNumber: document.getElementById('accountNumber').value,
-                        sortCode: document.getElementById('sortCode').value
-                    };
-                } else {
-                    amount = parseFloat(document.getElementById('cryptoAmount').value);
-                    paymentDetails = {
-                        cryptoType: document.getElementById('cryptoType').value,
-                        walletAddress: document.getElementById('walletAddress').value,
-                        network: document.getElementById('cryptoNetwork').value
-                    };
-                }
-
-                // Validation
-                if (amount < 50) {
-                    alert('⚠️ Minimum withdrawal is £50.00');
-                    return;
-                }
-
-                if (amount > availableBalance) {
-                    alert(`⚠️ Insufficient balance. Available: £${availableBalance.toFixed(2)}`);
-                    return;
-                }
-
-                // Create withdrawal request
-                await addDoc(collection(db, 'WithdrawalRequests'), {
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    username: currentUserData.Username || currentUser.email,
-                    amount: amount,
-                    method: method,
-                    paymentDetails: paymentDetails,
-                    status: 'pending',
-                    createdAt: serverTimestamp(),
-                    processedAt: null,
-                    processedBy: null
-                });
-
-                alert('✅ Withdrawal request submitted! We\'ll process it within 24-48 hours.');
-                
-                // Reset forms
-                if (method === 'bank') {
-                    document.getElementById('bankForm').reset();
-                } else {
-                    document.getElementById('cryptoForm').reset();
-                }
-
-            } catch (error) {
-                console.error('Error submitting withdrawal:', error);
-                alert('❌ Error submitting withdrawal. Please try again.');
+            if (amount < 50) {
+                alert('Minimum withdrawal is £50');
+                return;
             }
-        }
+
+            const withdrawalData = {
+                userId: currentUser.uid,
+                amount: amount,
+                method: 'bank',
+                accountName: document.getElementById('accountName').value,
+                bankName: document.getElementById('bankName').value,
+                accountNumber: document.getElementById('accountNumber').value,
+                sortCode: document.getElementById('sortCode').value,
+                status: 'pending',
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
+                await setDoc(withdrawalRef, withdrawalData);
+                
+                alert('✅ Withdrawal request submitted! Processing within 24-48 hours.');
+                document.getElementById('bankForm').reset();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Failed to submit. Please try again.');
+            }
+        });
+
+        // Crypto form
+        document.getElementById('cryptoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const amount = parseFloat(document.getElementById('cryptoAmount').value);
+
+            if (amount < 50) {
+                alert('Minimum withdrawal is £50');
+                return;
+            }
+
+            const withdrawalData = {
+                userId: currentUser.uid,
+                amount: amount,
+                method: 'crypto',
+                cryptoType: document.getElementById('cryptoType').value,
+                walletAddress: document.getElementById('walletAddress').value,
+                network: document.getElementById('cryptoNetwork').value,
+                status: 'pending',
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
+                await setDoc(withdrawalRef, withdrawalData);
+                
+                alert('✅ Withdrawal request submitted! Processing within 24-48 hours.');
+                document.getElementById('cryptoForm').reset();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Failed to submit. Please try again.');
+            }
+        });
 
         function formatDate(timestamp) {
-            if (!timestamp) return 'Recently';
-            const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
             return date.toLocaleDateString('en-GB', { 
-                day: 'numeric', 
+                day: '2-digit', 
                 month: 'short', 
                 year: 'numeric' 
             });
+        }
+
+        function capitalizeFirst(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
     </script>
 </body>

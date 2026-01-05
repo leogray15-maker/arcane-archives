@@ -14,37 +14,37 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
+html {
   height: 100%;
   overflow-x: hidden;
 }
 
 body {
+  margin: 0;
+  padding: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
   color: #e5e5e5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
   min-height: -webkit-fill-available;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top, 1rem) env(safe-area-inset-right, 1rem) env(safe-area-inset-bottom, 1rem) env(safe-area-inset-left, 1rem);
 }
 
 .container {
   width: 100%;
   max-width: 520px;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .referral-banner {
   background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(76, 29, 149, 0.2));
   border: 1px solid rgba(147, 51, 234, 0.4);
   border-radius: 16px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -52,6 +52,7 @@ body {
 
 .referral-icon {
   font-size: 2rem;
+  flex-shrink: 0;
 }
 
 .referral-content {
@@ -61,7 +62,7 @@ body {
 .referral-content strong {
   display: block;
   color: #a78bfa;
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin-bottom: 0.25rem;
 }
 
@@ -75,25 +76,26 @@ body {
 .box {
   width: 100%;
   background: rgba(15,23,42,.96);
-  border-radius: 22px;
+  border-radius: 20px;
   border: 1px solid rgba(148,163,184,.4);
-  padding: 2.5rem;
+  padding: 1.5rem;
   box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
 }
 
 h1 {
-  margin-top: 0;
+  margin: 0 0 0.5rem 0;
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   background: linear-gradient(135deg, #a78bfa, #fbbf24);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-p {
+.subtitle {
   text-align: center;
   color: #a3a3a3;
   margin-bottom: 1.5rem;
+  font-size: 0.95rem;
 }
 
 label {
@@ -102,18 +104,28 @@ label {
   color: #a3a3a3;
   margin-top: 0.8rem;
   margin-bottom: 0.3rem;
+  font-weight: 500;
 }
 
-input, select, button, textarea {
+input, select, button {
   width: 100%;
-  padding: .9rem 1rem;
-  border-radius: 12px;
+  padding: 0.9rem;
+  border-radius: 10px;
   border: 1px solid rgba(148,163,184,.4);
   background: rgba(15,23,42,.95);
   color: #e5e5e5;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 16px; /* Prevents iOS zoom */
   transition: all 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.5rem;
 }
 
 input[type="date"] {
@@ -125,29 +137,24 @@ input[type="date"]:valid {
   color: #e5e5e5;
 }
 
-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-input:focus, select:focus, textarea:focus {
+input:focus, select:focus {
   outline: none;
   border-color: #9333ea;
   box-shadow: 0 0 0 3px rgba(147,51,234,0.2);
 }
 
 button {
-  margin-top: 1.2rem;
+  margin-top: 1rem;
   background: linear-gradient(135deg,#9333ea,#7e22ce);
   border: none;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 1rem;
 }
 
-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(147,51,234,.4);
+button:active {
+  transform: scale(0.98);
 }
 
 button:disabled {
@@ -167,8 +174,9 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: .6rem;
-  padding: .5rem 0;
+  padding: .4rem 0;
   color: #a3a3a3;
+  font-size: 0.9rem;
 }
 
 .step.active {
@@ -188,6 +196,8 @@ button:disabled {
   text-align: center;
   display: none;
   margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 .error {
@@ -199,31 +209,45 @@ button:disabled {
   text-align: center;
   display: none;
   margin-top: 1rem;
+  font-size: 0.9rem;
 }
 
 .checkbox-group {
   display: flex;
   align-items: flex-start;
   gap: 0.6rem;
-  margin-top: 1rem;
+  margin-top: 0.8rem;
 }
 
 .checkbox-group input[type="checkbox"] {
-  width: auto;
-  margin-top: 0.2rem;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-top: 0.1rem;
   cursor: pointer;
 }
 
 .checkbox-group label {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
+  line-height: 1.4;
+}
+
+.checkbox-group a {
+  color: #a78bfa;
+  text-decoration: none;
+}
+
+.checkbox-group a:active {
+  opacity: 0.7;
 }
 
 .login-link {
   text-align: center;
   margin-top: 1.5rem;
   color: #a3a3a3;
+  font-size: 0.9rem;
 }
 
 .login-link a {
@@ -232,17 +256,60 @@ button:disabled {
   font-weight: 600;
 }
 
-.login-link a:hover {
-  text-decoration: underline;
+.login-link a:active {
+  opacity: 0.7;
 }
 
+/* Mobile specific */
 @media (max-width: 640px) {
   .box {
-    padding: 2rem 1.5rem;
+    padding: 1.2rem;
+    border-radius: 16px;
   }
 
   h1 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  label {
+    font-size: 0.8rem;
+    margin-top: 0.7rem;
+  }
+
+  input, select, button {
+    padding: 0.85rem;
+  }
+
+  .referral-banner {
+    padding: 0.9rem;
+  }
+
+  .referral-icon {
+    font-size: 1.8rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 380px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  .box {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  input, select, button {
+    padding: 0.8rem;
+    font-size: 15px;
   }
 }
 </style>
@@ -254,44 +321,44 @@ button:disabled {
 
   <div class="box">
     <h1>Create Your Account</h1>
-    <p>Join The Arcane Archives</p>
+    <p class="subtitle">Join The Arcane Archives</p>
 
     <form id="signupForm">
       <label>Username *</label>
-      <input type="text" id="username" required placeholder="Choose a username">
+      <input type="text" id="username" required placeholder="Choose a username" autocomplete="username">
 
       <label>First Name *</label>
-      <input type="text" id="firstName" required placeholder="Your first name">
+      <input type="text" id="firstName" required placeholder="Your first name" autocomplete="given-name">
 
       <label>Last Name *</label>
-      <input type="text" id="lastName" required placeholder="Your last name">
+      <input type="text" id="lastName" required placeholder="Your last name" autocomplete="family-name">
 
       <label>Email *</label>
-      <input type="email" id="email" required placeholder="your@email.com">
+      <input type="email" id="email" required placeholder="your@email.com" autocomplete="email">
 
       <label>Phone Number</label>
-      <input type="tel" id="phone" placeholder="+44 7700 900000">
+      <input type="tel" id="phone" placeholder="+44 7700 900000" autocomplete="tel">
 
       <label>Date of Birth *</label>
-      <input type="date" id="dob" required>
+      <input type="date" id="dob" required autocomplete="bday">
 
       <label>Address Line 1 *</label>
-      <input type="text" id="address1" required placeholder="Street address">
+      <input type="text" id="address1" required placeholder="Street address" autocomplete="address-line1">
 
       <label>Address Line 2</label>
-      <input type="text" id="address2" placeholder="Apartment, suite, etc. (optional)">
+      <input type="text" id="address2" placeholder="Apartment, suite (optional)" autocomplete="address-line2">
 
       <label>City *</label>
-      <input type="text" id="city" required placeholder="City">
+      <input type="text" id="city" required placeholder="City" autocomplete="address-level2">
 
       <label>State/County *</label>
-      <input type="text" id="state" required placeholder="State or County">
+      <input type="text" id="state" required placeholder="State or County" autocomplete="address-level1">
 
       <label>Postal Code *</label>
-      <input type="text" id="postal" required placeholder="Postcode">
+      <input type="text" id="postal" required placeholder="Postcode" autocomplete="postal-code">
 
       <label>Country *</label>
-      <select id="country" required>
+      <select id="country" required autocomplete="country">
         <option value="">Select your country</option>
         <option value="GB">United Kingdom</option>
         <option value="US">United States</option>
@@ -307,10 +374,10 @@ button:disabled {
       </select>
 
       <label>Password *</label>
-      <input type="password" id="password" required placeholder="Create a strong password">
+      <input type="password" id="password" required placeholder="Create a strong password" autocomplete="new-password">
 
       <label>Confirm Password *</label>
-      <input type="password" id="confirmPassword" required placeholder="Confirm your password">
+      <input type="password" id="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password">
 
       <div class="checkbox-group">
         <input type="checkbox" id="newsletter">
@@ -319,7 +386,7 @@ button:disabled {
 
       <div class="checkbox-group">
         <input type="checkbox" id="terms" required>
-        <label for="terms">I agree to the <a href="terms-of-service.html" target="_blank" style="color: #a78bfa;">Terms of Service</a> *</label>
+        <label for="terms">I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a> *</label>
       </div>
 
       <button type="submit" id="submitBtn">Create Account</button>
@@ -418,6 +485,7 @@ function showSuccess(msg) {
   box.innerHTML = msg;
   box.style.display = 'block';
   document.getElementById('errorBox').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showError(msg) {
@@ -426,6 +494,7 @@ function showError(msg) {
   box.style.display = 'block';
   document.getElementById('successBox').style.display = 'none';
   document.getElementById('progressBox').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 document.getElementById('signupForm').addEventListener('submit', async (e) => {
@@ -477,31 +546,21 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   try {
     // Step 1: Create auth account
     showProgress(1);
-    console.log("Step 1: Creating Firebase Auth account");
     
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const user = cred.user;
     
-    console.log("✅ Auth user created:", user.uid);
-    
     // Step 2: Update profile
     showProgress(2);
-    console.log("Step 2: Updating profile");
     
     await updateProfile(user, { 
       displayName: username 
     });
-    
-    console.log("✅ Profile updated");
 
     // Step 3: Create Firestore document
     showProgress(3);
-    console.log("Step 3: Creating Firestore document");
     
-    // Generate default referral code
     const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
-
-    // Get referral code from session
     const referredByCode = sessionStorage.getItem('referralCode');
     let referredBy = null;
 
@@ -515,9 +574,6 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
       
       if (!referrerSnapshot.empty) {
         referredBy = referredByCode.toUpperCase();
-        console.log("✅ Valid referral code:", referredBy);
-      } else {
-        console.log("⚠️ Invalid referral code:", referredByCode);
       }
     }
     
@@ -546,16 +602,14 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
       lastLoginDate: serverTimestamp()
     };
 
-    // Add referral info if valid
     if (referredBy) {
       userData.referredBy = referredBy;
       userData.referredAt = serverTimestamp();
     }
     
     await setDoc(doc(db, "Users", user.uid), userData);
-    console.log("✅ Firestore document created");
 
-    // Update referrer stats if referred
+    // Update referrer stats
     if (referredBy) {
       try {
         const referrerQuery = query(
@@ -566,8 +620,6 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
         
         if (!referrerSnapshot.empty) {
           const referrerId = referrerSnapshot.docs[0].id;
-          
-          // Update or create Affiliates document
           const affiliateRef = doc(db, 'Affiliates', referrerId);
           const affiliateDoc = await getDoc(affiliateRef);
           
@@ -590,57 +642,49 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
               lastUpdated: serverTimestamp()
             });
           }
-          console.log("✅ Updated referrer stats");
         }
       } catch (error) {
-        console.error("Error updating referrer stats:", error);
+        console.error("Error updating referrer:", error);
       }
     }
 
-    // Clear referral code from session
     sessionStorage.removeItem('referralCode');
 
     // Step 4: Send verification email
     showProgress(4);
-    console.log("Step 4: Sending verification email");
     
     await sendEmailVerification(user);
-    console.log("✅ Verification email sent");
 
     // Step 5: Sign out user
-    console.log("Step 5: Signing out user");
     await auth.signOut();
-    console.log("✅ User signed out");
 
     showProgress(5);
-    console.log("=== SIGNUP COMPLETE ===");
     
     showSuccess(`
-      <strong>🎉 Account created successfully!</strong><br><br>
-      <strong>📧 IMPORTANT: Verify your email to login</strong><br>
-      We've sent a verification link to <strong>${email}</strong><br><br>
-      ⚠️ <strong style="color: #fbbf24;">Check your SPAM folder if you don't see it!</strong><br><br>
-      <small style="color: #a3a3a3;">Redirecting to login page in 5 seconds...</small>
+      <strong>🎉 Account created!</strong><br><br>
+      <strong>📧 Verify your email to login</strong><br>
+      Check <strong>${email}</strong><br><br>
+      ⚠️ <strong style="color: #fbbf24;">Check SPAM folder!</strong><br><br>
+      <small style="color: #a3a3a3;">Redirecting in 5 seconds...</small>
     `);
 
     setTimeout(() => {
-      console.log("Redirecting to login");
       window.location.href = "login.html";
     }, 5000);
 
   } catch (err) {
-    console.error("❌ SIGNUP ERROR:", err);
+    console.error("Signup error:", err);
     
     let errorMsg = "❌ Failed to create account. Please try again.";
     
     if (err.code === 'auth/email-already-in-use') {
-      errorMsg = "❌ This email is already registered. <a href='login.html' style='color: #a78bfa; text-decoration: underline;'>Log in instead</a>";
+      errorMsg = "❌ Email already registered. <a href='login.html' style='color: #a78bfa; text-decoration: underline;'>Log in</a>";
     } else if (err.code === 'auth/invalid-email') {
-      errorMsg = "❌ Invalid email address format";
+      errorMsg = "❌ Invalid email address";
     } else if (err.code === 'auth/weak-password') {
-      errorMsg = "❌ Password is too weak. Use at least 8 characters.";
+      errorMsg = "❌ Password too weak. Use 8+ characters.";
     } else if (err.code === 'auth/network-request-failed') {
-      errorMsg = "❌ Network error. Please check your connection.";
+      errorMsg = "❌ Network error. Check connection.";
     }
     
     showError(errorMsg);
