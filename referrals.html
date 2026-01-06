@@ -417,10 +417,8 @@
             <button class="tab-btn" data-tab="earnings">Affiliate Earnings</button>
         </div>
 
-        <!-- TAB 1: REFERRAL PROGRAM -->
         <div id="program" class="tab-content active">
             
-            <!-- ARCANE ARCHIVES REFERRALS -->
             <div class="section-card">
                 <h2>🔗 Arcane Archives Referrals</h2>
                 <p class="section-subtitle">Earn £25/month for every active member you refer</p>
@@ -457,7 +455,6 @@
                     </div>
                 </div>
 
-                <!-- YOUR REFERRALS TABLE - MOVED HERE -->
                 <h3 style="color: var(--purple-light); margin: 2rem 0 1rem 0; font-size: 1.3rem;">👥 Your Referrals</h3>
                 <div class="table-wrapper">
                     <table class="referrals-table">
@@ -491,7 +488,6 @@
                 </div>
             </div>
 
-            <!-- IC MARKETS -->
             <div class="section-card">
                 <h2>🏦 IC Markets Trading Referrals</h2>
                 <p class="section-subtitle">Earn 70% commission on trading volume (paid directly by IC Markets)</p>
@@ -500,7 +496,6 @@
             </div>
         </div>
 
-        <!-- TAB 2: AFFILIATE EARNINGS -->
         <div id="earnings" class="tab-content">
             
             <div class="stats-grid">
@@ -640,11 +635,11 @@
             collection,
             query,
             where,
-            orderBy,
             limit,
             onSnapshot,
             setDoc,
-            serverTimestamp
+            serverTimestamp,
+            getDocs
         } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -754,16 +749,20 @@
             });
         }
 
-        function loadReferredMembers(referralCode) {
-            const q = query(
-                collection(db, 'Users'),
-                where('referredBy', '==', referralCode),
-                orderBy('joinedAt', 'desc'),
-                limit(50)
-            );
+        async function loadReferredMembers(referralCode) {
+            console.log('Loading referrals for code:', referralCode);
+            
+            try {
+                const q = query(
+                    collection(db, 'Users'),
+                    where('referredBy', '==', referralCode),
+                    limit(50)
+                );
 
-            onSnapshot(q, (snapshot) => {
+                const snapshot = await getDocs(q);
                 const tbody = document.getElementById('referralsTableBody');
+
+                console.log('Found', snapshot.size, 'referrals');
 
                 if (snapshot.empty) {
                     tbody.innerHTML = `
@@ -778,8 +777,21 @@
 
                 tbody.innerHTML = '';
 
+                // Sort manually by joinedAt
+                const referrals = [];
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
+                    referrals.push(data);
+                });
+
+                // Sort by joinedAt (newest first)
+                referrals.sort((a, b) => {
+                    const aTime = a.joinedAt?.toMillis() || 0;
+                    const bTime = b.joinedAt?.toMillis() || 0;
+                    return bTime - aTime;
+                });
+
+                referrals.forEach((data) => {
                     const isActive = data.subscriptionStatus === 'active' || data.isPaid === true;
                     const status = isActive ? 'active' : 'pending';
                     const monthlyValue = isActive ? '£25' : '£0';
@@ -794,7 +806,16 @@
 
                     tbody.appendChild(tr);
                 });
-            });
+            } catch (error) {
+                console.error('Error loading referrals:', error);
+                document.getElementById('referralsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center;color:var(--red);">
+                            Error loading referrals. Please refresh the page.
+                        </td>
+                    </tr>
+                `;
+            }
         }
 
         async function loadICMarketsSection(userData) {
@@ -882,14 +903,14 @@
         }
 
         async function loadWithdrawalHistory() {
-            const q = query(
-                collection(db, 'WithdrawalRequests'),
-                where('userId', '==', currentUser.uid),
-                orderBy('createdAt', 'desc'),
-                limit(10)
-            );
+            try {
+                const q = query(
+                    collection(db, 'WithdrawalRequests'),
+                    where('userId', '==', currentUser.uid),
+                    limit(10)
+                );
 
-            onSnapshot(q, (snapshot) => {
+                const snapshot = await getDocs(q);
                 const tbody = document.getElementById('withdrawalHistoryBody');
                 
                 if (snapshot.empty) {
@@ -905,9 +926,19 @@
 
                 tbody.innerHTML = '';
 
+                // Sort manually
+                const withdrawals = [];
                 snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    
+                    withdrawals.push(docSnap.data());
+                });
+
+                withdrawals.sort((a, b) => {
+                    const aTime = a.createdAt?.toMillis() || 0;
+                    const bTime = b.createdAt?.toMillis() || 0;
+                    return bTime - aTime;
+                });
+
+                withdrawals.forEach((data) => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${formatDate(data.createdAt)}</td>
@@ -917,7 +948,9 @@
                     `;
                     tbody.appendChild(tr);
                 });
-            });
+            } catch (error) {
+                console.error('Error loading withdrawal history:', error);
+            }
         }
 
         document.getElementById('bankForm').addEventListener('submit', async (e) => {
@@ -948,6 +981,7 @@
                 
                 alert('✅ Withdrawal request submitted!');
                 document.getElementById('bankForm').reset();
+                loadWithdrawalHistory();
             } catch (error) {
                 alert('❌ Failed. Please try again.');
             }
@@ -980,6 +1014,7 @@
                 
                 alert('✅ Withdrawal request submitted!');
                 document.getElementById('cryptoForm').reset();
+                loadWithdrawalHistory();
             } catch (error) {
                 alert('❌ Failed. Please try again.');
             }

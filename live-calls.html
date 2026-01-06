@@ -1,92 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Live Calls</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="ArcaneA.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Calls | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --purple: #9333ea;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #9ca3af;
+        }
 
-<style>
-body {
-  margin:0;
-  font-family: system-ui;
-  background:#02010a;
-  color:#e5e5e5;
-}
-.container {
-  max-width:900px;
-  margin:auto;
-  padding:2rem 1.5rem;
-}
-.card {
-  background:rgba(15,23,42,.96);
-  border-radius:18px;
-  border:1px solid rgba(148,163,184,.4);
-  padding:2rem;
-}
-.call {
-  margin-top:1.5rem;
-  padding:1.2rem;
-  border:1px solid rgba(148,163,184,.4);
-  border-radius:14px;
-}
-button {
-  margin-top:.8rem;
-  padding:.6rem 1.4rem;
-  border:none;
-  border-radius:999px;
-  background:#9333ea;
-  color:white;
-  cursor:pointer;
-}
-</style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .main-card {
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+        }
+
+        .schedule-section {
+            margin-bottom: 2rem;
+        }
+
+        .schedule-section h2 {
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+
+        .schedule-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .schedule-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .schedule-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .schedule-content {
+            flex: 1;
+        }
+
+        .schedule-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .schedule-time {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .cta-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark, #7e22ce));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.4);
+            color: var(--purple-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: var(--purple);
+        }
+
+        .info-box {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-box h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .info-box ul {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .main-card {
+                padding: 1.5rem;
+            }
+
+            .schedule-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .cta-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
-<div class="container">
-<a href="dashboard.html">← Dashboard</a>
+    <a href="dashboard.html" class="back-btn">← Back</a>
 
-<div class="card">
-<h1>🎙 Live Calls</h1>
-<p>Members-only real time sessions.</p>
+    <div class="container">
+        <div class="hero">
+            <h1>🎙️ Live Education Calls</h1>
+            <p>Join weekly live sessions with Leo for market analysis, Q&A, and in-depth trading education</p>
+        </div>
 
-<div class="call">
-<strong>Weekly Masterclass</strong><br>
-Monday · 7PM UK<br>
-<button disabled>Link Coming Soon</button>
-</div>
+        <div class="main-card">
+            <div class="schedule-section">
+                <h2>📅 Weekly Schedule</h2>
+                
+                <div class="schedule-grid">
+                    <div class="schedule-card">
+                        <div class="schedule-icon">🎯</div>
+                        <div class="schedule-content">
+                            <div class="schedule-title">Market Analysis Call</div>
+                            <div class="schedule-time">Every Wednesday • 7:00 PM UK Time</div>
+                        </div>
+                    </div>
 
-<div class="call">
-<strong>Accountability Call</strong><br>
-Wednesday · 6AM UK<br>
-<button disabled>Link Coming Soon</button>
-</div>
+                    <div class="schedule-card">
+                        <div class="schedule-icon">💡</div>
+                        <div class="schedule-content">
+                            <div class="schedule-title">Q&A Session</div>
+                            <div class="schedule-time">Every Friday • 7:00 PM UK Time</div>
+                        </div>
+                    </div>
+                </div>
 
-</div>
-</div>
+                <div class="cta-buttons">
+                    <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33" 
+                       target="_blank" 
+                       class="btn btn-primary">
+                        <span>📆</span>
+                        View Full Calendar
+                    </a>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+                    <a href="https://t.me/+2F-Ch8HqpsQxYjk0" 
+                       target="_blank" 
+                       class="btn btn-secondary">
+                        <span>💬</span>
+                        Join Telegram for Reminders
+                    </a>
+                </div>
+            </div>
 
-const app = initializeApp({
-  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-  projectId: "arcane-archives-3b0f5"
-});
+            <div class="info-box">
+                <h3>📌 What to Expect</h3>
+                <ul>
+                    <li><strong>Market Deep-Dives:</strong> In-depth analysis of current market conditions, key levels, and trade setups</li>
+                    <li><strong>Live Q&A:</strong> Ask questions directly and get real-time answers from Leo</li>
+                    <li><strong>Strategy Reviews:</strong> Review recent trades, discuss what worked and what didn't</li>
+                    <li><strong>Education:</strong> Learn advanced concepts, psychology, risk management, and more</li>
+                    <li><strong>Community:</strong> Network with other Arcane members and share insights</li>
+                </ul>
+            </div>
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(147, 51, 234, 0.1); border-radius: 12px; text-align: center;">
+                <p style="color: var(--text-dim); margin-bottom: 1rem;">
+                    <strong style="color: var(--purple-light);">Pro Tip:</strong> 
+                    Calls are recorded and uploaded to the Notion workspace within 24 hours, so you can catch up if you miss a session.
+                </p>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">
+                    Check the <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33" 
+                    target="_blank" 
+                    style="color: var(--purple-light); text-decoration: none; font-weight: 600;">Notion calendar</a> 
+                    for exact times and any schedule changes.
+                </p>
+            </div>
+        </div>
+    </div>
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) return location.href = "login.html";
-  const snap = await getDoc(doc(db,"Users",user.uid));
-  const data = snap.data();
-  if (!(data?.isPaid || data?.subscriptionStatus === "active")) {
-    location.href = "dashboard.html";
-  }
-});
-</script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
 </body>
 </html>
