@@ -2,113 +2,149 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Free Trading Signals | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    
     <style>
         :root {
-            --bg-dark: #0a0a0a;
+            --bg-dark: #02010a;
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
             --gold: #fbbf24;
             --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
+            --text-dim: #9ca3af;
         }
 
         * { 
             margin: 0; 
             padding: 0; 
-            box-sizing: border-box; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-dark);
+            background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
             color: var(--text-light);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
             line-height: 1.6;
+            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: calc(1.5rem + env(safe-area-inset-top, 0));
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            backdrop-filter: blur(12px);
         }
 
         .container { 
-            max-width: 1200px; 
+            max-width: 1000px; 
             margin: 0 auto; 
-            padding: 0 1.5rem; 
-        }
-        
-        nav {
-            position: fixed; 
-            top: 0; 
-            width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+            padding: 5rem 1.5rem 3rem; 
         }
 
-        .nav-container {
-            max-width: 1200px; 
-            margin: 0 auto;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
         }
 
-        .logo {
-            font-size: 18px; 
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-decoration: none;
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
+            line-height: 1.2;
         }
 
-        .logo img { 
-            height: 36px; 
-            width: auto; 
+        .hero .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
         }
 
-        .nav-links { 
-            display: flex; 
-            gap: 1.5rem; 
-            align-items: center; 
+        .steps {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
-        .nav-links a {
-            color: var(--text-light);
-            text-decoration: none;
-            transition: color 0.3s;
-            font-weight: 500;
-            font-size: 0.95rem;
+        .step-card {
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
-        .nav-links a:hover { 
-            color: var(--purple-light); 
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-size: 1.8rem;
-            cursor: pointer;
-            padding: 0.5rem;
-        }
-        
-        .btn {
-            padding: 0.7rem 1.5rem;
-            border-radius: 8px;
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .step-card h3 {
+            font-size: 1.4rem;
+            color: var(--purple-light);
+        }
+
+        .step-card p {
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.1rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
             text-decoration: none;
-            display: inline-block;
+            transition: all 0.3s;
             border: none;
-            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
         }
 
         .btn-primary {
@@ -117,430 +153,246 @@
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
         }
 
-        .btn-black {
-            background: #000000;
-            color: var(--purple-light);
-            border: 2px solid var(--purple);
-            font-weight: 900;
-            font-size: 1rem;
-            padding: 0.9rem 2rem;
-        }
-
-        .btn-black:hover {
-            background: rgba(10, 10, 10, 0.9);
-            border-color: var(--purple-light);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+        .btn-primary:active {
+            transform: translateY(-1px);
         }
 
         .btn-telegram {
             background: linear-gradient(135deg, #0088cc, #0077b5);
             color: white;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .btn-telegram:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4);
-        }
-        
-        main {
-            margin-top: 80px;
-            padding-bottom: 4rem;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 136, 204, 0.5);
         }
 
-        .hero {
-            padding: 3rem 0 2rem 0;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-size: clamp(1.75rem, 5vw, 3rem);
-            font-weight: 900;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple-light), white);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.2;
-        }
-
-        .hero .subtitle {
-            font-size: clamp(1rem, 3vw, 1.3rem);
-            color: var(--text-dim);
-            margin-bottom: 1.5rem;
-            padding: 0 1rem;
-        }
-
-        .free-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--green), #16a34a);
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 999px;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .steps-section {
-            margin: 3rem 0;
-        }
-
-        .steps-title {
-            text-align: center;
-            font-size: clamp(1.5rem, 4vw, 2.2rem);
-            margin-bottom: 1rem;
-            color: var(--text-light);
-        }
-
-        .steps-subtitle {
-            text-align: center;
-            color: var(--text-dim);
-            margin-bottom: 2rem;
-            font-size: clamp(0.95rem, 2vw, 1.1rem);
-        }
-
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .step-card {
-            background: rgba(147, 51, 234, 0.05);
+        .info-box {
+            background: rgba(147, 51, 234, 0.1);
             border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 15px;
-            padding: 1.8rem;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-        .step-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--purple-light);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
-        }
-
-        .step-number {
-            position: absolute;
-            top: -15px;
-            left: 20px;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1.2rem;
-        }
-
-        .step-card h3 {
-            font-size: clamp(1.1rem, 3vw, 1.4rem);
-            margin: 1rem 0;
-            color: var(--text-light);
-        }
-
-        .step-card p {
-            color: var(--text-dim);
-            line-height: 1.7;
-            margin-bottom: 1rem;
-        }
-
-        .step-cta {
+            border-radius: 12px;
+            padding: 1.5rem;
             margin-top: 1.5rem;
         }
 
+        .info-box h4 {
+            color: var(--purple-light);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .info-box ul {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
         .warning-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 2px solid rgba(239, 68, 68, 0.4);
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 12px;
             padding: 1.5rem;
             margin: 2rem 0;
-            text-align: center;
         }
 
         .warning-box h4 {
-            color: #ef4444;
-            font-size: clamp(1rem, 3vw, 1.3rem);
-            margin-bottom: 0.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
         }
 
         .warning-box p {
             color: var(--text-dim);
+            margin: 0;
         }
 
-        .final-cta {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(251, 191, 36, 0.1));
+        .cta-section {
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(148, 163, 184, 0.5);
             border-radius: 20px;
-            margin: 3rem 0;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-top: 3rem;
         }
 
-        .final-cta h2 {
-            font-size: clamp(1.5rem, 5vw, 2.5rem);
+        .cta-section h2 {
+            font-size: 2rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple-light), white);
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .final-cta p {
-            font-size: clamp(0.95rem, 3vw, 1.2rem);
+        .cta-section p {
             color: var(--text-dim);
             margin-bottom: 2rem;
-            padding: 0 1rem;
+            font-size: 1.1rem;
         }
 
         .cta-buttons {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding: 0 1rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        footer {
-            width: 100%;
-            padding: 2rem 1.5rem;
-            background: rgba(5, 5, 5, 0.95);
-            border-top: 1px solid rgba(147, 51, 234, 0.2);
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 2rem;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 12px;
             text-align: center;
+            margin-top: 1rem;
         }
 
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+        .verified-badge .icon {
+            font-size: 3rem;
         }
 
-        .footer-links a {
-            color: #a3a3a3;
-            text-decoration: none;
-            font-size: 0.9rem;
+        .verified-badge p {
+            color: var(--purple-light);
+            font-weight: 600;
+            margin: 0.5rem 0 0 0;
         }
 
-        .footer-links a:hover {
-            color: #a78bfa;
-        }
-
-        .footer-bottom {
-            color: #a3a3a3;
-            font-size: 0.85rem;
-        }
-
-        /* Mobile Navigation */
         @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .nav-links {
-                position: fixed;
-                top: 64px;
-                left: 0;
-                right: 0;
-                background: rgba(10, 10, 10, 0.98);
-                flex-direction: column;
-                padding: 1.5rem;
-                gap: 1rem;
-                border-bottom: 1px solid rgba(147, 51, 234, 0.2);
-                transform: translateY(-100%);
-                opacity: 0;
-                transition: all 0.3s ease;
-                pointer-events: none;
-            }
-
-            .nav-links.active {
-                transform: translateY(0);
-                opacity: 1;
-                pointer-events: all;
-            }
-
-            .nav-links a {
-                width: 100%;
-                padding: 0.5rem 0;
-                text-align: center;
-            }
-
-            .btn {
-                width: 100%;
-                text-align: center;
-            }
-
-            .steps-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-            }
-
-            .cta-buttons .btn {
-                width: 100%;
-            }
-
-            .footer-links {
-                flex-direction: column;
-                gap: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero {
-                padding: 2rem 0 1rem 0;
+            .hero h1 {
+                font-size: 2rem;
             }
 
             .step-card {
-                padding: 1.5rem 1rem;
+                padding: 1.5rem;
+            }
+
+            .cta-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .step-header {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="nav-container">
-            <a href="index.html" class="logo">
-                <img src="ArcaneA.png" alt="Arcane Archives Logo">
-                THE ARCANE ARCHIVES
-            </a>
-            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-            <div class="nav-links" id="navLinks">
-                <a href="index.html">Home</a>
-                <a href="free-signals.html">Free Signals</a>
-                <a href="login.html" class="btn btn-primary">Login</a>
+    <a href="dashboard.html" class="back-btn">← Back</a>
+
+    <div class="container">
+        <div class="hero">
+            <h1>📡 Free Trading Signals</h1>
+            <p class="subtitle">
+                Join via my IC Markets referral link, verify on Telegram, and get access to exclusive trade signals for Gold, Silver, BTC, Indices & More.
+            </p>
+        </div>
+
+        <div class="steps">
+            <!-- STEP 1: IC MARKETS -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h3>Create IC Markets Account</h3>
+                </div>
+                <p>
+                    Sign up using my referral link below. This is required to receive signals and ensures you get the best trading conditions with rebates on every trade.
+                </p>
+
+                <a href="https://icmarkets.com/?camp=74992" target="_blank" class="btn btn-primary">
+                    📈 Open IC Markets Account
+                </a>
+
+                <div class="info-box">
+                    <h4>💡 Why IC Markets?</h4>
+                    <ul>
+                        <li>Low spreads & lightning-fast execution</li>
+                        <li>Trade rebates on every lot you trade</li>
+                        <li>Required for signal group access</li>
+                        <li>Trusted broker with excellent reputation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- STEP 2: TELEGRAM -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h3>Message Me on Telegram</h3>
+                </div>
+                <p>
+                    After creating your account, send me a direct message on Telegram with your IC Markets account ID for verification.
+                </p>
+
+                <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
+                    ✈️ Message on Telegram
+                </a>
+
+                <div class="info-box">
+                    <h4>📝 What to Include:</h4>
+                    <ul>
+                        <li>Your IC Markets account ID</li>
+                        <li>Confirmation that you signed up via my link</li>
+                        <li>Any questions you might have</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- STEP 3: GET ADDED -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h3>Get Added to Signal Group</h3>
+                </div>
+                <p>
+                    Once I verify your account (usually within 24-48 hours), I'll add you to the exclusive Telegram signal group where you'll receive trade alerts in real-time.
+                </p>
+
+                <div class="verified-badge">
+                    <div style="text-align: center; width: 100%;">
+                        <div class="icon">✅</div>
+                        <p>Wait for Verification</p>
+                        <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
+                            Typically takes 24-48 hours
+                        </small>
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <div class="free-badge">100% FREE</div>
-                <h1>Arcane Archives Trade Alerts</h1>
-                <p class="subtitle">Gold, Silver, BTC, Indices & More. Join via my IC Markets link, verify on Telegram, and get access.</p>
-            </div>
-        </section>
-
-        <section class="steps-section">
-            <div class="container">
-                <h2 class="steps-title">3 Simple Steps to Join</h2>
-                <p class="steps-subtitle">Takes less than 5 minutes to set up</p>
-
-                <div class="steps-grid">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <h3>Create IC Markets Account</h3>
-                        <p>Sign up using my referral link below. This is required to receive signals and ensures you get the best trading conditions.</p>
-                        <div class="step-cta">
-                            <a href="https://icmarkets.com/?camp=74992" target="_blank" class="btn btn-black">
-                                📈 Open IC Markets Account
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <h3>Message Me on Telegram</h3>
-                        <p>After creating your account, send me a message on Telegram with your IC Markets account ID for verification.</p>
-                        <div class="step-cta">
-                            <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
-                                ✈️ Message on Telegram
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <h3>Get Added to Signal Group</h3>
-                        <p>Once verified, I'll add you to the exclusive Telegram signal group where you'll receive trade alerts in real-time.</p>
-                        <div class="step-cta">
-                            <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">
-                                ✓ Wait for Verification
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="warning-box">
-                    <h4>⚠️ Important Note</h4>
-                    <p>The signal group is free but requires account verification. Create your account through the link above and message me your account ID on Telegram.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="final-cta">
-            <div class="container">
-                <h2>Ready to Start?</h2>
-                <p>Create your IC Markets account, verify on Telegram, and get added to the signal group.</p>
-                <div class="cta-buttons">
-                    <a href="https://icmarkets.com/?camp=74992" target="_blank" class="btn btn-black">
-                        📈 Open IC Markets Account
-                    </a>
-                    <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
-                        ✈️ Verify on Telegram
-                    </a>
-                    <a href="index.html#pricing" class="btn btn-primary">
-                        🔥 Join Premium Membership
-                    </a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="index.html">Home</a>
-                <a href="login.html">Login</a>
-                <a href="Privacy-policy.html">Privacy Policy</a>
-                <a href="terms-of-service.html">Terms of Service</a>
-            </div>
-            <div class="footer-bottom">
-                © 2024 The Arcane Archives. All rights reserved.
-            </div>
+        <!-- IMPORTANT NOTE -->
+        <div class="warning-box">
+            <h4>⚠️ Important Note</h4>
+            <p>
+                The signal group is <strong>completely free</strong> but requires account verification to ensure all members are genuine traders. Create your account through the link above and message me your account ID on Telegram. Verification typically takes 24-48 hours.
+            </p>
         </div>
-    </footer>
 
-    <script>
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const navLinks = document.getElementById('navLinks');
+        <!-- CTA -->
+        <div class="cta-section">
+            <h2>Ready to Start?</h2>
+            <p>Create your IC Markets account, verify on Telegram, and get added to the signal group.</p>
 
-        mobileMenuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            mobileMenuBtn.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
-        });
+            <div class="cta-buttons">
+                <a href="https://icmarkets.com/?camp=74992" target="_blank" class="btn btn-primary">
+                    📈 Open IC Markets Account
+                </a>
+                <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
+                    ✈️ Verify on Telegram
+                </a>
+            </div>
 
-        // Close menu when clicking a link
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                mobileMenuBtn.textContent = '☰';
-            });
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!navLinks.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-                navLinks.classList.remove('active');
-                mobileMenuBtn.textContent = '☰';
-            }
-        });
-    </script>
+            <p style="margin-top: 2rem; font-size: 0.9rem;">
+                Want more advanced signals and education? 
+                <a href="index.html#pricing" style="color: var(--purple-light); text-decoration: none; font-weight: 600;">
+                    Join Premium Membership →
+                </a>
+            </p>
+        </div>
+    </div>
 </body>
 </html>

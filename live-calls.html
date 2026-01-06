@@ -2,14 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Live Calls | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
     
     <style>
         :root {
             --bg-dark: #02010a;
             --purple: #9333ea;
+            --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
             --gold: #fbbf24;
             --text-light: #e5e5e5;
@@ -20,6 +24,12 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
         }
 
         body {
@@ -27,11 +37,13 @@
             background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
             color: var(--text-light);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
         }
 
         .back-btn {
             position: fixed;
-            top: 1.5rem;
+            top: calc(1.5rem + env(safe-area-inset-top, 0));
             left: 1.5rem;
             z-index: 40;
             padding: 0.5rem 1rem;
@@ -45,7 +57,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 4rem 1.5rem;
         }
@@ -80,20 +92,102 @@
             box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
         }
 
-        .schedule-section {
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--purple-light);
+        }
+
+        .calendar-embed {
+            width: 100%;
+            min-height: 600px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
             margin-bottom: 2rem;
         }
 
-        .schedule-section h2 {
-            font-size: 1.6rem;
-            margin-bottom: 1.5rem;
+        .calendar-embed iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #0088cc, #0077b5);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 136, 204, 0.5);
+        }
+
+        .btn-tertiary {
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.4);
             color: var(--purple-light);
+        }
+
+        .btn-tertiary:hover {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: var(--purple);
+        }
+
+        .info-box {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-box h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .info-box ul {
+            margin-left: 1.5rem;
+            line-height: 1.8;
         }
 
         .schedule-grid {
             display: grid;
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin: 2rem 0;
         }
 
         .schedule-card {
@@ -126,67 +220,6 @@
             font-size: 0.9rem;
         }
 
-        .cta-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 1.2rem 2rem;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1.05rem;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark, #7e22ce));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
-        }
-
-        .btn-secondary {
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.4);
-            color: var(--purple-light);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(147, 51, 234, 0.2);
-            border-color: var(--purple);
-        }
-
-        .info-box {
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .info-box h3 {
-            color: var(--gold);
-            margin-bottom: 1rem;
-        }
-
-        .info-box ul {
-            margin-left: 1.5rem;
-            line-height: 1.8;
-        }
-
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2rem;
@@ -201,8 +234,12 @@
                 text-align: center;
             }
 
-            .cta-buttons {
+            .quick-links {
                 grid-template-columns: 1fr;
+            }
+
+            .calendar-embed iframe {
+                height: 500px;
             }
         }
     </style>
@@ -217,43 +254,78 @@
         </div>
 
         <div class="main-card">
-            <div class="schedule-section">
-                <h2>📅 Weekly Schedule</h2>
-                
-                <div class="schedule-grid">
-                    <div class="schedule-card">
-                        <div class="schedule-icon">🎯</div>
-                        <div class="schedule-content">
-                            <div class="schedule-title">Market Analysis Call</div>
-                            <div class="schedule-time">Every Wednesday • 7:00 PM UK Time</div>
-                        </div>
-                    </div>
-
-                    <div class="schedule-card">
-                        <div class="schedule-icon">💡</div>
-                        <div class="schedule-content">
-                            <div class="schedule-title">Q&A Session</div>
-                            <div class="schedule-time">Every Friday • 7:00 PM UK Time</div>
-                        </div>
+            <h2 class="section-title">📅 Call Schedule & Calendar</h2>
+            
+            <div class="schedule-grid">
+                <div class="schedule-card">
+                    <div class="schedule-icon">🎯</div>
+                    <div class="schedule-content">
+                        <div class="schedule-title">Market Analysis Call</div>
+                        <div class="schedule-time">Every Wednesday • 7:00 PM UK Time</div>
                     </div>
                 </div>
 
-                <div class="cta-buttons">
-                    <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33" 
-                       target="_blank" 
-                       class="btn btn-primary">
-                        <span>📆</span>
-                        View Full Calendar
-                    </a>
-
-                    <a href="https://t.me/+2F-Ch8HqpsQxYjk0" 
-                       target="_blank" 
-                       class="btn btn-secondary">
-                        <span>💬</span>
-                        Join Telegram for Reminders
-                    </a>
+                <div class="schedule-card">
+                    <div class="schedule-icon">💡</div>
+                    <div class="schedule-content">
+                        <div class="schedule-title">Q&A Session</div>
+                        <div class="schedule-time">Every Friday • 7:00 PM UK Time</div>
+                    </div>
                 </div>
             </div>
+
+            <div class="quick-links">
+                <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33" 
+                   target="_blank" 
+                   class="btn btn-primary">
+                    <span>📆</span>
+                    View Full Calendar in Notion
+                </a>
+
+                <a href="https://t.me/thearcanearchives" 
+                   target="_blank" 
+                   class="btn btn-secondary">
+                    <span>📢</span>
+                    Join Announcements Channel
+                </a>
+
+                <a href="https://t.me/+JuTWVrAx5okwNzk0" 
+                   target="_blank" 
+                   class="btn btn-tertiary">
+                    <span>💬</span>
+                    Community Chat
+                </a>
+            </div>
+
+            <div style="margin: 2rem 0; padding: 1.5rem; background: rgba(147, 51, 234, 0.1); border-radius: 12px;">
+                <h3 style="color: var(--purple-light); margin-bottom: 1rem;">📖 How to Embed Notion Calendar</h3>
+                <p style="color: var(--text-dim); line-height: 1.8;">
+                    To embed your Notion calendar directly on this page:
+                </p>
+                <ol style="margin-left: 1.5rem; margin-top: 1rem; color: var(--text-dim); line-height: 1.8;">
+                    <li>Open your Notion calendar page</li>
+                    <li>Click "Share" → "Publish to web"</li>
+                    <li>Toggle "Allow duplicate as template" OFF</li>
+                    <li>Copy the public URL</li>
+                    <li>Add "/embed" to the end of the URL</li>
+                    <li>Replace the iframe src below with your Notion embed URL</li>
+                </ol>
+                <p style="color: var(--text-dim); margin-top: 1rem; font-size: 0.9rem;">
+                    <strong>Example:</strong> https://notion.so/your-page-id?pvs=4 → https://notion.so/your-page-id<strong>/embed</strong>
+                </p>
+            </div>
+
+            <!-- NOTION CALENDAR EMBED -->
+            <!-- UNCOMMENT AND ADD YOUR NOTION EMBED URL BELOW -->
+            <!--
+            <div class="calendar-embed">
+                <iframe 
+                    src="https://www.notion.so/the2028uk/YOUR-CALENDAR-PAGE-ID/embed" 
+                    frameborder="0"
+                    allow="fullscreen">
+                </iframe>
+            </div>
+            -->
 
             <div class="info-box">
                 <h3>📌 What to Expect</h3>
@@ -272,10 +344,13 @@
                     Calls are recorded and uploaded to the Notion workspace within 24 hours, so you can catch up if you miss a session.
                 </p>
                 <p style="color: var(--text-dim); font-size: 0.9rem;">
-                    Check the <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33" 
-                    target="_blank" 
-                    style="color: var(--purple-light); text-decoration: none; font-weight: 600;">Notion calendar</a> 
-                    for exact times and any schedule changes.
+                    Join the 
+                    <a href="https://t.me/thearcanearchives" 
+                       target="_blank" 
+                       style="color: var(--purple-light); text-decoration: none; font-weight: 600;">
+                        Announcements Channel
+                    </a> 
+                    to get notified 30 minutes before each call starts.
                 </p>
             </div>
         </div>
