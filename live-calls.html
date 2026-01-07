@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Live Calls | The Arcane Archives</title>
+    <title>Live Calls & Education | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
+    
+    <!-- Calendly CSS -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
     
     <style>
         :root {
@@ -18,6 +21,7 @@
             --gold: #fbbf24;
             --text-light: #e5e5e5;
             --text-dim: #9ca3af;
+            --red: #ef4444;
         }
 
         * {
@@ -96,21 +100,159 @@
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
             color: var(--purple-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .calendar-embed {
-            width: 100%;
-            min-height: 600px;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            border-radius: 12px;
+        /* 1:1 CALL SECTION */
+        .one-on-one-section {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(147, 51, 234, 0.1));
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            position: relative;
             overflow: hidden;
+        }
+
+        .one-on-one-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--purple));
+        }
+
+        .one-on-one-header {
+            text-align: center;
             margin-bottom: 2rem;
         }
 
-        .calendar-embed iframe {
-            width: 100%;
-            height: 600px;
+        .one-on-one-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .one-on-one-header .subtitle {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .rules-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .rules-box h3 {
+            color: var(--purple-light);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .rules-box ul {
+            margin-left: 1.5rem;
+            line-height: 1.9;
+            color: var(--text-dim);
+        }
+
+        .rules-box ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .rules-box ul li strong {
+            color: var(--text-light);
+        }
+
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .warning-box p {
+            color: var(--red);
+            font-weight: 600;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.3rem 3rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s;
             border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            color: #000;
+            width: 100%;
+            max-width: 400px;
+            margin: 2rem auto;
+            display: flex;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.5);
+        }
+
+        .cta-button:active {
+            transform: translateY(-1px);
+        }
+
+        .schedule-grid {
+            display: grid;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .schedule-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .schedule-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .schedule-content {
+            flex: 1;
+        }
+
+        .schedule-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .schedule-time {
+            color: var(--text-dim);
+            font-size: 0.9rem;
         }
 
         .quick-links {
@@ -167,15 +309,15 @@
         }
 
         .info-box {
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 12px;
             padding: 1.5rem;
             margin-top: 2rem;
         }
 
         .info-box h3 {
-            color: var(--gold);
+            color: var(--purple-light);
             margin-bottom: 1rem;
         }
 
@@ -184,40 +326,63 @@
             line-height: 1.8;
         }
 
-        .schedule-grid {
-            display: grid;
-            gap: 1rem;
-            margin: 2rem 0;
+        /* CALENDLY MODAL */
+        .calendly-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 2rem;
         }
 
-        .schedule-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            border-radius: 16px;
-            padding: 1.5rem;
+        .calendly-overlay.active {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            justify-content: center;
         }
 
-        .schedule-icon {
-            font-size: 2.5rem;
-            flex-shrink: 0;
+        .calendly-modal {
+            background: var(--bg-dark);
+            border-radius: 20px;
+            max-width: 1000px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.3);
         }
 
-        .schedule-content {
-            flex: 1;
+        .calendly-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10000;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: var(--text-light);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .schedule-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
+        .calendly-close:hover {
+            background: var(--red);
+            border-color: var(--red);
         }
 
-        .schedule-time {
-            color: var(--text-dim);
-            font-size: 0.9rem;
+        .calendly-inline-widget {
+            min-width: 320px;
+            height: 700px;
         }
 
         @media (max-width: 768px) {
@@ -238,8 +403,26 @@
                 grid-template-columns: 1fr;
             }
 
-            .calendar-embed iframe {
-                height: 500px;
+            .one-on-one-section {
+                padding: 1.5rem;
+            }
+
+            .one-on-one-header h2 {
+                font-size: 1.6rem;
+            }
+
+            .cta-button {
+                width: 100%;
+                padding: 1.2rem 2rem;
+                font-size: 1rem;
+            }
+
+            .calendly-overlay {
+                padding: 1rem;
+            }
+
+            .calendly-inline-widget {
+                height: 600px;
             }
         }
     </style>
@@ -249,12 +432,64 @@
 
     <div class="container">
         <div class="hero">
-            <h1>🎙️ Live Education Calls</h1>
-            <p>Join weekly live sessions with Leo for market analysis, Q&A, and in-depth trading education</p>
+            <h1>🎙️ Live Calls & Education</h1>
+            <p>Weekly group sessions, live Q&A, and exclusive 1:1 mentorship with Leo</p>
         </div>
 
+        <!-- WEEKLY 1:1 CALL SECTION -->
+        <div class="one-on-one-section">
+            <div class="one-on-one-header">
+                <h2>💎 Weekly 1:1 Call</h2>
+                <p class="subtitle">
+                    Get direct access to Leo for personalized guidance, strategy review, and accountability. 
+                    Limited to one call per member per week.
+                </p>
+            </div>
+
+            <div class="rules-box">
+                <h3>📋 What to Expect</h3>
+                <ul>
+                    <li><strong>Duration:</strong> 30-45 minutes of focused, 1:1 time</li>
+                    <li><strong>Topics:</strong> Trading strategy, mindset, business growth, or personal development</li>
+                    <li><strong>Format:</strong> Video call via Zoom (link sent after booking)</li>
+                    <li><strong>Preparation:</strong> Come with specific questions or goals for maximum value</li>
+                    <li><strong>Recording:</strong> Calls are not recorded to maintain privacy and candid discussion</li>
+                </ul>
+            </div>
+
+            <div class="rules-box">
+                <h3>⚠️ Scheduling Rules</h3>
+                <ul>
+                    <li><strong>Limit:</strong> One (1) call per member per 7-day period</li>
+                    <li><strong>Cancellation:</strong> Must cancel at least 24 hours in advance to reschedule</li>
+                    <li><strong>No-shows:</strong> Missing a scheduled call without notice counts as your weekly slot</li>
+                    <li><strong>Availability:</strong> Slots are limited and filled on a first-come, first-served basis</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <p>⚠️ Abuse of the scheduling system may result in temporary or permanent loss of 1:1 call privileges</p>
+            </div>
+
+            <button class="cta-button" id="schedule1on1Btn">
+                <span>📅</span>
+                Schedule Your Weekly 1:1 Call
+            </button>
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <p style="color: var(--text-dim); font-size: 0.95rem;">
+                    <strong style="color: var(--gold);">Pro Tip:</strong> 
+                    Book early in the week for maximum flexibility and availability
+                </p>
+            </div>
+        </div>
+
+        <!-- GROUP CALLS SECTION -->
         <div class="main-card">
-            <h2 class="section-title">📅 Call Schedule & Calendar</h2>
+            <h2 class="section-title">
+                <span>📅</span>
+                Group Call Schedule
+            </h2>
             
             <div class="schedule-grid">
                 <div class="schedule-card">
@@ -279,14 +514,14 @@
                    target="_blank" 
                    class="btn btn-primary">
                     <span>📆</span>
-                    View Full Calendar in Notion
+                    View Full Calendar
                 </a>
 
                 <a href="https://t.me/thearcanearchives" 
                    target="_blank" 
                    class="btn btn-secondary">
                     <span>📢</span>
-                    Join Announcements Channel
+                    Announcements Channel
                 </a>
 
                 <a href="https://t.me/+JuTWVrAx5okwNzk0" 
@@ -297,43 +532,13 @@
                 </a>
             </div>
 
-            <div style="margin: 2rem 0; padding: 1.5rem; background: rgba(147, 51, 234, 0.1); border-radius: 12px;">
-                <h3 style="color: var(--purple-light); margin-bottom: 1rem;">📖 How to Embed Notion Calendar</h3>
-                <p style="color: var(--text-dim); line-height: 1.8;">
-                    To embed your Notion calendar directly on this page:
-                </p>
-                <ol style="margin-left: 1.5rem; margin-top: 1rem; color: var(--text-dim); line-height: 1.8;">
-                    <li>Open your Notion calendar page</li>
-                    <li>Click "Share" → "Publish to web"</li>
-                    <li>Toggle "Allow duplicate as template" OFF</li>
-                    <li>Copy the public URL</li>
-                    <li>Add "/embed" to the end of the URL</li>
-                    <li>Replace the iframe src below with your Notion embed URL</li>
-                </ol>
-                <p style="color: var(--text-dim); margin-top: 1rem; font-size: 0.9rem;">
-                    <strong>Example:</strong> https://notion.so/your-page-id?pvs=4 → https://notion.so/your-page-id<strong>/embed</strong>
-                </p>
-            </div>
-
-            <!-- NOTION CALENDAR EMBED -->
-            <!-- UNCOMMENT AND ADD YOUR NOTION EMBED URL BELOW -->
-            <!--
-            <div class="calendar-embed">
-                <iframe 
-                    src="https://www.notion.so/the2028uk/YOUR-CALENDAR-PAGE-ID/embed" 
-                    frameborder="0"
-                    allow="fullscreen">
-                </iframe>
-            </div>
-            -->
-
             <div class="info-box">
-                <h3>📌 What to Expect</h3>
+                <h3>📌 What to Expect in Group Calls</h3>
                 <ul>
-                    <li><strong>Market Deep-Dives:</strong> In-depth analysis of current market conditions, key levels, and trade setups</li>
-                    <li><strong>Live Q&A:</strong> Ask questions directly and get real-time answers from Leo</li>
-                    <li><strong>Strategy Reviews:</strong> Review recent trades, discuss what worked and what didn't</li>
-                    <li><strong>Education:</strong> Learn advanced concepts, psychology, risk management, and more</li>
+                    <li><strong>Market Deep-Dives:</strong> In-depth analysis of current market conditions and trade setups</li>
+                    <li><strong>Live Q&A:</strong> Ask questions and get real-time answers</li>
+                    <li><strong>Strategy Reviews:</strong> Review recent trades and discuss what worked</li>
+                    <li><strong>Education:</strong> Learn advanced concepts, psychology, and risk management</li>
                     <li><strong>Community:</strong> Network with other Arcane members and share insights</li>
                 </ul>
             </div>
@@ -341,7 +546,7 @@
             <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(147, 51, 234, 0.1); border-radius: 12px; text-align: center;">
                 <p style="color: var(--text-dim); margin-bottom: 1rem;">
                     <strong style="color: var(--purple-light);">Pro Tip:</strong> 
-                    Calls are recorded and uploaded to the Notion workspace within 24 hours, so you can catch up if you miss a session.
+                    Group calls are recorded and uploaded to Notion within 24 hours if you miss a session.
                 </p>
                 <p style="color: var(--text-dim); font-size: 0.9rem;">
                     Join the 
@@ -350,15 +555,29 @@
                        style="color: var(--purple-light); text-decoration: none; font-weight: 600;">
                         Announcements Channel
                     </a> 
-                    to get notified 30 minutes before each call starts.
+                    to get notified 30 minutes before each call.
                 </p>
             </div>
         </div>
     </div>
 
+    <!-- CALENDLY MODAL -->
+    <div class="calendly-overlay" id="calendlyOverlay">
+        <div class="calendly-modal">
+            <button class="calendly-close" id="closeCalendly">×</button>
+            <div class="calendly-inline-widget" 
+                 data-url="https://calendly.com/leogray15/1-1-call-with-leo-founder?hide_gdpr_banner=1&primary_color=9333ea">
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendly JS -->
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -368,10 +587,63 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        onAuthStateChanged(auth, (user) => {
+        let currentUserEmail = '';
+
+        onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
+                return;
+            }
+
+            currentUserEmail = user.email;
+
+            // Check if user is paid
+            const userDoc = await getDoc(doc(db, 'Users', user.uid));
+            const userData = userDoc.data();
+            const isPaid = userData?.isPaid === true || userData?.subscriptionStatus === 'active';
+
+            if (!isPaid) {
+                // Disable 1:1 button for non-paid users
+                const btn = document.getElementById('schedule1on1Btn');
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.onclick = () => {
+                    alert('🔒 Weekly 1:1 calls are only available to premium members.\n\nUpgrade your membership to unlock this feature.');
+                };
+            }
+        });
+
+        // Schedule 1:1 button
+        document.getElementById('schedule1on1Btn').addEventListener('click', () => {
+            document.getElementById('calendlyOverlay').classList.add('active');
+            
+            // Pre-fill with user's email
+            const calendlyWidget = document.querySelector('.calendly-inline-widget');
+            const baseUrl = calendlyWidget.getAttribute('data-url');
+            
+            if (currentUserEmail) {
+                calendlyWidget.setAttribute('data-url', `${baseUrl}&email=${encodeURIComponent(currentUserEmail)}`);
+            }
+        });
+
+        // Close modal
+        document.getElementById('closeCalendly').addEventListener('click', () => {
+            document.getElementById('calendlyOverlay').classList.remove('active');
+        });
+
+        // Close on overlay click
+        document.getElementById('calendlyOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'calendlyOverlay') {
+                document.getElementById('calendlyOverlay').classList.remove('active');
+            }
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('calendlyOverlay').classList.remove('active');
             }
         });
     </script>
