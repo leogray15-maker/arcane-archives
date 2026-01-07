@@ -326,7 +326,7 @@
             line-height: 1.8;
         }
 
-        /* CALENDLY MODAL */
+        /* CALENDLY MODAL - MOBILE FIX */
         .calendly-overlay {
             display: none;
             position: fixed;
@@ -334,55 +334,47 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 9999;
-            overflow-y: auto;
-            padding: 2rem;
+            padding: 1rem;
         }
 
         .calendly-overlay.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
         }
 
         .calendly-modal {
-            background: var(--bg-dark);
-            border-radius: 20px;
-            max-width: 1000px;
+            background: #fff;
+            border-radius: 16px;
             width: 100%;
+            height: 100%;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(148, 163, 184, 0.3);
         }
 
         .calendly-close {
             position: absolute;
             top: 1rem;
             right: 1rem;
-            z-index: 10000;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            color: var(--text-light);
-            width: 40px;
-            height: 40px;
+            z-index: 10001;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #fff;
+            color: #fff;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 24px;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .calendly-close:hover {
-            background: var(--red);
-            border-color: var(--red);
+            font-weight: bold;
         }
 
         .calendly-inline-widget {
-            min-width: 320px;
-            height: 700px;
+            width: 100%;
+            height: 100%;
+            min-height: 600px;
         }
 
         @media (max-width: 768px) {
@@ -418,11 +410,15 @@
             }
 
             .calendly-overlay {
-                padding: 1rem;
+                padding: 0;
+            }
+
+            .calendly-modal {
+                border-radius: 0;
             }
 
             .calendly-inline-widget {
-                height: 600px;
+                min-height: 100vh;
             }
         }
     </style>
@@ -617,14 +613,25 @@
 
         // Schedule 1:1 button
         document.getElementById('schedule1on1Btn').addEventListener('click', () => {
-            document.getElementById('calendlyOverlay').classList.add('active');
+            const overlay = document.getElementById('calendlyOverlay');
+            overlay.classList.add('active');
             
-            // Pre-fill with user's email
+            // Initialize Calendly widget
             const calendlyWidget = document.querySelector('.calendly-inline-widget');
-            const baseUrl = calendlyWidget.getAttribute('data-url');
+            let url = 'https://calendly.com/leogray15/1-1-call-with-leo-founder?hide_gdpr_banner=1&primary_color=9333ea';
             
             if (currentUserEmail) {
-                calendlyWidget.setAttribute('data-url', `${baseUrl}&email=${encodeURIComponent(currentUserEmail)}`);
+                url += `&email=${encodeURIComponent(currentUserEmail)}`;
+            }
+            
+            calendlyWidget.setAttribute('data-url', url);
+            
+            // Force Calendly to load
+            if (window.Calendly) {
+                window.Calendly.initInlineWidget({
+                    url: url,
+                    parentElement: calendlyWidget
+                });
             }
         });
 

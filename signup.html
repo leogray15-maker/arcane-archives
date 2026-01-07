@@ -384,6 +384,9 @@ button:disabled {
       <label>Confirm Password *</label>
       <input type="password" id="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password">
 
+      <label>Referral Code (Optional)</label>
+      <input type="text" id="referralCode" placeholder="Enter referral code (e.g., ARCANE)" autocomplete="off" style="text-transform: uppercase;">
+
       <div class="checkbox-group">
         <input type="checkbox" id="newsletter">
         <label for="newsletter">I want to receive updates and newsletters</label>
@@ -519,6 +522,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   const country = document.getElementById('country').value;
   const pass = document.getElementById('password').value;
   const confirmPass = document.getElementById('confirmPassword').value;
+  const referralCodeInput = document.getElementById('referralCode').value.trim().toUpperCase();
   const newsletter = document.getElementById('newsletter').checked;
   const terms = document.getElementById('terms').checked;
 
@@ -566,19 +570,26 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
     showProgress(3);
     
     const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
-    const referredByCode = sessionStorage.getItem('referralCode');
+    
+    // Get referral code from input field OR sessionStorage (URL param takes priority)
+    const urlReferralCode = sessionStorage.getItem('referralCode');
+    const referralCodeToUse = urlReferralCode || referralCodeInput;
+    
     let referredBy = null;
 
-    // Validate referral code
-    if (referredByCode) {
+    // Validate referral code if provided
+    if (referralCodeToUse) {
       const referrerQuery = query(
         collection(db, 'Users'),
-        where('referralCode', '==', referredByCode.toUpperCase())
+        where('referralCode', '==', referralCodeToUse.toUpperCase())
       );
       const referrerSnapshot = await getDocs(referrerQuery);
       
       if (!referrerSnapshot.empty) {
-        referredBy = referredByCode.toUpperCase();
+        referredBy = referralCodeToUse.toUpperCase();
+        console.log('✅ Valid referral code:', referredBy);
+      } else {
+        console.warn('⚠️ Invalid referral code:', referralCodeToUse);
       }
     }
     
