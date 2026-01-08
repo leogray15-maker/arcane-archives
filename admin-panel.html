@@ -355,6 +355,7 @@
       <div class="tabs">
         <button class="tab active" data-tab="stocks">📊 Stock Picks</button>
         <button class="tab" data-tab="alerts">📈 Trade Alerts</button>
+        <button class="tab" data-tab="history">📝 Manual Trade History</button>
       </div>
 
       <!-- STOCK PICKS TAB -->
@@ -509,6 +510,96 @@
         <div class="items-list">
           <h2 style="color: var(--gold); margin-bottom: 1rem;">Active Alerts</h2>
           <div id="alertsList"></div>
+        </div>
+      </div>
+
+      <!-- MANUAL TRADE HISTORY TAB -->
+      <div id="history-content" class="tab-content">
+        <div class="form-section">
+          <h2>📝 Add Manual Trade to History</h2>
+          <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">
+            Use this to add trades you forgot to record. They'll appear in the Performance Overview.
+          </p>
+          
+          <form id="manualTradeForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Date Closed *</label>
+                <input type="datetime-local" id="manualClosedAt" required />
+              </div>
+
+              <div class="form-group">
+                <label>Pair *</label>
+                <select id="manualPair" required>
+                  <option value="XAUUSD">XAUUSD (Gold)</option>
+                  <option value="XAGUSD">XAGUSD (Silver)</option>
+                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                  <option value="ETHUSD">ETHUSD (Ethereum)</option>
+                  <option value="US30">US30 (Dow Jones)</option>
+                  <option value="NAS100">NAS100 (Nasdaq)</option>
+                  <option value="SPX500">SPX500 (S&P 500)</option>
+                  <option value="EURUSD">EURUSD</option>
+                  <option value="GBPUSD">GBPUSD</option>
+                  <option value="USDJPY">USDJPY</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Direction *</label>
+                <select id="manualDirection" required>
+                  <option value="Buy">Buy</option>
+                  <option value="Sell">Sell</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Entry Price *</label>
+                <input type="number" step="0.01" id="manualEntry" placeholder="2650.00" required />
+              </div>
+
+              <div class="form-group">
+                <label>Exit Price *</label>
+                <input type="number" step="0.01" id="manualExit" placeholder="2660.00" required />
+              </div>
+
+              <div class="form-group">
+                <label>Result *</label>
+                <select id="manualResult" required>
+                  <option value="win">WIN</option>
+                  <option value="loss">LOSS</option>
+                  <option value="be">BREAK EVEN</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Pips/Points *</label>
+                <input type="number" step="0.1" id="manualPips" placeholder="50.0" required />
+                <small style="color: var(--text-dim); font-size: 0.8rem;">Enter positive for wins, negative for losses</small>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label>Notes (Optional)</label>
+              <textarea id="manualNotes" placeholder="Why did you take this trade? What happened?" rows="3"></textarea>
+            </div>
+
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary" id="submitManualTradeBtn">
+                ➕ Add Trade to History
+              </button>
+              <button type="button" class="btn btn-secondary" id="clearManualTradeBtn">
+                Clear Form
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="items-list">
+          <h2 style="color: var(--gold); margin-bottom: 1rem;">Recent Manual Entries</h2>
+          <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
+            These are trades you manually added. They appear in your alerts page Performance Overview.
+          </p>
+          <div id="manualTradesList"></div>
         </div>
       </div>
 
@@ -887,6 +978,157 @@
         showError('Failed to delete alert');
       }
     };
+
+    // ============================================================================
+    // MANUAL TRADE HISTORY FORM
+    // ============================================================================
+
+    const manualTradeForm = document.getElementById('manualTradeForm');
+    const clearManualTradeBtn = document.getElementById('clearManualTradeBtn');
+
+    manualTradeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitManualTradeBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Adding...';
+
+      try {
+        const closedAtInput = document.getElementById('manualClosedAt').value;
+        const pair = document.getElementById('manualPair').value;
+        const direction = document.getElementById('manualDirection').value;
+        const entry = parseFloat(document.getElementById('manualEntry').value);
+        const exit = parseFloat(document.getElementById('manualExit').value);
+        const result = document.getElementById('manualResult').value;
+        const pips = parseFloat(document.getElementById('manualPips').value);
+        const notes = document.getElementById('manualNotes').value;
+
+        // Convert datetime-local to Firestore timestamp
+        const closedAt = new Date(closedAtInput);
+
+        const tradeData = {
+          pair,
+          direction,
+          entry,
+          exit,
+          result,
+          pips,
+          notes: notes || null,
+          closedAt: closedAt,
+          createdBy: auth.currentUser.uid,
+          createdByEmail: auth.currentUser.email,
+          manualEntry: true, // Flag to identify manual entries
+          createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, 'alerts_history'), tradeData);
+
+        showSuccess(`✅ Trade added to history! ${pair} ${direction} - ${result.toUpperCase()}`);
+        manualTradeForm.reset();
+        loadManualTrades();
+
+      } catch (error) {
+        console.error('Error adding manual trade:', error);
+        showError('Failed to add trade: ' + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '➕ Add Trade to History';
+      }
+    });
+
+    clearManualTradeBtn.addEventListener('click', () => {
+      manualTradeForm.reset();
+    });
+
+    async function loadManualTrades() {
+      try {
+        const q = query(
+          collection(db, 'alerts_history')
+        );
+        
+        const snapshot = await getDocs(q);
+        const manualTradesDiv = document.getElementById('manualTradesList');
+
+        if (snapshot.empty) {
+          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
+          return;
+        }
+
+        // Collect and sort
+        const trades = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.manualEntry === true) {
+            trades.push({ id: doc.id, ...data });
+          }
+        });
+
+        // Sort by closedAt (newest first)
+        trades.sort((a, b) => {
+          const aTime = a.closedAt?.toMillis ? a.closedAt.toMillis() : new Date(a.closedAt).getTime();
+          const bTime = b.closedAt?.toMillis ? b.closedAt.toMillis() : new Date(b.closedAt).getTime();
+          return bTime - aTime;
+        });
+
+        if (trades.length === 0) {
+          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
+          return;
+        }
+
+        manualTradesDiv.innerHTML = trades.map(trade => {
+          const dateStr = trade.closedAt?.toDate ? trade.closedAt.toDate().toLocaleString() : new Date(trade.closedAt).toLocaleString();
+          const resultColor = trade.result === 'win' ? 'var(--green)' : trade.result === 'loss' ? 'var(--red)' : 'var(--gold)';
+          const pipsColor = trade.pips >= 0 ? 'var(--green)' : 'var(--red)';
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <h3>${trade.pair} - ${trade.direction}</h3>
+                <button class="btn btn-danger btn-sm" onclick="deleteManualTrade('${trade.id}', '${trade.pair}')">
+                  🗑️ Delete
+                </button>
+              </div>
+              <div class="item-details">
+                <p><strong>Closed:</strong> ${dateStr}</p>
+                <p><strong>Entry:</strong> ${trade.entry}</p>
+                <p><strong>Exit:</strong> ${trade.exit}</p>
+                <p><strong>Result:</strong> <span style="color: ${resultColor}; font-weight: 600;">${trade.result.toUpperCase()}</span></p>
+                <p><strong>Pips:</strong> <span style="color: ${pipsColor}; font-weight: 600;">${trade.pips >= 0 ? '+' : ''}${trade.pips}</span></p>
+                ${trade.notes ? `<p><strong>Notes:</strong> ${trade.notes}</p>` : ''}
+                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
+                  <em>Manual entry by ${trade.createdByEmail}</em>
+                </p>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        console.error('Error loading manual trades:', error);
+        document.getElementById('manualTradesList').innerHTML = `
+          <p style="color: var(--red); text-align: center; padding: 2rem;">
+            Error loading trades: ${error.message}
+          </p>
+        `;
+      }
+    }
+
+    window.deleteManualTrade = async (tradeId, pair) => {
+      if (!confirm(`Delete this ${pair} trade from history?`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'alerts_history', tradeId));
+        showSuccess(`✅ Trade deleted from history`);
+        loadManualTrades();
+      } catch (error) {
+        console.error('Error deleting trade:', error);
+        showError('Failed to delete trade');
+      }
+    };
+
+    // Load manual trades on init
+    loadManualTrades();
+
   </script>
 </body>
 </html>
