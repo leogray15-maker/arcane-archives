@@ -57,6 +57,7 @@
       color: var(--text-dim);
       text-decoration: none;
       font-size: 0.9rem;
+      transition: all 0.2s;
     }
 
     .back-btn:hover {
@@ -129,6 +130,13 @@
       border: 1px solid rgba(148, 163, 184, 0.3);
       border-radius: 18px;
       padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
     }
 
     table {
@@ -186,6 +194,7 @@
       cursor: pointer;
       transition: all 0.2s;
       font-size: 0.85rem;
+      margin-right: 0.5rem;
     }
 
     .btn-primary {
@@ -268,6 +277,11 @@
       th, td {
         padding: 0.75rem 0.5rem;
       }
+      
+      .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
@@ -311,7 +325,7 @@
 
       <!-- Affiliates Table -->
       <div class="table-container">
-        <h2 style="color: var(--gold); margin-bottom: 1rem;">All Affiliates</h2>
+        <h2 class="section-title">All Affiliates</h2>
         <div id="loadingAffiliates" class="loading">Loading affiliates...</div>
         <div id="emptyAffiliates" class="empty-state" style="display: none;">
           <div class="empty-state-icon">📊</div>
@@ -324,7 +338,7 @@
               <th>Email</th>
               <th>Referral Code</th>
               <th>Referrals</th>
-              <th>Active Referrals</th>
+              <th>Active</th>
               <th>Total Earned</th>
               <th>Balance</th>
               <th>Status</th>
@@ -337,7 +351,7 @@
 
     <!-- Withdrawal Requests -->
     <div class="admin-card">
-      <h2 style="color: var(--gold); margin-bottom: 1rem;">💰 Withdrawal Requests</h2>
+      <h2 class="section-title">💰 Withdrawal Requests</h2>
       <div id="loadingWithdrawals" class="loading">Loading withdrawal requests...</div>
       <div id="emptyWithdrawals" class="empty-state" style="display: none;">
         <div class="empty-state-icon">💸</div>
@@ -373,7 +387,8 @@
       updateDoc,
       query,
       where,
-      orderBy
+      orderBy,
+      increment
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -426,38 +441,55 @@
       }
 
       // Load data
+      await loadStats();
       await loadAffiliates();
       await loadWithdrawals();
-      await loadStats();
     });
 
     async function loadStats() {
       try {
-        const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
         const usersSnapshot = await getDocs(collection(db, 'Users'));
         const withdrawalsSnapshot = await getDocs(
           query(collection(db, 'WithdrawalRequests'), where('status', '==', 'pending'))
         );
 
-        let totalCommissions = 0;
-        let activeReferrals = 0;
-        let pendingWithdrawals = 0;
+        let totalAffiliatesCount = 0;
+        let activeReferralsCount = 0;
+        let totalCommissionsAmount = 0;
+        let pendingWithdrawalsAmount = 0;
 
-        affiliatesSnapshot.forEach(doc => {
+        // Count affiliates (users with referral codes who have referrals)
+        const referralCodes = new Set();
+        const referralCounts = {};
+
+        usersSnapshot.forEach(doc => {
           const data = doc.data();
-          totalCommissions += (data.totalEarned || 0);
-          activeReferrals += (data.activeReferrals || 0);
+          if (data.referredBy) {
+            referralCounts[data.referredBy] = (referralCounts[data.referredBy] || 0) + 1;
+            if (data.isPaid || data.subscriptionStatus === 'active') {
+              activeReferralsCount++;
+            }
+          }
+          if (data.referralCode) {
+            referralCodes.add(data.referralCode);
+          }
         });
+
+        // Count how many have actual referrals
+        totalAffiliatesCount = Object.keys(referralCounts).length;
+
+        // Calculate commissions (£25 per active referral)
+        totalCommissionsAmount = activeReferralsCount * 25;
 
         withdrawalsSnapshot.forEach(doc => {
           const data = doc.data();
-          pendingWithdrawals += (data.amount || 0);
+          pendingWithdrawalsAmount += (data.amount || 0);
         });
 
-        document.getElementById('totalAffiliates').textContent = affiliatesSnapshot.size;
-        document.getElementById('activeReferrals').textContent = activeReferrals;
-        document.getElementById('totalCommissions').textContent = `£${totalCommissions.toFixed(2)}`;
-        document.getElementById('pendingWithdrawals').textContent = `£${pendingWithdrawals.toFixed(2)}`;
+        document.getElementById('totalAffiliates').textContent = totalAffiliatesCount;
+        document.getElementById('activeReferrals').textContent = activeReferralsCount;
+        document.getElementById('totalCommissions').textContent = `£${totalCommissionsAmount.toFixed(2)}`;
+        document.getElementById('pendingWithdrawals').textContent = `£${pendingWithdrawalsAmount.toFixed(2)}`;
 
       } catch (error) {
         console.error('Error loading stats:', error);
@@ -471,18 +503,43 @@
       const tbody = document.getElementById('affiliatesTableBody');
 
       try {
-        const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
         const usersSnapshot = await getDocs(collection(db, 'Users'));
 
-        // Create user lookup map
-        const usersMap = {};
+        // Build referral counts
+        const referralCounts = {};
+        const activeReferralCounts = {};
+
         usersSnapshot.forEach(doc => {
-          usersMap[doc.id] = doc.data();
+          const data = doc.data();
+          if (data.referredBy) {
+            referralCounts[data.referredBy] = (referralCounts[data.referredBy] || 0) + 1;
+            if (data.isPaid || data.subscriptionStatus === 'active') {
+              activeReferralCounts[data.referredBy] = (activeReferralCounts[data.referredBy] || 0) + 1;
+            }
+          }
         });
 
         loadingEl.style.display = 'none';
 
-        if (affiliatesSnapshot.empty) {
+        // Only show users who have referrals
+        const affiliates = [];
+        usersSnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.referralCode && referralCounts[data.referralCode]) {
+            affiliates.push({
+              userId: doc.id,
+              username: data.Username || 'Unknown',
+              email: data.Email || '-',
+              referralCode: data.referralCode,
+              totalReferrals: referralCounts[data.referralCode] || 0,
+              activeReferrals: activeReferralCounts[data.referralCode] || 0,
+              totalEarned: (activeReferralCounts[data.referralCode] || 0) * 25,
+              balance: (activeReferralCounts[data.referralCode] || 0) * 25
+            });
+          }
+        });
+
+        if (affiliates.length === 0) {
           emptyEl.style.display = 'block';
           return;
         }
@@ -490,19 +547,16 @@
         tableEl.style.display = 'table';
         tbody.innerHTML = '';
 
-        affiliatesSnapshot.forEach(doc => {
-          const affiliate = doc.data();
-          const user = usersMap[doc.id] || {};
-
+        affiliates.forEach(affiliate => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${user.Username || 'Unknown'}</td>
-            <td>${user.Email || '-'}</td>
-            <td><strong style="color: var(--purple-light);">${affiliate.referralCode || '-'}</strong></td>
-            <td>${affiliate.totalReferrals || 0}</td>
-            <td>${affiliate.activeReferrals || 0}</td>
-            <td><strong style="color: var(--green);">£${(affiliate.totalEarned || 0).toFixed(2)}</strong></td>
-            <td><strong style="color: var(--gold);">£${(affiliate.balance || 0).toFixed(2)}</strong></td>
+            <td>${affiliate.username}</td>
+            <td>${affiliate.email}</td>
+            <td><strong style="color: var(--purple-light);">${affiliate.referralCode}</strong></td>
+            <td>${affiliate.totalReferrals}</td>
+            <td>${affiliate.activeReferrals}</td>
+            <td><strong style="color: var(--green);">£${affiliate.totalEarned.toFixed(2)}</strong></td>
+            <td><strong style="color: var(--gold);">£${affiliate.balance.toFixed(2)}</strong></td>
             <td>
               <span class="status-badge ${affiliate.activeReferrals > 0 ? 'status-active' : 'status-inactive'}">
                 ${affiliate.activeReferrals > 0 ? 'Active' : 'Inactive'}
@@ -525,9 +579,7 @@
       const tbody = document.getElementById('withdrawalsTableBody');
 
       try {
-        const withdrawalsSnapshot = await getDocs(
-          query(collection(db, 'WithdrawalRequests'), orderBy('requestedAt', 'desc'))
-        );
+        const withdrawalsSnapshot = await getDocs(collection(db, 'WithdrawalRequests'));
 
         const usersSnapshot = await getDocs(collection(db, 'Users'));
         const usersMap = {};
@@ -545,12 +597,22 @@
         tableEl.style.display = 'table';
         tbody.innerHTML = '';
 
+        // Sort by date descending
+        const withdrawals = [];
         withdrawalsSnapshot.forEach(doc => {
-          const withdrawal = doc.data();
+          withdrawals.push({ id: doc.id, ...doc.data() });
+        });
+        withdrawals.sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime;
+        });
+
+        withdrawals.forEach(withdrawal => {
           const user = usersMap[withdrawal.userId] || {};
 
-          const date = withdrawal.requestedAt?.toDate ? 
-            withdrawal.requestedAt.toDate().toLocaleDateString() : '-';
+          const date = withdrawal.createdAt?.toDate ? 
+            withdrawal.createdAt.toDate().toLocaleDateString() : '-';
 
           const statusClass = withdrawal.status === 'pending' ? 'status-pending' : 
                              withdrawal.status === 'completed' ? 'status-active' : 
@@ -562,7 +624,7 @@
             <td>${user.Username || 'Unknown'}</td>
             <td><strong style="color: var(--gold);">£${withdrawal.amount.toFixed(2)}</strong></td>
             <td>${withdrawal.method || '-'}</td>
-            <td>${withdrawal.details || '-'}</td>
+            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${withdrawal.details || '-'}</td>
             <td>
               <span class="status-badge ${statusClass}">
                 ${withdrawal.status || 'pending'}
@@ -570,10 +632,10 @@
             </td>
             <td>
               ${withdrawal.status === 'pending' ? `
-                <button class="btn btn-success" onclick="approveWithdrawal('${doc.id}', '${withdrawal.userId}', ${withdrawal.amount})">
+                <button class="btn btn-success" onclick="window.approveWithdrawal('${withdrawal.id}', '${withdrawal.userId}', ${withdrawal.amount})">
                   ✅ Approve
                 </button>
-                <button class="btn btn-danger" onclick="rejectWithdrawal('${doc.id}')">
+                <button class="btn btn-danger" onclick="window.rejectWithdrawal('${withdrawal.id}')">
                   ❌ Reject
                 </button>
               ` : '-'}
@@ -598,16 +660,6 @@
           completedAt: new Date()
         });
 
-        // Update affiliate balance
-        const affiliateRef = doc(db, 'Affiliates', userId);
-        const affiliateDoc = await getDocs(affiliateRef);
-        if (affiliateDoc.exists()) {
-          const currentBalance = affiliateDoc.data().balance || 0;
-          await updateDoc(affiliateRef, {
-            balance: Math.max(0, currentBalance - amount)
-          });
-        }
-
         showSuccess('✅ Withdrawal approved!');
         await loadWithdrawals();
         await loadStats();
@@ -630,6 +682,7 @@
 
         showSuccess('❌ Withdrawal rejected');
         await loadWithdrawals();
+        await loadStats();
 
       } catch (error) {
         console.error('Error rejecting withdrawal:', error);
