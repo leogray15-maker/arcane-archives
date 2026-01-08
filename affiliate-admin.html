@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel | The Arcane Archives</title>
+  <title>Affiliate Admin Panel | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
   <style>
     :root {
@@ -95,113 +95,97 @@
       color: var(--text-dim);
     }
 
-    .tabs {
-      display: flex;
-      gap: 0.5rem;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
       margin-bottom: 2rem;
-      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
     }
 
-    .tab {
-      padding: 1rem 2rem;
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      font-weight: 600;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      font-size: 0.95rem;
-    }
-
-    .tab:hover {
-      color: var(--text-light);
-    }
-
-    .tab.active {
-      color: var(--purple-light);
-      border-bottom-color: var(--purple);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .form-section {
+    .stat-card {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(148, 163, 184, 0.3);
       border-radius: 18px;
-      padding: 2rem;
-      margin-bottom: 2rem;
+      padding: 1.5rem;
     }
 
-    .form-section h2 {
-      font-size: 1.3rem;
-      margin-bottom: 1.5rem;
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
       color: var(--purple-light);
     }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.2rem;
+    .table-container {
+      overflow-x: auto;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 18px;
+      padding: 1.5rem;
     }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+    table {
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    .form-group label {
-      font-size: 0.9rem;
+    th {
+      text-align: left;
+      padding: 1rem;
+      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    tr:hover {
+      background: rgba(147, 51, 234, 0.05);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-light);
     }
 
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      padding: 0.8rem;
-      border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(10, 10, 10, 0.8);
-      color: var(--text-light);
-      font-size: 0.95rem;
-      font-family: inherit;
+    .status-active {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--green);
     }
 
-    .form-group textarea {
-      resize: vertical;
-      min-height: 100px;
+    .status-pending {
+      background: rgba(251, 191, 36, 0.2);
+      color: var(--gold);
     }
 
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: var(--purple);
-      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
+    .status-inactive {
+      background: rgba(148, 163, 184, 0.2);
+      color: var(--text-dim);
     }
 
     .btn {
-      padding: 0.8rem 2rem;
-      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
       border: none;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
     }
 
     .btn-primary {
@@ -209,25 +193,18 @@
       color: white;
     }
 
-    .btn-primary:hover:not(:disabled) {
+    .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
     }
 
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .btn-success {
+      background: var(--green);
+      color: white;
     }
 
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-dim);
-      border: 1px solid rgba(148, 163, 184, 0.4);
-    }
-
-    .btn-secondary:hover {
-      color: var(--text-light);
-      border-color: rgba(148, 163, 184, 0.7);
+    .btn-success:hover {
+      background: #16a34a;
     }
 
     .btn-danger {
@@ -239,96 +216,57 @@
       background: #dc2626;
     }
 
-    .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-    }
-
-    .items-list {
-      margin-top: 2rem;
-    }
-
-    .item-card {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      border-radius: 12px;
-      padding: 1.2rem;
-      margin-bottom: 1rem;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .item-info h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .item-details {
-      font-size: 0.9rem;
-      color: var(--text-dim);
-      margin-top: 0.3rem;
-    }
-
-    .item-actions {
-      display: flex;
-      gap: 0.7rem;
-    }
-
     .message {
-      padding: 1rem;
+      padding: 1rem 1.5rem;
       border-radius: 12px;
       margin-bottom: 1.5rem;
-      text-align: center;
       display: none;
     }
 
     .success-message {
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.3);
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid var(--green);
       color: var(--green);
     }
 
     .error-message {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid var(--red);
       color: var(--red);
     }
 
-    .tag {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-dim);
     }
 
-    .tag-purple {
-      background: rgba(147, 51, 234, 0.2);
-      border: 1px solid var(--purple);
-      color: var(--purple-light);
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-dim);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
     }
 
     @media (max-width: 768px) {
-      .form-grid {
+      .stats-grid {
         grid-template-columns: 1fr;
       }
 
-      .item-card {
-        grid-template-columns: 1fr;
+      .admin-card {
+        padding: 1.5rem;
       }
 
-      .btn-group {
-        flex-direction: column;
+      table {
+        font-size: 0.85rem;
       }
 
-      .tabs {
-        overflow-x: auto;
-      }
-
-      .tab {
-        white-space: nowrap;
+      th, td {
+        padding: 0.75rem 0.5rem;
       }
     }
   </style>
@@ -336,7 +274,7 @@
 <body>
   <div class="header">
     <div class="logo">
-      <span>🔐 ADMIN PANEL</span>
+      🏆 AFFILIATE ADMIN
     </div>
     <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
   </div>
@@ -344,265 +282,83 @@
   <div class="main">
     <div class="admin-card">
       <div class="admin-header">
-        <h1>🛠 Admin Control Center</h1>
-        <p>Manage stock picks and trade alerts</p>
+        <h1>Affiliate Management</h1>
+        <p>Manage affiliates, commissions, and payouts</p>
       </div>
 
       <div id="successMessage" class="message success-message"></div>
       <div id="errorMessage" class="message error-message"></div>
 
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab active" data-tab="stocks">📊 Stock Picks</button>
-        <button class="tab" data-tab="alerts">📈 Trade Alerts</button>
-        <button class="tab" data-tab="history">📝 Manual Trade History</button>
-      </div>
-
-      <!-- STOCK PICKS TAB -->
-      <div id="stocks-content" class="tab-content active">
-        <div class="form-section">
-          <h2 id="stockFormTitle">Add New Stock</h2>
-          <form id="stockForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Ticker Symbol *</label>
-                <input type="text" id="ticker" placeholder="AAPL" required />
-              </div>
-
-              <div class="form-group">
-                <label>Company Name *</label>
-                <input type="text" id="companyName" placeholder="Apple Inc." required />
-              </div>
-
-              <div class="form-group">
-                <label>Category *</label>
-                <select id="category" required>
-                  <option value="">Select category</option>
-                  <option value="core">Core Holdings</option>
-                  <option value="tactical">Tactical / High Conviction</option>
-                  <option value="watchlist">Watchlist</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Risk Level *</label>
-                <select id="riskLevel" required>
-                  <option value="">Select risk level</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Sector *</label>
-                <input type="text" id="sector" placeholder="Technology" required />
-              </div>
-
-              <div class="form-group">
-                <label>Region</label>
-                <input type="text" id="region" placeholder="USA" />
-              </div>
-
-              <div class="form-group">
-                <label>Entry Low</label>
-                <input type="number" step="0.01" id="entryLow" placeholder="150.00" />
-              </div>
-
-              <div class="form-group">
-                <label>Entry High</label>
-                <input type="number" step="0.01" id="entryHigh" placeholder="160.00" />
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Investment Thesis *</label>
-              <textarea id="thesis" placeholder="Why this stock? What's the core driver?" required></textarea>
-            </div>
-
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" id="submitStockBtn">
-                ➕ Add Stock
-              </button>
-              <button type="button" class="btn btn-secondary" id="cancelStockBtn">
-                Cancel
-              </button>
-            </div>
-          </form>
+      <!-- Stats Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Affiliates</div>
+          <div class="stat-value" id="totalAffiliates">-</div>
         </div>
-
-        <div class="items-list">
-          <h2 style="color: var(--gold); margin-bottom: 1rem;">Current Stock Picks</h2>
-          <div id="stocksList"></div>
+        <div class="stat-card">
+          <div class="stat-label">Active Referrals</div>
+          <div class="stat-value" id="activeReferrals">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Commissions</div>
+          <div class="stat-value" id="totalCommissions">£-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Withdrawals</div>
+          <div class="stat-value" id="pendingWithdrawals">£-</div>
         </div>
       </div>
 
-      <!-- TRADE ALERTS TAB -->
-      <div id="alerts-content" class="tab-content">
-        <div class="form-section">
-          <h2 id="alertFormTitle">Post New Trade Alert</h2>
-          <form id="alertForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Pair *</label>
-                <select id="pairInput" required>
-                  <option value="XAUUSD">XAUUSD (Gold)</option>
-                  <option value="XAGUSD">XAGUSD (Silver)</option>
-                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-                  <option value="US30">US30 (Dow Jones)</option>
-                  <option value="SPX500">SPX500 (S&P 500)</option>
-                  <option value="EURUSD">EURUSD</option>
-                  <option value="GBPUSD">GBPUSD</option>
-                  <option value="USDJPY">USDJPY</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Direction *</label>
-                <select id="directionSelect" required>
-                  <option value="Buy">Buy</option>
-                  <option value="Sell">Sell</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Entry *</label>
-                <input type="text" id="entryInput" placeholder="2650.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>Stop Loss *</label>
-                <input type="text" id="slInput" placeholder="2640.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>TP1</label>
-                <input type="text" id="tp1Input" placeholder="2660.00" />
-              </div>
-
-              <div class="form-group">
-                <label>TP2</label>
-                <input type="text" id="tp2Input" placeholder="2670.00" />
-              </div>
-
-              <div class="form-group">
-                <label>TP3</label>
-                <input type="text" id="tp3Input" placeholder="2680.00" />
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Analysis / Notes</label>
-              <textarea id="notesInput" placeholder="Setup details, confluence, etc."></textarea>
-            </div>
-
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" id="postAlertBtn">
-                📡 Post Alert
-              </button>
-              <button type="button" class="btn btn-secondary" id="cancelAlertBtn">
-                Cancel
-              </button>
-            </div>
-          </form>
+      <!-- Affiliates Table -->
+      <div class="table-container">
+        <h2 style="color: var(--gold); margin-bottom: 1rem;">All Affiliates</h2>
+        <div id="loadingAffiliates" class="loading">Loading affiliates...</div>
+        <div id="emptyAffiliates" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">📊</div>
+          <p>No affiliates yet</p>
         </div>
-
-        <div class="items-list">
-          <h2 style="color: var(--gold); margin-bottom: 1rem;">Active Alerts</h2>
-          <div id="alertsList"></div>
-        </div>
+        <table id="affiliatesTable" style="display: none;">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Referral Code</th>
+              <th>Referrals</th>
+              <th>Active Referrals</th>
+              <th>Total Earned</th>
+              <th>Balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="affiliatesTableBody"></tbody>
+        </table>
       </div>
+    </div>
 
-      <!-- MANUAL TRADE HISTORY TAB -->
-      <div id="history-content" class="tab-content">
-        <div class="form-section">
-          <h2>📝 Add Manual Trade to History</h2>
-          <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">
-            Use this to add trades you forgot to record. They'll appear in the Performance Overview.
-          </p>
-          
-          <form id="manualTradeForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Date Closed *</label>
-                <input type="datetime-local" id="manualClosedAt" required />
-              </div>
-
-              <div class="form-group">
-                <label>Pair *</label>
-                <select id="manualPair" required>
-                  <option value="XAUUSD">XAUUSD (Gold)</option>
-                  <option value="XAGUSD">XAGUSD (Silver)</option>
-                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-                  <option value="ETHUSD">ETHUSD (Ethereum)</option>
-                  <option value="US30">US30 (Dow Jones)</option>
-                  <option value="NAS100">NAS100 (Nasdaq)</option>
-                  <option value="SPX500">SPX500 (S&P 500)</option>
-                  <option value="EURUSD">EURUSD</option>
-                  <option value="GBPUSD">GBPUSD</option>
-                  <option value="USDJPY">USDJPY</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Direction *</label>
-                <select id="manualDirection" required>
-                  <option value="Buy">Buy</option>
-                  <option value="Sell">Sell</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Entry Price *</label>
-                <input type="number" step="0.01" id="manualEntry" placeholder="2650.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>Exit Price *</label>
-                <input type="number" step="0.01" id="manualExit" placeholder="2660.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>Result *</label>
-                <select id="manualResult" required>
-                  <option value="win">WIN</option>
-                  <option value="loss">LOSS</option>
-                  <option value="be">BREAK EVEN</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Pips/Points *</label>
-                <input type="number" step="0.1" id="manualPips" placeholder="50.0" required />
-                <small style="color: var(--text-dim); font-size: 0.8rem;">Enter positive for wins, negative for losses</small>
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Notes (Optional)</label>
-              <textarea id="manualNotes" placeholder="Why did you take this trade? What happened?" rows="3"></textarea>
-            </div>
-
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" id="submitManualTradeBtn">
-                ➕ Add Trade to History
-              </button>
-              <button type="button" class="btn btn-secondary" id="clearManualTradeBtn">
-                Clear Form
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="items-list">
-          <h2 style="color: var(--gold); margin-bottom: 1rem;">Recent Manual Entries</h2>
-          <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
-            These are trades you manually added. They appear in your alerts page Performance Overview.
-          </p>
-          <div id="manualTradesList"></div>
-        </div>
+    <!-- Withdrawal Requests -->
+    <div class="admin-card">
+      <h2 style="color: var(--gold); margin-bottom: 1rem;">💰 Withdrawal Requests</h2>
+      <div id="loadingWithdrawals" class="loading">Loading withdrawal requests...</div>
+      <div id="emptyWithdrawals" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">💸</div>
+        <p>No pending withdrawal requests</p>
       </div>
-
+      <div class="table-container">
+        <table id="withdrawalsTable" style="display: none;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Details</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawalsTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -612,14 +368,11 @@
     import { 
       getFirestore, 
       collection,
-      addDoc,
       getDocs,
-      getDoc,
-      deleteDoc,
       doc,
       updateDoc,
-      serverTimestamp,
       query,
+      where,
       orderBy
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -638,22 +391,6 @@
 
     const successMessage = document.getElementById('successMessage');
     const errorMessage = document.getElementById('errorMessage');
-
-    let editingStockId = null;
-    let editingAlertId = null;
-
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const tabName = tab.dataset.tab;
-        
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
-        tab.classList.add('active');
-        document.getElementById(`${tabName}-content`).classList.add('active');
-      });
-    });
 
     function showSuccess(message) {
       successMessage.textContent = message;
@@ -688,447 +425,217 @@
         return;
       }
 
-      loadStocks();
-      loadAlerts();
+      // Load data
+      await loadAffiliates();
+      await loadWithdrawals();
+      await loadStats();
     });
 
-    // ========== STOCK PICKS ==========
-
-    const stockForm = document.getElementById('stockForm');
-    const submitStockBtn = document.getElementById('submitStockBtn');
-    const cancelStockBtn = document.getElementById('cancelStockBtn');
-
-    stockForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const stockData = {
-        ticker: document.getElementById('ticker').value.toUpperCase(),
-        companyName: document.getElementById('companyName').value,
-        category: document.getElementById('category').value,
-        riskLevel: document.getElementById('riskLevel').value,
-        sector: document.getElementById('sector').value,
-        region: document.getElementById('region').value,
-        entryLow: parseFloat(document.getElementById('entryLow').value) || null,
-        entryHigh: parseFloat(document.getElementById('entryHigh').value) || null,
-        thesis: document.getElementById('thesis').value,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
+    async function loadStats() {
       try {
-        submitStockBtn.disabled = true;
-        submitStockBtn.textContent = 'Saving...';
-
-        if (editingStockId) {
-          await updateDoc(doc(db, 'StockPicks', editingStockId), stockData);
-          showSuccess('✅ Stock updated successfully!');
-        } else {
-          await addDoc(collection(db, 'StockPicks'), stockData);
-          showSuccess('✅ Stock added successfully!');
-        }
-
-        stockForm.reset();
-        editingStockId = null;
-        submitStockBtn.textContent = '➕ Add Stock';
-        document.getElementById('stockFormTitle').textContent = 'Add New Stock';
-        loadStocks();
-      } catch (error) {
-        console.error('Error saving stock:', error);
-        showError('❌ Failed to save stock: ' + error.message);
-      } finally {
-        submitStockBtn.disabled = false;
-      }
-    });
-
-    cancelStockBtn.addEventListener('click', () => {
-      stockForm.reset();
-      editingStockId = null;
-      submitStockBtn.textContent = '➕ Add Stock';
-      document.getElementById('stockFormTitle').textContent = 'Add New Stock';
-    });
-
-    async function loadStocks() {
-      try {
-        const q = query(collection(db, 'StockPicks'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        
-        const stocksList = document.getElementById('stocksList');
-        
-        if (snapshot.empty) {
-          stocksList.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No stocks added yet</p>';
-          return;
-        }
-
-        stocksList.innerHTML = snapshot.docs.map(docSnap => {
-          const stock = { id: docSnap.id, ...docSnap.data() };
-          return `
-            <div class="item-card">
-              <div class="item-info">
-                <h3>
-                  ${stock.companyName}
-                  <span class="tag tag-purple">${stock.ticker}</span>
-                </h3>
-                <div class="item-details">
-                  ${stock.sector} • ${stock.region || 'N/A'} • Risk: ${stock.riskLevel}
-                </div>
-              </div>
-              <div class="item-actions">
-                <button class="btn btn-primary btn-sm" onclick="editStock('${stock.id}')">
-                  Edit
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteStock('${stock.id}', '${stock.ticker}')">
-                  Delete
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (error) {
-        console.error('Error loading stocks:', error);
-        showError('Failed to load stocks: ' + error.message);
-      }
-    }
-
-    window.editStock = async (stockId) => {
-      try {
-        const docRef = doc(db, 'StockPicks', stockId);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          const stock = docSnap.data();
-          
-          document.getElementById('ticker').value = stock.ticker;
-          document.getElementById('companyName').value = stock.companyName;
-          document.getElementById('category').value = stock.category;
-          document.getElementById('riskLevel').value = stock.riskLevel;
-          document.getElementById('sector').value = stock.sector;
-          document.getElementById('region').value = stock.region || '';
-          document.getElementById('entryLow').value = stock.entryLow || '';
-          document.getElementById('entryHigh').value = stock.entryHigh || '';
-          document.getElementById('thesis').value = stock.thesis;
-          
-          editingStockId = stockId;
-          submitStockBtn.textContent = '💾 Update Stock';
-          document.getElementById('stockFormTitle').textContent = 'Edit Stock';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      } catch (error) {
-        console.error('Error loading stock for edit:', error);
-        showError('Failed to load stock details');
-      }
-    };
-
-    window.deleteStock = async (stockId, ticker) => {
-      if (!confirm(`Delete ${ticker}?`)) return;
-
-      try {
-        await deleteDoc(doc(db, 'StockPicks', stockId));
-        showSuccess(`✅ ${ticker} deleted`);
-        loadStocks();
-      } catch (error) {
-        console.error('Error deleting stock:', error);
-        showError('Failed to delete stock');
-      }
-    };
-
-    // ========== TRADE ALERTS ==========
-
-    const alertForm = document.getElementById('alertForm');
-    const postAlertBtn = document.getElementById('postAlertBtn');
-    const cancelAlertBtn = document.getElementById('cancelAlertBtn');
-
-    alertForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const alertData = {
-        pair: document.getElementById('pairInput').value,
-        direction: document.getElementById('directionSelect').value,
-        entry: document.getElementById('entryInput').value.trim(),
-        sl: document.getElementById('slInput').value.trim(),
-        tp1: document.getElementById('tp1Input').value.trim() || null,
-        tp2: document.getElementById('tp2Input').value.trim() || null,
-        tp3: document.getElementById('tp3Input').value.trim() || null,
-        notes: document.getElementById('notesInput').value.trim() || null,
-        status: 'open',
-        tpsHit: [],
-        createdAt: serverTimestamp(),
-        createdBy: auth.currentUser.uid,
-        createdByEmail: auth.currentUser.email,
-        reactions: {
-          fire: [],
-          rocket: [],
-          eyes: []
-        }
-      };
-
-      try {
-        postAlertBtn.disabled = true;
-        postAlertBtn.textContent = 'Posting...';
-
-        if (editingAlertId) {
-          await updateDoc(doc(db, 'alerts_live', editingAlertId), alertData);
-          showSuccess('✅ Alert updated!');
-        } else {
-          await addDoc(collection(db, 'alerts_live'), alertData);
-          showSuccess('✅ Alert posted!');
-        }
-
-        alertForm.reset();
-        editingAlertId = null;
-        postAlertBtn.textContent = '📡 Post Alert';
-        document.getElementById('alertFormTitle').textContent = 'Post New Trade Alert';
-        loadAlerts();
-      } catch (error) {
-        console.error('Error saving alert:', error);
-        showError('❌ Failed to post alert: ' + error.message);
-      } finally {
-        postAlertBtn.disabled = false;
-      }
-    });
-
-    cancelAlertBtn.addEventListener('click', () => {
-      alertForm.reset();
-      editingAlertId = null;
-      postAlertBtn.textContent = '📡 Post Alert';
-      document.getElementById('alertFormTitle').textContent = 'Post New Trade Alert';
-    });
-
-    async function loadAlerts() {
-      try {
-        const q = query(collection(db, 'alerts_live'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        
-        const alertsList = document.getElementById('alertsList');
-        
-        if (snapshot.empty) {
-          alertsList.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No active alerts</p>';
-          return;
-        }
-
-        alertsList.innerHTML = snapshot.docs.map(docSnap => {
-          const alert = { id: docSnap.id, ...docSnap.data() };
-          return `
-            <div class="item-card">
-              <div class="item-info">
-                <h3>
-                  ${alert.pair} ${alert.direction}
-                  <span class="tag tag-purple">${alert.entry}</span>
-                </h3>
-                <div class="item-details">
-                  Entry: ${alert.entry} • SL: ${alert.sl} • TP1: ${alert.tp1 || '-'}
-                </div>
-              </div>
-              <div class="item-actions">
-                <button class="btn btn-primary btn-sm" onclick="editAlert('${alert.id}')">
-                  Edit
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteAlert('${alert.id}', '${alert.pair}')">
-                  Delete
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (error) {
-        console.error('Error loading alerts:', error);
-        showError('Failed to load alerts: ' + error.message);
-      }
-    }
-
-    window.editAlert = async (alertId) => {
-      try {
-        const docRef = doc(db, 'alerts_live', alertId);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          const alert = docSnap.data();
-          
-          document.getElementById('pairInput').value = alert.pair;
-          document.getElementById('directionSelect').value = alert.direction;
-          document.getElementById('entryInput').value = alert.entry;
-          document.getElementById('slInput').value = alert.sl;
-          document.getElementById('tp1Input').value = alert.tp1 || '';
-          document.getElementById('tp2Input').value = alert.tp2 || '';
-          document.getElementById('tp3Input').value = alert.tp3 || '';
-          document.getElementById('notesInput').value = alert.notes || '';
-          
-          editingAlertId = alertId;
-          postAlertBtn.textContent = '💾 Update Alert';
-          document.getElementById('alertFormTitle').textContent = 'Edit Trade Alert';
-          
-          // Switch to alerts tab
-          document.querySelector('[data-tab="alerts"]').click();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      } catch (error) {
-        console.error('Error loading alert for edit:', error);
-        showError('Failed to load alert details');
-      }
-    };
-
-    window.deleteAlert = async (alertId, pair) => {
-      if (!confirm(`Delete ${pair} alert?`)) return;
-
-      try {
-        await deleteDoc(doc(db, 'alerts_live', alertId));
-        showSuccess(`✅ ${pair} alert deleted`);
-        loadAlerts();
-      } catch (error) {
-        console.error('Error deleting alert:', error);
-        showError('Failed to delete alert');
-      }
-    };
-
-    // ============================================================================
-    // MANUAL TRADE HISTORY FORM
-    // ============================================================================
-
-    const manualTradeForm = document.getElementById('manualTradeForm');
-    const clearManualTradeBtn = document.getElementById('clearManualTradeBtn');
-
-    manualTradeForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById('submitManualTradeBtn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Adding...';
-
-      try {
-        const closedAtInput = document.getElementById('manualClosedAt').value;
-        const pair = document.getElementById('manualPair').value;
-        const direction = document.getElementById('manualDirection').value;
-        const entry = parseFloat(document.getElementById('manualEntry').value);
-        const exit = parseFloat(document.getElementById('manualExit').value);
-        const result = document.getElementById('manualResult').value;
-        const pips = parseFloat(document.getElementById('manualPips').value);
-        const notes = document.getElementById('manualNotes').value;
-
-        // Convert datetime-local to Firestore timestamp
-        const closedAt = new Date(closedAtInput);
-
-        const tradeData = {
-          pair,
-          direction,
-          entry,
-          exit,
-          result,
-          pips,
-          notes: notes || null,
-          closedAt: closedAt,
-          createdBy: auth.currentUser.uid,
-          createdByEmail: auth.currentUser.email,
-          manualEntry: true, // Flag to identify manual entries
-          createdAt: serverTimestamp()
-        };
-
-        await addDoc(collection(db, 'alerts_history'), tradeData);
-
-        showSuccess(`✅ Trade added to history! ${pair} ${direction} - ${result.toUpperCase()}`);
-        manualTradeForm.reset();
-        loadManualTrades();
-
-      } catch (error) {
-        console.error('Error adding manual trade:', error);
-        showError('Failed to add trade: ' + error.message);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '➕ Add Trade to History';
-      }
-    });
-
-    clearManualTradeBtn.addEventListener('click', () => {
-      manualTradeForm.reset();
-    });
-
-    async function loadManualTrades() {
-      try {
-        const q = query(
-          collection(db, 'alerts_history')
+        const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
+        const usersSnapshot = await getDocs(collection(db, 'Users'));
+        const withdrawalsSnapshot = await getDocs(
+          query(collection(db, 'WithdrawalRequests'), where('status', '==', 'pending'))
         );
-        
-        const snapshot = await getDocs(q);
-        const manualTradesDiv = document.getElementById('manualTradesList');
 
-        if (snapshot.empty) {
-          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
-          return;
-        }
+        let totalCommissions = 0;
+        let activeReferrals = 0;
+        let pendingWithdrawals = 0;
 
-        // Collect and sort
-        const trades = [];
-        snapshot.forEach((doc) => {
+        affiliatesSnapshot.forEach(doc => {
           const data = doc.data();
-          if (data.manualEntry === true) {
-            trades.push({ id: doc.id, ...data });
-          }
+          totalCommissions += (data.totalEarned || 0);
+          activeReferrals += (data.activeReferrals || 0);
         });
 
-        // Sort by closedAt (newest first)
-        trades.sort((a, b) => {
-          const aTime = a.closedAt?.toMillis ? a.closedAt.toMillis() : new Date(a.closedAt).getTime();
-          const bTime = b.closedAt?.toMillis ? b.closedAt.toMillis() : new Date(b.closedAt).getTime();
-          return bTime - aTime;
+        withdrawalsSnapshot.forEach(doc => {
+          const data = doc.data();
+          pendingWithdrawals += (data.amount || 0);
         });
 
-        if (trades.length === 0) {
-          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
-          return;
-        }
-
-        manualTradesDiv.innerHTML = trades.map(trade => {
-          const dateStr = trade.closedAt?.toDate ? trade.closedAt.toDate().toLocaleString() : new Date(trade.closedAt).toLocaleString();
-          const resultColor = trade.result === 'win' ? 'var(--green)' : trade.result === 'loss' ? 'var(--red)' : 'var(--gold)';
-          const pipsColor = trade.pips >= 0 ? 'var(--green)' : 'var(--red)';
-
-          return `
-            <div class="item-card">
-              <div class="item-header">
-                <h3>${trade.pair} - ${trade.direction}</h3>
-                <button class="btn btn-danger btn-sm" onclick="deleteManualTrade('${trade.id}', '${trade.pair}')">
-                  🗑️ Delete
-                </button>
-              </div>
-              <div class="item-details">
-                <p><strong>Closed:</strong> ${dateStr}</p>
-                <p><strong>Entry:</strong> ${trade.entry}</p>
-                <p><strong>Exit:</strong> ${trade.exit}</p>
-                <p><strong>Result:</strong> <span style="color: ${resultColor}; font-weight: 600;">${trade.result.toUpperCase()}</span></p>
-                <p><strong>Pips:</strong> <span style="color: ${pipsColor}; font-weight: 600;">${trade.pips >= 0 ? '+' : ''}${trade.pips}</span></p>
-                ${trade.notes ? `<p><strong>Notes:</strong> ${trade.notes}</p>` : ''}
-                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
-                  <em>Manual entry by ${trade.createdByEmail}</em>
-                </p>
-              </div>
-            </div>
-          `;
-        }).join('');
+        document.getElementById('totalAffiliates').textContent = affiliatesSnapshot.size;
+        document.getElementById('activeReferrals').textContent = activeReferrals;
+        document.getElementById('totalCommissions').textContent = `£${totalCommissions.toFixed(2)}`;
+        document.getElementById('pendingWithdrawals').textContent = `£${pendingWithdrawals.toFixed(2)}`;
 
       } catch (error) {
-        console.error('Error loading manual trades:', error);
-        document.getElementById('manualTradesList').innerHTML = `
-          <p style="color: var(--red); text-align: center; padding: 2rem;">
-            Error loading trades: ${error.message}
-          </p>
-        `;
+        console.error('Error loading stats:', error);
       }
     }
 
-    window.deleteManualTrade = async (tradeId, pair) => {
-      if (!confirm(`Delete this ${pair} trade from history?`)) return;
+    async function loadAffiliates() {
+      const loadingEl = document.getElementById('loadingAffiliates');
+      const emptyEl = document.getElementById('emptyAffiliates');
+      const tableEl = document.getElementById('affiliatesTable');
+      const tbody = document.getElementById('affiliatesTableBody');
 
       try {
-        await deleteDoc(doc(db, 'alerts_history', tradeId));
-        showSuccess(`✅ Trade deleted from history`);
-        loadManualTrades();
+        const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
+        const usersSnapshot = await getDocs(collection(db, 'Users'));
+
+        // Create user lookup map
+        const usersMap = {};
+        usersSnapshot.forEach(doc => {
+          usersMap[doc.id] = doc.data();
+        });
+
+        loadingEl.style.display = 'none';
+
+        if (affiliatesSnapshot.empty) {
+          emptyEl.style.display = 'block';
+          return;
+        }
+
+        tableEl.style.display = 'table';
+        tbody.innerHTML = '';
+
+        affiliatesSnapshot.forEach(doc => {
+          const affiliate = doc.data();
+          const user = usersMap[doc.id] || {};
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${user.Username || 'Unknown'}</td>
+            <td>${user.Email || '-'}</td>
+            <td><strong style="color: var(--purple-light);">${affiliate.referralCode || '-'}</strong></td>
+            <td>${affiliate.totalReferrals || 0}</td>
+            <td>${affiliate.activeReferrals || 0}</td>
+            <td><strong style="color: var(--green);">£${(affiliate.totalEarned || 0).toFixed(2)}</strong></td>
+            <td><strong style="color: var(--gold);">£${(affiliate.balance || 0).toFixed(2)}</strong></td>
+            <td>
+              <span class="status-badge ${affiliate.activeReferrals > 0 ? 'status-active' : 'status-inactive'}">
+                ${affiliate.activeReferrals > 0 ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
       } catch (error) {
-        console.error('Error deleting trade:', error);
-        showError('Failed to delete trade');
+        console.error('Error loading affiliates:', error);
+        loadingEl.innerHTML = `<p style="color: var(--red);">Error loading affiliates: ${error.message}</p>`;
+      }
+    }
+
+    async function loadWithdrawals() {
+      const loadingEl = document.getElementById('loadingWithdrawals');
+      const emptyEl = document.getElementById('emptyWithdrawals');
+      const tableEl = document.getElementById('withdrawalsTable');
+      const tbody = document.getElementById('withdrawalsTableBody');
+
+      try {
+        const withdrawalsSnapshot = await getDocs(
+          query(collection(db, 'WithdrawalRequests'), orderBy('requestedAt', 'desc'))
+        );
+
+        const usersSnapshot = await getDocs(collection(db, 'Users'));
+        const usersMap = {};
+        usersSnapshot.forEach(doc => {
+          usersMap[doc.id] = doc.data();
+        });
+
+        loadingEl.style.display = 'none';
+
+        if (withdrawalsSnapshot.empty) {
+          emptyEl.style.display = 'block';
+          return;
+        }
+
+        tableEl.style.display = 'table';
+        tbody.innerHTML = '';
+
+        withdrawalsSnapshot.forEach(doc => {
+          const withdrawal = doc.data();
+          const user = usersMap[withdrawal.userId] || {};
+
+          const date = withdrawal.requestedAt?.toDate ? 
+            withdrawal.requestedAt.toDate().toLocaleDateString() : '-';
+
+          const statusClass = withdrawal.status === 'pending' ? 'status-pending' : 
+                             withdrawal.status === 'completed' ? 'status-active' : 
+                             'status-inactive';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${date}</td>
+            <td>${user.Username || 'Unknown'}</td>
+            <td><strong style="color: var(--gold);">£${withdrawal.amount.toFixed(2)}</strong></td>
+            <td>${withdrawal.method || '-'}</td>
+            <td>${withdrawal.details || '-'}</td>
+            <td>
+              <span class="status-badge ${statusClass}">
+                ${withdrawal.status || 'pending'}
+              </span>
+            </td>
+            <td>
+              ${withdrawal.status === 'pending' ? `
+                <button class="btn btn-success" onclick="approveWithdrawal('${doc.id}', '${withdrawal.userId}', ${withdrawal.amount})">
+                  ✅ Approve
+                </button>
+                <button class="btn btn-danger" onclick="rejectWithdrawal('${doc.id}')">
+                  ❌ Reject
+                </button>
+              ` : '-'}
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (error) {
+        console.error('Error loading withdrawals:', error);
+        loadingEl.innerHTML = `<p style="color: var(--red);">Error loading withdrawals: ${error.message}</p>`;
+      }
+    }
+
+    window.approveWithdrawal = async (withdrawalId, userId, amount) => {
+      if (!confirm(`Approve withdrawal of £${amount.toFixed(2)}?`)) return;
+
+      try {
+        // Update withdrawal status
+        await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
+          status: 'completed',
+          completedAt: new Date()
+        });
+
+        // Update affiliate balance
+        const affiliateRef = doc(db, 'Affiliates', userId);
+        const affiliateDoc = await getDocs(affiliateRef);
+        if (affiliateDoc.exists()) {
+          const currentBalance = affiliateDoc.data().balance || 0;
+          await updateDoc(affiliateRef, {
+            balance: Math.max(0, currentBalance - amount)
+          });
+        }
+
+        showSuccess('✅ Withdrawal approved!');
+        await loadWithdrawals();
+        await loadStats();
+        await loadAffiliates();
+
+      } catch (error) {
+        console.error('Error approving withdrawal:', error);
+        showError('Failed to approve withdrawal: ' + error.message);
       }
     };
 
-    // Load manual trades on init
-    loadManualTrades();
+    window.rejectWithdrawal = async (withdrawalId) => {
+      if (!confirm('Reject this withdrawal request?')) return;
 
+      try {
+        await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
+          status: 'rejected',
+          rejectedAt: new Date()
+        });
+
+        showSuccess('❌ Withdrawal rejected');
+        await loadWithdrawals();
+
+      } catch (error) {
+        console.error('Error rejecting withdrawal:', error);
+        showError('Failed to reject withdrawal: ' + error.message);
+      }
+    };
   </script>
 </body>
 </html>
