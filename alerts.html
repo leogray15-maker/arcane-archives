@@ -5,378 +5,119 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Arcane Alerts | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
-
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
       color: #e5e7eb;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       min-height: 100vh;
       padding: 0.5rem;
     }
-
-    .container {
-      max-width: 2400px;
-      margin: 0 auto;
-    }
-
+    .container { max-width: 1600px; margin: 0 auto; }
     .back-btn {
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
-      z-index: 40;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 999px;
+      position: fixed; top: 1rem; left: 1rem; z-index: 40;
+      padding: 0.6rem 1.2rem; border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.95);
-      color: #9ca3af;
-      text-decoration: none;
-      font-size: 0.9rem;
-      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.95); color: #9ca3af;
+      text-decoration: none; font-size: 0.9rem;
       transition: all 0.2s;
     }
-
     .back-btn:hover {
-      background: rgba(139, 92, 246, 0.2);
-      color: #a78bfa;
+      background: rgba(139, 92, 246, 0.2); color: #a78bfa;
       border-color: #9333ea;
-      transform: translateX(-2px);
     }
-
-    .header {
-      text-align: center;
-      margin: 3.5rem 0 1.5rem;
-      padding: 0 1rem;
-    }
-
+    .header { text-align: center; margin: 3.5rem 0 1.5rem; }
     .header h1 {
       font-size: clamp(1.5rem, 3vw, 2rem);
       background: linear-gradient(135deg, #a855f7, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
-      font-weight: 700;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-weight: 700; margin-bottom: 0.5rem;
     }
-
-    .header p {
-      color: #9ca3af;
-      font-size: clamp(0.85rem, 1.5vw, 1rem);
-    }
-
-    /* CHARTS GRID - MASSIVE */
+    .header p { color: #9ca3af; font-size: 1rem; }
+    
+    /* SINGLE COLUMN - ONE UNDER ANOTHER */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
       margin-bottom: 2rem;
     }
-
     .chart-wrapper {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(139, 92, 246, 0.3);
       border-radius: 1rem;
-      padding: 1rem;
-      backdrop-filter: blur(20px);
+      padding: 1.5rem;
       overflow: hidden;
     }
-
     .chart-header {
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
       border-bottom: 1px solid rgba(148, 163, 184, 0.2);
     }
-
     .chart-title {
-      font-size: 1.1rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: #e5e7eb;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
-
     .chart-subtitle {
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       color: #6b7280;
-      margin-top: 0.25rem;
+      margin-top: 0.5rem;
     }
-
+    
+    /* MASSIVE CHARTS */
     .tradingview-widget-container {
-      width: 100%;
-      height: 850px; /* HUGE on desktop */
+      width: 100% !important;
+      height: 700px !important;
+      min-height: 700px !important;
     }
-
     .tradingview-widget-container__widget {
-      width: 100%;
-      height: 100%;
+      width: 100% !important;
+      height: 100% !important;
     }
-
-    .tradingview-widget-copyright {
-      display: none !important;
-    }
-
-    /* LIVE TRADES SECTION */
-    .live-trades-section {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      backdrop-filter: blur(20px);
-      margin-bottom: 2rem;
-    }
-
-    .section-header {
-      margin-bottom: 1.5rem;
-    }
-
-    .section-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #e5e7eb;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .live-badge {
-      width: 8px;
-      height: 8px;
-      background: #22c55e;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    #alertsContainer {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .alert-card {
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(139, 92, 246, 0.2);
-      border-radius: 12px;
-      padding: 1.25rem;
-      transition: all 0.2s;
-    }
-
-    .alert-card:hover {
-      border-color: #a855f7;
-      background: rgba(30, 41, 59, 0.8);
-    }
-
-    /* PERFORMANCE OVERVIEW */
-    .performance-section {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 2rem;
-      backdrop-filter: blur(20px);
-      margin-bottom: 2rem;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-    }
-
-    .stat-label {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #e5e7eb;
-    }
-
-    .stat-value.green {
-      color: #22c55e;
-    }
-
-    .stat-value.red {
-      color: #ef4444;
-    }
-
-    .stat-value.purple {
-      color: #a855f7;
-    }
-
-    /* HISTORY TABLE */
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th {
-      text-align: left;
-      padding: 1rem;
-      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
-      color: #9ca3af;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    td {
-      padding: 1rem;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-    }
-
-    tr:hover {
-      background: rgba(139, 92, 246, 0.05);
-    }
-
-    .result-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .result-badge.win {
-      background: rgba(34, 197, 94, 0.2);
-      color: #22c55e;
-    }
-
-    .result-badge.loss {
-      background: rgba(239, 68, 68, 0.2);
-      color: #ef4444;
-    }
-
-    .result-badge.be {
-      background: rgba(251, 191, 36, 0.2);
-      color: #fbbf24;
-    }
-
-    /* TABLET */
-    @media (max-width: 1200px) {
-      .charts-grid {
-        grid-template-columns: 1fr;
-        gap: 1.25rem;
-      }
-
-      .tradingview-widget-container {
-        height: 700px;
-      }
-    }
-
-    /* MOBILE */
+    
+    /* MOBILE - STILL BIG */
     @media (max-width: 768px) {
-      body {
-        padding: 0.25rem;
-      }
-
-      .header {
-        margin: 3rem 0 1rem;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
+      body { padding: 0.25rem; }
+      .header { margin: 3rem 0 1rem; }
+      .charts-grid { gap: 2rem; }
+      .chart-wrapper { padding: 1rem; }
+      .chart-title { font-size: 1.25rem; }
       .tradingview-widget-container {
-        height: 650px; /* HUGE on mobile */
-      }
-
-      .chart-wrapper {
-        padding: 0.75rem;
-      }
-
-      .chart-header {
-        margin-bottom: 0.5rem;
-        padding-bottom: 0.5rem;
+        height: 600px !important;
+        min-height: 600px !important;
       }
     }
-
-    /* VERY SMALL PHONES */
-    @media (max-width: 400px) {
+    
+    /* VERY LARGE SCREENS */
+    @media (min-width: 1800px) {
       .tradingview-widget-container {
-        height: 600px;
+        height: 900px !important;
+        min-height: 900px !important;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="dashboard.html" class="back-btn">
-      ← Back to Dashboard
-    </a>
-
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
     <div class="header">
       <h1>Arcane Trading Floor</h1>
       <p>Live market data, trade signals, and transparent performance tracking</p>
     </div>
-
-    <!-- TRADINGVIEW CHARTS GRID -->
     <div class="charts-grid">
+      
       <!-- GOLD -->
       <div class="chart-wrapper">
         <div class="chart-header">
           <div class="chart-title">📈 XAUUSD (Gold)</div>
-          <div class="chart-subtitle">15min • Live Updates</div>
+          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
         </div>
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "15",
-            "locale": "en",
-            "save_image": true,
-            "style": "1",
-            "symbol": "OANDA:XAUUSD",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "#0F0F0F",
-            "gridColor": "rgba(242, 242, 242, 0.06)",
-            "watchlist": [],
-            "withdateranges": true,
-            "compareSymbols": [],
-            "studies": [],
-            "width": "100%",
-            "height": "100%"
-          }
+          {"autosize":true,"symbol":"OANDA:XAUUSD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
           </script>
         </div>
       </div>
@@ -385,36 +126,12 @@
       <div class="chart-wrapper">
         <div class="chart-header">
           <div class="chart-title">🪙 XAGUSD (Silver)</div>
-          <div class="chart-subtitle">15min • Live Updates</div>
+          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
         </div>
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "15",
-            "locale": "en",
-            "save_image": true,
-            "style": "1",
-            "symbol": "OANDA:XAGUSD",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "#0F0F0F",
-            "gridColor": "rgba(242, 242, 242, 0.06)",
-            "watchlist": [],
-            "withdateranges": true,
-            "compareSymbols": [],
-            "studies": [],
-            "width": "100%",
-            "height": "100%"
-          }
+          {"autosize":true,"symbol":"OANDA:XAGUSD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
           </script>
         </div>
       </div>
@@ -423,36 +140,12 @@
       <div class="chart-wrapper">
         <div class="chart-header">
           <div class="chart-title">💵 DXY (Dollar Index)</div>
-          <div class="chart-subtitle">15min • Live Updates</div>
+          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
         </div>
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "15",
-            "locale": "en",
-            "save_image": true,
-            "style": "1",
-            "symbol": "CAPITALCOM:DXY",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "#0F0F0F",
-            "gridColor": "rgba(242, 242, 242, 0.06)",
-            "watchlist": [],
-            "withdateranges": true,
-            "compareSymbols": [],
-            "studies": [],
-            "width": "100%",
-            "height": "100%"
-          }
+          {"autosize":true,"symbol":"CAPITALCOM:DXY","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
           </script>
         </div>
       </div>
@@ -461,36 +154,12 @@
       <div class="chart-wrapper">
         <div class="chart-header">
           <div class="chart-title">📊 SPX (S&P 500)</div>
-          <div class="chart-subtitle">15min • Live Updates</div>
+          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
         </div>
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "15",
-            "locale": "en",
-            "save_image": true,
-            "style": "1",
-            "symbol": "CAPITALCOM:US500",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "#0F0F0F",
-            "gridColor": "rgba(242, 242, 242, 0.06)",
-            "watchlist": [],
-            "withdateranges": true,
-            "compareSymbols": [],
-            "studies": [],
-            "width": "100%",
-            "height": "100%"
-          }
+          {"autosize":true,"symbol":"CAPITALCOM:US500","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
           </script>
         </div>
       </div>
@@ -499,36 +168,12 @@
       <div class="chart-wrapper">
         <div class="chart-header">
           <div class="chart-title">🏢 US30 (Dow Jones)</div>
-          <div class="chart-subtitle">15min • Live Updates</div>
+          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
         </div>
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "15",
-            "locale": "en",
-            "save_image": true,
-            "style": "1",
-            "symbol": "OANDA:US30USD",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "#0F0F0F",
-            "gridColor": "rgba(242, 242, 242, 0.06)",
-            "watchlist": [],
-            "withdateranges": true,
-            "compareSymbols": [],
-            "studies": [],
-            "width": "100%",
-            "height": "100%"
-          }
+          {"autosize":true,"symbol":"OANDA:US30USD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
           </script>
         </div>
       </div>
@@ -537,111 +182,18 @@
       <div class="chart-wrapper">
         <div class="chart-header">
           <div class="chart-title">💻 NQ (Nasdaq)</div>
-          <div class="chart-subtitle">15min • Live Updates</div>
+          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
         </div>
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "15",
-            "locale": "en",
-            "save_image": true,
-            "style": "1",
-            "symbol": "OANDA:NAS100USD",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "#0F0F0F",
-            "gridColor": "rgba(242, 242, 242, 0.06)",
-            "watchlist": [],
-            "withdateranges": true,
-            "compareSymbols": [],
-            "studies": [],
-            "width": "100%",
-            "height": "100%"
-          }
+          {"autosize":true,"symbol":"OANDA:NAS100USD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
           </script>
         </div>
       </div>
+
     </div>
-
-    <!-- LIVE TRADES SECTION -->
-    <div class="live-trades-section">
-      <div class="section-header">
-        <div class="section-title">
-          <span class="live-badge"></span>
-          Live Signals
-        </div>
-      </div>
-      <div id="alertsContainer">
-        <div class="alert-card">
-          <div style="text-align: center; color: #9ca3af;">
-            Loading trade signals...
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PERFORMANCE OVERVIEW -->
-    <div class="performance-section">
-      <h2 style="color: #a855f7; margin-bottom: 1.5rem; font-size: 1.5rem;">📊 Performance Overview</h2>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Wins</div>
-          <div class="stat-value green" id="winsCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Losses</div>
-          <div class="stat-value red" id="lossesCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Break Even</div>
-          <div class="stat-value" id="beCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value purple" id="winRate">0%</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Net Pips</div>
-          <div class="stat-value" id="netPips">0</div>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Pair</th>
-              <th>Direction</th>
-              <th>Entry</th>
-              <th>Exit</th>
-              <th>Result</th>
-              <th>Pips</th>
-            </tr>
-          </thead>
-          <tbody id="historyTableBody">
-            <tr>
-              <td colspan="7" style="text-align:center; color:#9ca3af; padding: 2rem;">
-                Loading trade history...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
-
   <script type="module" src="alerts.js"></script>
 </body>
 </html>
