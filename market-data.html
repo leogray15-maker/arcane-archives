@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Data Hub | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+      color: #e5e7eb;
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 0.5rem;
+    }
+    .container { max-width: 1800px; margin: 0 auto; }
+    .back-btn {
+      position: fixed; top: 1rem; left: 1rem; z-index: 40;
+      padding: 0.6rem 1.2rem; border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.95); color: #9ca3af;
+      text-decoration: none; font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .back-btn:hover {
+      background: rgba(139, 92, 246, 0.2); color: #a78bfa;
+      border-color: #9333ea;
+    }
+    .header {
+      text-align: center;
+      margin: 3.5rem 0 2rem;
+      padding: 0 1rem;
+    }
+    .header h1 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      background: linear-gradient(135deg, #a855f7, #ec4899, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .header p {
+      color: #9ca3af;
+      font-size: 1rem;
+    }
+    .widgets-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .widget-wrapper {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      overflow: hidden;
+    }
+    .widget-header {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .widget-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e5e7eb;
+    }
+    .widget-badge {
+      padding: 0.25rem 0.75rem;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: #a78bfa;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .widget-subtitle {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 0.5rem;
+    }
+    .tradingview-widget-container {
+      width: 100% !important;
+      min-height: 600px !important;
+      height: 600px !important;
+    }
+    .tradingview-widget-container__widget {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    /* Calendar needs more height */
+    .calendar-widget {
+      min-height: 700px !important;
+      height: 700px !important;
+    }
+    
+    @media (max-width: 768px) {
+      body { padding: 0.25rem; }
+      .header { margin: 3rem 0 1.5rem; }
+      .widget-wrapper { padding: 1rem; }
+      .widget-title { font-size: 1.25rem; }
+      .tradingview-widget-container {
+        min-height: 500px !important;
+        height: 500px !important;
+      }
+      .calendar-widget {
+        min-height: 600px !important;
+        height: 600px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="alerts.html" class="back-btn">← Back to Charts</a>
+    
+    <div class="header">
+      <h1>📊 Market Data Hub</h1>
+      <p>Economic calendar, market heatmaps, screeners, and real-time data</p>
+    </div>
+
+    <div class="widgets-grid">
+      
+      <!-- ECONOMIC CALENDAR -->
+      <div class="widget-wrapper">
+        <div class="widget-header">
+          <div>
+            <div class="widget-title">📅 Economic Calendar</div>
+            <div class="widget-subtitle">Major economic events and announcements</div>
+          </div>
+          <div class="widget-badge">Live</div>
+        </div>
+        <div class="tradingview-widget-container calendar-widget">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+          {
+            "colorTheme": "dark",
+            "isTransparent": false,
+            "width": "100%",
+            "height": "100%",
+            "locale": "en",
+            "importanceFilter": "0,1",
+            "countryFilter": "us,eu,gb,jp,cn,au"
+          }
+          </script>
+        </div>
+      </div>
+
+      <!-- FOREX HEATMAP -->
+      <div class="widget-wrapper">
+        <div class="widget-header">
+          <div>
+            <div class="widget-title">🔥 Forex Heatmap</div>
+            <div class="widget-subtitle">Currency strength visualization</div>
+          </div>
+          <div class="widget-badge">Real-time</div>
+        </div>
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
+          {
+            "width": "100%",
+            "height": "100%",
+            "currencies": [
+              "EUR",
+              "USD",
+              "JPY",
+              "GBP",
+              "CHF",
+              "AUD",
+              "CAD",
+              "NZD"
+            ],
+            "isTransparent": false,
+            "colorTheme": "dark",
+            "locale": "en"
+          }
+          </script>
+        </div>
+      </div>
+
+      <!-- STOCK MARKET HEATMAP -->
+      <div class="widget-wrapper">
+        <div class="widget-header">
+          <div>
+            <div class="widget-title">📈 Stock Market Heatmap</div>
+            <div class="widget-subtitle">S&P 500 sector performance</div>
+          </div>
+          <div class="widget-badge">Real-time</div>
+        </div>
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+          {
+            "exchanges": [],
+            "dataSource": "SPX500",
+            "grouping": "sector",
+            "blockSize": "market_cap_basic",
+            "blockColor": "change",
+            "locale": "en",
+            "symbolUrl": "",
+            "colorTheme": "dark",
+            "hasTopBar": false,
+            "isDataSetEnabled": false,
+            "isZoomEnabled": true,
+            "hasSymbolTooltip": true,
+            "width": "100%",
+            "height": "100%"
+          }
+          </script>
+        </div>
+      </div>
+
+      <!-- CRYPTO HEATMAP -->
+      <div class="widget-wrapper">
+        <div class="widget-header">
+          <div>
+            <div class="widget-title">₿ Crypto Heatmap</div>
+            <div class="widget-subtitle">Top cryptocurrencies performance</div>
+          </div>
+          <div class="widget-badge">Real-time</div>
+        </div>
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+          {
+            "width": "100%",
+            "height": "100%",
+            "defaultColumn": "overview",
+            "screener_type": "crypto_mkt",
+            "displayCurrency": "USD",
+            "colorTheme": "dark",
+            "locale": "en"
+          }
+          </script>
+        </div>
+      </div>
+
+      <!-- FOREX CROSS RATES -->
+      <div class="widget-wrapper">
+        <div class="widget-header">
+          <div>
+            <div class="widget-title">💱 Forex Cross Rates</div>
+            <div class="widget-subtitle">Major currency pairs live rates</div>
+          </div>
+          <div class="widget-badge">Live</div>
+        </div>
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-cross-rates.js" async>
+          {
+            "width": "100%",
+            "height": "100%",
+            "currencies": [
+              "EUR",
+              "USD",
+              "JPY",
+              "GBP",
+              "CHF",
+              "AUD",
+              "CAD",
+              "NZD"
+            ],
+            "isTransparent": false,
+            "colorTheme": "dark",
+            "locale": "en"
+          }
+          </script>
+        </div>
+      </div>
+
+      <!-- MARKET OVERVIEW -->
+      <div class="widget-wrapper">
+        <div class="widget-header">
+          <div>
+            <div class="widget-title">🌍 Market Overview</div>
+            <div class="widget-subtitle">Global indices, commodities, bonds</div>
+          </div>
+          <div class="widget-badge">Live</div>
+        </div>
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+          {
+            "colorTheme": "dark",
+            "dateRange": "1D",
+            "showChart": true,
+            "locale": "en",
+            "width": "100%",
+            "height": "100%",
+            "largeChartUrl": "",
+            "isTransparent": false,
+            "showSymbolLogo": true,
+            "showFloatingTooltip": false,
+            "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+            "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+            "gridLineColor": "rgba(42, 46, 57, 0)",
+            "scaleFontColor": "rgba(134, 137, 147, 1)",
+            "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+            "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+            "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+            "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+            "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+            "tabs": [
+              {
+                "title": "Indices",
+                "symbols": [
+                  {"s": "OANDA:SPX500USD", "d": "S&P 500"},
+                  {"s": "OANDA:NAS100USD", "d": "Nasdaq 100"},
+                  {"s": "OANDA:US30USD", "d": "Dow 30"},
+                  {"s": "INDEX:FTSE", "d": "FTSE 100"},
+                  {"s": "INDEX:DEU40", "d": "DAX"}
+                ],
+                "originalTitle": "Indices"
+              },
+              {
+                "title": "Commodities",
+                "symbols": [
+                  {"s": "OANDA:XAUUSD", "d": "Gold"},
+                  {"s": "OANDA:XAGUSD", "d": "Silver"},
+                  {"s": "TVC:USOIL", "d": "Crude Oil"},
+                  {"s": "OANDA:NATGASUSD", "d": "Natural Gas"},
+                  {"s": "OANDA:XCUUSD", "d": "Copper"}
+                ],
+                "originalTitle": "Commodities"
+              },
+              {
+                "title": "Forex",
+                "symbols": [
+                  {"s": "FX:EURUSD", "d": "EUR/USD"},
+                  {"s": "FX:GBPUSD", "d": "GBP/USD"},
+                  {"s": "FX:USDJPY", "d": "USD/JPY"},
+                  {"s": "FX:AUDUSD", "d": "AUD/USD"},
+                  {"s": "FX:USDCAD", "d": "USD/CAD"}
+                ],
+                "originalTitle": "Forex"
+              },
+              {
+                "title": "Crypto",
+                "symbols": [
+                  {"s": "BINANCE:BTCUSDT", "d": "Bitcoin"},
+                  {"s": "BINANCE:ETHUSDT", "d": "Ethereum"},
+                  {"s": "BINANCE:SOLUSDT", "d": "Solana"},
+                  {"s": "BINANCE:BNBUSDT", "d": "BNB"},
+                  {"s": "BINANCE:XRPUSDT", "d": "XRP"}
+                ],
+                "originalTitle": "Crypto"
+              }
+            ]
+          }
+          </script>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
