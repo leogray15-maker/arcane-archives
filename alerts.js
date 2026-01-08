@@ -683,8 +683,12 @@ function subscribeToHistory() {
           bes += 1;
         }
 
-        if (typeof rowData.pips === "number") {
-          netPips += rowData.pips;
+        // Handle pips as string or number
+        if (rowData.pips !== null && rowData.pips !== undefined) {
+          const pipsValue = parseFloat(rowData.pips);
+          if (!isNaN(pipsValue)) {
+            netPips += pipsValue;
+          }
         }
       });
 
@@ -721,7 +725,8 @@ function renderHistoryRow(data) {
     : "-";
 
   const result = data.result || "-";
-  const pips = typeof data.pips === "number" ? data.pips : null;
+  // Handle pips as string or number
+  const pips = data.pips !== null && data.pips !== undefined ? parseFloat(data.pips) : null;
   const tpHit = data.tpHit || 0;
 
   let resultLabel = "-";
