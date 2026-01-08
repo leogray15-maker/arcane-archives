@@ -1,5 +1,5 @@
 // netlify/functions/stripe-webhook.js
-// Enhanced with comprehensive logging
+// Enhanced with AFFILIATE COMMISSION TRACKING
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 const admin = require("firebase-admin");
@@ -43,8 +43,162 @@ function generatePassword() {
   return password;
 }
 
+async function processAffiliateCommission(email) {
+  console.log("💰 Processing affiliate commission for:", email);
+  
+  if (!db) {
+    console.error("❌ Database not ready");
+    return;
+  }
+
+  try {
+    // Find the user who just subscribed
+    const usersSnapshot = await db.collection("Users")
+      .where("Email", "==", email)
+      .limit(1)
+      .get();
+
+    if (usersSnapshot.empty) {
+      console.log("⚠️ User not found:", email);
+      return;
+    }
+
+    const userDoc = usersSnapshot.docs[0];
+    const userData = userDoc.data();
+    const referralCode = userData.referredBy;
+
+    if (!referralCode) {
+      console.log("ℹ️ No referral code for this user");
+      return;
+    }
+
+    console.log("🔗 User was referred by:", referralCode);
+
+    // Find the referrer by referral code
+    const referrerSnapshot = await db.collection("Users")
+      .where("referralCode", "==", referralCode)
+      .limit(1)
+      .get();
+
+    if (referrerSnapshot.empty) {
+      console.log("⚠️ Referrer not found for code:", referralCode);
+      return;
+    }
+
+    const referrerId = referrerSnapshot.docs[0].id;
+    console.log("👤 Referrer ID:", referrerId);
+
+    // Get or create Affiliates document
+    const affiliateRef = db.collection("Affiliates").doc(referrerId);
+    const affiliateDoc = await affiliateRef.get();
+
+    const commission = 25; // £25 per active referral
+
+    if (affiliateDoc.exists()) {
+      // Update existing affiliate
+      await affiliateRef.update({
+        balance: admin.firestore.FieldValue.increment(commission),
+        totalEarned: admin.firestore.FieldValue.increment(commission),
+        activeReferrals: admin.firestore.FieldValue.increment(1),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log("✅ Updated affiliate balance +£" + commission);
+    } else {
+      // Create new affiliate profile
+      await affiliateRef.set({
+        userId: referrerId,
+        referralCode: referralCode,
+        balance: commission,
+        totalEarned: commission,
+        totalWithdrawn: 0,
+        activeReferrals: 1,
+        totalReferrals: 1,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log("✅ Created affiliate profile with £" + commission);
+    }
+
+    // Record commission in history
+    await db.collection("CommissionHistory").add({
+      affiliateId: referrerId,
+      referralCode: referralCode,
+      referredUserId: userDoc.id,
+      referredUserEmail: email,
+      amount: commission,
+      type: "new_subscription",
+      status: "paid",
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log("✅ Commission recorded in history");
+
+  } catch (error) {
+    console.error("❌ Affiliate commission error:", error.message);
+  }
+}
+
+async function removeAffiliateCommission(email) {
+  console.log("💸 Removing affiliate commission for:", email);
+  
+  if (!db) return;
+
+  try {
+    // Find the user who cancelled
+    const usersSnapshot = await db.collection("Users")
+      .where("Email", "==", email)
+      .limit(1)
+      .get();
+
+    if (usersSnapshot.empty) return;
+
+    const userData = usersSnapshot.docs[0].data();
+    const referralCode = userData.referredBy;
+
+    if (!referralCode) return;
+
+    // Find referrer
+    const referrerSnapshot = await db.collection("Users")
+      .where("referralCode", "==", referralCode)
+      .limit(1)
+      .get();
+
+    if (referrerSnapshot.empty) return;
+
+    const referrerId = referrerSnapshot.docs[0].id;
+    const affiliateRef = db.collection("Affiliates").doc(referrerId);
+    const affiliateDoc = await affiliateRef.get();
+
+    if (!affiliateDoc.exists()) return;
+
+    const commission = 25;
+
+    // Decrease active referrals and balance
+    await affiliateRef.update({
+      balance: admin.firestore.FieldValue.increment(-commission),
+      activeReferrals: admin.firestore.FieldValue.increment(-1),
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log("✅ Removed commission -£" + commission);
+
+    // Record cancellation
+    await db.collection("CommissionHistory").add({
+      affiliateId: referrerId,
+      referralCode: referralCode,
+      amount: -commission,
+      type: "subscription_cancelled",
+      status: "reversed",
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+  } catch (error) {
+    console.error("❌ Remove commission error:", error.message);
+  }
+}
+
 async function createFirebaseUser(email) {
-  console.log("📝 createFirebaseUser:", email);
+  console.log("🔐 createFirebaseUser:", email);
   
   if (!auth || !db) {
     console.error("❌ Firebase not ready");
@@ -102,7 +256,7 @@ async function createFirebaseUser(email) {
     if (isNewUser) {
       try {
         await auth.generatePasswordResetLink(email, {
-          url: 'https://thearcanearchives.netlify.app/login.html',
+          url: 'https://arcanearchives.netlify.app/login.html',
         });
         console.log("✅ Password reset sent");
       } catch (emailErr) {
@@ -148,7 +302,7 @@ async function updateUserByEmail(email, updates) {
 }
 
 exports.handler = async (event) => {
-  console.log("🔔 WEBHOOK TRIGGERED");
+  console.log("📨 WEBHOOK TRIGGERED");
   
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -230,13 +384,38 @@ exports.handler = async (event) => {
         paidAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
+      // 💰 PROCESS AFFILIATE COMMISSION
+      await processAffiliateCommission(email);
+
       console.log("✅ Processing complete");
     }
 
-    if (
-      type === "customer.subscription.deleted" ||
-      type === "customer.subscription.updated"
-    ) {
+    if (type === "customer.subscription.deleted") {
+      const subscription = data.object;
+      const customerId = subscription.customer;
+
+      let email = null;
+      try {
+        const customer = await stripe.customers.retrieve(customerId);
+        email = customer.email || null;
+      } catch (e) {
+        console.warn("⚠️ Customer not found");
+      }
+
+      const updates = {
+        subscriptionStatus: "cancelled",
+        isPaid: false,
+      };
+
+      if (email) {
+        await updateUserByEmail(email, updates);
+        
+        // 💸 REMOVE AFFILIATE COMMISSION
+        await removeAffiliateCommission(email);
+      }
+    }
+
+    if (type === "customer.subscription.updated") {
       const subscription = data.object;
       const status = subscription.status;
       const customerId = subscription.customer;
