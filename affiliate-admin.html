@@ -1,1309 +1,1134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Affiliate Management | Admin Panel</title>
-    <link rel="icon" href="ArcaneA.png">
-    
-    <style>
-        :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
-            --gold: #fbbf24;
-            --green: #22c55e;
-            --red: #ef4444;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
-            --border-color: rgba(148, 163, 184, 0.5);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-            padding: 2rem 1rem;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            background: linear-gradient(135deg, var(--gold), var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .back-btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .back-btn:hover {
-            color: var(--purple-light);
-            border-color: var(--purple);
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .stat-card .value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-card .label {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .stat-card.total .value { color: var(--purple-light); }
-        .stat-card.pending .value { color: var(--gold); }
-        .stat-card.paid .value { color: var(--green); }
-        .stat-card.revenue .value { color: var(--text-light); }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .tab-btn {
-            padding: 1rem 2rem;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: var(--text-dim);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            bottom: -1px;
-        }
-
-        .tab-btn.active {
-            color: var(--purple-light);
-            border-bottom-color: var(--purple);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Tables */
-        .data-table {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .data-table h2 {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-light);
-        }
-
-        .table-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .search-box {
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .filter-btn {
-            padding: 0.6rem 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:hover {
-            border-color: var(--purple);
-            color: var(--purple-light);
-        }
-
-        .filter-btn.active {
-            background: rgba(147, 51, 234, 0.2);
-            border-color: var(--purple);
-            color: var(--purple-light);
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            position: relative;
-        }
-
-        /* Scroll indicator for mobile */
-        .table-wrapper::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 50px;
-            background: linear-gradient(to left, var(--bg-card), transparent);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        @media (max-width: 768px) {
-            .table-wrapper::after {
-                opacity: 1;
-            }
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table th {
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 2px solid var(--border-color);
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        table td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-            color: var(--text-light);
-        }
-
-        .status-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            display: inline-block;
-        }
-
-        .status-badge.pending { background: rgba(251, 191, 36, 0.2); color: var(--gold); }
-        .status-badge.completed { background: rgba(34, 197, 94, 0.2); color: var(--green); }
-        .status-badge.rejected { background: rgba(239, 68, 68, 0.2); color: var(--red); }
-        .status-badge.active { background: rgba(34, 197, 94, 0.2); color: var(--green); }
-
-        /* Action Buttons */
-        .action-btns {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-approve {
-            background: linear-gradient(135deg, var(--green), #15803d);
-            color: white;
-        }
-
-        .btn-reject {
-            background: linear-gradient(135deg, var(--red), #b91c1c);
-            color: white;
-        }
-
-        .btn-view {
-            background: rgba(147, 51, 234, 0.2);
-            color: var(--purple-light);
-            border: 1px solid var(--purple);
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h3 {
-            font-size: 1.5rem;
-            color: var(--purple-light);
-        }
-
-        .modal-close {
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .modal-close:hover {
-            color: var(--text-light);
-        }
-
-        .detail-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .detail-group label {
-            display: block;
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .detail-group .value {
-            color: var(--text-light);
-            font-size: 1rem;
-            padding: 0.7rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .modal-actions .btn {
-            flex: 1;
-            padding: 0.9rem;
-            font-size: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem 0.75rem;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .back-btn {
-                font-size: 0.85rem;
-                padding: 0.5rem 1rem;
-            }
-
-            /* Stats Grid - 2x2 on mobile */
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .stat-card {
-                padding: 1.25rem;
-            }
-
-            .stat-card .value {
-                font-size: 1.8rem;
-            }
-
-            .stat-card .label {
-                font-size: 0.75rem;
-            }
-
-            /* Tabs - horizontal scroll with better spacing */
-            .tabs {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                margin-bottom: 1.5rem;
-                padding-bottom: 0.5rem;
-            }
-
-            .tabs::-webkit-scrollbar {
-                display: none;
-            }
-
-            .tab-btn {
-                white-space: nowrap;
-                font-size: 0.85rem;
-                padding: 0.75rem 1.25rem;
-                min-width: fit-content;
-            }
-
-            /* Content Section */
-            .content-section {
-                padding: 1.25rem;
-            }
-
-            .content-section h2 {
-                font-size: 1.1rem;
-                margin-bottom: 1rem;
-            }
-
-            /* Search Bar */
-            .search-bar {
-                margin-bottom: 1rem;
-            }
-
-            .search-bar input {
-                font-size: 0.9rem;
-                padding: 0.75rem 1rem;
-            }
-
-            /* Filter Buttons */
-            .filter-buttons {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-                margin-bottom: 1.25rem;
-            }
-
-            .filter-btn {
-                font-size: 0.8rem;
-                padding: 0.5rem 0.9rem;
-                flex: 0 0 auto;
-            }
-
-            /* Table - horizontal scroll */
-            .table-wrapper {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                margin: 0 -1.25rem;
-                padding: 0 1.25rem;
-            }
-
-            table {
-                font-size: 0.8rem;
-                min-width: 600px;
-            }
-
-            table th,
-            table td {
-                padding: 0.75rem 0.5rem;
-                white-space: nowrap;
-            }
-
-            table th:first-child,
-            table td:first-child {
-                padding-left: 0;
-            }
-
-            table th:last-child,
-            table td:last-child {
-                padding-right: 0;
-            }
-
-            /* Status Badges */
-            .status-badge {
-                font-size: 0.7rem;
-                padding: 0.25rem 0.6rem;
-            }
-
-            /* Action Buttons */
-            .action-btns {
-                flex-wrap: wrap;
-                gap: 0.35rem;
-            }
-
-            .btn {
-                font-size: 0.75rem;
-                padding: 0.4rem 0.75rem;
-            }
-
-            /* Modal */
-            .modal {
-                padding: 0.5rem;
-            }
-
-            .modal-content {
-                padding: 1.5rem;
-                max-height: 85vh;
-            }
-
-            .modal-header h3 {
-                font-size: 1.2rem;
-            }
-
-            .detail-group {
-                margin-bottom: 1.25rem;
-            }
-
-            .detail-group label {
-                font-size: 0.75rem;
-            }
-
-            .detail-group .value {
-                font-size: 0.9rem;
-            }
-
-            /* Empty State */
-            .empty-state {
-                padding: 2rem 1rem;
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.3rem;
-            }
-
-            .stats-grid {
-                gap: 0.75rem;
-            }
-
-            .stat-card {
-                padding: 1rem;
-            }
-
-            .stat-card .value {
-                font-size: 1.5rem;
-            }
-
-            .stat-card .label {
-                font-size: 0.7rem;
-            }
-
-            .content-section {
-                padding: 1rem;
-            }
-
-            table {
-                font-size: 0.75rem;
-            }
-
-            .filter-btn {
-                font-size: 0.75rem;
-                padding: 0.4rem 0.7rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --purple: #9333ea;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --text-light: #e5e5e5;
+      --text-dim: #a3a3a3;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+    }
+
+    .header {
+      max-width: 1400px;
+      margin: 2rem auto 1rem;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+    }
+
+    .back-btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-btn:hover {
+      color: var(--purple-light);
+      border-color: var(--purple);
+    }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .admin-card {
+      background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+      margin-bottom: 2rem;
+    }
+
+    .admin-header {
+      margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--gold), var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .admin-header p {
+      color: var(--text-dim);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .tab {
+      padding: 1rem 2rem;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+
+    .tab:hover {
+      color: var(--text-light);
+    }
+
+    .tab.active {
+      color: var(--purple-light);
+      border-bottom-color: var(--purple);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .form-section {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 18px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-section h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      color: var(--purple-light);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(10, 10, 10, 0.8);
+      color: var(--text-light);
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      padding: 0.8rem 2rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-light);
+      border-color: rgba(148, 163, 184, 0.7);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .items-list {
+      margin-top: 2rem;
+    }
+
+    .item-card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .item-info h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .item-details {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 0.7rem;
+    }
+
+    .message {
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .success-message {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: var(--green);
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--red);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+
+    .tag-purple {
+      background: rgba(147, 51, 234, 0.2);
+      border: 1px solid var(--purple);
+      color: var(--purple-light);
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .item-card {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .tabs {
+        overflow-x: auto;
+      }
+
+      .tab {
+        white-space: nowrap;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 Affiliate Management</h1>
-            <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
-        </div>
-
-        <!-- Stats Overview -->
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="value" id="totalAffiliates">0</div>
-                <div class="label">Total Affiliates</div>
-            </div>
-
-            <div class="stat-card pending">
-                <div class="value" id="pendingWithdrawals">0</div>
-                <div class="label">Pending Withdrawals</div>
-            </div>
-
-            <div class="stat-card paid">
-                <div class="value" id="totalPaid">£0</div>
-                <div class="label">Total Paid Out</div>
-            </div>
-
-            <div class="stat-card revenue">
-                <div class="value" id="monthlyRevenue">£0</div>
-                <div class="label">Monthly Revenue</div>
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="withdrawals">Pending Withdrawals</button>
-            <button class="tab-btn" data-tab="affiliates">All Affiliates</button>
-            <button class="tab-btn" data-tab="history">Payment History</button>
-            <button class="tab-btn" data-tab="commissions">Commissions</button>
-        </div>
-
-        <!-- Tab Content -->
-        <div id="withdrawals" class="tab-content active">
-            <div class="data-table">
-                <h2>💸 Pending Withdrawal Requests</h2>
-                <div class="table-controls">
-                    <div class="search-box">
-                        <input type="text" id="withdrawalSearch" placeholder="Search by email or username...">
-                    </div>
-                    <div class="filter-group">
-                        <button class="filter-btn active" data-filter="all">All</button>
-                        <button class="filter-btn" data-filter="pending">Pending</button>
-                        <button class="filter-btn" data-filter="completed">Completed</button>
-                        <button class="filter-btn" data-filter="rejected">Rejected</button>
-                    </div>
-                </div>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>User</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="withdrawalsTable">
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                                    Loading...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="affiliates" class="tab-content">
-            <div class="data-table">
-                <h2>👥 All Affiliates</h2>
-                <div class="table-controls">
-                    <div class="search-box">
-                        <input type="text" id="affiliateSearch" placeholder="Search affiliates...">
-                    </div>
-                </div>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Referral Code</th>
-                                <th>Active Refs</th>
-                                <th>Total Earned</th>
-                                <th>Available</th>
-                                <th>Total Withdrawn</th>
-                            </tr>
-                        </thead>
-                        <tbody id="affiliatesTable">
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                                    Loading...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="history" class="tab-content">
-            <div class="data-table">
-                <h2>📜 Payment History</h2>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date Paid</th>
-                                <th>User</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Processed By</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTable">
-                            <tr>
-                                <td colspan="5" style="text-align: center; color: var(--text-dim);">
-                                    Loading...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="commissions" class="tab-content">
-            <div class="data-table">
-                <h2>💰 Commission Overview</h2>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Affiliate</th>
-                                <th>Type</th>
-                                <th>From User</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="commissionsTable">
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                                    Loading...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <div class="header">
+    <div class="logo">
+      <span>🔐 ADMIN PANEL</span>
     </div>
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </div>
 
-    <!-- Withdrawal Detail Modal -->
-    <div id="withdrawalModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Withdrawal Request Details</h3>
-                <button class="modal-close" onclick="closeModal()">×</button>
+  <div class="main">
+    <div class="admin-card">
+      <div class="admin-header">
+        <h1>🛠 Admin Control Center</h1>
+        <p>Manage stock picks and trade alerts</p>
+      </div>
+
+      <div id="successMessage" class="message success-message"></div>
+      <div id="errorMessage" class="message error-message"></div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="stocks">📊 Stock Picks</button>
+        <button class="tab" data-tab="alerts">📈 Trade Alerts</button>
+        <button class="tab" data-tab="history">📝 Manual Trade History</button>
+      </div>
+
+      <!-- STOCK PICKS TAB -->
+      <div id="stocks-content" class="tab-content active">
+        <div class="form-section">
+          <h2 id="stockFormTitle">Add New Stock</h2>
+          <form id="stockForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Ticker Symbol *</label>
+                <input type="text" id="ticker" placeholder="AAPL" required />
+              </div>
+
+              <div class="form-group">
+                <label>Company Name *</label>
+                <input type="text" id="companyName" placeholder="Apple Inc." required />
+              </div>
+
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="category" required>
+                  <option value="">Select category</option>
+                  <option value="core">Core Holdings</option>
+                  <option value="tactical">Tactical / High Conviction</option>
+                  <option value="watchlist">Watchlist</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Risk Level *</label>
+                <select id="riskLevel" required>
+                  <option value="">Select risk level</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Sector *</label>
+                <input type="text" id="sector" placeholder="Technology" required />
+              </div>
+
+              <div class="form-group">
+                <label>Region</label>
+                <input type="text" id="region" placeholder="USA" />
+              </div>
+
+              <div class="form-group">
+                <label>Entry Low</label>
+                <input type="number" step="0.01" id="entryLow" placeholder="150.00" />
+              </div>
+
+              <div class="form-group">
+                <label>Entry High</label>
+                <input type="number" step="0.01" id="entryHigh" placeholder="160.00" />
+              </div>
             </div>
 
-            <div class="detail-group">
-                <label>User</label>
-                <div class="value" id="modalUser"></div>
+            <div class="form-group" style="margin-top: 1rem;">
+              <label>Investment Thesis *</label>
+              <textarea id="thesis" placeholder="Why this stock? What's the core driver?" required></textarea>
             </div>
 
-            <div class="detail-group">
-                <label>Email</label>
-                <div class="value" id="modalEmail"></div>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary" id="submitStockBtn">
+                ➕ Add Stock
+              </button>
+              <button type="button" class="btn btn-secondary" id="cancelStockBtn">
+                Cancel
+              </button>
             </div>
-
-            <div class="detail-group">
-                <label>Amount</label>
-                <div class="value" id="modalAmount"></div>
-            </div>
-
-            <div class="detail-group">
-                <label>Payment Method</label>
-                <div class="value" id="modalMethod"></div>
-            </div>
-
-            <div class="detail-group">
-                <label>Payment Details</label>
-                <div class="value" id="modalDetails"></div>
-            </div>
-
-            <div class="detail-group">
-                <label>Request Date</label>
-                <div class="value" id="modalDate"></div>
-            </div>
-
-            <div class="detail-group">
-                <label>Status</label>
-                <div class="value" id="modalStatus"></div>
-            </div>
-
-            <div class="modal-actions">
-                <button class="btn btn-approve" id="modalApprove">✓ Approve & Pay</button>
-                <button class="btn btn-reject" id="modalReject">✗ Reject</button>
-            </div>
+          </form>
         </div>
+
+        <div class="items-list">
+          <h2 style="color: var(--gold); margin-bottom: 1rem;">Current Stock Picks</h2>
+          <div id="stocksList"></div>
+        </div>
+      </div>
+
+      <!-- TRADE ALERTS TAB -->
+      <div id="alerts-content" class="tab-content">
+        <div class="form-section">
+          <h2 id="alertFormTitle">Post New Trade Alert</h2>
+          <form id="alertForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Pair *</label>
+                <select id="pairInput" required>
+                  <option value="XAUUSD">XAUUSD (Gold)</option>
+                  <option value="XAGUSD">XAGUSD (Silver)</option>
+                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                  <option value="US30">US30 (Dow Jones)</option>
+                  <option value="SPX500">SPX500 (S&P 500)</option>
+                  <option value="EURUSD">EURUSD</option>
+                  <option value="GBPUSD">GBPUSD</option>
+                  <option value="USDJPY">USDJPY</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Direction *</label>
+                <select id="directionSelect" required>
+                  <option value="Buy">Buy</option>
+                  <option value="Sell">Sell</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Entry *</label>
+                <input type="text" id="entryInput" placeholder="2650.00" required />
+              </div>
+
+              <div class="form-group">
+                <label>Stop Loss *</label>
+                <input type="text" id="slInput" placeholder="2640.00" required />
+              </div>
+
+              <div class="form-group">
+                <label>TP1</label>
+                <input type="text" id="tp1Input" placeholder="2660.00" />
+              </div>
+
+              <div class="form-group">
+                <label>TP2</label>
+                <input type="text" id="tp2Input" placeholder="2670.00" />
+              </div>
+
+              <div class="form-group">
+                <label>TP3</label>
+                <input type="text" id="tp3Input" placeholder="2680.00" />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label>Analysis / Notes</label>
+              <textarea id="notesInput" placeholder="Setup details, confluence, etc."></textarea>
+            </div>
+
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary" id="postAlertBtn">
+                📡 Post Alert
+              </button>
+              <button type="button" class="btn btn-secondary" id="cancelAlertBtn">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="items-list">
+          <h2 style="color: var(--gold); margin-bottom: 1rem;">Active Alerts</h2>
+          <div id="alertsList"></div>
+        </div>
+      </div>
+
+      <!-- MANUAL TRADE HISTORY TAB -->
+      <div id="history-content" class="tab-content">
+        <div class="form-section">
+          <h2>📝 Add Manual Trade to History</h2>
+          <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">
+            Use this to add trades you forgot to record. They'll appear in the Performance Overview.
+          </p>
+          
+          <form id="manualTradeForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Date Closed *</label>
+                <input type="datetime-local" id="manualClosedAt" required />
+              </div>
+
+              <div class="form-group">
+                <label>Pair *</label>
+                <select id="manualPair" required>
+                  <option value="XAUUSD">XAUUSD (Gold)</option>
+                  <option value="XAGUSD">XAGUSD (Silver)</option>
+                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                  <option value="ETHUSD">ETHUSD (Ethereum)</option>
+                  <option value="US30">US30 (Dow Jones)</option>
+                  <option value="NAS100">NAS100 (Nasdaq)</option>
+                  <option value="SPX500">SPX500 (S&P 500)</option>
+                  <option value="EURUSD">EURUSD</option>
+                  <option value="GBPUSD">GBPUSD</option>
+                  <option value="USDJPY">USDJPY</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Direction *</label>
+                <select id="manualDirection" required>
+                  <option value="Buy">Buy</option>
+                  <option value="Sell">Sell</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Entry Price *</label>
+                <input type="number" step="0.01" id="manualEntry" placeholder="2650.00" required />
+              </div>
+
+              <div class="form-group">
+                <label>Exit Price *</label>
+                <input type="number" step="0.01" id="manualExit" placeholder="2660.00" required />
+              </div>
+
+              <div class="form-group">
+                <label>Result *</label>
+                <select id="manualResult" required>
+                  <option value="win">WIN</option>
+                  <option value="loss">LOSS</option>
+                  <option value="be">BREAK EVEN</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Pips/Points *</label>
+                <input type="number" step="0.1" id="manualPips" placeholder="50.0" required />
+                <small style="color: var(--text-dim); font-size: 0.8rem;">Enter positive for wins, negative for losses</small>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label>Notes (Optional)</label>
+              <textarea id="manualNotes" placeholder="Why did you take this trade? What happened?" rows="3"></textarea>
+            </div>
+
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary" id="submitManualTradeBtn">
+                ➕ Add Trade to History
+              </button>
+              <button type="button" class="btn btn-secondary" id="clearManualTradeBtn">
+                Clear Form
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="items-list">
+          <h2 style="color: var(--gold); margin-bottom: 1rem;">Recent Manual Entries</h2>
+          <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
+            These are trades you manually added. They appear in your alerts page Performance Overview.
+          </p>
+          <div id="manualTradesList"></div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-        import { 
-            getFirestore, 
-            collection, 
-            query, 
-            where, 
-            orderBy,
-            getDocs,
-            doc,
-            getDoc,
-            updateDoc,
-            serverTimestamp,
-            onSnapshot
-        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection,
+      addDoc,
+      getDocs,
+      getDoc,
+      deleteDoc,
+      doc,
+      updateDoc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+
+    let editingStockId = null;
+    let editingAlertId = null;
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        tab.classList.add('active');
+        document.getElementById(`${tabName}-content`).classList.add('active');
+      });
+    });
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+    }
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+    }
+
+    // Check admin access
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
+      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'gefruLBk5qMXDZGmWdSo6wPNo3E3'];
+
+      if (!ADMIN_EMAILS.includes(user.email) && !ADMIN_UIDS.includes(user.uid)) {
+        showError('Access denied. Admin only.');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 2000);
+        return;
+      }
+
+      loadStocks();
+      loadAlerts();
+    });
+
+    // ========== STOCK PICKS ==========
+
+    const stockForm = document.getElementById('stockForm');
+    const submitStockBtn = document.getElementById('submitStockBtn');
+    const cancelStockBtn = document.getElementById('cancelStockBtn');
+
+    stockForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const stockData = {
+        ticker: document.getElementById('ticker').value.toUpperCase(),
+        companyName: document.getElementById('companyName').value,
+        category: document.getElementById('category').value,
+        riskLevel: document.getElementById('riskLevel').value,
+        sector: document.getElementById('sector').value,
+        region: document.getElementById('region').value,
+        entryLow: parseFloat(document.getElementById('entryLow').value) || null,
+        entryHigh: parseFloat(document.getElementById('entryHigh').value) || null,
+        thesis: document.getElementById('thesis').value,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      try {
+        submitStockBtn.disabled = true;
+        submitStockBtn.textContent = 'Saving...';
+
+        if (editingStockId) {
+          await updateDoc(doc(db, 'StockPicks', editingStockId), stockData);
+          showSuccess('✅ Stock updated successfully!');
+        } else {
+          await addDoc(collection(db, 'StockPicks'), stockData);
+          showSuccess('✅ Stock added successfully!');
+        }
+
+        stockForm.reset();
+        editingStockId = null;
+        submitStockBtn.textContent = '➕ Add Stock';
+        document.getElementById('stockFormTitle').textContent = 'Add New Stock';
+        loadStocks();
+      } catch (error) {
+        console.error('Error saving stock:', error);
+        showError('❌ Failed to save stock: ' + error.message);
+      } finally {
+        submitStockBtn.disabled = false;
+      }
+    });
+
+    cancelStockBtn.addEventListener('click', () => {
+      stockForm.reset();
+      editingStockId = null;
+      submitStockBtn.textContent = '➕ Add Stock';
+      document.getElementById('stockFormTitle').textContent = 'Add New Stock';
+    });
+
+    async function loadStocks() {
+      try {
+        const q = query(collection(db, 'StockPicks'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        
+        const stocksList = document.getElementById('stocksList');
+        
+        if (snapshot.empty) {
+          stocksList.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No stocks added yet</p>';
+          return;
+        }
+
+        stocksList.innerHTML = snapshot.docs.map(docSnap => {
+          const stock = { id: docSnap.id, ...docSnap.data() };
+          return `
+            <div class="item-card">
+              <div class="item-info">
+                <h3>
+                  ${stock.companyName}
+                  <span class="tag tag-purple">${stock.ticker}</span>
+                </h3>
+                <div class="item-details">
+                  ${stock.sector} • ${stock.region || 'N/A'} • Risk: ${stock.riskLevel}
+                </div>
+              </div>
+              <div class="item-actions">
+                <button class="btn btn-primary btn-sm" onclick="editStock('${stock.id}')">
+                  Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStock('${stock.id}', '${stock.ticker}')">
+                  Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading stocks:', error);
+        showError('Failed to load stocks: ' + error.message);
+      }
+    }
+
+    window.editStock = async (stockId) => {
+      try {
+        const docRef = doc(db, 'StockPicks', stockId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const stock = docSnap.data();
+          
+          document.getElementById('ticker').value = stock.ticker;
+          document.getElementById('companyName').value = stock.companyName;
+          document.getElementById('category').value = stock.category;
+          document.getElementById('riskLevel').value = stock.riskLevel;
+          document.getElementById('sector').value = stock.sector;
+          document.getElementById('region').value = stock.region || '';
+          document.getElementById('entryLow').value = stock.entryLow || '';
+          document.getElementById('entryHigh').value = stock.entryHigh || '';
+          document.getElementById('thesis').value = stock.thesis;
+          
+          editingStockId = stockId;
+          submitStockBtn.textContent = '💾 Update Stock';
+          document.getElementById('stockFormTitle').textContent = 'Edit Stock';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.error('Error loading stock for edit:', error);
+        showError('Failed to load stock details');
+      }
+    };
+
+    window.deleteStock = async (stockId, ticker) => {
+      if (!confirm(`Delete ${ticker}?`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'StockPicks', stockId));
+        showSuccess(`✅ ${ticker} deleted`);
+        loadStocks();
+      } catch (error) {
+        console.error('Error deleting stock:', error);
+        showError('Failed to delete stock');
+      }
+    };
+
+    // ========== TRADE ALERTS ==========
+
+    const alertForm = document.getElementById('alertForm');
+    const postAlertBtn = document.getElementById('postAlertBtn');
+    const cancelAlertBtn = document.getElementById('cancelAlertBtn');
+
+    alertForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const alertData = {
+        pair: document.getElementById('pairInput').value,
+        direction: document.getElementById('directionSelect').value,
+        entry: document.getElementById('entryInput').value.trim(),
+        sl: document.getElementById('slInput').value.trim(),
+        tp1: document.getElementById('tp1Input').value.trim() || null,
+        tp2: document.getElementById('tp2Input').value.trim() || null,
+        tp3: document.getElementById('tp3Input').value.trim() || null,
+        notes: document.getElementById('notesInput').value.trim() || null,
+        status: 'open',
+        tpsHit: [],
+        createdAt: serverTimestamp(),
+        createdBy: auth.currentUser.uid,
+        createdByEmail: auth.currentUser.email,
+        reactions: {
+          fire: [],
+          rocket: [],
+          eyes: []
+        }
+      };
+
+      try {
+        postAlertBtn.disabled = true;
+        postAlertBtn.textContent = 'Posting...';
+
+        if (editingAlertId) {
+          await updateDoc(doc(db, 'alerts_live', editingAlertId), alertData);
+          showSuccess('✅ Alert updated!');
+        } else {
+          await addDoc(collection(db, 'alerts_live'), alertData);
+          showSuccess('✅ Alert posted!');
+        }
+
+        alertForm.reset();
+        editingAlertId = null;
+        postAlertBtn.textContent = '📡 Post Alert';
+        document.getElementById('alertFormTitle').textContent = 'Post New Trade Alert';
+        loadAlerts();
+      } catch (error) {
+        console.error('Error saving alert:', error);
+        showError('❌ Failed to post alert: ' + error.message);
+      } finally {
+        postAlertBtn.disabled = false;
+      }
+    });
+
+    cancelAlertBtn.addEventListener('click', () => {
+      alertForm.reset();
+      editingAlertId = null;
+      postAlertBtn.textContent = '📡 Post Alert';
+      document.getElementById('alertFormTitle').textContent = 'Post New Trade Alert';
+    });
+
+    async function loadAlerts() {
+      try {
+        const q = query(collection(db, 'alerts_live'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        
+        const alertsList = document.getElementById('alertsList');
+        
+        if (snapshot.empty) {
+          alertsList.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No active alerts</p>';
+          return;
+        }
+
+        alertsList.innerHTML = snapshot.docs.map(docSnap => {
+          const alert = { id: docSnap.id, ...docSnap.data() };
+          return `
+            <div class="item-card">
+              <div class="item-info">
+                <h3>
+                  ${alert.pair} ${alert.direction}
+                  <span class="tag tag-purple">${alert.entry}</span>
+                </h3>
+                <div class="item-details">
+                  Entry: ${alert.entry} • SL: ${alert.sl} • TP1: ${alert.tp1 || '-'}
+                </div>
+              </div>
+              <div class="item-actions">
+                <button class="btn btn-primary btn-sm" onclick="editAlert('${alert.id}')">
+                  Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteAlert('${alert.id}', '${alert.pair}')">
+                  Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading alerts:', error);
+        showError('Failed to load alerts: ' + error.message);
+      }
+    }
+
+    window.editAlert = async (alertId) => {
+      try {
+        const docRef = doc(db, 'alerts_live', alertId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const alert = docSnap.data();
+          
+          document.getElementById('pairInput').value = alert.pair;
+          document.getElementById('directionSelect').value = alert.direction;
+          document.getElementById('entryInput').value = alert.entry;
+          document.getElementById('slInput').value = alert.sl;
+          document.getElementById('tp1Input').value = alert.tp1 || '';
+          document.getElementById('tp2Input').value = alert.tp2 || '';
+          document.getElementById('tp3Input').value = alert.tp3 || '';
+          document.getElementById('notesInput').value = alert.notes || '';
+          
+          editingAlertId = alertId;
+          postAlertBtn.textContent = '💾 Update Alert';
+          document.getElementById('alertFormTitle').textContent = 'Edit Trade Alert';
+          
+          // Switch to alerts tab
+          document.querySelector('[data-tab="alerts"]').click();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.error('Error loading alert for edit:', error);
+        showError('Failed to load alert details');
+      }
+    };
+
+    window.deleteAlert = async (alertId, pair) => {
+      if (!confirm(`Delete ${pair} alert?`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'alerts_live', alertId));
+        showSuccess(`✅ ${pair} alert deleted`);
+        loadAlerts();
+      } catch (error) {
+        console.error('Error deleting alert:', error);
+        showError('Failed to delete alert');
+      }
+    };
+
+    // ============================================================================
+    // MANUAL TRADE HISTORY FORM
+    // ============================================================================
+
+    const manualTradeForm = document.getElementById('manualTradeForm');
+    const clearManualTradeBtn = document.getElementById('clearManualTradeBtn');
+
+    manualTradeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitManualTradeBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Adding...';
+
+      try {
+        const closedAtInput = document.getElementById('manualClosedAt').value;
+        const pair = document.getElementById('manualPair').value;
+        const direction = document.getElementById('manualDirection').value;
+        const entry = parseFloat(document.getElementById('manualEntry').value);
+        const exit = parseFloat(document.getElementById('manualExit').value);
+        const result = document.getElementById('manualResult').value;
+        const pips = parseFloat(document.getElementById('manualPips').value);
+        const notes = document.getElementById('manualNotes').value;
+
+        // Convert datetime-local to Firestore timestamp
+        const closedAt = new Date(closedAtInput);
+
+        const tradeData = {
+          pair,
+          direction,
+          entry,
+          exit,
+          result,
+          pips,
+          notes: notes || null,
+          closedAt: closedAt,
+          createdBy: auth.currentUser.uid,
+          createdByEmail: auth.currentUser.email,
+          manualEntry: true, // Flag to identify manual entries
+          createdAt: serverTimestamp()
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        await addDoc(collection(db, 'alerts_history'), tradeData);
 
-        const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'gefruLBk5qMXDZGmWdSo6wPNo3E3'];
-        const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
+        showSuccess(`✅ Trade added to history! ${pair} ${direction} - ${result.toUpperCase()}`);
+        manualTradeForm.reset();
+        loadManualTrades();
 
-        let currentUser = null;
-        let selectedWithdrawal = null;
+      } catch (error) {
+        console.error('Error adding manual trade:', error);
+        showError('Failed to add trade: ' + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '➕ Add Trade to History';
+      }
+    });
 
-        // Check admin access
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+    clearManualTradeBtn.addEventListener('click', () => {
+      manualTradeForm.reset();
+    });
 
-            const userDoc = await getDoc(doc(db, 'Users', user.uid));
-            const userData = userDoc.data() || {};
-            const email = (user.email || '').toLowerCase();
-            const isAdmin = ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email) || userData.isAdmin === true;
+    async function loadManualTrades() {
+      try {
+        const q = query(
+          collection(db, 'alerts_history')
+        );
+        
+        const snapshot = await getDocs(q);
+        const manualTradesDiv = document.getElementById('manualTradesList');
 
-            if (!isAdmin) {
-                alert('🔒 Access denied. Admin only.');
-                window.location.href = 'index.html';
-                return;
-            }
+        if (snapshot.empty) {
+          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
+          return;
+        }
 
-            currentUser = user;
-            initializeDashboard();
+        // Collect and sort
+        const trades = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.manualEntry === true) {
+            trades.push({ id: doc.id, ...data });
+          }
         });
 
-        function initializeDashboard() {
-            setupTabs();
-            setupFilterButtons();
-            setupSearch();
-            loadStats();
-            loadWithdrawals();
-            loadAffiliates();
-            loadPaymentHistory();
-            loadCommissions();
-        }
-
-        function setupTabs() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-
-                    btn.classList.add('active');
-                    document.getElementById(btn.dataset.tab).classList.add('active');
-                });
-            });
-        }
-
-        async function loadStats() {
-            try {
-                // Get all affiliates
-                const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
-                const totalAffiliates = affiliatesSnapshot.size;
-
-                // Get pending withdrawals
-                const pendingQuery = query(
-                    collection(db, 'WithdrawalRequests'),
-                    where('status', '==', 'pending')
-                );
-                const pendingSnapshot = await getDocs(pendingQuery);
-                const pendingCount = pendingSnapshot.size;
-
-                // Calculate total paid
-                let totalPaid = 0;
-                affiliatesSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    totalPaid += data.totalWithdrawn || 0;
-                });
-
-                // Calculate monthly revenue (example - you'd integrate with actual subscription data)
-                const monthlyRevenue = 0; // Calculate from active subscriptions
-
-                document.getElementById('totalAffiliates').textContent = totalAffiliates;
-                document.getElementById('pendingWithdrawals').textContent = pendingCount;
-                document.getElementById('totalPaid').textContent = `£${totalPaid.toFixed(0)}`;
-                document.getElementById('monthlyRevenue').textContent = `£${monthlyRevenue}`;
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-
-        let allWithdrawals = [];
-        let currentFilter = 'all';
-
-        async function loadWithdrawals() {
-            const q = query(
-                collection(db, 'WithdrawalRequests'),
-                orderBy('createdAt', 'desc')
-            );
-
-            onSnapshot(q, (snapshot) => {
-                // Store all withdrawals
-                allWithdrawals = [];
-                snapshot.forEach((docSnap) => {
-                    allWithdrawals.push({
-                        id: docSnap.id,
-                        ...docSnap.data()
-                    });
-                });
-
-                // Render based on current filter
-                renderWithdrawals(currentFilter);
-            });
-        }
-
-        function renderWithdrawals(filter) {
-            const tbody = document.getElementById('withdrawalsTable');
-            
-            // Filter withdrawals based on status
-            const filteredWithdrawals = filter === 'all' 
-                ? allWithdrawals 
-                : allWithdrawals.filter(w => w.status === filter);
-
-            if (filteredWithdrawals.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                            No ${filter === 'all' ? '' : filter} withdrawal requests
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = '';
-
-            filteredWithdrawals.forEach((data) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatDate(data.createdAt)}</td>
-                    <td>${data.username}</td>
-                    <td>£${data.amount.toFixed(2)}</td>
-                    <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + (data.paymentDetails?.cryptoType || 'Crypto')}</td>
-                    <td><span class="status-badge ${data.status}">${data.status}</span></td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn btn-view" onclick="viewWithdrawal('${data.id}')">View</button>
-                            ${data.status === 'pending' ? `
-                                <button class="btn btn-approve" onclick="approveWithdrawal('${data.id}')">Approve</button>
-                                <button class="btn btn-reject" onclick="rejectWithdrawal('${data.id}')">Reject</button>
-                            ` : ''}
-                        </div>
-                    </td>
-                `;
-
-                tbody.appendChild(tr);
-            });
-
-            // Expose functions to window for onclick handlers
-            window.viewWithdrawal = viewWithdrawal;
-            window.approveWithdrawal = approveWithdrawal;
-            window.rejectWithdrawal = rejectWithdrawal;
-        }
-
-        // Setup filter buttons
-        function setupFilterButtons() {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    // Update active button
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    // Update current filter and re-render
-                    currentFilter = btn.dataset.filter;
-                    renderWithdrawals(currentFilter);
-                });
-            });
-        }
-
-        // Setup search functionality
-        function setupSearch() {
-            const searchInput = document.getElementById('withdrawalSearch');
-            
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const tbody = document.getElementById('withdrawalsTable');
-                const rows = tbody.getElementsByTagName('tr');
-                
-                Array.from(rows).forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            });
-        }
-
-        async function loadAffiliates() {
-            const affiliatesSnapshot = await getDocs(collection(db, 'Affiliates'));
-            const tbody = document.getElementById('affiliatesTable');
-
-            if (affiliatesSnapshot.empty) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                            No affiliates yet
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = '';
-
-            for (const docSnap of affiliatesSnapshot.docs) {
-                const data = docSnap.data();
-                const userId = docSnap.id;
-
-                // Get user data
-                const userDoc = await getDoc(doc(db, 'Users', userId));
-                const userData = userDoc.data() || {};
-                const username = userData.Username || userData.email || 'Unknown';
-                const referralCode = userData.referralCode || userId.slice(0, 8).toUpperCase();
-
-                // Count active referrals
-                const refQuery = query(
-                    collection(db, 'Users'),
-                    where('referredBy', '==', referralCode)
-                );
-                const refSnapshot = await getDocs(refQuery);
-                let activeRefs = 0;
-                refSnapshot.forEach(doc => {
-                    const refData = doc.data();
-                    if (refData.subscriptionStatus === 'active' || refData.isPaid === true) {
-                        activeRefs++;
-                    }
-                });
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${username}</td>
-                    <td><code style="color: var(--purple-light); background: rgba(147, 51, 234, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px;">${referralCode}</code></td>
-                    <td>${activeRefs}</td>
-                    <td>£${(data.totalEarnings || 0).toFixed(2)}</td>
-                    <td>£${(data.availableBalance || 0).toFixed(2)}</td>
-                    <td>£${(data.totalWithdrawn || 0).toFixed(2)}</td>
-                `;
-
-                tbody.appendChild(tr);
-            }
-        }
-
-        async function loadPaymentHistory() {
-            const q = query(
-                collection(db, 'WithdrawalRequests'),
-                where('status', '==', 'completed'),
-                orderBy('processedAt', 'desc')
-            );
-
-            const snapshot = await getDocs(q);
-            const tbody = document.getElementById('historyTable');
-
-            if (snapshot.empty) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: var(--text-dim);">
-                            No payment history yet
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = '';
-
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatDate(data.processedAt)}</td>
-                    <td>${data.username}</td>
-                    <td>£${data.amount.toFixed(2)}</td>
-                    <td>${data.method === 'bank' ? '🏦 Bank' : '₿ ' + (data.paymentDetails?.cryptoType || 'Crypto')}</td>
-                    <td>${data.processedBy || 'Admin'}</td>
-                `;
-
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function loadCommissions() {
-            const q = query(
-                collection(db, 'CommissionHistory'),
-                orderBy('createdAt', 'desc')
-            );
-
-            const snapshot = await getDocs(q);
-            const tbody = document.getElementById('commissionsTable');
-
-            if (snapshot.empty) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-dim);">
-                            No commission history yet
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = '';
-
-            for (const docSnap of snapshot.docs) {
-                const data = docSnap.data();
-
-                // Get affiliate name
-                const affiliateDoc = await getDoc(doc(db, 'Users', data.affiliateId));
-                const affiliateData = affiliateDoc.data() || {};
-                const affiliateName = affiliateData.Username || affiliateData.email || 'Unknown';
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatDate(data.createdAt)}</td>
-                    <td>${affiliateName}</td>
-                    <td>${data.type}</td>
-                    <td>${data.fromUser || '-'}</td>
-                    <td>£${data.amount.toFixed(2)}</td>
-                    <td><span class="status-badge ${data.status}">${data.status}</span></td>
-                `;
-
-                tbody.appendChild(tr);
-            }
-        }
-
-        async function viewWithdrawal(withdrawalId) {
-            try {
-                const withdrawalDoc = await getDoc(doc(db, 'WithdrawalRequests', withdrawalId));
-                const data = withdrawalDoc.data();
-
-                document.getElementById('modalUser').textContent = data.username;
-                document.getElementById('modalEmail').textContent = data.userEmail;
-                document.getElementById('modalAmount').textContent = `£${data.amount.toFixed(2)}`;
-                document.getElementById('modalMethod').textContent = data.method === 'bank' ? '🏦 Bank Transfer' : '₿ Cryptocurrency';
-                document.getElementById('modalDate').textContent = formatDate(data.createdAt);
-                document.getElementById('modalStatus').innerHTML = `<span class="status-badge ${data.status}">${data.status}</span>`;
-
-                // Format payment details
-                let detailsHtml = '';
-                if (data.method === 'bank') {
-                    detailsHtml = `
-                        <div style="font-size: 0.9rem; line-height: 1.6;">
-                            <strong>Account Name:</strong> ${data.paymentDetails.accountName}<br>
-                            <strong>Bank:</strong> ${data.paymentDetails.bankName}<br>
-                            <strong>Account Number:</strong> ${data.paymentDetails.accountNumber}<br>
-                            <strong>Sort Code:</strong> ${data.paymentDetails.sortCode}
-                        </div>
-                    `;
-                } else {
-                    detailsHtml = `
-                        <div style="font-size: 0.9rem; line-height: 1.6;">
-                            <strong>Currency:</strong> ${data.paymentDetails.cryptoType}<br>
-                            <strong>Wallet:</strong> ${data.paymentDetails.walletAddress}<br>
-                            <strong>Network:</strong> ${data.paymentDetails.network}
-                        </div>
-                    `;
-                }
-                document.getElementById('modalDetails').innerHTML = detailsHtml;
-
-                selectedWithdrawal = withdrawalId;
-
-                // Set up modal actions
-                document.getElementById('modalApprove').onclick = () => approveWithdrawal(withdrawalId);
-                document.getElementById('modalReject').onclick = () => rejectWithdrawal(withdrawalId);
-
-                // Show modal
-                document.getElementById('withdrawalModal').classList.add('active');
-
-            } catch (error) {
-                console.error('Error viewing withdrawal:', error);
-                alert('Error loading withdrawal details');
-            }
-        }
-
-        async function approveWithdrawal(withdrawalId) {
-            if (!confirm('Approve this withdrawal? Make sure you\'ve processed the payment!')) {
-                return;
-            }
-
-            try {
-                const withdrawalDoc = await getDoc(doc(db, 'WithdrawalRequests', withdrawalId));
-                const data = withdrawalDoc.data();
-
-                // Update withdrawal status
-                await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
-                    status: 'completed',
-                    processedAt: serverTimestamp(),
-                    processedBy: currentUser.email
-                });
-
-                // Update affiliate balance
-                const affiliateRef = doc(db, 'Affiliates', data.userId);
-                const affiliateDoc = await getDoc(affiliateRef);
-                
-                if (affiliateDoc.exists()) {
-                    const affiliateData = affiliateDoc.data();
-                    const newAvailable = (affiliateData.availableBalance || 0) - data.amount;
-                    const newWithdrawn = (affiliateData.totalWithdrawn || 0) + data.amount;
-
-                    await updateDoc(affiliateRef, {
-                        availableBalance: Math.max(0, newAvailable),
-                        totalWithdrawn: newWithdrawn
-                    });
-                }
-
-                alert('✅ Withdrawal approved and processed!');
-                closeModal();
-                loadStats();
-
-            } catch (error) {
-                console.error('Error approving withdrawal:', error);
-                alert('❌ Error approving withdrawal');
-            }
-        }
-
-        async function rejectWithdrawal(withdrawalId) {
-            const reason = prompt('Enter rejection reason (optional):');
-            
-            try {
-                await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
-                    status: 'rejected',
-                    processedAt: serverTimestamp(),
-                    processedBy: currentUser.email,
-                    rejectionReason: reason || 'No reason provided'
-                });
-
-                alert('✅ Withdrawal rejected');
-                closeModal();
-
-            } catch (error) {
-                console.error('Error rejecting withdrawal:', error);
-                alert('❌ Error rejecting withdrawal');
-            }
-        }
-
-        window.closeModal = function() {
-            document.getElementById('withdrawalModal').classList.remove('active');
-            selectedWithdrawal = null;
-        };
-
-        // Close modal on outside click
-        document.getElementById('withdrawalModal').addEventListener('click', (e) => {
-            if (e.target.id === 'withdrawalModal') {
-                closeModal();
-            }
+        // Sort by closedAt (newest first)
+        trades.sort((a, b) => {
+          const aTime = a.closedAt?.toMillis ? a.closedAt.toMillis() : new Date(a.closedAt).getTime();
+          const bTime = b.closedAt?.toMillis ? b.closedAt.toMillis() : new Date(b.closedAt).getTime();
+          return bTime - aTime;
         });
 
-        function formatDate(timestamp) {
-            if (!timestamp) return 'Recently';
-            const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('en-GB', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+        if (trades.length === 0) {
+          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
+          return;
         }
-    </script>
+
+        manualTradesDiv.innerHTML = trades.map(trade => {
+          const dateStr = trade.closedAt?.toDate ? trade.closedAt.toDate().toLocaleString() : new Date(trade.closedAt).toLocaleString();
+          const resultColor = trade.result === 'win' ? 'var(--green)' : trade.result === 'loss' ? 'var(--red)' : 'var(--gold)';
+          const pipsColor = trade.pips >= 0 ? 'var(--green)' : 'var(--red)';
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <h3>${trade.pair} - ${trade.direction}</h3>
+                <button class="btn btn-danger btn-sm" onclick="deleteManualTrade('${trade.id}', '${trade.pair}')">
+                  🗑️ Delete
+                </button>
+              </div>
+              <div class="item-details">
+                <p><strong>Closed:</strong> ${dateStr}</p>
+                <p><strong>Entry:</strong> ${trade.entry}</p>
+                <p><strong>Exit:</strong> ${trade.exit}</p>
+                <p><strong>Result:</strong> <span style="color: ${resultColor}; font-weight: 600;">${trade.result.toUpperCase()}</span></p>
+                <p><strong>Pips:</strong> <span style="color: ${pipsColor}; font-weight: 600;">${trade.pips >= 0 ? '+' : ''}${trade.pips}</span></p>
+                ${trade.notes ? `<p><strong>Notes:</strong> ${trade.notes}</p>` : ''}
+                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
+                  <em>Manual entry by ${trade.createdByEmail}</em>
+                </p>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (error) {
+        console.error('Error loading manual trades:', error);
+        document.getElementById('manualTradesList').innerHTML = `
+          <p style="color: var(--red); text-align: center; padding: 2rem;">
+            Error loading trades: ${error.message}
+          </p>
+        `;
+      }
+    }
+
+    window.deleteManualTrade = async (tradeId, pair) => {
+      if (!confirm(`Delete this ${pair} trade from history?`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'alerts_history', tradeId));
+        showSuccess(`✅ Trade deleted from history`);
+        loadManualTrades();
+      } catch (error) {
+        console.error('Error deleting trade:', error);
+        showError('Failed to delete trade');
+      }
+    };
+
+    // Load manual trades on init
+    loadManualTrades();
+
+  </script>
 </body>
 </html>

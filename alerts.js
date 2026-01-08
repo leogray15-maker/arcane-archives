@@ -627,9 +627,9 @@ function subscribeToHistory() {
 
   if (!tbody) return;
 
+  // FIXED: Removed orderBy to avoid index requirement
   const q = query(
-    collection(db, HISTORY_COLLECTION),
-    orderBy("closedAt", "desc")
+    collection(db, HISTORY_COLLECTION)
   );
 
   onSnapshot(
@@ -639,7 +639,7 @@ function subscribeToHistory() {
         tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align:center; color:#9ca3af; padding: 2rem;">
-              No closed trades yet. Mark live signals as TP1/TP2/TP3/LOSS/BE to track performance.
+              No closed trades yet. Mark live signals as WIN/LOSS/B/E to track performance.
             </td>
           </tr>
         `;
@@ -651,6 +651,19 @@ function subscribeToHistory() {
         return;
       }
 
+      // Collect all docs and sort in JavaScript
+      const docs = [];
+      snapshot.forEach((docSnap) => {
+        docs.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      // Sort by closedAt (newest first) - do it in JS instead of Firestore
+      docs.sort((a, b) => {
+        const aTime = a.closedAt?.toMillis() || 0;
+        const bTime = b.closedAt?.toMillis() || 0;
+        return bTime - aTime;
+      });
+
       tbody.innerHTML = "";
 
       let wins = 0;
@@ -658,8 +671,7 @@ function subscribeToHistory() {
       let bes = 0;
       let netPips = 0;
 
-      snapshot.forEach((docSnap) => {
-        const rowData = docSnap.data();
+      docs.forEach((rowData) => {
         const row = renderHistoryRow(rowData);
         tbody.appendChild(row);
 
