@@ -1,5 +1,5 @@
 // netlify/functions/stripe-webhook.js
-// Enhanced with AFFILIATE COMMISSION TRACKING
+// Enhanced with AFFILIATE COMMISSION TRACKING + STORE ORDERS
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 const admin = require("firebase-admin");
@@ -256,7 +256,7 @@ async function createFirebaseUser(email) {
     if (isNewUser) {
       try {
         await auth.generatePasswordResetLink(email, {
-          url: 'https://arcanearchives.netlify.app/login.html',
+          url: 'https://thearcanearchives.netlify.app/login.html',
         });
         console.log("✅ Password reset sent");
       } catch (emailErr) {
@@ -359,7 +359,10 @@ exports.handler = async (event) => {
   console.log("📦 Event:", type);
 
   try {
-    if (type === "checkout.session.completed") {
+    // ============================================
+    // SUBSCRIPTION CHECKOUT (Monthly/Annual Plans)
+    // ============================================
+    if (type === "checkout.session.completed" && data.object.mode === "subscription") {
       const session = data.object;
       const email = session.customer_details?.email || session.customer_email || null;
       
@@ -387,9 +390,74 @@ exports.handler = async (event) => {
       // 💰 PROCESS AFFILIATE COMMISSION
       await processAffiliateCommission(email);
 
-      console.log("✅ Processing complete");
+      console.log("✅ Subscription processing complete");
     }
 
+    // ============================================
+    // STORE PURCHASES (One-time payments)
+    // ============================================
+    if (type === "checkout.session.completed" && data.object.mode === "payment") {
+      const session = data.object;
+      const metadata = session.metadata || {};
+      
+      // Check if this is a store purchase
+      if (metadata.source === "arcane_store") {
+        console.log("🛍️ Store purchase detected");
+        
+        const email = session.customer_details?.email || session.customer_email;
+        const shippingAddress = session.shipping_details?.address || {};
+        const customerName = session.shipping_details?.name || session.customer_details?.name || "";
+        
+        if (!email) {
+          console.error("❌ No email for store order");
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: "No email for store order" }),
+          };
+        }
+
+        try {
+          // Create order in Firestore
+          const orderData = {
+            productId: metadata.productId || "",
+            productName: metadata.productName || "",
+            userId: metadata.firebaseUid || "",
+            userEmail: email,
+            customerName: customerName,
+            shippingAddress: {
+              line1: shippingAddress.line1 || "",
+              line2: shippingAddress.line2 || "",
+              city: shippingAddress.city || "",
+              state: shippingAddress.state || "",
+              postal_code: shippingAddress.postal_code || "",
+              country: shippingAddress.country || "",
+            },
+            stripeSessionId: session.id,
+            stripePaymentIntentId: session.payment_intent || "",
+            amountTotal: session.amount_total / 100, // Convert from cents
+            currency: session.currency || "usd",
+            paymentStatus: session.payment_status,
+            orderStatus: "pending", // pending, processing, shipped, delivered
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          };
+
+          await db.collection("Orders").add(orderData);
+          console.log("✅ Store order created in Firestore");
+
+          // Optional: Send confirmation email or notification here
+          // await sendOrderConfirmationEmail(email, orderData);
+
+        } catch (error) {
+          console.error("❌ Failed to create store order:", error.message);
+        }
+      }
+    }
+
+    // ============================================
+    // SUBSCRIPTION CANCELLED
+    // ============================================
     if (type === "customer.subscription.deleted") {
       const subscription = data.object;
       const customerId = subscription.customer;
@@ -413,8 +481,13 @@ exports.handler = async (event) => {
         // 💸 REMOVE AFFILIATE COMMISSION
         await removeAffiliateCommission(email);
       }
+
+      console.log("✅ Subscription cancellation processed");
     }
 
+    // ============================================
+    // SUBSCRIPTION UPDATED
+    // ============================================
     if (type === "customer.subscription.updated") {
       const subscription = data.object;
       const status = subscription.status;
@@ -440,6 +513,8 @@ exports.handler = async (event) => {
       if (email) {
         await updateUserByEmail(email, updates);
       }
+
+      console.log("✅ Subscription update processed");
     }
 
     return {

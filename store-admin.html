@@ -501,42 +501,57 @@
             event.preventDefault();
 
             const productData = {
-                name: document.getElementById('productName').value,
+                name: document.getElementById('productName').value.trim(),
                 category: document.getElementById('productCategory').value,
                 price: parseFloat(document.getElementById('productPrice').value),
-                stripePriceId: document.getElementById('stripePriceId').value,
-                description: document.getElementById('productDescription').value,
+                stripePriceId: document.getElementById('stripePriceId').value.trim(),
+                description: document.getElementById('productDescription').value.trim(),
                 isNew: document.getElementById('isNew').checked,
                 updatedAt: new Date().toISOString()
             };
 
-            try {
-                let imageUrl = null;
+            // Validation
+            if (!productData.name || !productData.stripePriceId || !productData.description) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
 
+            if (productData.price <= 0) {
+                showNotification('Price must be greater than 0', 'error');
+                return;
+            }
+
+            try {
                 // Upload image if new file selected
                 if (currentImageFile) {
+                    console.log('Uploading image...');
                     const storageRef = ref(storage, `products/${Date.now()}_${currentImageFile.name}`);
-                    await uploadBytes(storageRef, currentImageFile);
-                    imageUrl = await getDownloadURL(storageRef);
+                    const uploadResult = await uploadBytes(storageRef, currentImageFile);
+                    const imageUrl = await getDownloadURL(uploadResult.ref);
                     productData.imageUrl = imageUrl;
+                    console.log('Image uploaded:', imageUrl);
                 }
 
                 if (editingProductId) {
                     // Update existing product
+                    console.log('Updating product:', editingProductId);
                     await updateDoc(doc(db, 'Products', editingProductId), productData);
                     showNotification('Product updated successfully!', 'success');
                 } else {
                     // Add new product
+                    console.log('Creating new product...');
                     productData.createdAt = new Date().toISOString();
-                    await addDoc(collection(db, 'Products'), productData);
+                    const docRef = await addDoc(collection(db, 'Products'), productData);
+                    console.log('Product created with ID:', docRef.id);
                     showNotification('Product added successfully!', 'success');
                 }
 
                 closeModal();
-                loadProducts();
+                await loadProducts();
             } catch (error) {
                 console.error('Error saving product:', error);
-                showNotification('Failed to save product', 'error');
+                console.error('Error details:', error.code, error.message);
+                showNotification(`Failed to save product: ${error.message}`, 'error');
             }
         };
 
