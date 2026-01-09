@@ -1,857 +1,822 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store Admin | Arcane Archives</title>
-    <style>
-        :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
-            --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
-            --border-color: rgba(148, 163, 184, 0.5);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store Admin | Arcane Archives</title>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --bg-card: rgba(15, 23, 42, 0.96);
+      --purple: #9333ea;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --text-light: #e5e5e5;
+      --text-dim: #9ca3af;
+      --border-color: rgba(148, 163, 184, 0.5);
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-            padding: 2rem;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 2rem;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
+    .container { max-width: 1400px; margin: 0 auto; }
 
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
 
-        .btn {
-            padding: 0.8rem 1.5rem;
-            border-radius: 999px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
+    .header h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--purple-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: #fff;
-        }
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
 
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
-        }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: #fff;
+    }
 
-        .btn-secondary {
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
-        }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
+    }
 
-        .btn-danger {
-            background: linear-gradient(135deg, #dc2626, #991b1b);
-            color: #fff;
-        }
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-light);
+      border: 1px solid var(--border-color);
+    }
 
-        .btn-small {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-        }
+    .btn-danger {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      color: #fff;
+    }
 
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
 
-        .product-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
 
-        .product-card:hover {
-            border-color: var(--purple);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
-        }
+    .product-card:hover {
+      border-color: var(--purple);
+      box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+    }
 
-        .product-image {
-            width: 100%;
-            height: 250px;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
+    .product-image {
+      width: 100%;
+      height: 250px;
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
 
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; }
+    .product-image .placeholder { font-size: 4rem; }
 
-        .product-image .placeholder {
-            font-size: 4rem;
-        }
+    .product-info { padding: 1.5rem; }
 
-        .image-count {
-            position: absolute;
-            top: 0.5rem;
-            left: 0.5rem;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 0.3rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+    .product-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
 
-        .product-info {
-            padding: 1.5rem;
-        }
+    .product-category {
+      font-size: 0.75rem;
+      color: var(--purple-light);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
 
-        .product-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
+    .product-price {
+      font-size: 1.5rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
 
-        .product-category {
-            font-size: 0.75rem;
-            color: var(--purple-light);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
-        }
+    .product-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
 
-        .product-price {
-            font-size: 1.5rem;
-            color: var(--gold);
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 2rem;
+    }
 
-        .product-variants {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin: 0.5rem 0;
-        }
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .variant-badge {
-            padding: 0.3rem 0.6rem;
-            background: rgba(147, 51, 234, 0.2);
-            border: 1px solid var(--purple);
-            border-radius: 999px;
-            font-size: 0.7rem;
-            color: var(--purple-light);
-        }
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
 
-        .product-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            overflow-y: auto;
-            padding: 2rem;
-        }
+    .modal-header h2 { font-size: 1.8rem; color: var(--purple-light); }
 
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+    }
 
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 800px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+    .form-group { margin-bottom: 1.5rem; }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+      font-weight: 600;
+    }
 
-        .modal-header h2 {
-            font-size: 1.8rem;
-            color: var(--purple-light);
-        }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-light);
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
 
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 2rem;
-            cursor: pointer;
-            line-height: 1;
-        }
+    .form-group textarea { min-height: 100px; resize: vertical; }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+    .image-upload {
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-light);
-            font-weight: 600;
-        }
+    .image-upload:hover { border-color: var(--purple); }
+    .image-upload input { display: none; }
 
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.8rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--text-light);
-            font-family: inherit;
-            font-size: 0.95rem;
-        }
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
 
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+    .notification.success { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .notification.error { background: linear-gradient(135deg, #dc2626, #991b1b); }
 
-        .image-upload-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 1rem;
-        }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
 
-        .image-upload-zone:hover {
-            border-color: var(--purple);
-        }
+    /* ===== NEW: multi-image + colour pills ===== */
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
 
-        .image-upload-zone input {
-            display: none;
-        }
+    .thumb {
+      position: relative;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.25);
+      aspect-ratio: 1/1;
+    }
 
-        .images-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-        .preview-item {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            aspect-ratio: 1;
-        }
+    .thumb .remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      border: none;
+      border-radius: 999px;
+      width: 26px;
+      height: 26px;
+      cursor: pointer;
+      font-weight: 800;
+      background: rgba(0,0,0,0.65);
+      color: var(--text-light);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
 
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .thumb .badge {
+      position: absolute;
+      left: 6px;
+      bottom: 6px;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.65);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: var(--text-light);
+    }
 
-        .remove-image {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: rgba(220, 38, 38, 0.9);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            line-height: 1;
-        }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: rgba(0,0,0,0.25);
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
 
-        .variant-input-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
+    .pill button {
+      border: none;
+      background: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
 
-        .variant-input-group input {
-            flex: 1;
-        }
+    .pill button:hover { color: #fff; }
 
-        .add-variant-btn {
-            padding: 0.5rem 1rem;
-            background: rgba(147, 51, 234, 0.2);
-            border: 1px solid var(--purple);
-            border-radius: 8px;
-            color: var(--purple-light);
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .add-variant-btn:hover {
-            background: rgba(147, 51, 234, 0.3);
-        }
-
-        .variant-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .variant-tag {
-            padding: 0.4rem 0.8rem;
-            background: rgba(147, 51, 234, 0.2);
-            border: 1px solid var(--purple);
-            border-radius: 999px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .variant-tag button {
-            background: none;
-            border: none;
-            color: var(--text-light);
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-        }
-
-        .notification {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
-
-        .notification.success {
-            background: linear-gradient(135deg, #22c55e, #15803d);
-        }
-
-        .notification.error {
-            background: linear-gradient(135deg, #dc2626, #991b1b);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                margin: 1rem;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .modal-content { margin: 1rem; }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🛍️ Store Admin</h1>
-            <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
-        </div>
-
-        <div class="products-grid" id="productsGrid"></div>
+  <div class="container">
+    <div class="header">
+      <h1>🛍️ Store Admin</h1>
+      <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
     </div>
 
-    <!-- Add/Edit Product Modal -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add Product</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+    <div class="products-grid" id="productsGrid"></div>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Product</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="productForm" onsubmit="handleSubmit(event)">
+        <input type="hidden" id="productId" />
+
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="productName" required />
+        </div>
+
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="productCategory" required>
+            <option value="apparel">Apparel</option>
+            <option value="drinkware">Drinkware</option>
+            <option value="accessories">Accessories</option>
+            <option value="lifestyle">Lifestyle</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Price (USD) *</label>
+          <input type="number" id="productPrice" step="0.01" min="0" required />
+        </div>
+
+        <!-- NEW: Colour variants -->
+        <div class="form-group">
+          <label>Colour Variants</label>
+
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <input type="text" id="colorInput" placeholder="e.g. Black, Purple, Gold" />
+            <button type="button" class="btn btn-secondary" onclick="addColor()">+ Add</button>
+          </div>
+
+          <div id="colorsWrap" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;"></div>
+
+          <small style="color: var(--text-dim); display:block; margin-top:0.5rem;">
+            Add as many colour variants as you want.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Stripe Price ID *</label>
+          <input type="text" id="stripePriceId" placeholder="price_xxxxxxxxxxxxx" required />
+          <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
+            Get this from your Stripe Dashboard → Products
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Description *</label>
+          <textarea id="productDescription" required></textarea>
+        </div>
+
+        <!-- NEW: Multiple photos -->
+        <div class="form-group">
+          <label>Product Photos</label>
+
+          <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(event)" />
+            <div id="uploadText">📷 Click to upload one or more images</div>
+          </div>
+
+          <div id="imagesPreviewGrid" class="images-grid"></div>
+
+          <small style="color: var(--text-dim); display:block; margin-top:0.5rem;">
+            First image is used as the cover.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="isNew" style="width:auto; margin-right:0.5rem;" />
+            Mark as "New" product
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let editingProductId = null;
+
+    // NEW: multi-image + colours state
+    let currentImageFiles = [];   // File[] newly selected
+    let existingImageUrls = [];   // string[] already stored on product
+    let colorVariants = [];       // string[] colours
+
+    // Check admin access
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.href = 'login.html';
+        return;
+      }
+
+      const adminEmails = ['leogray15@gmail.com'];
+      if (!adminEmails.includes(user.email)) {
+        alert('⚠️ Admin access required');
+        location.href = 'dashboard.html';
+        return;
+      }
+
+      loadProducts();
+    });
+
+    async function loadProducts() {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-dim);">Loading products...</div>';
+
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Products'));
+        const products = [];
+        querySnapshot.forEach((d) => products.push({ id: d.id, ...d.data() }));
+
+        if (products.length === 0) {
+          grid.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-dim);">No products yet. Add your first product!</div>';
+          return;
+        }
+
+        grid.innerHTML = products.map(product => {
+          const cover =
+            (Array.isArray(product.imageUrls) && product.imageUrls.length) ? product.imageUrls[0] :
+            (product.imageUrl ? product.imageUrl : '');
+
+          const colorsHtml = (Array.isArray(product.colors) && product.colors.length)
+            ? `<div style="margin-top:0.75rem; display:flex; gap:0.4rem; flex-wrap:wrap;">
+                 ${product.colors.map(c => `
+                   <span style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border-color); border-radius:999px; color:var(--text-dim);">
+                     ${escapeHtml(c)}
+                   </span>
+                 `).join('')}
+               </div>`
+            : '';
+
+          return `
+            <div class="product-card">
+              <div class="product-image">
+                ${cover ? `<img src="${cover}" alt="${escapeAttr(product.name)}">` : `<div class="placeholder">📦</div>`}
+              </div>
+              <div class="product-info">
+                <div class="product-category">${escapeHtml(product.category || '')}</div>
+                <div class="product-name">${escapeHtml(product.name || '')}</div>
+                <div class="product-price">$${Number(product.price || 0).toFixed(2)}</div>
+
+                <div style="font-size:0.85rem; color:var(--text-dim); margin:0.5rem 0;">
+                  ${escapeHtml(product.description || '')}
+                </div>
+
+                ${product.isNew ? '<div style="font-size:0.75rem; color:var(--gold); font-weight:600;">⭐ NEW</div>' : ''}
+
+                <div style="font-size:0.75rem; color:var(--text-dim); margin-top:0.5rem;">
+                  Stripe: ${escapeHtml(product.stripePriceId || 'Not set')}
+                </div>
+
+                ${colorsHtml}
+
+                <div class="product-actions">
+                  <button class="btn btn-secondary" style="flex:1;" onclick="editProduct('${product.id}')">Edit</button>
+                  <button class="btn btn-danger" style="flex:1;" onclick="deleteProduct('${product.id}')">Delete</button>
+                </div>
+              </div>
             </div>
+          `;
+        }).join('');
 
-            <form id="productForm" onsubmit="handleSubmit(event)">
-                <input type="hidden" id="productId">
+      } catch (error) {
+        console.error('Error loading products:', error);
+        showNotification('Failed to load products', 'error');
+      }
+    }
 
-                <div class="form-group">
-                    <label>Product Name *</label>
-                    <input type="text" id="productName" required>
-                </div>
+    // ===== Modal controls =====
+    window.openModal = () => {
+      editingProductId = null;
+      document.getElementById('modalTitle').textContent = 'Add Product';
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Category *</label>
-                        <select id="productCategory" required>
-                            <option value="apparel">Apparel</option>
-                            <option value="drinkware">Drinkware</option>
-                            <option value="accessories">Accessories</option>
-                            <option value="lifestyle">Lifestyle</option>
-                        </select>
-                    </div>
+      // reset new state
+      existingImageUrls = [];
+      currentImageFiles = [];
+      colorVariants = [];
 
-                    <div class="form-group">
-                        <label>Price (USD) *</label>
-                        <input type="number" id="productPrice" step="0.01" min="0" required>
-                    </div>
-                </div>
+      document.getElementById('imagesPreviewGrid').innerHTML = '';
+      document.getElementById('uploadText').style.display = 'block';
+      renderColors();
 
-                <div class="form-group">
-                    <label>Stripe Price ID *</label>
-                    <input type="text" id="stripePriceId" placeholder="price_xxxxxxxxxxxxx" required>
-                    <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
-                        Get this from your Stripe Dashboard → Products
-                    </small>
-                </div>
+      document.getElementById('productModal').classList.add('active');
+    };
 
-                <div class="form-group">
-                    <label>Description *</label>
-                    <textarea id="productDescription" required></textarea>
-                </div>
+    window.closeModal = () => {
+      document.getElementById('productModal').classList.remove('active');
+    };
 
-                <!-- Colors Section -->
-                <div class="form-group">
-                    <label>Available Colors</label>
-                    <div class="variant-input-group">
-                        <input type="text" id="colorInput" placeholder="e.g., Black, Navy, Purple">
-                        <button type="button" class="add-variant-btn" onclick="addColor()">+ Add</button>
-                    </div>
-                    <div class="variant-list" id="colorsList"></div>
-                </div>
+    // ===== NEW: Multi image upload =====
+    window.handleImageUpload = (event) => {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
 
-                <!-- Sizes Section -->
-                <div class="form-group">
-                    <label>Available Sizes</label>
-                    <div class="variant-input-group">
-                        <input type="text" id="sizeInput" placeholder="e.g., S, M, L, XL">
-                        <button type="button" class="add-variant-btn" onclick="addSize()">+ Add</button>
-                    </div>
-                    <div class="variant-list" id="sizesList"></div>
-                </div>
+      currentImageFiles.push(...files);
 
-                <!-- Stock Quantity -->
-                <div class="form-group">
-                    <label>Stock Quantity</label>
-                    <input type="number" id="stockQuantity" min="0" placeholder="Leave empty for unlimited">
-                </div>
+      // Clear input so selecting same file again works
+      event.target.value = '';
 
-                <!-- Product Images -->
-                <div class="form-group">
-                    <label>Product Images (Up to 5)</label>
-                    <div class="image-upload-zone" onclick="document.getElementById('imageInput').click()">
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(event)">
-                        <div id="uploadText">📷 Click to upload images (max 5)</div>
-                    </div>
-                    <div class="images-preview" id="imagesPreview"></div>
-                </div>
+      renderImagesPreview();
+    };
 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="isNew" style="width: auto; margin-right: 0.5rem;">
-                        Mark as "New" product
-                    </label>
-                </div>
+    function renderImagesPreview() {
+      const grid = document.getElementById('imagesPreviewGrid');
+      const uploadText = document.getElementById('uploadText');
+      if (!grid || !uploadText) return;
 
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Product</button>
-                </div>
-            </form>
-        </div>
-    </div>
+      const items = [];
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-
-        let currentImageFiles = [];
-        let editingProductId = null;
-        let colors = [];
-        let sizes = [];
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                location.href = 'login.html';
-                return;
-            }
-
-            const adminEmails = ['leogray15@gmail.com'];
-            
-            if (!adminEmails.includes(user.email)) {
-                alert('⚠️ Admin access required');
-                location.href = 'dashboard.html';
-                return;
-            }
-
-            loadProducts();
+      // existing urls first
+      existingImageUrls.forEach((url, idx) => {
+        items.push({
+          url,
+          label: idx === 0 ? 'Cover' : `Photo ${idx + 1}`,
+          onRemove: () => {
+            existingImageUrls.splice(idx, 1);
+            renderImagesPreview();
+          }
         });
+      });
 
-        async function loadProducts() {
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading products...</div>';
+      // new files
+      currentImageFiles.forEach((file, idx) => {
+        const objectUrl = URL.createObjectURL(file);
+        const totalIndex = existingImageUrls.length + idx;
+        items.push({
+          url: objectUrl,
+          label: totalIndex === 0 ? 'Cover' : `Photo ${totalIndex + 1}`,
+          onRemove: () => {
+            currentImageFiles.splice(idx, 1);
+            renderImagesPreview();
+          }
+        });
+      });
 
-            try {
-                const querySnapshot = await getDocs(collection(db, 'Products'));
-                const products = [];
-                querySnapshot.forEach((doc) => {
-                    products.push({ id: doc.id, ...doc.data() });
-                });
+      if (!items.length) {
+        grid.innerHTML = '';
+        uploadText.style.display = 'block';
+        return;
+      }
 
-                if (products.length === 0) {
-                    grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-dim);">No products yet. Add your first product!</div>';
-                    return;
-                }
+      uploadText.style.display = 'none';
 
-                grid.innerHTML = products.map(product => {
-                    const imageCount = product.imageUrls?.length || (product.imageUrl ? 1 : 0);
-                    const firstImage = product.imageUrls?.[0] || product.imageUrl;
-                    const variantsHTML = [];
-                    
-                    if (product.colors?.length) {
-                        variantsHTML.push(`<div style="font-size: 0.85rem; color: var(--text-dim);">Colors: ${product.colors.join(', ')}</div>`);
-                    }
-                    if (product.sizes?.length) {
-                        variantsHTML.push(`<div style="font-size: 0.85rem; color: var(--text-dim);">Sizes: ${product.sizes.join(', ')}</div>`);
-                    }
-                    if (product.stockQuantity !== undefined) {
-                        variantsHTML.push(`<div style="font-size: 0.85rem; color: var(--text-dim);">Stock: ${product.stockQuantity || '∞'}</div>`);
-                    }
+      grid.innerHTML = items.map((it) => `
+        <div class="thumb">
+          <img src="${it.url}" alt="Product photo">
+          <span class="badge">${it.label}</span>
+          <button type="button" class="remove" title="Remove">&times;</button>
+        </div>
+      `).join('');
 
-                    return `
-                        <div class="product-card">
-                            <div class="product-image">
-                                ${imageCount > 0 ? `<span class="image-count">📷 ${imageCount}</span>` : ''}
-                                ${firstImage ? `<img src="${firstImage}" alt="${product.name}">` : `<div class="placeholder">📦</div>`}
-                            </div>
-                            <div class="product-info">
-                                <div class="product-category">${product.category}</div>
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-price">$${product.price}</div>
-                                ${variantsHTML.join('')}
-                                <div style="font-size: 0.85rem; color: var(--text-dim); margin: 0.5rem 0;">${product.description}</div>
-                                ${product.isNew ? '<div style="font-size: 0.75rem; color: var(--gold); font-weight: 600;">⭐ NEW</div>' : ''}
-                                <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">
-                                    Stripe: ${product.stripePriceId || 'Not set'}
-                                </div>
-                                <div class="product-actions">
-                                    <button class="btn btn-secondary btn-small" style="flex: 1;" onclick="editProduct('${product.id}')">Edit</button>
-                                    <button class="btn btn-danger btn-small" style="flex: 1;" onclick="deleteProduct('${product.id}', ${JSON.stringify(product.imageUrls || [])})">Delete</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                console.error('Error loading products:', error);
-                showNotification('Failed to load products', 'error');
-            }
+      // wire remove buttons
+      Array.from(grid.querySelectorAll('button.remove')).forEach((btn, i) => {
+        btn.addEventListener('click', () => items[i].onRemove());
+      });
+    }
+
+    // ===== NEW: Colour variants =====
+    window.addColor = () => {
+      const input = document.getElementById('colorInput');
+      const val = (input.value || '').trim();
+      if (!val) return;
+
+      const exists = colorVariants.some(c => c.toLowerCase() === val.toLowerCase());
+      if (exists) {
+        showNotification('That colour already exists', 'error');
+        input.value = '';
+        return;
+      }
+
+      colorVariants.push(val);
+      input.value = '';
+      renderColors();
+    };
+
+    function renderColors() {
+      const wrap = document.getElementById('colorsWrap');
+      if (!wrap) return;
+
+      if (!colorVariants.length) {
+        wrap.innerHTML = '';
+        return;
+      }
+
+      wrap.innerHTML = colorVariants.map((c, idx) => `
+        <span class="pill">
+          ${escapeHtml(c)}
+          <button type="button" title="Remove" data-idx="${idx}">&times;</button>
+        </span>
+      `).join('');
+
+      Array.from(wrap.querySelectorAll('button')).forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.getAttribute('data-idx'), 10);
+          colorVariants.splice(i, 1);
+          renderColors();
+        });
+      });
+    }
+
+    // ===== Create / Update =====
+    window.handleSubmit = async (event) => {
+      event.preventDefault();
+
+      const productData = {
+        name: document.getElementById('productName').value.trim(),
+        category: document.getElementById('productCategory').value,
+        price: parseFloat(document.getElementById('productPrice').value),
+        stripePriceId: document.getElementById('stripePriceId').value.trim(),
+        description: document.getElementById('productDescription').value.trim(),
+        isNew: document.getElementById('isNew').checked,
+        colors: colorVariants,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Validation
+      if (!productData.name || !productData.stripePriceId || !productData.description) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      if (!Number.isFinite(productData.price) || productData.price <= 0) {
+        showNotification('Price must be greater than 0', 'error');
+        return;
+      }
+
+      try {
+        // Upload any new images
+        let uploadedUrls = [];
+        if (currentImageFiles.length) {
+          for (const file of currentImageFiles) {
+            const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+            const uploadResult = await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(uploadResult.ref);
+            uploadedUrls.push(url);
+          }
         }
 
-        window.openModal = () => {
-            editingProductId = null;
-            colors = [];
-            sizes = [];
-            currentImageFiles = [];
-            document.getElementById('modalTitle').textContent = 'Add Product';
-            document.getElementById('productForm').reset();
-            document.getElementById('productId').value = '';
-            document.getElementById('imagesPreview').innerHTML = '';
-            document.getElementById('colorsList').innerHTML = '';
-            document.getElementById('sizesList').innerHTML = '';
-            document.getElementById('productModal').classList.add('active');
-        };
+        // Merge existing + new
+        const merged = [...existingImageUrls, ...uploadedUrls];
 
-        window.closeModal = () => {
-            document.getElementById('productModal').classList.remove('active');
-        };
-
-        window.addColor = () => {
-            const input = document.getElementById('colorInput');
-            const color = input.value.trim();
-            if (color && !colors.includes(color)) {
-                colors.push(color);
-                renderColors();
-                input.value = '';
-            }
-        };
-
-        window.addSize = () => {
-            const input = document.getElementById('sizeInput');
-            const size = input.value.trim();
-            if (size && !sizes.includes(size)) {
-                sizes.push(size);
-                renderSizes();
-                input.value = '';
-            }
-        };
-
-        function renderColors() {
-            const container = document.getElementById('colorsList');
-            container.innerHTML = colors.map((color, index) => `
-                <div class="variant-tag">
-                    ${color}
-                    <button type="button" onclick="removeColor(${index})">×</button>
-                </div>
-            `).join('');
+        // Save array + keep legacy imageUrl for compatibility
+        if (merged.length) {
+          productData.imageUrls = merged;
+          productData.imageUrl = merged[0];
+        } else {
+          // If no images, omit fields (or keep blank)
+          productData.imageUrls = [];
+          productData.imageUrl = '';
         }
 
-        function renderSizes() {
-            const container = document.getElementById('sizesList');
-            container.innerHTML = sizes.map((size, index) => `
-                <div class="variant-tag">
-                    ${size}
-                    <button type="button" onclick="removeSize(${index})">×</button>
-                </div>
-            `).join('');
+        if (editingProductId) {
+          await updateDoc(doc(db, 'Products', editingProductId), productData);
+          showNotification('Product updated successfully!', 'success');
+        } else {
+          productData.createdAt = new Date().toISOString();
+          const docRef = await addDoc(collection(db, 'Products'), productData);
+          console.log('Product created with ID:', docRef.id);
+          showNotification('Product added successfully!', 'success');
         }
 
-        window.removeColor = (index) => {
-            colors.splice(index, 1);
-            renderColors();
-        };
+        closeModal();
+        await loadProducts();
 
-        window.removeSize = (index) => {
-            sizes.splice(index, 1);
-            renderSizes();
-        };
+      } catch (error) {
+        console.error('Error saving product:', error);
+        showNotification(`Failed to save product: ${error.message}`, 'error');
+      }
+    };
 
-        window.handleImageUpload = (event) => {
-            const files = Array.from(event.target.files);
-            
-            if (currentImageFiles.length + files.length > 5) {
-                alert('Maximum 5 images allowed');
-                return;
-            }
+    window.editProduct = async (productId) => {
+      editingProductId = productId;
+      document.getElementById('modalTitle').textContent = 'Edit Product';
 
-            files.forEach(file => {
-                currentImageFiles.push(file);
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const preview = document.getElementById('imagesPreview');
-                    const index = currentImageFiles.length - 1;
-                    preview.innerHTML += `
-                        <div class="preview-item" id="preview-${index}">
-                            <img src="${e.target.result}" alt="Preview">
-                            <button class="remove-image" onclick="removeImage(${index})" type="button">×</button>
-                        </div>
-                    `;
-                };
-                reader.readAsDataURL(file);
-            });
-        };
+      try {
+        const docSnap = await getDoc(doc(db, 'Products', productId));
+        if (!docSnap.exists()) return;
 
-        window.removeImage = (index) => {
-            currentImageFiles.splice(index, 1);
-            document.getElementById(`preview-${index}`).remove();
-        };
+        const product = docSnap.data();
 
-        window.handleSubmit = async (event) => {
-            event.preventDefault();
+        document.getElementById('productId').value = productId;
+        document.getElementById('productName').value = product.name || '';
+        document.getElementById('productCategory').value = product.category || 'apparel';
+        document.getElementById('productPrice').value = product.price ?? '';
+        document.getElementById('stripePriceId').value = product.stripePriceId || '';
+        document.getElementById('productDescription').value = product.description || '';
+        document.getElementById('isNew').checked = !!product.isNew;
 
-            const productData = {
-                name: document.getElementById('productName').value.trim(),
-                category: document.getElementById('productCategory').value,
-                price: parseFloat(document.getElementById('productPrice').value),
-                stripePriceId: document.getElementById('stripePriceId').value.trim(),
-                description: document.getElementById('productDescription').value.trim(),
-                colors: colors,
-                sizes: sizes,
-                stockQuantity: parseInt(document.getElementById('stockQuantity').value) || null,
-                isNew: document.getElementById('isNew').checked,
-                updatedAt: new Date().toISOString()
-            };
+        // load colours
+        colorVariants = Array.isArray(product.colors) ? product.colors : [];
+        renderColors();
 
-            if (!productData.name || !productData.stripePriceId || !productData.description) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
+        // load images
+        existingImageUrls = Array.isArray(product.imageUrls) ? product.imageUrls : [];
+        if ((!existingImageUrls || existingImageUrls.length === 0) && product.imageUrl) {
+          existingImageUrls = [product.imageUrl]; // legacy support
+        }
+        currentImageFiles = [];
+        renderImagesPreview();
 
-            if (productData.price <= 0) {
-                showNotification('Price must be greater than 0', 'error');
-                return;
-            }
+        document.getElementById('productModal').classList.add('active');
 
-            try {
-                const imageUrls = [];
+      } catch (error) {
+        console.error('Error loading product:', error);
+        showNotification('Failed to load product', 'error');
+      }
+    };
 
-                // Upload all images
-                for (const file of currentImageFiles) {
-                    console.log('Uploading image...');
-                    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-                    const uploadResult = await uploadBytes(storageRef, file);
-                    const imageUrl = await getDownloadURL(uploadResult.ref);
-                    imageUrls.push(imageUrl);
-                    console.log('Image uploaded:', imageUrl);
-                }
+    window.deleteProduct = async (productId) => {
+      if (!confirm('Are you sure you want to delete this product?')) return;
 
-                if (imageUrls.length > 0) {
-                    productData.imageUrls = imageUrls;
-                    productData.imageUrl = imageUrls[0]; // Primary image
-                }
+      try {
+        // NOTE: We are not deleting images from Storage here because you only store download URLs.
+        // If you want proper deletion, store storage paths too (e.g. products/....png).
+        await deleteDoc(doc(db, 'Products', productId));
+        showNotification('Product deleted successfully!', 'success');
+        loadProducts();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        showNotification('Failed to delete product', 'error');
+      }
+    };
 
-                if (editingProductId) {
-                    console.log('Updating product:', editingProductId);
-                    await updateDoc(doc(db, 'Products', editingProductId), productData);
-                    showNotification('Product updated successfully!', 'success');
-                } else {
-                    console.log('Creating new product...');
-                    productData.createdAt = new Date().toISOString();
-                    const docRef = await addDoc(collection(db, 'Products'), productData);
-                    console.log('Product created with ID:', docRef.id);
-                    showNotification('Product added successfully!', 'success');
-                }
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    }
 
-                closeModal();
-                await loadProducts();
-            } catch (error) {
-                console.error('Error saving product:', error);
-                console.error('Error details:', error.code, error.message);
-                showNotification(`Failed to save product: ${error.message}`, 'error');
-            }
-        };
+    // small helpers to avoid breaking layout with HTML injection
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+    function escapeAttr(str) {
+      // attr safe (same as escapeHtml, kept separate for clarity)
+      return escapeHtml(str);
+    }
 
-        window.editProduct = async (productId) => {
-            editingProductId = productId;
-            currentImageFiles = [];
-            document.getElementById('modalTitle').textContent = 'Edit Product';
-
-            try {
-                const docSnap = await getDoc(doc(db, 'Products', productId));
-                if (docSnap.exists()) {
-                    const product = docSnap.data();
-                    document.getElementById('productId').value = productId;
-                    document.getElementById('productName').value = product.name;
-                    document.getElementById('productCategory').value = product.category;
-                    document.getElementById('productPrice').value = product.price;
-                    document.getElementById('stripePriceId').value = product.stripePriceId || '';
-                    document.getElementById('productDescription').value = product.description;
-                    document.getElementById('stockQuantity').value = product.stockQuantity || '';
-                    document.getElementById('isNew').checked = product.isNew || false;
-
-                    colors = product.colors || [];
-                    sizes = product.sizes || [];
-                    renderColors();
-                    renderSizes();
-
-                    // Show existing images
-                    const preview = document.getElementById('imagesPreview');
-                    preview.innerHTML = '';
-                    if (product.imageUrls) {
-                        product.imageUrls.forEach((url, index) => {
-                            preview.innerHTML += `
-                                <div class="preview-item">
-                                    <img src="${url}" alt="Existing image">
-                                    <div style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.7); color: white; padding: 0.3rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Existing</div>
-                                </div>
-                            `;
-                        });
-                    }
-
-                    document.getElementById('productModal').classList.add('active');
-                }
-            } catch (error) {
-                console.error('Error loading product:', error);
-                showNotification('Failed to load product', 'error');
-            }
-        };
-
-        window.deleteProduct = async (productId, imageUrls) => {
-            if (!confirm('Are you sure you want to delete this product?')) return;
-
-            try {
-                // Delete images from storage
-                if (imageUrls && imageUrls.length > 0) {
-                    for (const url
+    // Make functions global
+    window.loadProducts = loadProducts;
+  </script>
+</body>
+</html>
