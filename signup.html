@@ -99,63 +99,52 @@ h1 {
 .subtitle {
   text-align: center;
   color: #a3a3a3;
-  margin-bottom: 1.5rem;
   font-size: 0.95rem;
+  margin-bottom: 1.2rem;
 }
 
 label {
   display: block;
+  margin-top: 0.9rem;
   font-size: 0.85rem;
   color: #a3a3a3;
-  margin-top: 0.8rem;
-  margin-bottom: 0.3rem;
   font-weight: 500;
 }
 
-input, select, button {
+input, select {
   width: 100%;
-  padding: 0.9rem;
+  background: rgba(15,23,42,.85);
+  border: 1px solid rgba(148,163,184,.3);
   border-radius: 10px;
-  border: 1px solid rgba(148,163,184,.4);
-  background: rgba(15,23,42,.95);
+  padding: 0.9rem;
   color: #e5e5e5;
-  font-family: inherit;
-  font-size: 16px; /* Prevents iOS zoom */
-  transition: all 0.2s;
+  font-size: 16px;
+  outline: none;
+  margin-top: 0.3rem;
   -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
 }
 
-select {
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.9rem center;
-  padding-right: 2.5rem;
-}
-
-input[type="date"] {
-  color: #a3a3a3;
-}
-
-input[type="date"]:focus,
-input[type="date"]:valid {
-  color: #e5e5e5;
-}
-
 input:focus, select:focus {
-  outline: none;
-  border-color: #9333ea;
-  box-shadow: 0 0 0 3px rgba(147,51,234,0.2);
+  border-color: #a78bfa;
 }
 
 button {
-  margin-top: 1rem;
-  background: linear-gradient(135deg,#9333ea,#7e22ce);
+  width: 100%;
+  background: linear-gradient(135deg, #9333ea, #7e22ce);
+  color: white;
   border: none;
+  border-radius: 999px;
+  padding: 1rem;
   font-weight: 700;
+  font-size: 1.05rem;
+  margin-top: 1.2rem;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 1rem;
+  -webkit-appearance: none;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 button:active {
@@ -163,39 +152,14 @@ button:active {
 }
 
 button:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.progress {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(10,10,10,.8);
-  border-radius: 12px;
-  display: none;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  padding: .4rem 0;
-  color: #a3a3a3;
-  font-size: 0.9rem;
-}
-
-.step.active {
-  color: #a78bfa;
-}
-
-.step.done {
-  color: #22c55e;
-}
-
 .success {
-  background: rgba(34,197,94,.1);
-  border: 1px solid rgba(34,197,94,.3);
-  color: #22c55e;
+  background: rgba(16,185,129,.1);
+  border: 1px solid rgba(16,185,129,.3);
+  color: #10b981;
   padding: 1rem;
   border-radius: 12px;
   text-align: center;
@@ -217,19 +181,54 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+/* CUSTOM CHECKBOX STYLING */
 .checkbox-group {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  margin-top: 0.8rem;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .checkbox-group input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  margin-top: 0.1rem;
+  /* Hide default checkbox */
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.checkbox-group .custom-checkbox {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: 2px solid rgba(148, 163, 184, 0.4);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.85);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-top: 0.1rem;
+}
+
+.checkbox-group input[type="checkbox"]:checked + .custom-checkbox {
+  background: linear-gradient(135deg, #9333ea, #7e22ce);
+  border-color: #9333ea;
+}
+
+.checkbox-group .custom-checkbox::after {
+  content: "✓";
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s;
+}
+
+.checkbox-group input[type="checkbox"]:checked + .custom-checkbox::after {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .checkbox-group label {
@@ -237,6 +236,7 @@ button:disabled {
   font-size: 0.85rem;
   cursor: pointer;
   line-height: 1.4;
+  flex: 1;
 }
 
 .checkbox-group a {
@@ -351,16 +351,16 @@ button:disabled {
       <input type="text" id="address1" required placeholder="Street address" autocomplete="address-line1">
 
       <label>Address Line 2</label>
-      <input type="text" id="address2" placeholder="Apartment, suite (optional)" autocomplete="address-line2">
+      <input type="text" id="address2" placeholder="Apartment, suite, etc. (optional)" autocomplete="address-line2">
 
       <label>City *</label>
       <input type="text" id="city" required placeholder="City" autocomplete="address-level2">
 
-      <label>State/County *</label>
-      <input type="text" id="state" required placeholder="State or County" autocomplete="address-level1">
+      <label>County / State *</label>
+      <input type="text" id="county" required placeholder="County or State" autocomplete="address-level1">
 
-      <label>Postal Code *</label>
-      <input type="text" id="postal" required placeholder="Postcode" autocomplete="postal-code">
+      <label>Postcode / ZIP *</label>
+      <input type="text" id="postcode" required placeholder="Postcode or ZIP" autocomplete="postal-code">
 
       <label>Country *</label>
       <select id="country" required autocomplete="country">
@@ -369,13 +369,22 @@ button:disabled {
         <option value="US">United States</option>
         <option value="CA">Canada</option>
         <option value="AU">Australia</option>
+        <option value="IE">Ireland</option>
+        <option value="NZ">New Zealand</option>
         <option value="DE">Germany</option>
         <option value="FR">France</option>
         <option value="ES">Spain</option>
         <option value="IT">Italy</option>
         <option value="NL">Netherlands</option>
-        <option value="IE">Ireland</option>
-        <option value="OTHER">Other</option>
+        <option value="BE">Belgium</option>
+        <option value="SE">Sweden</option>
+        <option value="NO">Norway</option>
+        <option value="DK">Denmark</option>
+        <option value="FI">Finland</option>
+        <option value="PL">Poland</option>
+        <option value="CH">Switzerland</option>
+        <option value="AT">Austria</option>
+        <option value="PT">Portugal</option>
       </select>
 
       <label>Password *</label>
@@ -385,31 +394,31 @@ button:disabled {
       <input type="password" id="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password">
 
       <label>Referral Code (Optional)</label>
-      <input type="text" id="referralCode" placeholder="Enter referral code (e.g., ARCANE)" autocomplete="off" style="text-transform: uppercase;">
+      <input type="text" id="referralCode" placeholder="Enter referral code (e.g., ARCANE)" style="text-transform: uppercase;">
 
+      <!-- NEWSLETTER CHECKBOX -->
       <div class="checkbox-group">
-        <input type="checkbox" id="newsletter">
+        <input type="checkbox" id="newsletter" checked>
+        <div class="custom-checkbox"></div>
         <label for="newsletter">I want to receive updates and newsletters</label>
       </div>
 
+      <!-- TERMS CHECKBOX -->
       <div class="checkbox-group">
         <input type="checkbox" id="terms" required>
-        <label for="terms">I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a> *</label>
+        <div class="custom-checkbox"></div>
+        <label for="terms">I agree to the <a href="terms.html" target="_blank">Terms of Service</a> *</label>
       </div>
 
-      <button type="submit" id="submitBtn">Create Account</button>
+      <button type="submit">Create Account</button>
     </form>
 
-    <div class="progress" id="progressBox">
-      <div class="step" id="step1">⏳ Creating account...</div>
-      <div class="step" id="step2">⏳ Setting up profile...</div>
-      <div class="step" id="step3">⏳ Saving your data...</div>
-      <div class="step" id="step4">⏳ Sending verification email...</div>
-      <div class="step" id="step5">⏳ Finishing up...</div>
+    <div class="success" id="successMsg">
+      <strong>Account created successfully!</strong><br>
+      Redirecting you to the dashboard...
     </div>
 
-    <div class="success" id="successBox"></div>
-    <div class="error" id="errorBox"></div>
+    <div class="error" id="errorMsg"></div>
 
     <div class="login-link">
       Already have an account? <a href="login.html">Log in</a>
@@ -418,26 +427,9 @@ button:disabled {
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword,
-  updateProfile,
-  sendEmailVerification
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc,
-  serverTimestamp,
-  query,
-  collection,
-  where,
-  getDocs,
-  updateDoc,
-  increment,
-  getDoc
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -454,259 +446,111 @@ const db = getFirestore(app);
 
 // Check for referral code in URL
 const urlParams = new URLSearchParams(window.location.search);
-const referralCode = urlParams.get('ref');
-
-if (referralCode) {
-  sessionStorage.setItem('referralCode', referralCode);
+const refCode = urlParams.get('ref');
+if (refCode) {
+  document.getElementById('referralCode').value = refCode.toUpperCase();
   
   const banner = document.getElementById('referralBanner');
   banner.innerHTML = `
     <div class="referral-banner">
-      <span class="referral-icon">🎯</span>
+      <div class="referral-icon">🎁</div>
       <div class="referral-content">
-        <strong>Referred by: ${referralCode}</strong>
-        <p>Sign up now to join their community</p>
+        <strong>You've been referred!</strong>
+        <p>Referral code <strong>${refCode.toUpperCase()}</strong> has been applied</p>
       </div>
     </div>
   `;
 }
 
-function showProgress(stepNum) {
-  document.getElementById('progressBox').style.display = 'block';
-  for (let i = 1; i <= 5; i++) {
-    const el = document.getElementById(`step${i}`);
-    if (i < stepNum) {
-      el.classList.add('done');
-      el.classList.remove('active');
-      el.innerHTML = el.innerHTML.replace('⏳', '✅');
-    } else if (i === stepNum) {
-      el.classList.add('active');
-      el.classList.remove('done');
-    } else {
-      el.classList.remove('active', 'done');
-    }
-  }
-}
-
-function showSuccess(msg) {
-  const box = document.getElementById('successBox');
-  box.innerHTML = msg;
-  box.style.display = 'block';
-  document.getElementById('errorBox').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function showError(msg) {
-  const box = document.getElementById('errorBox');
-  box.innerHTML = msg;
-  box.style.display = 'block';
-  document.getElementById('successBox').style.display = 'none';
-  document.getElementById('progressBox').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
 document.getElementById('signupForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-
-  const username = document.getElementById('username').value.trim();
-  const first = document.getElementById('firstName').value.trim();
-  const last = document.getElementById('lastName').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const dob = document.getElementById('dob').value;
-  const address1 = document.getElementById('address1').value.trim();
-  const address2 = document.getElementById('address2').value.trim();
-  const city = document.getElementById('city').value.trim();
-  const state = document.getElementById('state').value.trim();
-  const postal = document.getElementById('postal').value.trim();
-  const country = document.getElementById('country').value;
-  const pass = document.getElementById('password').value;
-  const confirmPass = document.getElementById('confirmPassword').value;
-  const referralCodeInput = document.getElementById('referralCode').value.trim().toUpperCase();
-  const newsletter = document.getElementById('newsletter').checked;
-  const terms = document.getElementById('terms').checked;
-
-  const btn = document.getElementById('submitBtn');
-
-  // Validation
-  if (!username || !first || !last || !email || !dob || !address1 || !city || !state || !postal || !country || !pass || !confirmPass) {
-    showError('❌ Please fill in all required fields');
-    return;
-  }
-
-  if (pass !== confirmPass) {
-    showError('❌ Passwords do not match');
-    return;
-  }
-
-  if (pass.length < 8) {
-    showError('❌ Password must be at least 8 characters');
-    return;
-  }
-
-  if (!terms) {
-    showError('❌ You must agree to the Terms of Service');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Creating account...';
-
+  
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const errorMsg = document.getElementById('errorMsg');
+  const successMsg = document.getElementById('successMsg');
+  
+  errorMsg.style.display = 'none';
+  successMsg.style.display = 'none';
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Creating Account...';
+  
   try {
-    // Step 1: Create auth account
-    showProgress(1);
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
     
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    const user = cred.user;
-    
-    // Step 2: Update profile
-    showProgress(2);
-    
-    await updateProfile(user, { 
-      displayName: username 
-    });
-
-    // Step 3: Create Firestore document
-    showProgress(3);
-    
-    const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
-    
-    // Get referral code from input field OR sessionStorage (URL param takes priority)
-    const urlReferralCode = sessionStorage.getItem('referralCode');
-    const referralCodeToUse = urlReferralCode || referralCodeInput;
-    
-    let referredBy = null;
-
-    // Validate referral code if provided
-    if (referralCodeToUse) {
-      const referrerQuery = query(
-        collection(db, 'Users'),
-        where('referralCode', '==', referralCodeToUse.toUpperCase())
-      );
-      const referrerSnapshot = await getDocs(referrerQuery);
-      
-      if (!referrerSnapshot.empty) {
-        referredBy = referralCodeToUse.toUpperCase();
-        console.log('✅ Valid referral code:', referredBy);
-      } else {
-        console.warn('⚠️ Invalid referral code:', referralCodeToUse);
-      }
+    if (password !== confirmPassword) {
+      throw new Error('Passwords do not match');
     }
+    
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+    
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    const referralCode = document.getElementById('referralCode').value.trim().toUpperCase();
+    const newsletter = document.getElementById('newsletter').checked;
     
     const userData = {
-      Username: username,
-      FirstName: first,
-      LastName: last,
+      Username: document.getElementById('username').value.trim(),
+      FirstName: document.getElementById('firstName').value.trim(),
+      LastName: document.getElementById('lastName').value.trim(),
       Email: email,
-      Phone: phone,
-      DateOfBirth: dob,
+      Phone: document.getElementById('phone').value.trim() || null,
+      DateOfBirth: document.getElementById('dob').value,
       Address: {
-        line1: address1,
-        line2: address2 || "",
-        city: city,
-        state: state,
-        postal: postal,
-        country: country
+        line1: document.getElementById('address1').value.trim(),
+        line2: document.getElementById('address2').value.trim() || null,
+        city: document.getElementById('city').value.trim(),
+        county: document.getElementById('county').value.trim(),
+        postcode: document.getElementById('postcode').value.trim(),
+        country: document.getElementById('country').value
       },
-      Country: country,
-      NewsletterOptIn: newsletter,
-      referralCode: defaultReferralCode,
-      isPaid: false,
+      referralCode: user.uid.slice(0, 8).toUpperCase(),
+      referredBy: referralCode || null,
+      subscribeToNewsletter: newsletter,
       subscriptionStatus: "none",
-      emailVerified: false,
+      isPaid: false,
+      Xp: 0,
+      Level: "Seeker",
+      WinsPosted: 0,
+      CallAttended: 0,
+      ModulesCompleted: 0,
+      completedModuleIds: [],
       joinedAt: serverTimestamp(),
-      lastLoginDate: serverTimestamp()
+      lastLoginDate: serverTimestamp(),
+      loginStreak: 1
     };
-
-    if (referredBy) {
-      userData.referredBy = referredBy;
-      userData.referredAt = serverTimestamp();
-    }
     
     await setDoc(doc(db, "Users", user.uid), userData);
-
-    // Update referrer stats
-    if (referredBy) {
-      try {
-        const referrerQuery = query(
-          collection(db, 'Users'),
-          where('referralCode', '==', referredBy)
-        );
-        const referrerSnapshot = await getDocs(referrerQuery);
-        
-        if (!referrerSnapshot.empty) {
-          const referrerId = referrerSnapshot.docs[0].id;
-          const affiliateRef = doc(db, 'Affiliates', referrerId);
-          const affiliateDoc = await getDoc(affiliateRef);
-          
-          if (affiliateDoc.exists()) {
-            await updateDoc(affiliateRef, {
-              totalReferrals: increment(1),
-              lastUpdated: serverTimestamp()
-            });
-          } else {
-            await setDoc(affiliateRef, {
-              userId: referrerId,
-              referralCode: referredBy,
-              availableBalance: 0,
-              pendingBalance: 0,
-              totalEarnings: 0,
-              totalWithdrawn: 0,
-              activeReferrals: 0,
-              totalReferrals: 1,
-              createdAt: serverTimestamp(),
-              lastUpdated: serverTimestamp()
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error updating referrer:", error);
-      }
-    }
-
-    sessionStorage.removeItem('referralCode');
-
-    // Step 4: Send verification email
-    showProgress(4);
     
-    await sendEmailVerification(user);
-
-    // Step 5: Sign out user
-    await auth.signOut();
-
-    showProgress(5);
+    successMsg.style.display = 'block';
     
-    showSuccess(`
-      <strong>🎉 Account created!</strong><br><br>
-      <strong>📧 Verify your email to login</strong><br>
-      Check <strong>${email}</strong><br><br>
-      ⚠️ <strong style="color: #fbbf24;">Check SPAM folder!</strong><br><br>
-      <small style="color: #a3a3a3;">Redirecting in 5 seconds...</small>
-    `);
-
     setTimeout(() => {
-      window.location.href = "login.html";
-    }, 5000);
-
-  } catch (err) {
-    console.error("Signup error:", err);
+      window.location.href = 'dashboard.html';
+    }, 1500);
     
-    let errorMsg = "❌ Failed to create account. Please try again.";
-    
-    if (err.code === 'auth/email-already-in-use') {
-      errorMsg = "❌ Email already registered. <a href='login.html' style='color: #a78bfa; text-decoration: underline;'>Log in</a>";
-    } else if (err.code === 'auth/invalid-email') {
-      errorMsg = "❌ Invalid email address";
-    } else if (err.code === 'auth/weak-password') {
-      errorMsg = "❌ Password too weak. Use 8+ characters.";
-    } else if (err.code === 'auth/network-request-failed') {
-      errorMsg = "❌ Network error. Check connection.";
-    }
-    
-    showError(errorMsg);
-    btn.disabled = false;
-    btn.textContent = "Create Account";
+  } catch (error) {
+    console.error('Signup error:', error);
+    errorMsg.textContent = error.message;
+    errorMsg.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create Account';
   }
+});
+
+// Make labels clickable
+document.querySelectorAll('.checkbox-group label').forEach(label => {
+  label.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'A') {
+      e.preventDefault();
+      const input = label.previousElementSibling.previousElementSibling;
+      input.checked = !input.checked;
+    }
+  });
 });
 </script>
 
