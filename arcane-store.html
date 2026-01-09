@@ -32,7 +32,6 @@
             min-height: 100vh;
         }
 
-        /* Back Button */
         .back-btn {
             position: fixed;
             top: 1.5rem;
@@ -58,7 +57,6 @@
             transform: translateX(-2px);
         }
 
-        /* Header */
         .header {
             max-width: 1400px;
             margin: 2.5rem auto 0;
@@ -79,7 +77,6 @@
             width: 32px;
         }
 
-        /* Main Content */
         .main-content {
             max-width: 1400px;
             margin: 0 auto 4rem;
@@ -107,7 +104,6 @@
             margin: 0 auto;
         }
 
-        /* Category Filter */
         .category-filter {
             display: flex;
             gap: 1rem;
@@ -135,7 +131,6 @@
             color: #fff;
         }
 
-        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -165,9 +160,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 5rem;
             position: relative;
             overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-image .placeholder {
+            font-size: 5rem;
+            z-index: 1;
         }
 
         .product-image::before {
@@ -231,7 +236,7 @@
             color: var(--gold);
         }
 
-        .add-to-cart-btn {
+        .buy-btn {
             padding: 0.7rem 1.5rem;
             border-radius: 999px;
             border: none;
@@ -243,53 +248,62 @@
             transition: all 0.2s;
         }
 
-        .add-to-cart-btn:hover {
+        .buy-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
         }
 
-        /* Cart Badge */
-        .cart-icon {
+        .buy-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+            font-size: 1.2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification {
             position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            z-index: 40;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.5);
-            transition: all 0.2s;
-            position: relative;
+            top: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
         }
 
-        .cart-icon:hover {
-            transform: scale(1.1);
+        .notification.error {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
         }
 
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--gold);
-            color: #000;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .page-hero h1 {
                 font-size: 2rem;
@@ -309,14 +323,11 @@
             }
         }
     </style>
+    
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <a href="dashboard.html" class="back-btn">← Dashboard</a>
-
-    <div class="cart-icon" id="cartIcon">
-        🛒
-        <span class="cart-count" id="cartCount">0</span>
-    </div>
 
     <div class="header">
         <div class="logo">
@@ -331,23 +342,17 @@
             <p>Exclusive branded merchandise for members of The Archives</p>
         </div>
 
-        <!-- Category Filter -->
-        <div class="category-filter">
-            <button class="category-btn active" data-category="all">All Products</button>
-            <button class="category-btn" data-category="apparel">Apparel</button>
-            <button class="category-btn" data-category="drinkware">Drinkware</button>
-            <button class="category-btn" data-category="accessories">Accessories</button>
-            <button class="category-btn" data-category="lifestyle">Lifestyle</button>
-        </div>
+        <div class="category-filter" id="categoryFilter"></div>
 
-        <!-- Products Grid -->
-        <div class="products-grid" id="productsGrid"></div>
+        <div class="products-grid" id="productsGrid">
+            <div class="loading">Loading products...</div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -362,126 +367,20 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Product Data
-        const products = [
-            {
-                id: 1,
-                name: 'Arcane Archives Hoodie',
-                category: 'apparel',
-                price: 65,
-                icon: '👕',
-                description: 'Premium heavyweight hoodie with embroidered logo',
-                isNew: true
-            },
-            {
-                id: 2,
-                name: 'Trading Master Coffee Mug',
-                category: 'drinkware',
-                price: 25,
-                icon: '☕',
-                description: 'Ceramic mug perfect for your morning market prep',
-                isNew: true
-            },
-            {
-                id: 3,
-                name: 'Arcane Archives Hat',
-                category: 'apparel',
-                price: 35,
-                icon: '🧢',
-                description: 'Adjustable snapback with subtle branding',
-                isNew: false
-            },
-            {
-                id: 4,
-                name: 'Premium Gaming Mousepad',
-                category: 'accessories',
-                price: 30,
-                icon: '🖱️',
-                description: 'Extra-large desk mat with Arcane design',
-                isNew: true
-            },
-            {
-                id: 5,
-                name: 'Archives Crystal Ashtray',
-                category: 'lifestyle',
-                price: 45,
-                icon: '💎',
-                description: 'Luxury glass ashtray with etched logo',
-                isNew: false
-            },
-            {
-                id: 6,
-                name: 'Arcane T-Shirt',
-                category: 'apparel',
-                price: 35,
-                icon: '👔',
-                description: 'Soft cotton tee with front and back print',
-                isNew: false
-            },
-            {
-                id: 7,
-                name: 'Insulated Water Bottle',
-                category: 'drinkware',
-                price: 40,
-                icon: '🍶',
-                description: '32oz stainless steel, keeps drinks cold 24h',
-                isNew: true
-            },
-            {
-                id: 8,
-                name: 'Trading Journal Notebook',
-                category: 'accessories',
-                price: 28,
-                icon: '📓',
-                description: 'Leather-bound journal for tracking trades',
-                isNew: false
-            },
-            {
-                id: 9,
-                name: 'Arcane Crewneck Sweater',
-                category: 'apparel',
-                price: 55,
-                icon: '🧥',
-                description: 'Cozy fleece crewneck for cold trading days',
-                isNew: false
-            },
-            {
-                id: 10,
-                name: 'Desktop LED Sign',
-                category: 'lifestyle',
-                price: 75,
-                icon: '💡',
-                description: 'Neon-style LED with Arcane Archives logo',
-                isNew: true
-            },
-            {
-                id: 11,
-                name: 'Sticker Pack',
-                category: 'accessories',
-                price: 15,
-                icon: '🎨',
-                description: 'Set of 10 premium vinyl stickers',
-                isNew: false
-            },
-            {
-                id: 12,
-                name: 'Arcane Archives Beanie',
-                category: 'apparel',
-                price: 30,
-                icon: '🎩',
-                description: 'Warm knit beanie with embroidered patch',
-                isNew: false
-            }
-        ];
+        // Initialize Stripe - REPLACE WITH YOUR PUBLISHABLE KEY
+        const stripe = Stripe('pk_test_51QgVCBKfPz4F9rWfbEXAXXvZHv9Nnzfh2gCcZfL04dFnYwvBBCpeCx40xzSNqBV1iR7n1b47U4PGz4c30RxkwF1W00TmjEgb7Q');
 
-        let cart = [];
+        let allProducts = [];
         let currentFilter = 'all';
+        let currentUser = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 location.href = 'login.html';
                 return;
             }
+
+            currentUser = user;
 
             const userDoc = await getDoc(doc(db, 'Users', user.uid));
             const userData = userDoc.data() || {};
@@ -493,39 +392,49 @@
                 return;
             }
 
-            renderProducts();
-            setupFilters();
+            await loadProducts();
         });
 
-        function renderProducts() {
-            const grid = document.getElementById('productsGrid');
-            const filtered = currentFilter === 'all' 
-                ? products 
-                : products.filter(p => p.category === currentFilter);
+        async function loadProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'Products'));
+                allProducts = [];
+                
+                querySnapshot.forEach((doc) => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
 
-            grid.innerHTML = filtered.map(product => `
-                <div class="product-card" onclick="addToCart(${product.id})">
-                    <div class="product-image">
-                        ${product.isNew ? '<span class="new-badge">New</span>' : ''}
-                        <span style="position: relative; z-index: 1;">${product.icon}</span>
+                // Sort by newest first
+                allProducts.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || 0);
+                    const dateB = new Date(b.createdAt || 0);
+                    return dateB - dateA;
+                });
+
+                setupCategoryFilter();
+                renderProducts();
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsGrid').innerHTML = `
+                    <div class="empty-state">
+                        <h2>😕 Failed to load products</h2>
+                        <p>Please refresh the page to try again</p>
                     </div>
-                    <div class="product-info">
-                        <div class="product-category">${product.category}</div>
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-desc">${product.description}</div>
-                        <div class="product-footer">
-                            <div class="product-price">$${product.price}</div>
-                            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${product.id})">
-                                Add to Cart
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }
         }
 
-        function setupFilters() {
-            document.querySelectorAll('.category-btn').forEach(btn => {
+        function setupCategoryFilter() {
+            const categories = ['all', ...new Set(allProducts.map(p => p.category))];
+            const filterContainer = document.getElementById('categoryFilter');
+            
+            filterContainer.innerHTML = categories.map(cat => `
+                <button class="category-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">
+                    ${cat === 'all' ? 'All Products' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </button>
+            `).join('');
+
+            filterContainer.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
@@ -535,58 +444,110 @@
             });
         }
 
-        window.addToCart = (productId) => {
-            const product = products.find(p => p.id === productId);
-            cart.push(product);
-            updateCartCount();
-            showNotification(`✓ ${product.name} added to cart!`);
-        };
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const filtered = currentFilter === 'all' 
+                ? allProducts 
+                : allProducts.filter(p => p.category === currentFilter);
 
-        function updateCartCount() {
-            document.getElementById('cartCount').textContent = cart.length;
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h2>📦 No products in this category</h2>
+                        <p>Check back soon for new items!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(product => `
+                <div class="product-card">
+                    <div class="product-image">
+                        ${product.isNew ? '<span class="new-badge">New</span>' : ''}
+                        ${product.imageUrl 
+                            ? `<img src="${product.imageUrl}" alt="${product.name}">` 
+                            : '<div class="placeholder">📦</div>'
+                        }
+                    </div>
+                    <div class="product-info">
+                        <div class="product-category">${product.category}</div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-desc">${product.description}</div>
+                        <div class="product-footer">
+                            <div class="product-price">$${product.price.toFixed(2)}</div>
+                            <button class="buy-btn" onclick="handlePurchase('${product.id}', '${product.stripePriceId}')">
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function showNotification(message) {
+        window.handlePurchase = async (productId, stripePriceId) => {
+            if (!stripePriceId) {
+                showNotification('This product is not available for purchase yet', 'error');
+                return;
+            }
+
+            const product = allProducts.find(p => p.id === productId);
+            
+            try {
+                // Disable all buy buttons during checkout
+                document.querySelectorAll('.buy-btn').forEach(btn => {
+                    btn.disabled = true;
+                    btn.textContent = 'Processing...';
+                });
+
+                // Create Stripe Checkout Session via Netlify Function
+                const response = await fetch('/.netlify/functions/create-store-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        priceId: stripePriceId,
+                        productId: productId,
+                        userId: currentUser.uid,
+                        userEmail: currentUser.email,
+                        productName: product.name
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+
+                // Redirect to Stripe Checkout using the URL
+                if (data.url) {
+                    window.location.href = data.url;
+                } else if (data.sessionId) {
+                    // Fallback to redirectToCheckout
+                    const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+                    if (error) {
+                        throw error;
+                    }
+                }
+            } catch (error) {
+                console.error('Purchase error:', error);
+                showNotification(error.message || 'Something went wrong. Please try again.', 'error');
+                // Re-enable buttons
+                document.querySelectorAll('.buy-btn').forEach(btn => {
+                    btn.disabled = false;
+                    btn.textContent = 'Buy Now';
+                });
+            }
+        };
+
+        function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
             notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 6rem;
-                right: 1.5rem;
-                background: linear-gradient(135deg, #22c55e, #15803d);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 12px;
-                font-weight: 600;
-                z-index: 1000;
-                animation: slideIn 0.3s ease;
-            `;
             document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
+            setTimeout(() => notification.remove(), 4000);
         }
-
-        document.getElementById('cartIcon').onclick = () => {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-            } else {
-                const total = cart.reduce((sum, item) => sum + item.price, 0);
-                const items = cart.map(item => `${item.name} - $${item.price}`).join('\n');
-                alert(`🛒 Your Cart:\n\n${items}\n\nTotal: $${total}\n\n(Checkout coming soon!)`);
-            }
-        };
     </script>
-
-    <style>
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    </style>
 </body>
 </html>
