@@ -1,653 +1,675 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard | The Arcane Archives</title>
-<link rel="icon" href="ArcaneA.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
-  color: #e5e5e5;
-  min-height: 100vh;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: .7rem;
-  font-weight: 800;
-  letter-spacing: .1em;
-  font-size: .85rem;
-}
-
-.logo img {
-  width: 32px;
-}
-
-.logout {
-  cursor: pointer;
-  color: #ef4444;
-  font-size: .85rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid rgba(239,68,68,0.3);
-  transition: all 0.2s;
-}
-
-.logout:hover {
-  background: rgba(239,68,68,0.1);
-  border-color: #ef4444;
-}
-
-.welcome-card {
-  background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
-  border-radius: 20px;
-  border: 1px solid rgba(148,163,184,.4);
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
-
-.welcome-card h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.welcome-card p {
-  color: #a3a3a3;
-  font-size: 1rem;
-}
-
-.banner {
-  margin-top: 1.5rem;
-  padding: 1.3rem;
-  border-radius: 14px;
-  background: rgba(147, 51, 234, 0.12);
-  border: 1px solid rgba(147, 51, 234, 0.35);
-  display: none;
-  text-align: center;
-}
-
-.banner a {
-  color: #a78bfa;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.banner a:hover {
-  text-decoration: underline;
-}
-
-
-/* Balance */
-.balance-row{
-  margin-top: 1.2rem;
-  display:flex;
-  gap:1rem;
-  flex-wrap:wrap;
-}
-.balance-card{
-  flex: 1 1 260px;
-  background: rgba(15,23,42,.85);
-  border: 1px solid rgba(148,163,184,.35);
-  border-radius: 16px;
-  padding: 1rem 1.25rem;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:1rem;
-}
-.balance-label{
-  font-size:.75rem;
-  color:#a3a3a3;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  margin-bottom:.25rem;
-}
-.balance-value{
-  font-size:1.6rem;
-  font-weight:800;
-  color:#fbbf24;
-  line-height:1;
-}
-.balance-sub{
-  margin-top:.35rem;
-  font-size:.8rem;
-  color:#9ca3af;
-}
-.balance-actions{
-  display:flex;
-  flex-direction:column;
-  gap:.5rem;
-  align-items:flex-end;
-}
-.balance-btn{
-  display:inline-block;
-  padding:.55rem .9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(167,139,250,.6);
-  background: rgba(147, 51, 234, 0.18);
-  color:#e5e5e5;
-  font-size:.85rem;
-  font-weight:700;
-  text-decoration:none;
-  white-space:nowrap;
-  transition: all .2s;
-}
-.balance-btn:hover{
-  transform: translateY(-1px);
-  border-color:#9333ea;
-  box-shadow: 0 10px 25px rgba(147,51,234,0.25);
-}
-.balance-btn.secondary{
-  border-color: rgba(148,163,184,.35);
-  background: rgba(2,1,10,.25);
-  color:#a3a3a3;
-}
-.balance-btn.secondary:hover{
-  border-color:#a78bfa;
-  color:#e5e5e5;
-  box-shadow:none;
-}
-@media (max-width: 768px){
-  .balance-actions{ align-items:stretch; width:100%; }
-  .balance-btn{ width:100%; text-align:center; }
-}
-
-
-/* TradingView Widgets */
-.tv-stack{
-  display:flex;
-  flex-direction:column;
-  gap:1rem;
-  margin-bottom:2rem;
-}
-
-.tv-ticker-wrap{
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid rgba(148,163,184,.35);
-  background:rgba(15,23,42,.96);
-}
-
-/* Section Headers */
-.section-header {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: #a78bfa;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.section-header::before {
-  content: '';
-  width: 4px;
-  height: 20px;
-  background: linear-gradient(135deg, #a78bfa, #ec4899);
-  border-radius: 2px;
-}
-
-/* Grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.2rem;
-  margin-bottom: 3rem;
-}
-
-.tile {
-  padding: 1.5rem;
-  border-radius: 16px;
-  border: 1px solid rgba(148,163,184,.4);
-  cursor: pointer;
-  transition: all 0.2s;
-  background: rgba(15,23,42,.96);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  position: relative;
-}
-
-.tile-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.tile-content {
-  flex: 1;
-}
-
-.tile-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.2rem;
-}
-
-.tile-desc {
-  font-size: 0.8rem;
-  color: #a3a3a3;
-}
-
-.tile:hover {
-  transform: translateY(-3px);
-  border-color: #9333ea;
-  box-shadow: 0 10px 30px rgba(147,51,234,0.3);
-}
-
-.locked {
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-.locked:hover {
-  transform: none;
-  box-shadow: none;
-  border-color: rgba(148,163,184,.4);
-}
-
-/* Coming Soon Badge */
-.coming-soon-badge {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #000;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.3rem 0.6rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Priority Badges */
-.tile.premium {
-  border-color: rgba(251, 191, 36, 0.5);
-}
-
-.tile.premium:hover {
-  border-color: #fbbf24;
-  box-shadow: 0 10px 30px rgba(251,191,36,0.3);
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
+  body{
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
+    color:#e5e5e5;
+    min-height:100vh;
   }
-  
-  .grid {
-    grid-template-columns: 1fr;
+
+  .container{ max-width:1200px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+  .header{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:2rem; flex-wrap:wrap; gap:1rem;
   }
-  
-  .welcome-card h1 {
-    font-size: 1.5rem;
+
+  .logo{
+    display:flex; align-items:center; gap:.7rem;
+    font-weight:800; letter-spacing:.1em; font-size:.85rem;
   }
-}
+  .logo img{ width:32px; height:32px; }
+
+  .logout{
+    cursor:pointer; color:#ef4444; font-size:.85rem;
+    padding:.5rem 1rem; border-radius:10px;
+    border:1px solid rgba(239,68,68,.3);
+    transition:all .2s;
+  }
+  .logout:hover{ background:rgba(239,68,68,.1); border-color:#ef4444; }
+
+  .welcome-card{
+    background: radial-gradient(circle at top, rgba(147,51,234,.16), rgba(15,23,42,.98));
+    border-radius:20px;
+    border:1px solid rgba(148,163,184,.35);
+    padding:2rem;
+    margin-bottom:1.2rem;
+  }
+
+  .welcome-card h1{ font-size:2rem; margin-bottom:.5rem; }
+  .welcome-card p{ color:#a3a3a3; font-size:1rem; }
+
+  .balance-card{
+    margin-top:1.2rem;
+    padding:1.2rem 1.2rem;
+    border-radius:16px;
+    border:1px solid rgba(148,163,184,.28);
+    background: rgba(2,6,23,.35);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+  }
+
+  .balance-left .label{
+    font-size:.75rem; letter-spacing:.12em; text-transform:uppercase;
+    color:#9ca3af; font-weight:800;
+    margin-bottom:.35rem;
+  }
+
+  .balance-amount{
+    font-size:1.8rem;
+    font-weight:900;
+    color:#fbbf24;
+    line-height:1.05;
+    display:inline-flex;
+    align-items:baseline;
+    gap:.5rem;
+  }
+
+  .balance-amount .pulse{
+    display:inline-block;
+    width:10px; height:10px;
+    border-radius:999px;
+    background: rgba(34,197,94,.9);
+    box-shadow: 0 0 0 rgba(34,197,94,.0);
+    opacity:0;
+    transform: translateY(-2px);
+  }
+
+  .balance-sub{
+    color:#a3a3a3;
+    font-size:.9rem;
+    margin-top:.35rem;
+    line-height:1.4;
+  }
+
+  .balance-actions{
+    display:flex;
+    gap:.75rem;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .btn{
+    border:none;
+    cursor:pointer;
+    font-weight:900;
+    border-radius:999px;
+    padding:.65rem 1rem;
+    font-size:.85rem;
+    transition: all .15s ease;
+    white-space:nowrap;
+  }
+
+  .btn-primary{
+    background: linear-gradient(135deg, #9333ea, #7e22ce);
+    color:white;
+    border:1px solid rgba(167,139,250,.35);
+  }
+  .btn-primary:hover{ transform: translateY(-1px); box-shadow: 0 10px 25px rgba(147,51,234,.35); }
+
+  .btn-secondary{
+    background: rgba(0,0,0,.25);
+    color:#e5e5e5;
+    border:1px solid rgba(148,163,184,.28);
+  }
+  .btn-secondary:hover{ transform: translateY(-1px); border-color: rgba(167,139,250,.55); }
+
+  /* TradingView */
+  .tv-ticker-wrap{
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.10);
+    background:#000; /* TRUE BLACK */
+    padding:6px 0;
+    margin-bottom:2rem;
+  }
+  /* make attribution subtle (cannot remove) */
+  .tv-ticker-wrap a, .tv-ticker-wrap span{
+    opacity:.7;
+    font-size:.72rem;
+  }
+
+  /* Core features cards (simple) */
+  .section-title{
+    margin:1.5rem 0 1rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#a78bfa;
+    font-weight:900;
+    font-size:.85rem;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap:1rem;
+    margin-bottom:1.5rem;
+  }
+
+  .card{
+    border-radius:16px;
+    border:1px solid rgba(251,191,36,.28);
+    background: rgba(15,23,42,.90);
+    padding:1rem;
+    min-height:78px;
+    display:flex;
+    gap:.75rem;
+    align-items:center;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .card:hover{
+    transform: translateY(-2px);
+    border-color: rgba(251,191,36,.55);
+    box-shadow: 0 18px 35px rgba(0,0,0,.35);
+  }
+
+  .card .icon{ font-size:1.4rem; width:34px; text-align:center; }
+  .card .title{ font-weight:900; }
+  .card .desc{ color:#9ca3af; font-size:.85rem; margin-top:.1rem; }
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background: rgba(0,0,0,.75);
+    display:none;
+    z-index:2000;
+  }
+  .modal-overlay.active{ display:block; }
+
+  .modal{
+    position:fixed;
+    left:50%; top:50%;
+    transform: translate(-50%, -50%);
+    width:min(680px, 92vw);
+    background: rgba(15,23,42,.98);
+    border:1px solid rgba(148,163,184,.28);
+    border-radius:18px;
+    z-index:2100;
+    display:none;
+    overflow:hidden;
+  }
+  .modal.active{ display:block; }
+
+  .modal-head{
+    padding:1.1rem 1.2rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid rgba(148,163,184,.18);
+  }
+  .modal-head h3{
+    font-size:1rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:#a78bfa;
+    font-weight:900;
+  }
+  .modal-close{
+    width:38px; height:38px;
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,.25);
+    background: rgba(0,0,0,.25);
+    color:#e5e5e5;
+    cursor:pointer;
+    font-size:1.2rem;
+  }
+
+  .modal-body{
+    padding:1rem 1.2rem 1.2rem;
+    max-height: 70vh;
+    overflow:auto;
+  }
+
+  .tx{
+    padding:.85rem .8rem;
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:14px;
+    background: rgba(0,0,0,.22);
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    margin-bottom:.75rem;
+  }
+  .tx .left{ min-width:0; }
+  .tx .type{ font-weight:900; }
+  .tx .meta{ color:#9ca3af; font-size:.85rem; margin-top:.15rem; line-height:1.3; }
+  .tx .amt{ font-weight:900; }
+  .tx .amt.pos{ color:#22c55e; }
+  .tx .amt.neg{ color:#f87171; }
+
+  .empty{
+    color:#9ca3af;
+    text-align:center;
+    padding:2rem 1rem;
+    line-height:1.6;
+  }
+
+  /* Mobile fixes */
+  @media (max-width: 980px){
+    .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 860px){
+    .balance-card{
+      flex-direction:column;
+      align-items:stretch;
+    }
+    .balance-actions{
+      width:100%;
+      justify-content:flex-start;
+    }
+  }
+
+  @media (max-width: 640px){
+    .container{ padding: 1.5rem 1rem 3rem; }
+    .welcome-card{ padding:1.4rem; }
+    .welcome-card h1{ font-size:1.5rem; }
+
+    .balance-card{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:12px;
+    }
+    .balance-actions{
+      width:100%;
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+    }
+  }
 </style>
 </head>
 
 <body>
-
-<div class="container">
-
-  <div class="header">
-    <div class="logo">
-      <img src="ArcaneA.png" alt="Logo">
-      THE ARCANE ARCHIVES
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <img src="ArcaneA.png" alt="Arcane" />
+        THE ARCANE ARCHIVES
+      </div>
+      <div class="logout" id="logoutBtn">🚪 Log out</div>
     </div>
-    <div class="logout" id="logout">🚪 Log out</div>
-  </div>
 
-  <div class="welcome-card">
-    <h1>Welcome back, <span id="username">Member</span> 👋</h1>
-    <p>Your command center for mastering the game</p>
+    <div class="welcome-card">
+      <h1 id="welcomeTitle">Welcome back 👋</h1>
+      <p>Your command center for mastering the game</p>
 
-    
-
-    <div class="balance-row">
-      <div class="balance-card" aria-label="Account balance">
-        <div>
-          <div class="balance-label">Account Balance</div>
-          <div class="balance-value" id="accountBalance">£0.00</div>
+      <div class="balance-card">
+        <div class="balance-left">
+          <div class="label">ACCOUNT BALANCE</div>
+          <div class="balance-amount">
+            <span id="accountBalance">£0.00</span>
+            <span class="pulse" id="balancePulse"></span>
+          </div>
           <div class="balance-sub">Earn commissions in Referrals. Spend them in Arcane Store.</div>
         </div>
+
         <div class="balance-actions">
-          <a class="balance-btn" href="arcane-store.html">🛍️ Shop with Balance</a>
-          <a class="balance-btn secondary" href="referrals.html">🎯 View Earnings</a>
+          <button class="btn btn-primary" id="shopWithBalanceBtn">🛍️ Shop with Balance</button>
+          <button class="btn btn-secondary" id="viewTxBtn">🧾 Balance History</button>
+          <button class="btn btn-secondary" id="viewEarningsBtn">💸 View Earnings</button>
         </div>
       </div>
     </div>
 
-<div id="payBanner" class="banner">
-      🔒 <strong>Upgrade to unlock all features</strong><br>
-      <a href="index.html#pricing">Enter the Arcane Archives →</a>
-    </div>
-  </div>
-
-  <!-- TRADINGVIEW WIDGETS -->
-  <div class="tv-stack" aria-label="Markets widgets">
-    <!-- Ticker tape -->
+    <!-- TradingView Ticker Tape -->
     <div class="tv-ticker-wrap">
       <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-ticker-tape.js"></script>
-      <tv-ticker-tape symbols='CMCMARKETS:GOLD,OANDA:XAGUSD,BITSTAMP:BTCUSD,VANTAGE:SP500,BITSTAMP:ETHUSD'
-        item-size="compact"></tv-ticker-tape>
-    </div>
-</div>
-
-  <!-- PRIORITY FEATURES -->
-  <div class="section-header">🔥 Core Features</div>
-  <div class="grid">
-    
-    <div class="tile premium locked" data-paid="true" data-href="notion-invite.html">
-      <div class="tile-icon">📚</div>
-      <div class="tile-content">
-        <div class="tile-title">The Arcane Archives</div>
-        <div class="tile-desc">Full access 45+ Courses</div>
-      </div>
+      <tv-ticker-tape
+        symbols="CMCMARKETS:GOLD,OANDA:XAGUSD,BITSTAMP:BTCUSD,VANTAGE:SP500,BITSTAMP:ETHUSD"
+        item-size="compact"
+        theme="dark"
+        show-hover>
+      </tv-ticker-tape>
     </div>
 
-    <div class="tile premium locked" data-paid="true" data-href="alerts.html">
-      <div class="tile-icon">📈</div>
-      <div class="tile-content">
-        <div class="tile-title">Arcane Alerts</div>
-        <div class="tile-desc">Real-time Alerts</div>
-      </div>
-    </div>
-
-    <div class="tile premium locked" data-paid="true" data-href="live-calls.html">
-      <div class="tile-icon">🎙</div>
-      <div class="tile-content">
-        <div class="tile-title">Live Calls</div>
-        <div class="tile-desc">Weekly Education Calls</div>
-      </div>
-    </div>
-
-    <div class="tile premium locked" data-paid="true" data-href="stock-picks.html">
-      <div class="tile-icon">💼</div>
-      <div class="tile-content">
-        <div class="tile-title">Stock Picks</div>
-        <div class="tile-desc">Long Term investments</div>
-      </div>
-    </div>
-
-    <div class="tile premium locked" data-paid="true" data-href="referrals.html">
-      <div class="tile-icon">🎯</div>
-      <div class="tile-content">
-        <div class="tile-title">Referrals Program</div>
-        <div class="tile-desc">£25/month per referral</div>
-      </div>
-    </div>
-
-    <div class="tile premium locked" data-paid="true" data-href="arcane-store.html">
-      <div class="tile-icon">🛍️</div>
-      <div class="tile-content">
-        <div class="tile-title">Arcane Store</div>
-        <div class="tile-desc">Exclusive branded merch</div>
-      </div>
-    </div>
-
-    <div class="tile premium locked" data-coming-soon="true">
-      <span class="coming-soon-badge">Coming 2028</span>
-      <div class="tile-icon">🌴</div>
-      <div class="tile-content">
-        <div class="tile-title">The Retreat</div>
-        <div class="tile-desc">Epic destination TBA</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ADMIN ONLY -->
-  <div id="adminSection" style="display: none;">
-    <div class="section-header">🔧 Admin Tools</div>
+    <div class="section-title">🔥 CORE FEATURES</div>
     <div class="grid">
-      <div class="tile premium" onclick="go('admin-panel.html')">
-        <div class="tile-icon">🛠</div>
-        <div class="tile-content">
-          <div class="tile-title">Admin Panel</div>
-          <div class="tile-desc">Manage stocks & alerts</div>
+      <div class="card" onclick="location.href='courses.html'">
+        <div class="icon">📚</div>
+        <div>
+          <div class="title">The Arcane Archives</div>
+          <div class="desc">Full access Courses</div>
         </div>
       </div>
 
-      <div class="tile premium" onclick="go('affiliate-admin.html')">
-        <div class="tile-icon">💸</div>
-        <div class="tile-content">
-          <div class="tile-title">Affiliate Admin</div>
-          <div class="tile-desc">Process withdrawals & payouts</div>
+      <div class="card" onclick="location.href='alerts.html'">
+        <div class="icon">📈</div>
+        <div>
+          <div class="title">Arcane Alerts</div>
+          <div class="desc">Real-time Alerts</div>
         </div>
       </div>
 
-      <div class="tile premium" onclick="go('store-admin.html')">
-        <div class="tile-icon">🛍️</div>
-        <div class="tile-content">
-          <div class="tile-title">Store Admin</div>
-          <div class="tile-desc">Manage products & inventory</div>
+      <div class="card" onclick="location.href='live-calls.html'">
+        <div class="icon">🎙️</div>
+        <div>
+          <div class="title">Live Calls</div>
+          <div class="desc">Weekly Education Calls</div>
         </div>
       </div>
 
-      <div class="tile premium" onclick="go('store-orders.html')">
-        <div class="tile-icon">📦</div>
-        <div class="tile-content">
-          <div class="tile-title">Store Orders</div>
-          <div class="tile-desc">View & fulfill orders</div>
+      <div class="card" onclick="location.href='stock-picks.html'">
+        <div class="icon">💼</div>
+        <div>
+          <div class="title">Stock Picks</div>
+          <div class="desc">Long Term investments</div>
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='referrals.html'">
+        <div class="icon">🎯</div>
+        <div>
+          <div class="title">Referrals Program</div>
+          <div class="desc">£25/month per referral</div>
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='arcane-store.html'">
+        <div class="icon">🛍️</div>
+        <div>
+          <div class="title">Arcane Store</div>
+          <div class="desc">Exclusive branded merch</div>
+        </div>
+      </div>
+
+      <div class="card" style="opacity:.65; cursor:not-allowed;">
+        <div class="icon">🌴</div>
+        <div>
+          <div class="title">The Retreat</div>
+          <div class="desc">Coming 2028</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">🛠️ ADMIN TOOLS</div>
+    <div class="grid">
+      <div class="card" onclick="location.href='admin-panel.html'">
+        <div class="icon">🛠️</div>
+        <div>
+          <div class="title">Admin Panel</div>
+          <div class="desc">Manage stocks & alerts</div>
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='affiliate-admin.html'">
+        <div class="icon">💸</div>
+        <div>
+          <div class="title">Affiliate Admin</div>
+          <div class="desc">Process withdrawals</div>
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='store-admin.html'">
+        <div class="icon">🛍️</div>
+        <div>
+          <div class="title">Store Admin</div>
+          <div class="desc">Manage products</div>
+        </div>
+      </div>
+
+      <div class="card" onclick="location.href='store-orders.html'">
+        <div class="icon">📦</div>
+        <div>
+          <div class="title">Store Orders</div>
+          <div class="desc">View & fulfill orders</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FREE FEATURES -->
-  <div class="section-header">🆓 Free Access</div>
-  <div class="grid">
-
-    <div class="tile" onclick="go('free-signals.html')">
-      <div class="tile-icon">📡</div>
-      <div class="tile-content">
-        <div class="tile-title">Free Signals</div>
-        <div class="tile-desc">Join via IC Markets</div>
-      </div>
+  <!-- Balance TX modal -->
+  <div class="modal-overlay" id="txOverlay"></div>
+  <div class="modal" id="txModal">
+    <div class="modal-head">
+      <h3>Balance History</h3>
+      <button class="modal-close" id="txCloseBtn">×</button>
     </div>
-
-    <div class="tile" onclick="go('live-streams.html')">
-      <div class="tile-icon">🎥</div>
-      <div class="tile-content">
-        <div class="tile-title">Public Streams</div>
-        <div class="tile-desc">7pm Every Friday</div>
-      </div>
+    <div class="modal-body" id="txBody">
+      <div class="empty">Loading…</div>
     </div>
-
-    <div class="tile" onclick="go('journey.html')">
-      <div class="tile-icon">🧬</div>
-      <div class="tile-content">
-        <div class="tile-title">Leo's Journey</div>
-        <div class="tile-desc">The story behind this</div>
-      </div>
-    </div>
-
   </div>
-
-  <!-- EXTRAS -->
-  <div class="section-header">🛠 Extras</div>
-  <div class="grid">
-
-    <div class="tile" onclick="go('bullion.html')">
-      <div class="tile-icon">🪙</div>
-      <div class="tile-content">
-        <div class="tile-title">Bullion Shop</div>
-        <div class="tile-desc">Buy Physical gold & silver</div>
-      </div>
-    </div>
-
-    <div class="tile" onclick="go('settings.html')">
-      <div class="tile-icon">⚙️</div>
-      <div class="tile-content">
-        <div class="tile-title">Settings</div>
-        <div class="tile-desc">Account & preferences</div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+  import { getFirestore, doc, getDoc, onSnapshot, collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-  projectId: "arcane-archives-3b0f5",
-  storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-  messagingSenderId: "264237235055",
-  appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-
-
-async function ensureAffiliateProfile(user) {
-  const ref = doc(db, "Affiliates", user.uid);
-  const snap = await getDoc(ref);
-  if (snap.exists()) return snap.data();
-
-  // Create a fresh affiliate profile for new users (so balance always exists)
-  const starter = {
-    userId: user.uid,
-    availableBalance: 0,
-    pendingBalance: 0,
-    totalEarnings: 0,
-    totalWithdrawn: 0,
-    createdAt: serverTimestamp(),
-    lastUpdated: serverTimestamp()
+  const firebaseConfig = {
+    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+    projectId: "arcane-archives-3b0f5",
+    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+    messagingSenderId: "264237235055",
+    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
   };
-  await setDoc(ref, starter, { merge: true });
-  return starter;
-}
 
-function moneyGBP(value) {
-  const n = Number(value || 0);
-  return `£${n.toFixed(2)}`;
-}
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
+  const accountBalanceEl = document.getElementById('accountBalance');
+  const pulseEl = document.getElementById('balancePulse');
 
-window.go = (href) => location.href = href;
+  const txOverlay = document.getElementById('txOverlay');
+  const txModal = document.getElementById('txModal');
+  const txBody = document.getElementById('txBody');
+  const txCloseBtn = document.getElementById('txCloseBtn');
+  const viewTxBtn = document.getElementById('viewTxBtn');
+  const shopWithBalanceBtn = document.getElementById('shopWithBalanceBtn');
+  const viewEarningsBtn = document.getElementById('viewEarningsBtn');
 
-document.getElementById("logout").onclick = async () => {
-  if (confirm("Are you sure you want to log out?")) {
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
     await signOut(auth);
-    location.href = "login.html";
+    location.href = 'login.html';
+  });
+
+  shopWithBalanceBtn.addEventListener('click', () => location.href = 'arcane-store.html');
+  viewEarningsBtn.addEventListener('click', () => location.href = 'referrals.html');
+
+  function moneyGBP(n){
+    const x = Number(n||0);
+    return `£${x.toFixed(2)}`;
   }
-};
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    location.href = "login.html";
-    return;
+  function escapeHtml(str){
+    return String(str || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
-  console.log("✅ User authenticated:", user.email);
+  function animateNumber(from, to, ms=800){
+    const start = performance.now();
+    const f = Number(from||0);
+    const t = Number(to||0);
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / ms);
+      const val = f + (t - f) * (1 - Math.pow(1 - p, 3));
+      accountBalanceEl.textContent = moneyGBP(val);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
 
-  try {
-    const snap = await getDoc(doc(db, "Users", user.uid));
-    const data = snap.data() || {};
-    
-    // Update username display
-    const username = data.Username || data.FirstName || user.email.split("@")[0];
-    document.getElementById("username").textContent = username;
+  function pulse(){
+    pulseEl.style.opacity = '1';
+    pulseEl.animate(
+      [
+        { transform: 'scale(1)', boxShadow:'0 0 0 rgba(34,197,94,0)' },
+        { transform: 'scale(1.35)', boxShadow:'0 0 18px rgba(34,197,94,.55)' },
+        { transform: 'scale(1)', boxShadow:'0 0 0 rgba(34,197,94,0)' }
+      ],
+      { duration: 900, easing: 'ease-out' }
+    );
+    setTimeout(()=>{ pulseEl.style.opacity='0'; }, 900);
+  }
 
-    // Load account balance (affiliate commissions)
-    const aff = await ensureAffiliateProfile(user);
-    document.getElementById("accountBalance").textContent = moneyGBP(aff.availableBalance);
+  function openTx(){
+    txOverlay.classList.add('active');
+    txModal.classList.add('active');
+  }
 
+  function closeTx(){
+    txOverlay.classList.remove('active');
+    txModal.classList.remove('active');
+  }
 
-    // Check if admin
-    const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
-    const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'gefruLBk5qMXDZGmWdSo6wPNo3E3'];
-    const isAdmin = ADMIN_EMAILS.includes(user.email) || ADMIN_UIDS.includes(user.uid) || data.isAdmin === true;
+  txOverlay.addEventListener('click', closeTx);
+  txCloseBtn.addEventListener('click', closeTx);
+  viewTxBtn.addEventListener('click', async () => {
+    openTx();
+    await loadTransactions();
+  });
 
-    if (isAdmin) {
-      document.getElementById("adminSection").style.display = "block";
-      console.log("🔧 Admin access granted");
+  async function loadTransactions(){
+    try{
+      txBody.innerHTML = `<div class="empty">Loading…</div>`;
+
+      // Primary: BalanceTransactions
+      const q1 = query(
+        collection(db, 'BalanceTransactions'),
+        where('userId', '==', auth.currentUser.uid),
+        orderBy('createdAt', 'desc'),
+        limit(30)
+      );
+
+      const snap = await getDocs(q1);
+      if (!snap.empty){
+        const rows = [];
+        snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+
+        txBody.innerHTML = rows.map(tx => {
+          const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
+          const when = dt ? dt.toLocaleString() : '—';
+          const amt = Number(tx.amount || 0);
+          const cls = amt >= 0 ? 'pos' : 'neg';
+          const sign = amt >= 0 ? '+' : '−';
+
+          return `
+            <div class="tx">
+              <div class="left">
+                <div class="type">${escapeHtml(tx.type || 'balance')}</div>
+                <div class="meta">${escapeHtml(tx.note || '')}<br>${escapeHtml(when)}</div>
+              </div>
+              <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
+            </div>
+          `;
+        }).join('');
+        return;
+      }
+
+      // Fallback: CommissionHistory (existing)
+      const q2 = query(
+        collection(db, 'CommissionHistory'),
+        where('affiliateId', '==', auth.currentUser.uid),
+        orderBy('createdAt', 'desc'),
+        limit(30)
+      );
+
+      const snap2 = await getDocs(q2);
+      if (snap2.empty){
+        txBody.innerHTML = `
+          <div class="empty">
+            No transactions yet.<br>
+            When commissions land or you spend balance, they’ll show here.
+          </div>
+        `;
+        return;
+      }
+
+      const rows2 = [];
+      snap2.forEach(d => rows2.push({ id: d.id, ...d.data() }));
+
+      txBody.innerHTML = rows2.map(tx => {
+        const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
+        const when = dt ? dt.toLocaleString() : '—';
+        const amt = Number(tx.amount || 0);
+        const cls = amt >= 0 ? 'pos' : 'neg';
+        const sign = amt >= 0 ? '+' : '−';
+
+        return `
+          <div class="tx">
+            <div class="left">
+              <div class="type">${escapeHtml(tx.type || 'commission')}</div>
+              <div class="meta">${escapeHtml(tx.note || '')}<br>${escapeHtml(when)}</div>
+            </div>
+            <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
+          </div>
+        `;
+      }).join('');
+
+    } catch(err){
+      console.error(err);
+      txBody.innerHTML = `<div class="empty">Couldn’t load transactions.</div>`;
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user){
+      location.href = 'login.html';
+      return;
     }
 
-    // Check if paid
-    const paid = data.isPaid === true || data.subscriptionStatus === "active";
-    console.log("💳 Paid status:", paid);
+    // Welcome name (from Users doc if exists)
+    try{
+      const uref = doc(db, 'Users', user.uid);
+      const usnap = await getDoc(uref);
+      const uname = usnap.exists() ? (usnap.data().Username || usnap.data().username || '') : '';
+      document.getElementById('welcomeTitle').textContent = uname
+        ? `Welcome back, ${uname} 👋`
+        : `Welcome back 👋`;
+    }catch{}
 
-    if (paid) {
-      // Unlock all premium features (except coming soon)
-      document.querySelectorAll("[data-paid]").forEach(el => {
-        if (!el.hasAttribute('data-coming-soon')) {
-          el.classList.remove("locked");
-          el.onclick = () => go(el.dataset.href);
-        }
-      });
-    } else {
-      // Show upgrade banner
-      document.getElementById("payBanner").style.display = "block";
-      
-      // Lock premium features - redirect to pricing
-      document.querySelectorAll("[data-paid]").forEach(el => {
-        el.onclick = () => {
-          const title = el.querySelector('.tile-title')?.textContent;
-          if (el.hasAttribute('data-coming-soon')) {
-            if (title === 'The Retreat') {
-              alert("🌴 The Arcane Archives Retreat\n\nComing in 2028!\n\nDetails and qualification requirements will be announced soon.\n\nKeep crushing it and you could be heading to paradise! 🏝️");
-            }
-          } else if (confirm("This feature requires an active subscription. Upgrade now?")) {
-            location.href = "index.html#pricing";
-          }
-        };
-      });
-    }
+    // Live balance listener (Affiliates doc)
+    const aref = doc(db, 'Affiliates', user.uid);
+    let last = null;
 
-    // Handle coming soon items for paid users
-    document.querySelectorAll("[data-coming-soon]").forEach(el => {
-      el.onclick = () => {
-        const title = el.querySelector('.tile-title').textContent;
-        if (title === 'The Retreat') {
-          alert("🌴 The Arcane Archives Retreat\n\nComing in 2028!\n\nDetails and qualification requirements will be announced soon.\n\nKeep crushing it and you could be heading to paradise! 🏝️");
-        }
-      };
+    onSnapshot(aref, (snap) => {
+      if (!snap.exists()){
+        accountBalanceEl.textContent = moneyGBP(0);
+        last = 0;
+        return;
+      }
+
+      const d = snap.data();
+
+      // Support both schemas (availableBalance OR balance)
+      const current = Number(d.availableBalance ?? d.balance ?? 0);
+
+      if (last === null){
+        accountBalanceEl.textContent = moneyGBP(current);
+        last = current;
+        return;
+      }
+
+      if (current > last){
+        animateNumber(last, current, 850);
+        pulse();
+      } else {
+        animateNumber(last, current, 550);
+      }
+
+      last = current;
     });
-
-  } catch (error) {
-    console.error("❌ Error loading dashboard:", error);
-  }
-});
+  });
 </script>
-
 </body>
 </html>

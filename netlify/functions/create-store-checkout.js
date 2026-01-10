@@ -38,6 +38,7 @@ exports.handler = async (event) => {
 
     const body = event.body ? JSON.parse(event.body) : {};
     const { priceId, userId, userEmail, productName, productId, color } = body;
+    const orderId = `ord_${userId || 'guest'}_${Date.now()}`;
 
     if (!priceId) {
       return {
@@ -57,7 +58,6 @@ exports.handler = async (event) => {
     console.log("📦 Product:", productName);
     console.log("💰 Price ID:", priceId);
 
-    // Create Stripe Checkout Session for ONE-TIME payment
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -70,11 +70,12 @@ exports.handler = async (event) => {
           "CH","AT","PT","DK","SE","NO","FI"
         ],
       },
-      success_url: `${baseUrl}/store-success.html?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/store-success.html?order_id=${encodeURIComponent(orderId)}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/arcane-store.html`,
       customer_email: userEmail || undefined,
       metadata: {
         source: "arcane_store",
+        orderId: orderId,
         productName: productName || "",
         productId: productId || "",
         priceId: priceId || "",

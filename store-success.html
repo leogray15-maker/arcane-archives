@@ -3,432 +3,288 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Order Confirmed | Arcane Store</title>
-
+  <title>Order Success | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
   <style>
-    :root {
-      --bg-dark: #02010a;
-      --bg-card: rgba(15, 23, 42, 0.96);
-      --purple: #9333ea;
-      --purple-dark: #7e22ce;
-      --purple-light: #a78bfa;
-      --gold: #fbbf24;
-      --text-light: #e5e5e5;
-      --text-dim: #9ca3af;
-      --border-color: rgba(148, 163, 184, 0.5);
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
+      color:#e5e5e5;
+      min-height:100vh;
+      margin:0;
+      padding:2rem 1rem 4rem;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-      color: var(--text-light);
-      min-height: 100vh;
-      padding: 2rem;
+    .wrap{ max-width:980px; margin:0 auto; }
+    .card{
+      background: rgba(15,23,42,.92);
+      border:1px solid rgba(148,163,184,.25);
+      border-radius:18px;
+      padding:1.2rem;
+      margin-bottom:1rem;
     }
-
-    .container { max-width: 1000px; margin: 0 auto; }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+    .hero{
+      padding:1.5rem;
+      border-radius:18px;
+      border:1px solid rgba(148,163,184,.25);
+      background: radial-gradient(circle at top, rgba(147,51,234,.16), rgba(15,23,42,.96));
+      margin-bottom:1rem;
     }
-
-    .brand {
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      font-size: 0.85rem;
-      color: var(--text-dim);
+    h1{ margin:0 0 .5rem; font-size:1.6rem; }
+    .muted{ color:#9ca3af; line-height:1.5; }
+    .pillrow{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; }
+    .pill{
+      font-size:.8rem;
+      padding:.35rem .6rem;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.25);
+      background: rgba(0,0,0,.25);
+      color:#e5e5e5;
+      font-weight:800;
     }
-
-    .btn {
-      padding: 0.75rem 1.1rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-light);
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:1rem;
     }
-
-    .btn:hover {
-      border-color: rgba(147, 51, 234, 0.8);
-      transform: translateY(-1px);
+    .kv .k{ color:#a78bfa; font-weight:900; letter-spacing:.08em; text-transform:uppercase; font-size:.75rem; }
+    .kv .v{ margin-top:.25rem; font-weight:900; }
+    .items .item{
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      padding:.8rem .9rem;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.18);
+      background: rgba(0,0,0,.22);
+      margin-bottom:.7rem;
     }
-
-    .hero {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 22px;
-      padding: 1.5rem;
-      margin-bottom: 1.25rem;
+    .items .name{ font-weight:900; }
+    .items .meta{ color:#9ca3af; font-size:.85rem; margin-top:.15rem; }
+    .error{
+      background: rgba(239,68,68,.1);
+      border:1px solid rgba(239,68,68,.35);
+      padding:1rem;
+      border-radius:14px;
+      line-height:1.6;
     }
-
-    .hero h1 {
-      font-size: 2.2rem;
-      margin-bottom: 0.6rem;
-      font-weight: 950;
-      background: linear-gradient(135deg, var(--purple-light), var(--gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .btnrow{ display:flex; flex-wrap:wrap; gap:.75rem; margin-top:1rem; }
+    a.btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:.75rem 1rem;
+      border-radius:999px;
+      font-weight:900;
+      text-decoration:none;
+      color:#fff;
+      border:1px solid rgba(148,163,184,.25);
+      background: rgba(0,0,0,.25);
     }
-
-    .hero p {
-      color: var(--text-dim);
-      line-height: 1.7;
-      font-size: 1rem;
-      max-width: 800px;
+    a.btn.primary{
+      background: linear-gradient(135deg, #9333ea, #7e22ce);
+      border-color: rgba(167,139,250,.35);
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 1.25rem;
-    }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 22px;
-      padding: 1.25rem;
-    }
-
-    .card h2 {
-      font-size: 1.1rem;
-      color: var(--purple-light);
-      margin-bottom: 0.85rem;
-      letter-spacing: 0.02em;
-    }
-
-    .muted { color: var(--text-dim); }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    }
-    .row:last-child { border-bottom: none; }
-
-    .items {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-top: 0.25rem;
-    }
-
-    .item {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.75rem;
-      padding: 0.85rem;
-      border-radius: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      background: rgba(0,0,0,0.2);
-    }
-
-    .item .name { font-weight: 900; margin-bottom: 0.15rem; }
-    .item .meta { color: var(--text-dim); font-size: 0.9rem; }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 800;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      color: var(--text-light);
-      background: rgba(0,0,0,0.25);
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 900;
-      color: var(--gold);
-    }
-
-    .loading {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--text-dim);
-      font-size: 1.1rem;
-    }
-
-    .error {
-      background: rgba(220, 38, 38, 0.15);
-      border: 1px solid rgba(220, 38, 38, 0.35);
-      border-radius: 18px;
-      padding: 1rem;
-      color: #fecaca;
-      line-height: 1.6;
-    }
-
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
-      body { padding: 1.25rem; }
+    @media(max-width:760px){
+      .grid{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">THE ARCANE ARCHIVES • STORE</div>
-      <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-        <a class="btn" href="arcane-store.html">← Back to store</a>
-        <a class="btn" href="dashboard.html">Dashboard</a>
-      </div>
-    </div>
-
-    <div class="hero">
-      <h1>Order confirmed ✅</h1>
-      <p>
-        Your payment went through. Below are your order details.
-        If anything looks wrong, message support with your Session ID.
-      </p>
-      <div style="margin-top:0.9rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
-        <span class="pill" id="sessionPill">Session: —</span>
-        <span class="pill" id="emailPill">Email: —</span>
-        <span class="pill" id="sourcePill">Source: —</span>
-      </div>
-    </div>
-
-    <div id="state" class="loading">Loading your order...</div>
+  <div class="wrap">
+    <div id="state" class="card">Loading…</div>
 
     <div id="content" style="display:none;">
+      <div class="hero">
+        <h1>✅ Order Confirmed</h1>
+        <div class="muted">Your order is saved and will appear in your orders list.</div>
+
+        <div class="pillrow">
+          <div class="pill" id="sessionPill">Order: —</div>
+          <div class="pill" id="emailPill">Email: —</div>
+          <div class="pill" id="sourcePill">Source: —</div>
+        </div>
+
+        <div class="btnrow">
+          <a class="btn primary" href="dashboard.html">← Back to Dashboard</a>
+          <a class="btn" href="arcane-store.html">🛍️ Continue Shopping</a>
+          <a class="btn" href="store-orders.html">📦 View Orders</a>
+        </div>
+      </div>
+
       <div class="grid">
-        <div class="card">
-          <h2>Items</h2>
-          <div class="items" id="items"></div>
+        <div class="card kv">
+          <div class="k">Status</div>
+          <div class="v" id="status">—</div>
         </div>
-
-        <div class="card">
-          <h2>Order details</h2>
-
-          <div class="row">
-            <div class="muted">Status</div>
-            <div class="status" id="status">—</div>
-          </div>
-
-          <div class="row">
-            <div class="muted">Total paid</div>
-            <div style="font-weight:900;" id="total">—</div>
-          </div>
-
-          <div class="row">
-            <div class="muted">Currency</div>
-            <div style="font-weight:900;" id="currency">—</div>
-          </div>
-
-          <div style="height:0.85rem;"></div>
-
-          <h2>Shipping</h2>
-          <div class="muted" id="shipping" style="line-height:1.7;">—</div>
-
-          <div style="height:0.85rem;"></div>
-
-          <h2>Support</h2>
-          <div class="muted" style="line-height:1.7;">
-            Keep your Session ID handy:
-            <div style="margin-top:0.35rem; font-weight:900; color:var(--text-light);" id="sessionIdText">—</div>
-          </div>
+        <div class="card kv">
+          <div class="k">Total</div>
+          <div class="v"><span id="total">—</span> <span class="muted" id="currency">—</span></div>
         </div>
+        <div class="card kv">
+          <div class="k">Order ID</div>
+          <div class="v" id="sessionIdText">—</div>
+        </div>
+        <div class="card kv">
+          <div class="k">Shipping</div>
+          <div class="v muted" id="shipping">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="kv">
+          <div class="k">Items</div>
+        </div>
+        <div class="items" id="items"></div>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-      projectId: "arcane-archives-3b0f5",
-      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-      messagingSenderId: "264237235055",
-      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+    projectId: "arcane-archives-3b0f5",
+    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+    messagingSenderId: "264237235055",
+    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    const BASKET_KEY = 'arcane_basket_v1';
+  function escapeHtml(str){
+    return String(str || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
-    function money(n) {
-      const x = Number(n || 0);
-      return `$${x.toFixed(2)}`;
+  function money(n){
+    const x = Number(n||0);
+    return x.toFixed(2);
+  }
+
+  function setState(html){
+    const el = document.getElementById('state');
+    el.innerHTML = html;
+    el.style.display = 'block';
+    document.getElementById('content').style.display = 'none';
+  }
+
+  function showContent(){
+    document.getElementById('state').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }
+
+  function fmtShipping(addr){
+    if (!addr) return '—';
+    const parts = [addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country].filter(Boolean);
+    return parts.length ? parts.map(escapeHtml).join('<br>') : '—';
+  }
+
+  function renderItems(items){
+    const wrap = document.getElementById('items');
+    if (!Array.isArray(items) || items.length === 0){
+      wrap.innerHTML = `<div class="muted">No items found on this order.</div>`;
+      return;
     }
 
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function setState(html) {
-      const el = document.getElementById('state');
-      el.className = '';
-      el.innerHTML = html;
-      el.style.display = 'block';
-      document.getElementById('content').style.display = 'none';
-    }
-
-    function showContent() {
-      document.getElementById('state').style.display = 'none';
-      document.getElementById('content').style.display = 'block';
-    }
-
-    function fmtShipping(addr) {
-      if (!addr) return '—';
-      const parts = [
-        addr.line1,
-        addr.line2,
-        addr.city,
-        addr.state,
-        addr.postal_code,
-        addr.country
-      ].filter(Boolean);
-      return parts.length ? parts.map(escapeHtml).join('<br>') : '—';
-    }
-
-    function renderItems(items) {
-      const wrap = document.getElementById('items');
-
-      if (!Array.isArray(items) || items.length === 0) {
-        wrap.innerHTML = `<div class="muted">No items found on this order.</div>`;
-        return;
-      }
-
-      wrap.innerHTML = items.map((it) => {
-        const name = it.name || 'Item';
-        const qty = Number(it.qty || 1);
-        const color = it.color ? `Colour: ${it.color}` : '';
-        const meta = [color, `Qty: ${qty}`].filter(Boolean).join(' • ');
-
-        return `
-          <div class="item">
-            <div>
-              <div class="name">${escapeHtml(name)}</div>
-              <div class="meta">${escapeHtml(meta)}</div>
-            </div>
-            <div class="pill">${escapeHtml(it.productId || '')}</div>
+    wrap.innerHTML = items.map(it => {
+      const name = it.name || 'Item';
+      const qty = Number(it.qty || 1);
+      const color = it.color ? `Colour: ${it.color}` : '';
+      const meta = [color, `Qty: ${qty}`].filter(Boolean).join(' • ');
+      return `
+        <div class="item">
+          <div>
+            <div class="name">${escapeHtml(name)}</div>
+            <div class="meta">${escapeHtml(meta)}</div>
           </div>
-        `;
-      }).join('');
-    }
-
-    function clearBasketOnce() {
-      // If someone refreshes success page, we don’t want to “break” anything
-      try { localStorage.removeItem(BASKET_KEY); } catch {}
-    }
-
-    function setPills(order, sessionId) {
-      document.getElementById('sessionPill').textContent = `Session: ${sessionId || '—'}`;
-      document.getElementById('sessionIdText').textContent = sessionId || '—';
-      document.getElementById('emailPill').textContent = `Email: ${order.userEmail || '—'}`;
-      document.getElementById('sourcePill').textContent = `Source: ${order.source || '—'}`;
-    }
-
-    function render(order, sessionId) {
-      setPills(order, sessionId);
-
-      document.getElementById('status').textContent = (order.orderStatus || 'pending').toUpperCase();
-      document.getElementById('total').textContent = money(order.amountTotal || 0);
-      document.getElementById('currency').textContent = String(order.currency || 'usd').toUpperCase();
-
-      document.getElementById('shipping').innerHTML = fmtShipping(order.shippingAddress);
-
-      renderItems(order.items || []);
-
-      showContent();
-    }
-
-    const params = new URLSearchParams(location.search);
-    const sessionId = params.get('session_id');
-
-    if (!sessionId) {
-      setState(`
-        <div class="error">
-          Missing <b>session_id</b> in the URL.<br>
-          If you just paid, copy the Checkout URL and try again, or contact support.
+          <div class="pill">${escapeHtml(it.productId || '')}</div>
         </div>
-      `);
+      `;
+    }).join('');
+  }
+
+  function clearCartOnce(){
+    try{ localStorage.removeItem("arcane_cart"); }catch{}
+    try{ localStorage.removeItem("arcane_store_basket"); }catch{}
+  }
+
+  function setPills(order, id){
+    document.getElementById('sessionPill').textContent = `Order: ${id || '—'}`;
+    document.getElementById('sessionIdText').textContent = id || '—';
+    document.getElementById('emailPill').textContent = `Email: ${order.userEmail || '—'}`;
+    document.getElementById('sourcePill').textContent = `Source: ${order.source || '—'}`;
+  }
+
+  function render(order, id){
+    setPills(order, id);
+    document.getElementById('status').textContent = String(order.orderStatus || 'pending').toUpperCase();
+    document.getElementById('total').textContent = money(order.amountTotal || 0);
+    document.getElementById('currency').textContent = String(order.currency || 'usd').toUpperCase();
+    document.getElementById('shipping').innerHTML = fmtShipping(order.shippingAddress);
+    renderItems(order.items || []);
+    clearCartOnce();
+    showContent();
+  }
+
+  const params = new URLSearchParams(location.search);
+  const sessionId = params.get('session_id');
+  const orderId = params.get('order_id');
+
+  if (!orderId && !sessionId){
+    setState(`<div class="error">Missing <b>order_id</b> or <b>session_id</b> in the URL.</div>`);
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user){
+      const returnTo = encodeURIComponent(location.pathname + location.search);
+      location.href = `login.html?returnTo=${returnTo}`;
+      return;
     }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // send them to login, then back here
-        const returnTo = encodeURIComponent(location.pathname + location.search);
-        location.href = `login.html?returnTo=${returnTo}`;
-        return;
-      }
+    if (!orderId && !sessionId) return;
 
-      if (!sessionId) return;
+    try{
+      setState('Loading your order...');
+      const ref = doc(db, 'Orders', orderId || sessionId);
+      const snap = await getDoc(ref);
 
-      try {
-        setState('Loading your order...');
-        const ref = doc(db, 'Orders', sessionId);
-        const snap = await getDoc(ref);
-
-        if (!snap.exists()) {
-          setState(`
-            <div class="error">
-              We couldn’t find your order yet.<br>
-              Sometimes the webhook takes a few seconds.<br><br>
-              Try refreshing in a moment.<br>
-              <div style="margin-top:0.5rem; font-weight:900;">Session: ${escapeHtml(sessionId)}</div>
-            </div>
-          `);
-          return;
-        }
-
-        const order = snap.data();
-
-        // Extra safety: make sure the order belongs to the logged-in user
-        if (order.userId && order.userId !== user.uid) {
-          setState(`
-            <div class="error">
-              This order doesn’t belong to your account.<br>
-              Please log into the correct account or contact support.
-            </div>
-          `);
-          return;
-        }
-
-        clearBasketOnce();
-        render(order, sessionId);
-
-      } catch (err) {
-        console.error(err);
+      if (!snap.exists()){
         setState(`
           <div class="error">
-            Something went wrong loading your order.<br>
-            Please refresh or contact support.<br><br>
-            <span class="muted">${escapeHtml(err.message || String(err))}</span>
+            We couldn’t find your order yet.<br>
+            Sometimes the webhook takes a few seconds.<br><br>
+            Try refreshing in a moment.<br>
+            <div style="margin-top:0.5rem; font-weight:900;">Order: ${escapeHtml(orderId || sessionId)}</div>
           </div>
         `);
+        return;
       }
-    });
-  </script>
+
+      const order = snap.data();
+
+      // Safety: order must belong to this user
+      if (order.userId && order.userId !== user.uid){
+        setState(`<div class="error">This order doesn’t belong to your account.</div>`);
+        return;
+      }
+
+      render(order, orderId || sessionId);
+    }catch(err){
+      console.error(err);
+      setState(`<div class="error">Failed to load order.</div>`);
+    }
+  });
+</script>
 </body>
 </html>

@@ -38,6 +38,7 @@ exports.handler = async (event) => {
 
     const body = event.body ? JSON.parse(event.body) : {};
     const { items, userId, userEmail } = body;
+    const orderId = `ord_${userId || 'guest'}_${Date.now()}`;
 
     if (!Array.isArray(items) || items.length === 0) {
       return {
@@ -87,11 +88,12 @@ exports.handler = async (event) => {
           "CH","AT","PT","DK","SE","NO","FI"
         ],
       },
-      success_url: `${baseUrl}/store-success.html?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/store-success.html?order_id=${encodeURIComponent(orderId)}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/arcane-store.html`,
       customer_email: userEmail || undefined,
       metadata: {
         source: "arcane_store_cart",
+        orderId: orderId,
         firebaseUid: userId || "",
         email: userEmail || "",
         items: JSON.stringify(compactItems),
