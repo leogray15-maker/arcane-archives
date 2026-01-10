@@ -135,51 +135,46 @@
             color: #000;
         }
 
-        /* Chart Container */
-        .chart-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 2rem;
+        /* Price Widgets */
+        .price-widgets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
             margin-bottom: 3rem;
         }
 
-        .chart-header {
+        .price-widget {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .price-widget:hover {
+            border-color: var(--gold);
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.3);
+        }
+
+        .widget-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
         }
 
-        .chart-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--gold);
-        }
-
-        .spot-price {
-            text-align: right;
-        }
-
-        .spot-label {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            margin-bottom: 0.25rem;
-        }
-
-        .spot-value {
+        .widget-icon {
             font-size: 2rem;
-            font-weight: 700;
-            color: var(--gold);
         }
 
-        .chart-container {
-            background: #0a0a0a;
-            border-radius: 16px;
-            overflow: hidden;
-            height: 600px;
+        .widget-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .tradingview-widget-container {
+            height: 120px;
         }
 
         /* Products Grid */
@@ -424,20 +419,46 @@
             </button>
         </div>
 
-        <!-- Live Chart -->
-        <div class="chart-section">
-            <div class="chart-header">
-                <div>
-                    <h2 class="chart-title" id="chartTitle">Gold Spot Price</h2>
-                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.5rem;">Live market data</p>
+        <!-- Live Price Widgets -->
+        <div class="price-widgets">
+            <div class="price-widget">
+                <div class="widget-header">
+                    <div class="widget-icon">🥇</div>
+                    <div class="widget-title">Gold (XAU/USD)</div>
                 </div>
-                <div class="spot-price">
-                    <div class="spot-label">Current Spot</div>
-                    <div class="spot-value" id="spotPrice">Loading...</div>
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                    {
+                        "symbol": "OANDA:XAUUSD",
+                        "width": "100%",
+                        "height": "100%",
+                        "isTransparent": true,
+                        "colorTheme": "dark",
+                        "locale": "en"
+                    }
+                    </script>
                 </div>
             </div>
-            <div class="chart-container">
-                <div id="tradingview_chart"></div>
+
+            <div class="price-widget">
+                <div class="widget-header">
+                    <div class="widget-icon">🥈</div>
+                    <div class="widget-title">Silver (XAG/USD)</div>
+                </div>
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                    {
+                        "symbol": "OANDA:XAGUSD",
+                        "width": "100%",
+                        "height": "100%",
+                        "isTransparent": true,
+                        "colorTheme": "dark",
+                        "locale": "en"
+                    }
+                    </script>
+                </div>
             </div>
         </div>
 
@@ -577,7 +598,6 @@
         const db = getFirestore(app);
 
         let currentMetal = 'gold';
-        let widget = null;
         let selectedProduct = null;
         let allProducts = [];
 
@@ -739,50 +759,6 @@ Payment must be received within 48 hours to secure spot price.`);
             setTimeout(() => notification.remove(), 5000);
         }
 
-        // Initialize TradingView Chart
-        function initChart(metal) {
-            const symbol = metal === 'gold' ? 'OANDA:XAUUSD' : 'OANDA:XAGUSD';
-            
-            if (widget) {
-                widget.remove();
-            }
-
-            widget = new TradingView.widget({
-                "autosize": true,
-                "symbol": symbol,
-                "interval": "D",
-                "timezone": "Etc/UTC",
-                "theme": "dark",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#0a0a0a",
-                "enable_publishing": false,
-                "hide_top_toolbar": false,
-                "hide_legend": false,
-                "save_image": false,
-                "container_id": "tradingview_chart",
-                "studies": [
-                    "MASimple@tv-basicstudies",
-                    "RSI@tv-basicstudies"
-                ],
-                "overrides": {
-                    "mainSeriesProperties.candleStyle.upColor": "#22c55e",
-                    "mainSeriesProperties.candleStyle.downColor": "#ef4444",
-                    "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
-                    "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
-                    "paneProperties.background": "#0a0a0a",
-                    "paneProperties.backgroundType": "solid"
-                }
-            });
-
-            updateSpotPrice(metal);
-        }
-
-        function updateSpotPrice(metal) {
-            const prices = { gold: '£2,600.00', silver: '£30.50' };
-            document.getElementById('spotPrice').textContent = prices[metal];
-        }
-
         // Switch between gold and silver
         window.switchMetal = function(metal) {
             currentMetal = metal;
@@ -790,16 +766,11 @@ Payment must be received within 48 hours to secure spot price.`);
             document.querySelectorAll('.metal-btn').forEach(btn => btn.classList.remove('active'));
             event.target.closest('.metal-btn').classList.add('active');
 
-            const title = metal === 'gold' ? 'Gold Spot Price' : 'Silver Spot Price';
-            document.getElementById('chartTitle').textContent = title;
-            initChart(metal);
-
             renderProducts(metal);
         };
 
         // Initialize on load
         window.addEventListener('load', () => {
-            initChart('gold');
             loadProducts();
         });
     </script>
