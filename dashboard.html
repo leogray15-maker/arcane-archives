@@ -11,7 +11,6 @@
       --bg1:#111827;
       --bg2:#02010a;
       --bg3:#000;
-      --card: rgba(15,23,42,.92);
       --border: rgba(148,163,184,.28);
       --gold: #fbbf24;
       --purple: #9333ea;
@@ -38,6 +37,7 @@
       padding: 2rem 1.5rem 4rem;
     }
 
+    /* Header */
     .header{
       display:flex;
       justify-content:space-between;
@@ -95,6 +95,7 @@
       background: rgba(239,68,68,.08);
     }
 
+    /* Welcome */
     .welcome{
       background: radial-gradient(circle at top, rgba(147,51,234,.16), rgba(15,23,42,.98));
       border: 1px solid rgba(148,163,184,.35);
@@ -111,6 +112,7 @@
       line-height: 1.5;
     }
 
+    /* Balance card */
     .balance-card{
       margin-top: 1.2rem;
       padding: 1.2rem 1.2rem;
@@ -196,7 +198,7 @@
       border-color: rgba(167,139,250,.55);
     }
 
-    /* TradingView ticker (black container) */
+    /* TradingView ticker */
     .tv-ticker-wrap{
       border-radius: 16px;
       overflow: hidden;
@@ -211,6 +213,7 @@
       font-size: .72rem;
     }
 
+    /* Section headings */
     .section-title{
       margin: 1.5rem 0 1rem;
       letter-spacing: .12em;
@@ -223,6 +226,7 @@
       gap:.55rem;
     }
 
+    /* Tiles */
     .grid{
       display:grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -235,7 +239,7 @@
       border: 1px solid rgba(251,191,36,.28);
       background: rgba(15,23,42,.90);
       padding: 1rem;
-      min-height: 80px;
+      min-height: 84px;
       display:flex;
       gap: .75rem;
       align-items:center;
@@ -256,8 +260,10 @@
       text-align:center;
       font-size: 1.35rem;
       opacity: .95;
+      flex: 0 0 auto;
     }
 
+    .tile-content{ min-width: 0; }
     .tile-title{ font-weight: 900; }
     .tile-desc{
       color: var(--muted);
@@ -266,20 +272,28 @@
       line-height: 1.25;
     }
 
+    /* ✅ Mobile-safe lock badge (no overlap) */
     .locked::after{
-      content:"🔒 Members Only";
+      content:"🔒 Members";
       position:absolute;
       right: 12px;
       top: 12px;
-      font-size: .7rem;
+      font-size: .72rem;
       font-weight: 900;
       letter-spacing: .08em;
       text-transform: uppercase;
-      padding: .35rem .6rem;
+      padding: .28rem .55rem;
       border-radius: 999px;
       border: 1px solid rgba(167,139,250,.25);
-      background: rgba(0,0,0,.25);
+      background: rgba(0,0,0,.28);
       color: var(--purpleLight);
+      max-width: 140px;
+      white-space: nowrap;
+    }
+
+    /* give locked tiles a little top padding so text never collides with badge */
+    .locked{
+      padding-top: 1.35rem;
     }
 
     .disabled{
@@ -378,6 +392,7 @@
       line-height: 1.6;
     }
 
+    /* Responsive */
     @media (max-width: 980px){
       .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -414,6 +429,15 @@
       .balance-actions .btn{
         flex: 1;
         text-align:center;
+      }
+
+      /* even smaller badge on tiny screens */
+      .locked::after{
+        font-size: .68rem;
+        padding: .25rem .5rem;
+        right: 10px;
+        top: 10px;
+        max-width: 120px;
       }
     }
   </style>
@@ -470,77 +494,85 @@
     <div class="section-title">🔥 Core Features</div>
     <div class="grid" id="coreGrid">
 
+      <!-- Paid-only -->
       <div class="tile locked" data-paid="true" data-href="notion-invite.html">
         <div class="tile-icon">📚</div>
-        <div>
-          <div class="tile-title">The Arcane Archives</div>
+        <div class="tile-content">
+          <div class="tile-title">Archives</div>
           <div class="tile-desc">Notion Courses / Modules</div>
         </div>
       </div>
 
+      <!-- Paid-only -->
       <div class="tile locked" data-paid="true" data-href="alerts.html">
         <div class="tile-icon">📈</div>
-        <div>
-          <div class="tile-title">Arcane Alerts</div>
+        <div class="tile-content">
+          <div class="tile-title">Alerts</div>
           <div class="tile-desc">Real-time alerts</div>
         </div>
       </div>
 
+      <!-- Paid-only -->
       <div class="tile locked" data-paid="true" data-href="live-calls.html">
         <div class="tile-icon">🎙️</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Live Calls</div>
           <div class="tile-desc">Weekly education calls</div>
         </div>
       </div>
 
+      <!-- Paid-only -->
       <div class="tile locked" data-paid="true" data-href="stock-picks.html">
         <div class="tile-icon">💼</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Stock Picks</div>
           <div class="tile-desc">Long-term investments</div>
         </div>
       </div>
 
-      <div class="tile locked" data-paid="true" data-href="referrals.html">
+      <!-- ✅ OPEN TO ALL SIGNED-IN MEMBERS (NOT paid-gated) -->
+      <div class="tile" data-href="referrals.html">
         <div class="tile-icon">🎯</div>
-        <div>
-          <div class="tile-title">Referrals Program</div>
+        <div class="tile-content">
+          <div class="tile-title">Referrals</div>
           <div class="tile-desc">Earn monthly commission</div>
         </div>
       </div>
 
+      <!-- Paid-only (store stays paid if you want) -->
       <div class="tile locked" data-paid="true" data-href="arcane-store.html">
         <div class="tile-icon">🛍️</div>
-        <div>
-          <div class="tile-title">Arcane Store</div>
+        <div class="tile-content">
+          <div class="tile-title">Store</div>
           <div class="tile-desc">Exclusive merch</div>
         </div>
       </div>
 
-      <div class="tile locked" data-paid="true" data-href="bullion.html">
+      <!-- ✅ OPEN TO ALL SIGNED-IN MEMBERS (NOT paid-gated) -->
+      <div class="tile" data-href="bullion.html">
         <div class="tile-icon">🪙</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Bullion</div>
           <div class="tile-desc">Gold / Silver products</div>
         </div>
       </div>
 
+      <!-- Paid-only -->
       <div class="tile locked" data-paid="true" data-href="market-data.html">
         <div class="tile-icon">🧠</div>
-        <div>
-          <div class="tile-title">Market Data</div>
+        <div class="tile-content">
+          <div class="tile-title">Data</div>
           <div class="tile-desc">Charts & key levels</div>
         </div>
       </div>
     </div>
 
-    <!-- ADMIN TOOLS -->
-    <div class="section-title">🛠️ Admin Tools</div>
+    <!-- ADMIN TOOLS (hidden for non-admin) -->
+    <div class="section-title" id="adminTitle">🛠️ Admin Tools</div>
     <div class="grid" id="adminGrid">
       <div class="tile" data-admin="true" data-href="admin-panel.html">
         <div class="tile-icon">🛠️</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Admin Panel</div>
           <div class="tile-desc">Manage stocks & alerts</div>
         </div>
@@ -548,7 +580,7 @@
 
       <div class="tile" data-admin="true" data-href="affiliate-admin.html">
         <div class="tile-icon">💸</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Affiliate Admin</div>
           <div class="tile-desc">Withdrawals & payouts</div>
         </div>
@@ -556,7 +588,7 @@
 
       <div class="tile" data-admin="true" data-href="store-admin.html">
         <div class="tile-icon">🛍️</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Store Admin</div>
           <div class="tile-desc">Products & inventory</div>
         </div>
@@ -564,7 +596,7 @@
 
       <div class="tile" data-admin="true" data-href="store-orders.html">
         <div class="tile-icon">📦</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Store Orders</div>
           <div class="tile-desc">View & fulfil orders</div>
         </div>
@@ -572,7 +604,7 @@
 
       <div class="tile" data-admin="true" data-href="bullion-admin.html">
         <div class="tile-icon">🪙</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Bullion Admin</div>
           <div class="tile-desc">Manage bullion listings</div>
         </div>
@@ -580,8 +612,8 @@
 
       <div class="tile" data-admin="true" data-href="stock-picks-admin.html">
         <div class="tile-icon">📌</div>
-        <div>
-          <div class="tile-title">Stock Picks Admin</div>
+        <div class="tile-content">
+          <div class="tile-title">Picks Admin</div>
           <div class="tile-desc">Manage picks</div>
         </div>
       </div>
@@ -592,7 +624,7 @@
     <div class="grid">
       <div class="tile" data-href="free-signals.html">
         <div class="tile-icon">🧲</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Free Signals</div>
           <div class="tile-desc">Starter access</div>
         </div>
@@ -600,7 +632,7 @@
 
       <div class="tile" data-href="live-streams.html">
         <div class="tile-icon">📺</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Live Streams</div>
           <div class="tile-desc">Public streams</div>
         </div>
@@ -608,19 +640,13 @@
 
       <div class="tile" data-href="journey.html">
         <div class="tile-icon">🧭</div>
-        <div>
+        <div class="tile-content">
           <div class="tile-title">Leo’s Journey</div>
           <div class="tile-desc">Updates & progress</div>
         </div>
       </div>
 
-      <div class="tile" data-href="settings.html">
-        <div class="tile-icon">⚙️</div>
-        <div>
-          <div class="tile-title">Settings</div>
-          <div class="tile-desc">Account + preferences</div>
-        </div>
-      </div>
+      <!-- ✅ SETTINGS TILE REMOVED (you already have it in top-right) -->
     </div>
   </div>
 
@@ -671,6 +697,9 @@
     const txModal = document.getElementById("txModal");
     const txBody = document.getElementById("txBody");
     const txCloseBtn = document.getElementById("txCloseBtn");
+
+    const adminTitle = document.getElementById("adminTitle");
+    const adminGrid = document.getElementById("adminGrid");
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await signOut(auth);
@@ -775,39 +804,7 @@
           return;
         }
 
-        const q2 = query(
-          collection(db, "CommissionHistory"),
-          where("affiliateId", "==", auth.currentUser.uid),
-          orderBy("createdAt", "desc"),
-          limit(30)
-        );
-
-        const snap2 = await getDocs(q2);
-        if (snap2.empty){
-          txBody.innerHTML = `<div class="empty">No transactions yet.</div>`;
-          return;
-        }
-
-        const rows2 = [];
-        snap2.forEach(d => rows2.push({ id: d.id, ...d.data() }));
-
-        txBody.innerHTML = rows2.map(tx => {
-          const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
-          const when = dt ? dt.toLocaleString() : "—";
-          const amt = Number(tx.amount || 0);
-          const cls = amt >= 0 ? "pos" : "neg";
-          const sign = amt >= 0 ? "+" : "−";
-
-          return `
-            <div class="tx">
-              <div class="left">
-                <div class="type">${escapeHtml(tx.type || "commission")}</div>
-                <div class="meta">${escapeHtml(tx.note || "")}\n${escapeHtml(when)}</div>
-              </div>
-              <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
-            </div>
-          `;
-        }).join("");
+        txBody.innerHTML = `<div class="empty">No transactions yet.</div>`;
       } catch(err){
         console.error(err);
         txBody.innerHTML = `<div class="empty">Couldn’t load transactions.</div>`;
@@ -815,8 +812,11 @@
     }
 
     function wireTiles(isPaid, isAdmin){
-      const adminGrid = document.getElementById("adminGrid");
-      if (!isAdmin) adminGrid.style.display = "none";
+      // ✅ Hide admin section completely for non-admins
+      if (!isAdmin){
+        adminTitle.style.display = "none";
+        adminGrid.style.display = "none";
+      }
 
       document.querySelectorAll(".tile").forEach(tile => {
         if (tile.classList.contains("disabled")) return;
@@ -849,7 +849,6 @@
       const isAdmin = ADMIN_UIDS.has(user.uid);
 
       let isPaid = false;
-
       try{
         const uref = doc(db, "Users", user.uid);
         const usnap = await getDoc(uref);
