@@ -6,306 +6,434 @@
   <title>Dashboard | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
 
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-
-  body{
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
-    color:#e5e5e5;
-    min-height:100vh;
-  }
-
-  .container{ max-width:1200px; margin:0 auto; padding:2rem 1.5rem 4rem; }
-
-  .header{
-    display:flex; justify-content:space-between; align-items:center;
-    margin-bottom:2rem; flex-wrap:wrap; gap:1rem;
-  }
-
-  .logo{
-    display:flex; align-items:center; gap:.7rem;
-    font-weight:800; letter-spacing:.1em; font-size:.85rem;
-  }
-  .logo img{ width:32px; height:32px; }
-
-  .logout{
-    cursor:pointer; color:#ef4444; font-size:.85rem;
-    padding:.5rem 1rem; border-radius:10px;
-    border:1px solid rgba(239,68,68,.3);
-    transition:all .2s;
-  }
-  .logout:hover{ background:rgba(239,68,68,.1); border-color:#ef4444; }
-
-  .welcome-card{
-    background: radial-gradient(circle at top, rgba(147,51,234,.16), rgba(15,23,42,.98));
-    border-radius:20px;
-    border:1px solid rgba(148,163,184,.35);
-    padding:2rem;
-    margin-bottom:1.2rem;
-  }
-
-  .welcome-card h1{ font-size:2rem; margin-bottom:.5rem; }
-  .welcome-card p{ color:#a3a3a3; font-size:1rem; }
-
-  .balance-card{
-    margin-top:1.2rem;
-    padding:1.2rem 1.2rem;
-    border-radius:16px;
-    border:1px solid rgba(148,163,184,.28);
-    background: rgba(2,6,23,.35);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:1rem;
-  }
-
-  .balance-left .label{
-    font-size:.75rem; letter-spacing:.12em; text-transform:uppercase;
-    color:#9ca3af; font-weight:800;
-    margin-bottom:.35rem;
-  }
-
-  .balance-amount{
-    font-size:1.8rem;
-    font-weight:900;
-    color:#fbbf24;
-    line-height:1.05;
-    display:inline-flex;
-    align-items:baseline;
-    gap:.5rem;
-  }
-
-  .balance-amount .pulse{
-    display:inline-block;
-    width:10px; height:10px;
-    border-radius:999px;
-    background: rgba(34,197,94,.9);
-    box-shadow: 0 0 0 rgba(34,197,94,.0);
-    opacity:0;
-    transform: translateY(-2px);
-  }
-
-  .balance-sub{
-    color:#a3a3a3;
-    font-size:.9rem;
-    margin-top:.35rem;
-    line-height:1.4;
-  }
-
-  .balance-actions{
-    display:flex;
-    gap:.75rem;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-  }
-
-  .btn{
-    border:none;
-    cursor:pointer;
-    font-weight:900;
-    border-radius:999px;
-    padding:.65rem 1rem;
-    font-size:.85rem;
-    transition: all .15s ease;
-    white-space:nowrap;
-  }
-
-  .btn-primary{
-    background: linear-gradient(135deg, #9333ea, #7e22ce);
-    color:white;
-    border:1px solid rgba(167,139,250,.35);
-  }
-  .btn-primary:hover{ transform: translateY(-1px); box-shadow: 0 10px 25px rgba(147,51,234,.35); }
-
-  .btn-secondary{
-    background: rgba(0,0,0,.25);
-    color:#e5e5e5;
-    border:1px solid rgba(148,163,184,.28);
-  }
-  .btn-secondary:hover{ transform: translateY(-1px); border-color: rgba(167,139,250,.55); }
-
-  /* TradingView */
-  .tv-ticker-wrap{
-    border-radius:16px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.10);
-    background:#000; /* TRUE BLACK */
-    padding:6px 0;
-    margin-bottom:2rem;
-  }
-  /* make attribution subtle (cannot remove) */
-  .tv-ticker-wrap a, .tv-ticker-wrap span{
-    opacity:.7;
-    font-size:.72rem;
-  }
-
-  /* Core features cards (simple) */
-  .section-title{
-    margin:1.5rem 0 1rem;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:#a78bfa;
-    font-weight:900;
-    font-size:.85rem;
-    display:flex;
-    align-items:center;
-    gap:.5rem;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap:1rem;
-    margin-bottom:1.5rem;
-  }
-
-  .card{
-    border-radius:16px;
-    border:1px solid rgba(251,191,36,.28);
-    background: rgba(15,23,42,.90);
-    padding:1rem;
-    min-height:78px;
-    display:flex;
-    gap:.75rem;
-    align-items:center;
-    cursor:pointer;
-    transition: all .15s ease;
-  }
-  .card:hover{
-    transform: translateY(-2px);
-    border-color: rgba(251,191,36,.55);
-    box-shadow: 0 18px 35px rgba(0,0,0,.35);
-  }
-
-  .card .icon{ font-size:1.4rem; width:34px; text-align:center; }
-  .card .title{ font-weight:900; }
-  .card .desc{ color:#9ca3af; font-size:.85rem; margin-top:.1rem; }
-
-  /* Modal */
-  .modal-overlay{
-    position:fixed; inset:0;
-    background: rgba(0,0,0,.75);
-    display:none;
-    z-index:2000;
-  }
-  .modal-overlay.active{ display:block; }
-
-  .modal{
-    position:fixed;
-    left:50%; top:50%;
-    transform: translate(-50%, -50%);
-    width:min(680px, 92vw);
-    background: rgba(15,23,42,.98);
-    border:1px solid rgba(148,163,184,.28);
-    border-radius:18px;
-    z-index:2100;
-    display:none;
-    overflow:hidden;
-  }
-  .modal.active{ display:block; }
-
-  .modal-head{
-    padding:1.1rem 1.2rem;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    border-bottom:1px solid rgba(148,163,184,.18);
-  }
-  .modal-head h3{
-    font-size:1rem;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:#a78bfa;
-    font-weight:900;
-  }
-  .modal-close{
-    width:38px; height:38px;
-    border-radius:999px;
-    border:1px solid rgba(148,163,184,.25);
-    background: rgba(0,0,0,.25);
-    color:#e5e5e5;
-    cursor:pointer;
-    font-size:1.2rem;
-  }
-
-  .modal-body{
-    padding:1rem 1.2rem 1.2rem;
-    max-height: 70vh;
-    overflow:auto;
-  }
-
-  .tx{
-    padding:.85rem .8rem;
-    border:1px solid rgba(148,163,184,.18);
-    border-radius:14px;
-    background: rgba(0,0,0,.22);
-    display:flex;
-    justify-content:space-between;
-    gap:1rem;
-    margin-bottom:.75rem;
-  }
-  .tx .left{ min-width:0; }
-  .tx .type{ font-weight:900; }
-  .tx .meta{ color:#9ca3af; font-size:.85rem; margin-top:.15rem; line-height:1.3; }
-  .tx .amt{ font-weight:900; }
-  .tx .amt.pos{ color:#22c55e; }
-  .tx .amt.neg{ color:#f87171; }
-
-  .empty{
-    color:#9ca3af;
-    text-align:center;
-    padding:2rem 1rem;
-    line-height:1.6;
-  }
-
-  /* Mobile fixes */
-  @media (max-width: 980px){
-    .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-
-  @media (max-width: 860px){
-    .balance-card{
-      flex-direction:column;
-      align-items:stretch;
+  <style>
+    :root{
+      --bg1:#111827;
+      --bg2:#02010a;
+      --bg3:#000;
+      --card: rgba(15,23,42,.92);
+      --border: rgba(148,163,184,.28);
+      --gold: #fbbf24;
+      --purple: #9333ea;
+      --purple2:#7e22ce;
+      --purpleLight:#a78bfa;
+      --text:#e5e5e5;
+      --muted:#9ca3af;
+      --danger:#ef4444;
+      --success:#22c55e;
     }
-    .balance-actions{
-      width:100%;
-      justify-content:flex-start;
-    }
-  }
 
-  @media (max-width: 640px){
-    .container{ padding: 1.5rem 1rem 3rem; }
-    .welcome-card{ padding:1.4rem; }
-    .welcome-card h1{ font-size:1.5rem; }
+    *{ margin:0; padding:0; box-sizing:border-box; }
 
-    .balance-card{
-      flex-direction:column;
-      align-items:flex-start;
-      gap:12px;
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2) 60%, var(--bg3));
+      color: var(--text);
+      min-height: 100vh;
     }
-    .balance-actions{
-      width:100%;
+
+    .container{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .header{
       display:flex;
-      gap:10px;
       justify-content:space-between;
+      align-items:center;
+      gap: 1rem;
+      flex-wrap:wrap;
+      margin-bottom: 1.6rem;
     }
-  }
-</style>
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.7rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      font-size: .85rem;
+      text-transform: uppercase;
+    }
+    .brand img{ width: 32px; height: 32px; border-radius: 8px; }
+
+    .header-actions{
+      display:flex;
+      gap: .75rem;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .pill-btn{
+      cursor:pointer;
+      border-radius: 999px;
+      padding: .6rem 1rem;
+      font-weight: 900;
+      font-size: .85rem;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      transition: all .15s ease;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      white-space:nowrap;
+    }
+    .pill-btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(167,139,250,.55);
+    }
+
+    .logout{
+      border-color: rgba(239,68,68,.35);
+      color: var(--danger);
+    }
+    .logout:hover{
+      border-color: rgba(239,68,68,.7);
+      background: rgba(239,68,68,.08);
+    }
+
+    .welcome{
+      background: radial-gradient(circle at top, rgba(147,51,234,.16), rgba(15,23,42,.98));
+      border: 1px solid rgba(148,163,184,.35);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.1rem;
+    }
+    .welcome h1{
+      font-size: 2rem;
+      margin-bottom: .5rem;
+    }
+    .welcome p{
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .balance-card{
+      margin-top: 1.2rem;
+      padding: 1.2rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,.28);
+      background: rgba(2,6,23,.35);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 1rem;
+    }
+
+    .balance-left .label{
+      font-size:.75rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom:.35rem;
+    }
+
+    .balance-amount{
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.05;
+      display: inline-flex;
+      align-items: baseline;
+      gap: .55rem;
+    }
+
+    .pulse-dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(34,197,94,.9);
+      opacity: 0;
+      transform: translateY(-2px);
+    }
+
+    .balance-sub{
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: .35rem;
+      line-height: 1.4;
+    }
+
+    .balance-actions{
+      display:flex;
+      gap: .75rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: .65rem 1rem;
+      font-size: .85rem;
+      transition: all .15s ease;
+      white-space:nowrap;
+    }
+
+    .btn-primary{
+      background: linear-gradient(135deg, var(--purple), var(--purple2));
+      color: #fff;
+      border: 1px solid rgba(167,139,250,.35);
+    }
+    .btn-primary:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(147,51,234,.32);
+    }
+
+    .btn-secondary{
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      border: 1px solid rgba(148,163,184,.28);
+    }
+    .btn-secondary:hover{
+      transform: translateY(-1px);
+      border-color: rgba(167,139,250,.55);
+    }
+
+    /* TradingView ticker (black container) */
+    .tv-ticker-wrap{
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      background: #000;
+      padding: 6px 0;
+      margin: 0 0 1.6rem;
+    }
+    .tv-ticker-wrap a,
+    .tv-ticker-wrap span{
+      opacity: .7;
+      font-size: .72rem;
+    }
+
+    .section-title{
+      margin: 1.5rem 0 1rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--purpleLight);
+      font-weight: 900;
+      font-size: .85rem;
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .tile{
+      border-radius: 16px;
+      border: 1px solid rgba(251,191,36,.28);
+      background: rgba(15,23,42,.90);
+      padding: 1rem;
+      min-height: 80px;
+      display:flex;
+      gap: .75rem;
+      align-items:center;
+      cursor:pointer;
+      transition: all .15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tile:hover{
+      transform: translateY(-2px);
+      border-color: rgba(251,191,36,.55);
+      box-shadow: 0 18px 35px rgba(0,0,0,.35);
+    }
+
+    .tile-icon{
+      width: 40px;
+      text-align:center;
+      font-size: 1.35rem;
+      opacity: .95;
+    }
+
+    .tile-title{ font-weight: 900; }
+    .tile-desc{
+      color: var(--muted);
+      font-size: .85rem;
+      margin-top: .15rem;
+      line-height: 1.25;
+    }
+
+    .locked::after{
+      content:"🔒 Members Only";
+      position:absolute;
+      right: 12px;
+      top: 12px;
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .35rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(167,139,250,.25);
+      background: rgba(0,0,0,.25);
+      color: var(--purpleLight);
+    }
+
+    .disabled{
+      opacity: .6;
+      cursor: not-allowed;
+    }
+    .disabled:hover{
+      transform:none;
+      box-shadow:none;
+      border-color: rgba(251,191,36,.28);
+    }
+
+    /* Modal */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.75);
+      display:none;
+      z-index: 2000;
+    }
+    .modal-overlay.active{ display:block; }
+
+    .modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform: translate(-50%, -50%);
+      width: min(680px, 92vw);
+      background: rgba(15,23,42,.98);
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 18px;
+      z-index: 2100;
+      display:none;
+      overflow:hidden;
+    }
+    .modal.active{ display:block; }
+
+    .modal-head{
+      padding: 1.05rem 1.2rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom: 1px solid rgba(148,163,184,.18);
+    }
+    .modal-head h3{
+      font-size: 1rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--purpleLight);
+      font-weight: 900;
+    }
+    .modal-close{
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.25);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      cursor:pointer;
+      font-size: 1.2rem;
+    }
+
+    .modal-body{
+      padding: 1rem 1.2rem 1.2rem;
+      max-height: 70vh;
+      overflow:auto;
+    }
+
+    .tx{
+      padding:.85rem .8rem;
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 14px;
+      background: rgba(0,0,0,.22);
+      display:flex;
+      justify-content:space-between;
+      gap: 1rem;
+      margin-bottom: .75rem;
+    }
+    .tx .left{ min-width:0; }
+    .tx .type{ font-weight: 900; }
+    .tx .meta{
+      color: var(--muted);
+      font-size: .85rem;
+      margin-top: .15rem;
+      line-height: 1.3;
+      white-space: pre-line;
+    }
+    .tx .amt{ font-weight: 900; }
+    .tx .amt.pos{ color: var(--success); }
+    .tx .amt.neg{ color: #f87171; }
+
+    .empty{
+      color: var(--muted);
+      text-align:center;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 860px){
+      .balance-card{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .balance-actions{
+        width:100%;
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      .container{ padding: 1.5rem 1rem 3rem; }
+      .welcome{ padding: 1.4rem; }
+      .welcome h1{ font-size: 1.55rem; }
+
+      .balance-card{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .balance-actions{
+        width: 100%;
+        display:flex;
+        gap: 10px;
+        justify-content: space-between;
+      }
+
+      .balance-actions .btn{
+        flex: 1;
+        text-align:center;
+      }
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">
+      <div class="brand">
         <img src="ArcaneA.png" alt="Arcane" />
         THE ARCANE ARCHIVES
       </div>
-      <div class="logout" id="logoutBtn">🚪 Log out</div>
+
+      <div class="header-actions">
+        <a class="pill-btn" href="settings.html">⚙️ Settings</a>
+        <button class="pill-btn logout" id="logoutBtn">🚪 Log out</button>
+      </div>
     </div>
 
-    <div class="welcome-card">
+    <div class="welcome">
       <h1 id="welcomeTitle">Welcome back 👋</h1>
       <p>Your command center for mastering the game</p>
 
@@ -314,15 +442,15 @@
           <div class="label">ACCOUNT BALANCE</div>
           <div class="balance-amount">
             <span id="accountBalance">£0.00</span>
-            <span class="pulse" id="balancePulse"></span>
+            <span class="pulse-dot" id="balancePulse"></span>
           </div>
           <div class="balance-sub">Earn commissions in Referrals. Spend them in Arcane Store.</div>
         </div>
 
         <div class="balance-actions">
-          <button class="btn btn-primary" id="shopWithBalanceBtn">🛍️ Shop with Balance</button>
-          <button class="btn btn-secondary" id="viewTxBtn">🧾 Balance History</button>
-          <button class="btn btn-secondary" id="viewEarningsBtn">💸 View Earnings</button>
+          <button class="btn btn-primary" id="shopBtn">🛍️ Store</button>
+          <button class="btn btn-secondary" id="historyBtn">🧾 Balance History</button>
+          <button class="btn btn-secondary" id="earningsBtn">💸 Referrals</button>
         </div>
       </div>
     </div>
@@ -338,102 +466,165 @@
       </tv-ticker-tape>
     </div>
 
-    <div class="section-title">🔥 CORE FEATURES</div>
-    <div class="grid">
-      <div class="card" onclick="location.href='courses.html'">
-        <div class="icon">📚</div>
+    <!-- CORE FEATURES -->
+    <div class="section-title">🔥 Core Features</div>
+    <div class="grid" id="coreGrid">
+
+      <div class="tile locked" data-paid="true" data-href="notion-invite.html">
+        <div class="tile-icon">📚</div>
         <div>
-          <div class="title">The Arcane Archives</div>
-          <div class="desc">Full access Courses</div>
+          <div class="tile-title">The Arcane Archives</div>
+          <div class="tile-desc">Notion Courses / Modules</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='alerts.html'">
-        <div class="icon">📈</div>
+      <div class="tile locked" data-paid="true" data-href="alerts.html">
+        <div class="tile-icon">📈</div>
         <div>
-          <div class="title">Arcane Alerts</div>
-          <div class="desc">Real-time Alerts</div>
+          <div class="tile-title">Arcane Alerts</div>
+          <div class="tile-desc">Real-time alerts</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='live-calls.html'">
-        <div class="icon">🎙️</div>
+      <div class="tile locked" data-paid="true" data-href="live-calls.html">
+        <div class="tile-icon">🎙️</div>
         <div>
-          <div class="title">Live Calls</div>
-          <div class="desc">Weekly Education Calls</div>
+          <div class="tile-title">Live Calls</div>
+          <div class="tile-desc">Weekly education calls</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='stock-picks.html'">
-        <div class="icon">💼</div>
+      <div class="tile locked" data-paid="true" data-href="stock-picks.html">
+        <div class="tile-icon">💼</div>
         <div>
-          <div class="title">Stock Picks</div>
-          <div class="desc">Long Term investments</div>
+          <div class="tile-title">Stock Picks</div>
+          <div class="tile-desc">Long-term investments</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='referrals.html'">
-        <div class="icon">🎯</div>
+      <div class="tile locked" data-paid="true" data-href="referrals.html">
+        <div class="tile-icon">🎯</div>
         <div>
-          <div class="title">Referrals Program</div>
-          <div class="desc">£25/month per referral</div>
+          <div class="tile-title">Referrals Program</div>
+          <div class="tile-desc">Earn monthly commission</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='arcane-store.html'">
-        <div class="icon">🛍️</div>
+      <div class="tile locked" data-paid="true" data-href="arcane-store.html">
+        <div class="tile-icon">🛍️</div>
         <div>
-          <div class="title">Arcane Store</div>
-          <div class="desc">Exclusive branded merch</div>
+          <div class="tile-title">Arcane Store</div>
+          <div class="tile-desc">Exclusive merch</div>
         </div>
       </div>
 
-      <div class="card" style="opacity:.65; cursor:not-allowed;">
-        <div class="icon">🌴</div>
+      <div class="tile locked" data-paid="true" data-href="bullion.html">
+        <div class="tile-icon">🪙</div>
         <div>
-          <div class="title">The Retreat</div>
-          <div class="desc">Coming 2028</div>
+          <div class="tile-title">Bullion</div>
+          <div class="tile-desc">Gold / Silver products</div>
+        </div>
+      </div>
+
+      <div class="tile locked" data-paid="true" data-href="market-data.html">
+        <div class="tile-icon">🧠</div>
+        <div>
+          <div class="tile-title">Market Data</div>
+          <div class="tile-desc">Charts & key levels</div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">🛠️ ADMIN TOOLS</div>
+    <!-- ADMIN TOOLS -->
+    <div class="section-title">🛠️ Admin Tools</div>
+    <div class="grid" id="adminGrid">
+      <div class="tile" data-admin="true" data-href="admin-panel.html">
+        <div class="tile-icon">🛠️</div>
+        <div>
+          <div class="tile-title">Admin Panel</div>
+          <div class="tile-desc">Manage stocks & alerts</div>
+        </div>
+      </div>
+
+      <div class="tile" data-admin="true" data-href="affiliate-admin.html">
+        <div class="tile-icon">💸</div>
+        <div>
+          <div class="tile-title">Affiliate Admin</div>
+          <div class="tile-desc">Withdrawals & payouts</div>
+        </div>
+      </div>
+
+      <div class="tile" data-admin="true" data-href="store-admin.html">
+        <div class="tile-icon">🛍️</div>
+        <div>
+          <div class="tile-title">Store Admin</div>
+          <div class="tile-desc">Products & inventory</div>
+        </div>
+      </div>
+
+      <div class="tile" data-admin="true" data-href="store-orders.html">
+        <div class="tile-icon">📦</div>
+        <div>
+          <div class="tile-title">Store Orders</div>
+          <div class="tile-desc">View & fulfil orders</div>
+        </div>
+      </div>
+
+      <div class="tile" data-admin="true" data-href="bullion-admin.html">
+        <div class="tile-icon">🪙</div>
+        <div>
+          <div class="tile-title">Bullion Admin</div>
+          <div class="tile-desc">Manage bullion listings</div>
+        </div>
+      </div>
+
+      <div class="tile" data-admin="true" data-href="stock-picks-admin.html">
+        <div class="tile-icon">📌</div>
+        <div>
+          <div class="tile-title">Stock Picks Admin</div>
+          <div class="tile-desc">Manage picks</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FREE ACCESS -->
+    <div class="section-title">🆓 Free Access</div>
     <div class="grid">
-      <div class="card" onclick="location.href='admin-panel.html'">
-        <div class="icon">🛠️</div>
+      <div class="tile" data-href="free-signals.html">
+        <div class="tile-icon">🧲</div>
         <div>
-          <div class="title">Admin Panel</div>
-          <div class="desc">Manage stocks & alerts</div>
+          <div class="tile-title">Free Signals</div>
+          <div class="tile-desc">Starter access</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='affiliate-admin.html'">
-        <div class="icon">💸</div>
+      <div class="tile" data-href="live-streams.html">
+        <div class="tile-icon">📺</div>
         <div>
-          <div class="title">Affiliate Admin</div>
-          <div class="desc">Process withdrawals</div>
+          <div class="tile-title">Live Streams</div>
+          <div class="tile-desc">Public streams</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='store-admin.html'">
-        <div class="icon">🛍️</div>
+      <div class="tile" data-href="journey.html">
+        <div class="tile-icon">🧭</div>
         <div>
-          <div class="title">Store Admin</div>
-          <div class="desc">Manage products</div>
+          <div class="tile-title">Leo’s Journey</div>
+          <div class="tile-desc">Updates & progress</div>
         </div>
       </div>
 
-      <div class="card" onclick="location.href='store-orders.html'">
-        <div class="icon">📦</div>
+      <div class="tile" data-href="settings.html">
+        <div class="tile-icon">⚙️</div>
         <div>
-          <div class="title">Store Orders</div>
-          <div class="desc">View & fulfill orders</div>
+          <div class="tile-title">Settings</div>
+          <div class="tile-desc">Account + preferences</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Balance TX modal -->
+  <!-- Balance History Modal -->
   <div class="modal-overlay" id="txOverlay"></div>
   <div class="modal" id="txModal">
     <div class="modal-head">
@@ -445,231 +636,264 @@
     </div>
   </div>
 
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-  import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-  import { getFirestore, doc, getDoc, onSnapshot, collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, onSnapshot, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-    projectId: "arcane-archives-3b0f5",
-    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-    messagingSenderId: "264237235055",
-    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  const accountBalanceEl = document.getElementById('accountBalance');
-  const pulseEl = document.getElementById('balancePulse');
-
-  const txOverlay = document.getElementById('txOverlay');
-  const txModal = document.getElementById('txModal');
-  const txBody = document.getElementById('txBody');
-  const txCloseBtn = document.getElementById('txCloseBtn');
-  const viewTxBtn = document.getElementById('viewTxBtn');
-  const shopWithBalanceBtn = document.getElementById('shopWithBalanceBtn');
-  const viewEarningsBtn = document.getElementById('viewEarningsBtn');
-
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await signOut(auth);
-    location.href = 'login.html';
-  });
-
-  shopWithBalanceBtn.addEventListener('click', () => location.href = 'arcane-store.html');
-  viewEarningsBtn.addEventListener('click', () => location.href = 'referrals.html');
-
-  function moneyGBP(n){
-    const x = Number(n||0);
-    return `£${x.toFixed(2)}`;
-  }
-
-  function escapeHtml(str){
-    return String(str || "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function animateNumber(from, to, ms=800){
-    const start = performance.now();
-    const f = Number(from||0);
-    const t = Number(to||0);
-    const step = (now) => {
-      const p = Math.min(1, (now - start) / ms);
-      const val = f + (t - f) * (1 - Math.pow(1 - p, 3));
-      accountBalanceEl.textContent = moneyGBP(val);
-      if (p < 1) requestAnimationFrame(step);
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
     };
-    requestAnimationFrame(step);
-  }
 
-  function pulse(){
-    pulseEl.style.opacity = '1';
-    pulseEl.animate(
-      [
-        { transform: 'scale(1)', boxShadow:'0 0 0 rgba(34,197,94,0)' },
-        { transform: 'scale(1.35)', boxShadow:'0 0 18px rgba(34,197,94,.55)' },
-        { transform: 'scale(1)', boxShadow:'0 0 0 rgba(34,197,94,0)' }
-      ],
-      { duration: 900, easing: 'ease-out' }
-    );
-    setTimeout(()=>{ pulseEl.style.opacity='0'; }, 900);
-  }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  function openTx(){
-    txOverlay.classList.add('active');
-    txModal.classList.add('active');
-  }
+    const ADMIN_UIDS = new Set([
+      "U4PvQ0dilBco97hgXp3Awl45JX92",
+      "gefruLBk5qMXDZGmWdSo6wPNo3E3"
+    ]);
 
-  function closeTx(){
-    txOverlay.classList.remove('active');
-    txModal.classList.remove('active');
-  }
+    const accountBalanceEl = document.getElementById("accountBalance");
+    const pulseEl = document.getElementById("balancePulse");
+    const welcomeTitle = document.getElementById("welcomeTitle");
 
-  txOverlay.addEventListener('click', closeTx);
-  txCloseBtn.addEventListener('click', closeTx);
-  viewTxBtn.addEventListener('click', async () => {
-    openTx();
-    await loadTransactions();
-  });
+    const shopBtn = document.getElementById("shopBtn");
+    const historyBtn = document.getElementById("historyBtn");
+    const earningsBtn = document.getElementById("earningsBtn");
 
-  async function loadTransactions(){
-    try{
-      txBody.innerHTML = `<div class="empty">Loading…</div>`;
+    const txOverlay = document.getElementById("txOverlay");
+    const txModal = document.getElementById("txModal");
+    const txBody = document.getElementById("txBody");
+    const txCloseBtn = document.getElementById("txCloseBtn");
 
-      // Primary: BalanceTransactions
-      const q1 = query(
-        collection(db, 'BalanceTransactions'),
-        where('userId', '==', auth.currentUser.uid),
-        orderBy('createdAt', 'desc'),
-        limit(30)
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await signOut(auth);
+      location.href = "login.html";
+    });
+
+    shopBtn.addEventListener("click", () => location.href = "arcane-store.html");
+    earningsBtn.addEventListener("click", () => location.href = "referrals.html");
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function moneyGBP(n){
+      const x = Number(n || 0);
+      return `£${x.toFixed(2)}`;
+    }
+
+    function animateNumber(from, to, ms=800){
+      const start = performance.now();
+      const f = Number(from || 0);
+      const t = Number(to || 0);
+
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / ms);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const val = f + (t - f) * eased;
+        accountBalanceEl.textContent = moneyGBP(val);
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    function pulse(){
+      pulseEl.style.opacity = "1";
+      pulseEl.animate(
+        [
+          { transform:"scale(1)", boxShadow:"0 0 0 rgba(34,197,94,0)" },
+          { transform:"scale(1.35)", boxShadow:"0 0 18px rgba(34,197,94,.55)" },
+          { transform:"scale(1)", boxShadow:"0 0 0 rgba(34,197,94,0)" }
+        ],
+        { duration: 900, easing:"ease-out" }
       );
+      setTimeout(() => { pulseEl.style.opacity = "0"; }, 900);
+    }
 
-      const snap = await getDocs(q1);
-      if (!snap.empty){
-        const rows = [];
-        snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+    function openTx(){
+      txOverlay.classList.add("active");
+      txModal.classList.add("active");
+    }
+    function closeTx(){
+      txOverlay.classList.remove("active");
+      txModal.classList.remove("active");
+    }
 
-        txBody.innerHTML = rows.map(tx => {
+    txOverlay.addEventListener("click", closeTx);
+    txCloseBtn.addEventListener("click", closeTx);
+
+    historyBtn.addEventListener("click", async () => {
+      openTx();
+      await loadTransactions();
+    });
+
+    async function loadTransactions(){
+      try{
+        txBody.innerHTML = `<div class="empty">Loading…</div>`;
+
+        const q1 = query(
+          collection(db, "BalanceTransactions"),
+          where("userId", "==", auth.currentUser.uid),
+          orderBy("createdAt", "desc"),
+          limit(30)
+        );
+
+        const snap = await getDocs(q1);
+        if (!snap.empty){
+          const rows = [];
+          snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+
+          txBody.innerHTML = rows.map(tx => {
+            const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
+            const when = dt ? dt.toLocaleString() : "—";
+            const amt = Number(tx.amount || 0);
+            const cls = amt >= 0 ? "pos" : "neg";
+            const sign = amt >= 0 ? "+" : "−";
+
+            return `
+              <div class="tx">
+                <div class="left">
+                  <div class="type">${escapeHtml(tx.type || "balance")}</div>
+                  <div class="meta">${escapeHtml(tx.note || "")}\n${escapeHtml(when)}</div>
+                </div>
+                <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
+              </div>
+            `;
+          }).join("");
+          return;
+        }
+
+        const q2 = query(
+          collection(db, "CommissionHistory"),
+          where("affiliateId", "==", auth.currentUser.uid),
+          orderBy("createdAt", "desc"),
+          limit(30)
+        );
+
+        const snap2 = await getDocs(q2);
+        if (snap2.empty){
+          txBody.innerHTML = `<div class="empty">No transactions yet.</div>`;
+          return;
+        }
+
+        const rows2 = [];
+        snap2.forEach(d => rows2.push({ id: d.id, ...d.data() }));
+
+        txBody.innerHTML = rows2.map(tx => {
           const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
-          const when = dt ? dt.toLocaleString() : '—';
+          const when = dt ? dt.toLocaleString() : "—";
           const amt = Number(tx.amount || 0);
-          const cls = amt >= 0 ? 'pos' : 'neg';
-          const sign = amt >= 0 ? '+' : '−';
+          const cls = amt >= 0 ? "pos" : "neg";
+          const sign = amt >= 0 ? "+" : "−";
 
           return `
             <div class="tx">
               <div class="left">
-                <div class="type">${escapeHtml(tx.type || 'balance')}</div>
-                <div class="meta">${escapeHtml(tx.note || '')}<br>${escapeHtml(when)}</div>
+                <div class="type">${escapeHtml(tx.type || "commission")}</div>
+                <div class="meta">${escapeHtml(tx.note || "")}\n${escapeHtml(when)}</div>
               </div>
               <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
             </div>
           `;
-        }).join('');
-        return;
+        }).join("");
+      } catch(err){
+        console.error(err);
+        txBody.innerHTML = `<div class="empty">Couldn’t load transactions.</div>`;
       }
-
-      // Fallback: CommissionHistory (existing)
-      const q2 = query(
-        collection(db, 'CommissionHistory'),
-        where('affiliateId', '==', auth.currentUser.uid),
-        orderBy('createdAt', 'desc'),
-        limit(30)
-      );
-
-      const snap2 = await getDocs(q2);
-      if (snap2.empty){
-        txBody.innerHTML = `
-          <div class="empty">
-            No transactions yet.<br>
-            When commissions land or you spend balance, they’ll show here.
-          </div>
-        `;
-        return;
-      }
-
-      const rows2 = [];
-      snap2.forEach(d => rows2.push({ id: d.id, ...d.data() }));
-
-      txBody.innerHTML = rows2.map(tx => {
-        const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
-        const when = dt ? dt.toLocaleString() : '—';
-        const amt = Number(tx.amount || 0);
-        const cls = amt >= 0 ? 'pos' : 'neg';
-        const sign = amt >= 0 ? '+' : '−';
-
-        return `
-          <div class="tx">
-            <div class="left">
-              <div class="type">${escapeHtml(tx.type || 'commission')}</div>
-              <div class="meta">${escapeHtml(tx.note || '')}<br>${escapeHtml(when)}</div>
-            </div>
-            <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
-          </div>
-        `;
-      }).join('');
-
-    } catch(err){
-      console.error(err);
-      txBody.innerHTML = `<div class="empty">Couldn’t load transactions.</div>`;
-    }
-  }
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user){
-      location.href = 'login.html';
-      return;
     }
 
-    // Welcome name (from Users doc if exists)
-    try{
-      const uref = doc(db, 'Users', user.uid);
-      const usnap = await getDoc(uref);
-      const uname = usnap.exists() ? (usnap.data().Username || usnap.data().username || '') : '';
-      document.getElementById('welcomeTitle').textContent = uname
-        ? `Welcome back, ${uname} 👋`
-        : `Welcome back 👋`;
-    }catch{}
+    function wireTiles(isPaid, isAdmin){
+      const adminGrid = document.getElementById("adminGrid");
+      if (!isAdmin) adminGrid.style.display = "none";
 
-    // Live balance listener (Affiliates doc)
-    const aref = doc(db, 'Affiliates', user.uid);
-    let last = null;
+      document.querySelectorAll(".tile").forEach(tile => {
+        if (tile.classList.contains("disabled")) return;
 
-    onSnapshot(aref, (snap) => {
-      if (!snap.exists()){
-        accountBalanceEl.textContent = moneyGBP(0);
-        last = 0;
+        const href = tile.getAttribute("data-href");
+        const needsPaid = tile.getAttribute("data-paid") === "true";
+        const needsAdmin = tile.getAttribute("data-admin") === "true";
+
+        if (needsAdmin && !isAdmin){
+          tile.style.display = "none";
+          return;
+        }
+
+        tile.addEventListener("click", () => {
+          if (needsPaid && !isPaid){
+            location.href = "index.html#pricing";
+            return;
+          }
+          if (href) location.href = href;
+        });
+      });
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user){
+        location.href = "login.html";
         return;
       }
 
-      const d = snap.data();
+      const isAdmin = ADMIN_UIDS.has(user.uid);
 
-      // Support both schemas (availableBalance OR balance)
-      const current = Number(d.availableBalance ?? d.balance ?? 0);
+      let isPaid = false;
 
-      if (last === null){
-        accountBalanceEl.textContent = moneyGBP(current);
+      try{
+        const uref = doc(db, "Users", user.uid);
+        const usnap = await getDoc(uref);
+        if (usnap.exists()){
+          const u = usnap.data();
+          const name = u.Username || u.username || u.displayName || "";
+          welcomeTitle.textContent = name ? `Welcome back, ${name} 👋` : "Welcome back 👋";
+          isPaid = (u.isPaid === true) || (u.subscriptionStatus === "active");
+        }
+      }catch(e){
+        console.warn("Users read failed:", e);
+      }
+
+      wireTiles(isPaid, isAdmin);
+
+      // Balance listener
+      const aref = doc(db, "Affiliates", user.uid);
+      let last = null;
+
+      onSnapshot(aref, (snap) => {
+        if (!snap.exists()){
+          accountBalanceEl.textContent = moneyGBP(0);
+          last = 0;
+          return;
+        }
+        const d = snap.data();
+        const current = Number(d.availableBalance ?? d.balance ?? 0);
+
+        if (last === null){
+          accountBalanceEl.textContent = moneyGBP(current);
+          last = current;
+          return;
+        }
+
+        if (current > last){
+          animateNumber(last, current, 850);
+          pulse();
+        } else {
+          animateNumber(last, current, 550);
+        }
+
         last = current;
-        return;
-      }
-
-      if (current > last){
-        animateNumber(last, current, 850);
-        pulse();
-      } else {
-        animateNumber(last, current, 550);
-      }
-
-      last = current;
+      });
     });
-  });
-</script>
+  </script>
 </body>
 </html>
