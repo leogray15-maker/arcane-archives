@@ -1,5 +1,6 @@
 // netlify/functions/stripe-webhook.js
 // Enhanced with AFFILIATE COMMISSION TRACKING + STORE ORDERS
+// UPDATED: Store Orders are idempotent + support cart items[]
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 const admin = require("firebase-admin");
@@ -11,7 +12,7 @@ let auth;
 if (!admin.apps.length) {
   try {
     console.log("🔧 Initializing Firebase Admin...");
-    
+
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
       admin.initializeApp({
@@ -22,7 +23,7 @@ if (!admin.apps.length) {
       console.error("❌ FIREBASE_SERVICE_ACCOUNT not found");
       admin.initializeApp();
     }
-    
+
     db = admin.firestore();
     auth = admin.auth();
     console.log("✅ Firebase Admin initialized");
@@ -35,8 +36,8 @@ if (!admin.apps.length) {
 }
 
 function generatePassword() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
-  let password = '';
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+  let password = "";
   for (let i = 0; i < 12; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -45,15 +46,15 @@ function generatePassword() {
 
 async function processAffiliateCommission(email) {
   console.log("💰 Processing affiliate commission for:", email);
-  
+
   if (!db) {
     console.error("❌ Database not ready");
     return;
   }
 
   try {
-    // Find the user who just subscribed
-    const usersSnapshot = await db.collection("Users")
+    const usersSnapshot = await db
+      .collection("Users")
       .where("Email", "==", email)
       .limit(1)
       .get();
@@ -74,8 +75,8 @@ async function processAffiliateCommission(email) {
 
     console.log("🔗 User was referred by:", referralCode);
 
-    // Find the referrer by referral code
-    const referrerSnapshot = await db.collection("Users")
+    const referrerSnapshot = await db
+      .collection("Users")
       .where("referralCode", "==", referralCode)
       .limit(1)
       .get();
@@ -88,23 +89,20 @@ async function processAffiliateCommission(email) {
     const referrerId = referrerSnapshot.docs[0].id;
     console.log("👤 Referrer ID:", referrerId);
 
-    // Get or create Affiliates document
     const affiliateRef = db.collection("Affiliates").doc(referrerId);
     const affiliateDoc = await affiliateRef.get();
 
-    const commission = 25; // £25 per active referral
+    const commission = 25;
 
     if (affiliateDoc.exists()) {
-      // Update existing affiliate
       await affiliateRef.update({
         balance: admin.firestore.FieldValue.increment(commission),
         totalEarned: admin.firestore.FieldValue.increment(commission),
         activeReferrals: admin.firestore.FieldValue.increment(1),
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
       });
       console.log("✅ Updated affiliate balance +£" + commission);
     } else {
-      // Create new affiliate profile
       await affiliateRef.set({
         userId: referrerId,
         referralCode: referralCode,
@@ -114,12 +112,11 @@ async function processAffiliateCommission(email) {
         activeReferrals: 1,
         totalReferrals: 1,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
       });
       console.log("✅ Created affiliate profile with £" + commission);
     }
 
-    // Record commission in history
     await db.collection("CommissionHistory").add({
       affiliateId: referrerId,
       referralCode: referralCode,
@@ -128,11 +125,10 @@ async function processAffiliateCommission(email) {
       amount: commission,
       type: "new_subscription",
       status: "paid",
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     console.log("✅ Commission recorded in history");
-
   } catch (error) {
     console.error("❌ Affiliate commission error:", error.message);
   }
@@ -140,12 +136,12 @@ async function processAffiliateCommission(email) {
 
 async function removeAffiliateCommission(email) {
   console.log("💸 Removing affiliate commission for:", email);
-  
+
   if (!db) return;
 
   try {
-    // Find the user who cancelled
-    const usersSnapshot = await db.collection("Users")
+    const usersSnapshot = await db
+      .collection("Users")
       .where("Email", "==", email)
       .limit(1)
       .get();
@@ -157,8 +153,8 @@ async function removeAffiliateCommission(email) {
 
     if (!referralCode) return;
 
-    // Find referrer
-    const referrerSnapshot = await db.collection("Users")
+    const referrerSnapshot = await db
+      .collection("Users")
       .where("referralCode", "==", referralCode)
       .limit(1)
       .get();
@@ -173,25 +169,22 @@ async function removeAffiliateCommission(email) {
 
     const commission = 25;
 
-    // Decrease active referrals and balance
     await affiliateRef.update({
       balance: admin.firestore.FieldValue.increment(-commission),
       activeReferrals: admin.firestore.FieldValue.increment(-1),
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     console.log("✅ Removed commission -£" + commission);
 
-    // Record cancellation
     await db.collection("CommissionHistory").add({
       affiliateId: referrerId,
       referralCode: referralCode,
       amount: -commission,
       type: "subscription_cancelled",
       status: "reversed",
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-
   } catch (error) {
     console.error("❌ Remove commission error:", error.message);
   }
@@ -199,7 +192,7 @@ async function removeAffiliateCommission(email) {
 
 async function createFirebaseUser(email) {
   console.log("🔐 createFirebaseUser:", email);
-  
+
   if (!auth || !db) {
     console.error("❌ Firebase not ready");
     return null;
@@ -256,7 +249,7 @@ async function createFirebaseUser(email) {
     if (isNewUser) {
       try {
         await auth.generatePasswordResetLink(email, {
-          url: 'https://thearcanearchives.netlify.app/login.html',
+          url: "https://thearcanearchives.netlify.app/login.html",
         });
         console.log("✅ Password reset sent");
       } catch (emailErr) {
@@ -288,12 +281,14 @@ async function updateUserByEmail(email, updates) {
 
     const ops = [];
     snap.forEach((doc) => {
-      ops.push(doc.ref.update({
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        ...updates,
-      }));
+      ops.push(
+        doc.ref.update({
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          ...updates,
+        })
+      );
     });
-    
+
     await Promise.all(ops);
     console.log("✅ Users updated");
   } catch (err) {
@@ -303,7 +298,7 @@ async function updateUserByEmail(email, updates) {
 
 exports.handler = async (event) => {
   console.log("📨 WEBHOOK TRIGGERED");
-  
+
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type, Stripe-Signature",
@@ -360,12 +355,16 @@ exports.handler = async (event) => {
 
   try {
     // ============================================
-    // SUBSCRIPTION CHECKOUT (Monthly/Annual Plans)
+    // SUBSCRIPTION CHECKOUT
     // ============================================
-    if (type === "checkout.session.completed" && data.object.mode === "subscription") {
+    if (
+      type === "checkout.session.completed" &&
+      data.object.mode === "subscription"
+    ) {
       const session = data.object;
-      const email = session.customer_details?.email || session.customer_email || null;
-      
+      const email =
+        session.customer_details?.email || session.customer_email || null;
+
       console.log("📧 Email:", email);
       console.log("💰 Payment:", session.payment_status);
 
@@ -387,27 +386,35 @@ exports.handler = async (event) => {
         paidAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // 💰 PROCESS AFFILIATE COMMISSION
       await processAffiliateCommission(email);
-
       console.log("✅ Subscription processing complete");
     }
 
     // ============================================
-    // STORE PURCHASES (One-time payments)
+    // STORE PURCHASES (One-time payments) - SINGLE + CART
+    // Idempotent: Orders/{session.id}
     // ============================================
-    if (type === "checkout.session.completed" && data.object.mode === "payment") {
+    if (
+      type === "checkout.session.completed" &&
+      data.object.mode === "payment"
+    ) {
       const session = data.object;
       const metadata = session.metadata || {};
-      
-      // Check if this is a store purchase
-      if (metadata.source === "arcane_store") {
-        console.log("🛍️ Store purchase detected");
-        
-        const email = session.customer_details?.email || session.customer_email;
+
+      const isStoreSingle = metadata.source === "arcane_store";
+      const isStoreCart = metadata.source === "arcane_store_cart";
+
+      if (isStoreSingle || isStoreCart) {
+        console.log("🛍️ Store purchase detected:", metadata.source);
+
+        const email =
+          session.customer_details?.email || session.customer_email;
         const shippingAddress = session.shipping_details?.address || {};
-        const customerName = session.shipping_details?.name || session.customer_details?.name || "";
-        
+        const customerName =
+          session.shipping_details?.name ||
+          session.customer_details?.name ||
+          "";
+
         if (!email) {
           console.error("❌ No email for store order");
           return {
@@ -418,13 +425,60 @@ exports.handler = async (event) => {
         }
 
         try {
-          // Create order in Firestore
+          // ✅ Idempotency: use Orders/{session.id}
+          const orderRef = db.collection("Orders").doc(session.id);
+          const existing = await orderRef.get();
+
+          if (existing.exists) {
+            console.log("⏭️ Order already exists, skipping:", session.id);
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({ received: true, deduped: true }),
+            };
+          }
+
+          // Build items[]
+          let items = [];
+
+          if (isStoreCart) {
+            // Cart items stored as JSON in metadata.items
+            try {
+              const parsed = JSON.parse(metadata.items || "[]");
+              if (Array.isArray(parsed)) {
+                items = parsed.map((it) => ({
+                  productId: it.productId || "",
+                  name: it.name || "",
+                  priceId: it.priceId || "",
+                  qty: Number(it.qty || 1),
+                  color: it.color || null,
+                }));
+              }
+            } catch (e) {
+              console.warn("⚠️ Failed to parse cart metadata.items");
+            }
+          }
+
+          // Fallback to single-item schema if needed
+          if (isStoreSingle || items.length === 0) {
+            items = [
+              {
+                productId: metadata.productId || "",
+                name: metadata.productName || "",
+                priceId: metadata.priceId || "",
+                qty: 1,
+                color: metadata.color || null,
+              },
+            ];
+          }
+
           const orderData = {
-            productId: metadata.productId || "",
-            productName: metadata.productName || "",
+            source: metadata.source || "arcane_store",
+            items,
             userId: metadata.firebaseUid || "",
             userEmail: email,
             customerName: customerName,
+
             shippingAddress: {
               line1: shippingAddress.line1 || "",
               line2: shippingAddress.line2 || "",
@@ -433,22 +487,20 @@ exports.handler = async (event) => {
               postal_code: shippingAddress.postal_code || "",
               country: shippingAddress.country || "",
             },
+
             stripeSessionId: session.id,
             stripePaymentIntentId: session.payment_intent || "",
-            amountTotal: session.amount_total / 100, // Convert from cents
+            amountTotal: (session.amount_total || 0) / 100,
             currency: session.currency || "usd",
             paymentStatus: session.payment_status,
+
             orderStatus: "pending", // pending, processing, shipped, delivered
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           };
 
-          await db.collection("Orders").add(orderData);
-          console.log("✅ Store order created in Firestore");
-
-          // Optional: Send confirmation email or notification here
-          // await sendOrderConfirmationEmail(email, orderData);
-
+          await orderRef.set(orderData);
+          console.log("✅ Store order created:", session.id);
         } catch (error) {
           console.error("❌ Failed to create store order:", error.message);
         }
@@ -477,8 +529,6 @@ exports.handler = async (event) => {
 
       if (email) {
         await updateUserByEmail(email, updates);
-        
-        // 💸 REMOVE AFFILIATE COMMISSION
         await removeAffiliateCommission(email);
       }
 

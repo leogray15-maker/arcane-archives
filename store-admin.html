@@ -158,7 +158,7 @@
       border: 1px solid var(--border-color);
       border-radius: 20px;
       padding: 2rem;
-      max-width: 600px;
+      max-width: 650px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -171,7 +171,10 @@
       margin-bottom: 2rem;
     }
 
-    .modal-header h2 { font-size: 1.8rem; color: var(--purple-light); }
+    .modal-header h2 {
+      font-size: 1.8rem;
+      color: var(--purple-light);
+    }
 
     .close-btn {
       background: none;
@@ -218,33 +221,6 @@
     .image-upload:hover { border-color: var(--purple); }
     .image-upload input { display: none; }
 
-    .form-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 2rem;
-    }
-
-    .notification {
-      position: fixed;
-      top: 2rem;
-      right: 2rem;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 600;
-      z-index: 2000;
-      animation: slideIn 0.3s ease;
-    }
-
-    .notification.success { background: linear-gradient(135deg, #22c55e, #15803d); }
-    .notification.error { background: linear-gradient(135deg, #dc2626, #991b1b); }
-
-    @keyframes slideIn {
-      from { transform: translateX(400px); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    /* ===== NEW: multi-image + colour pills ===== */
     .images-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -315,8 +291,33 @@
       font-size: 1.1rem;
       line-height: 1;
     }
-
     .pill button:hover { color: #fff; }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification.success { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .notification.error { background: linear-gradient(135deg, #dc2626, #991b1b); }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
 
     @media (max-width: 768px) {
       .products-grid { grid-template-columns: 1fr; }
@@ -324,7 +325,6 @@
     }
   </style>
 </head>
-
 <body>
   <div class="container">
     <div class="header">
@@ -335,7 +335,6 @@
     <div class="products-grid" id="productsGrid"></div>
   </div>
 
-  <!-- Add/Edit Product Modal -->
   <div class="modal" id="productModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -344,11 +343,11 @@
       </div>
 
       <form id="productForm" onsubmit="handleSubmit(event)">
-        <input type="hidden" id="productId" />
+        <input type="hidden" id="productId">
 
         <div class="form-group">
           <label>Product Name *</label>
-          <input type="text" id="productName" required />
+          <input type="text" id="productName" required>
         </div>
 
         <div class="form-group">
@@ -363,28 +362,28 @@
 
         <div class="form-group">
           <label>Price (USD) *</label>
-          <input type="number" id="productPrice" step="0.01" min="0" required />
+          <input type="number" id="productPrice" step="0.01" min="0" required>
         </div>
 
-        <!-- NEW: Colour variants -->
+        <!-- Colour variants -->
         <div class="form-group">
           <label>Colour Variants</label>
 
           <div style="display:flex; gap:0.75rem; align-items:center;">
-            <input type="text" id="colorInput" placeholder="e.g. Black, Purple, Gold" />
+            <input type="text" id="colorInput" placeholder="e.g. Black, Purple, Gold">
             <button type="button" class="btn btn-secondary" onclick="addColor()">+ Add</button>
           </div>
 
           <div id="colorsWrap" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;"></div>
 
           <small style="color: var(--text-dim); display:block; margin-top:0.5rem;">
-            Add as many colour variants as you want.
+            These will appear as variants in the store product modal.
           </small>
         </div>
 
         <div class="form-group">
           <label>Stripe Price ID *</label>
-          <input type="text" id="stripePriceId" placeholder="price_xxxxxxxxxxxxx" required />
+          <input type="text" id="stripePriceId" placeholder="price_xxxxxxxxxxxxx" required>
           <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
             Get this from your Stripe Dashboard → Products
           </small>
@@ -395,25 +394,25 @@
           <textarea id="productDescription" required></textarea>
         </div>
 
-        <!-- NEW: Multiple photos -->
+        <!-- Multi Photos -->
         <div class="form-group">
           <label>Product Photos</label>
 
           <div class="image-upload" onclick="document.getElementById('imageInput').click()">
-            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(event)" />
+            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(event)">
             <div id="uploadText">📷 Click to upload one or more images</div>
           </div>
 
           <div id="imagesPreviewGrid" class="images-grid"></div>
 
           <small style="color: var(--text-dim); display:block; margin-top:0.5rem;">
-            First image is used as the cover.
+            First image is the cover. Images are compressed to WebP before upload.
           </small>
         </div>
 
         <div class="form-group">
           <label>
-            <input type="checkbox" id="isNew" style="width:auto; margin-right:0.5rem;" />
+            <input type="checkbox" id="isNew" style="width:auto; margin-right:0.5rem;">
             Mark as "New" product
           </label>
         </div>
@@ -448,12 +447,12 @@
 
     let editingProductId = null;
 
-    // NEW: multi-image + colours state
-    let currentImageFiles = [];   // File[] newly selected
-    let existingImageUrls = [];   // string[] already stored on product
-    let colorVariants = [];       // string[] colours
+    // NEW state
+    let currentImageFiles = [];   // File[] new uploads
+    let existingImageUrls = [];   // string[] already saved
+    let colorVariants = [];       // string[]
 
-    // Check admin access
+    // Admin gate
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         location.href = 'login.html';
@@ -470,6 +469,16 @@
       loadProducts();
     });
 
+    function money(n) {
+      return `$${Number(n || 0).toFixed(2)}`;
+    }
+
+    function getCoverUrl(p) {
+      if (Array.isArray(p.imageUrls) && p.imageUrls.length) return p.imageUrls[0];
+      if (p.imageUrl) return p.imageUrl;
+      return '';
+    }
+
     async function loadProducts() {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-dim);">Loading products...</div>';
@@ -485,41 +494,28 @@
         }
 
         grid.innerHTML = products.map(product => {
-          const cover =
-            (Array.isArray(product.imageUrls) && product.imageUrls.length) ? product.imageUrls[0] :
-            (product.imageUrl ? product.imageUrl : '');
-
-          const colorsHtml = (Array.isArray(product.colors) && product.colors.length)
-            ? `<div style="margin-top:0.75rem; display:flex; gap:0.4rem; flex-wrap:wrap;">
-                 ${product.colors.map(c => `
-                   <span style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border-color); border-radius:999px; color:var(--text-dim);">
-                     ${escapeHtml(c)}
-                   </span>
-                 `).join('')}
-               </div>`
-            : '';
+          const cover = getCoverUrl(product);
 
           return `
             <div class="product-card">
               <div class="product-image">
-                ${cover ? `<img src="${cover}" alt="${escapeAttr(product.name)}">` : `<div class="placeholder">📦</div>`}
+                ${cover ? `<img src="${escapeAttr(cover)}" alt="${escapeAttr(product.name || '')}">` : `<div class="placeholder">📦</div>`}
               </div>
               <div class="product-info">
                 <div class="product-category">${escapeHtml(product.category || '')}</div>
                 <div class="product-name">${escapeHtml(product.name || '')}</div>
-                <div class="product-price">$${Number(product.price || 0).toFixed(2)}</div>
-
-                <div style="font-size:0.85rem; color:var(--text-dim); margin:0.5rem 0;">
-                  ${escapeHtml(product.description || '')}
-                </div>
-
+                <div class="product-price">${money(product.price)}</div>
+                <div style="font-size:0.85rem; color:var(--text-dim); margin:0.5rem 0;">${escapeHtml(product.description || '')}</div>
                 ${product.isNew ? '<div style="font-size:0.75rem; color:var(--gold); font-weight:600;">⭐ NEW</div>' : ''}
-
                 <div style="font-size:0.75rem; color:var(--text-dim); margin-top:0.5rem;">
                   Stripe: ${escapeHtml(product.stripePriceId || 'Not set')}
                 </div>
 
-                ${colorsHtml}
+                ${Array.isArray(product.colors) && product.colors.length ? `
+                  <div style="margin-top:0.75rem; display:flex; gap:0.4rem; flex-wrap:wrap;">
+                    ${product.colors.map(c => `<span style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border-color); border-radius:999px; color:var(--text-dim);">${escapeHtml(c)}</span>`).join('')}
+                  </div>
+                ` : ''}
 
                 <div class="product-actions">
                   <button class="btn btn-secondary" style="flex:1;" onclick="editProduct('${product.id}')">Edit</button>
@@ -536,6 +532,31 @@
       }
     }
 
+    // ===== Image compression (WebP) =====
+    async function compressImage(file, maxSize = 1400, quality = 0.82) {
+      const bitmap = await createImageBitmap(file);
+
+      let { width, height } = bitmap;
+      const scale = Math.min(1, maxSize / Math.max(width, height));
+      const targetW = Math.round(width * scale);
+      const targetH = Math.round(height * scale);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = targetW;
+      canvas.height = targetH;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(bitmap, 0, 0, targetW, targetH);
+
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/webp", quality)
+      );
+
+      if (!blob) return file;
+
+      return new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+    }
+
     // ===== Modal controls =====
     window.openModal = () => {
       editingProductId = null;
@@ -543,7 +564,6 @@
       document.getElementById('productForm').reset();
       document.getElementById('productId').value = '';
 
-      // reset new state
       existingImageUrls = [];
       currentImageFiles = [];
       colorVariants = [];
@@ -559,27 +579,22 @@
       document.getElementById('productModal').classList.remove('active');
     };
 
-    // ===== NEW: Multi image upload =====
+    // ===== Multi image upload =====
     window.handleImageUpload = (event) => {
       const files = Array.from(event.target.files || []);
       if (!files.length) return;
 
       currentImageFiles.push(...files);
-
-      // Clear input so selecting same file again works
       event.target.value = '';
-
       renderImagesPreview();
     };
 
     function renderImagesPreview() {
       const grid = document.getElementById('imagesPreviewGrid');
       const uploadText = document.getElementById('uploadText');
-      if (!grid || !uploadText) return;
 
       const items = [];
 
-      // existing urls first
       existingImageUrls.forEach((url, idx) => {
         items.push({
           url,
@@ -591,7 +606,6 @@
         });
       });
 
-      // new files
       currentImageFiles.forEach((file, idx) => {
         const objectUrl = URL.createObjectURL(file);
         const totalIndex = existingImageUrls.length + idx;
@@ -615,19 +629,18 @@
 
       grid.innerHTML = items.map((it) => `
         <div class="thumb">
-          <img src="${it.url}" alt="Product photo">
-          <span class="badge">${it.label}</span>
+          <img src="${escapeAttr(it.url)}" alt="Preview">
+          <span class="badge">${escapeHtml(it.label)}</span>
           <button type="button" class="remove" title="Remove">&times;</button>
         </div>
       `).join('');
 
-      // wire remove buttons
       Array.from(grid.querySelectorAll('button.remove')).forEach((btn, i) => {
         btn.addEventListener('click', () => items[i].onRemove());
       });
     }
 
-    // ===== NEW: Colour variants =====
+    // ===== Colors =====
     window.addColor = () => {
       const input = document.getElementById('colorInput');
       const val = (input.value || '').trim();
@@ -670,7 +683,7 @@
       });
     }
 
-    // ===== Create / Update =====
+    // ===== Save product =====
     window.handleSubmit = async (event) => {
       event.preventDefault();
 
@@ -682,10 +695,9 @@
         description: document.getElementById('productDescription').value.trim(),
         isNew: document.getElementById('isNew').checked,
         colors: colorVariants,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
-      // Validation
       if (!productData.name || !productData.stripePriceId || !productData.description) {
         showNotification('Please fill in all required fields', 'error');
         return;
@@ -697,43 +709,32 @@
       }
 
       try {
-        // Upload any new images
-        let uploadedUrls = [];
-        if (currentImageFiles.length) {
-          for (const file of currentImageFiles) {
-            const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-            const uploadResult = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(uploadResult.ref);
-            uploadedUrls.push(url);
-          }
+        // Upload new images (compressed)
+        const uploadedUrls = [];
+
+        for (const file of currentImageFiles) {
+          const compressed = await compressImage(file);
+          const storageRef = ref(storage, `products/${Date.now()}_${compressed.name}`);
+          const uploadResult = await uploadBytes(storageRef, compressed);
+          const url = await getDownloadURL(uploadResult.ref);
+          uploadedUrls.push(url);
         }
 
-        // Merge existing + new
         const merged = [...existingImageUrls, ...uploadedUrls];
-
-        // Save array + keep legacy imageUrl for compatibility
-        if (merged.length) {
-          productData.imageUrls = merged;
-          productData.imageUrl = merged[0];
-        } else {
-          // If no images, omit fields (or keep blank)
-          productData.imageUrls = [];
-          productData.imageUrl = '';
-        }
+        productData.imageUrls = merged;
+        productData.imageUrl = merged[0] || ''; // legacy cover
 
         if (editingProductId) {
           await updateDoc(doc(db, 'Products', editingProductId), productData);
           showNotification('Product updated successfully!', 'success');
         } else {
           productData.createdAt = new Date().toISOString();
-          const docRef = await addDoc(collection(db, 'Products'), productData);
-          console.log('Product created with ID:', docRef.id);
+          await addDoc(collection(db, 'Products'), productData);
           showNotification('Product added successfully!', 'success');
         }
 
         closeModal();
         await loadProducts();
-
       } catch (error) {
         console.error('Error saving product:', error);
         showNotification(`Failed to save product: ${error.message}`, 'error');
@@ -758,32 +759,30 @@
         document.getElementById('productDescription').value = product.description || '';
         document.getElementById('isNew').checked = !!product.isNew;
 
-        // load colours
+        // load colors
         colorVariants = Array.isArray(product.colors) ? product.colors : [];
         renderColors();
 
         // load images
         existingImageUrls = Array.isArray(product.imageUrls) ? product.imageUrls : [];
         if ((!existingImageUrls || existingImageUrls.length === 0) && product.imageUrl) {
-          existingImageUrls = [product.imageUrl]; // legacy support
+          existingImageUrls = [product.imageUrl];
         }
         currentImageFiles = [];
         renderImagesPreview();
 
         document.getElementById('productModal').classList.add('active');
-
       } catch (error) {
         console.error('Error loading product:', error);
         showNotification('Failed to load product', 'error');
       }
     };
 
+    // Delete product doc only (safe). If you want to delete images too, we’ll store storage paths.
     window.deleteProduct = async (productId) => {
       if (!confirm('Are you sure you want to delete this product?')) return;
 
       try {
-        // NOTE: We are not deleting images from Storage here because you only store download URLs.
-        // If you want proper deletion, store storage paths too (e.g. products/....png).
         await deleteDoc(doc(db, 'Products', productId));
         showNotification('Product deleted successfully!', 'success');
         loadProducts();
@@ -801,7 +800,6 @@
       setTimeout(() => notification.remove(), 3000);
     }
 
-    // small helpers to avoid breaking layout with HTML injection
     function escapeHtml(str) {
       return String(str ?? '')
         .replaceAll('&', '&amp;')
@@ -810,12 +808,8 @@
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
     }
-    function escapeAttr(str) {
-      // attr safe (same as escapeHtml, kept separate for clarity)
-      return escapeHtml(str);
-    }
+    function escapeAttr(str) { return escapeHtml(str); }
 
-    // Make functions global
     window.loadProducts = loadProducts;
   </script>
 </body>

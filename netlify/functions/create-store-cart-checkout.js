@@ -1,5 +1,5 @@
 // netlify/functions/create-store-cart-checkout.js
-// Handles MULTI-ITEM Arcane Store basket checkout
+// Handles MULTI-ITEM Arcane Store basket checkout (Stripe Checkout)
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 
@@ -11,6 +11,7 @@ exports.handler = async (event) => {
     "Content-Type": "application/json",
   };
 
+  // CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
   }
@@ -25,10 +26,17 @@ exports.handler = async (event) => {
 
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error("STRIPE_SECRET_KEY is not set");
+      console.error("❌ STRIPE_SECRET_KEY is not set");
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: "Server misconfigured: STRIPE_SECRET_KEY is not set",
+        }),
+      };
     }
 
-    const body = JSON.parse(event.body || "{}");
+    const body = event.body ? JSON.parse(event.body) : {};
     const { items, userId, userEmail } = body;
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -39,38 +47,33 @@ exports.handler = async (event) => {
       };
     }
 
+    // Build Stripe line items
+    const line_items = items.map((it) => {
+      if (!it.priceId) throw new Error("Missing priceId for an item");
+      return {
+        price: it.priceId,
+        quantity: Math.max(1, Number(it.qty || 1)),
+      };
+    });
+
     const baseUrl =
       process.env.URL ||
       process.env.DEPLOY_PRIME_URL ||
       process.env.DEPLOY_URL ||
       "https://thearcanearchives.netlify.app";
 
-    // Build Stripe line items
-    const line_items = items.map((item) => {
-      if (!item.priceId) {
-        throw new Error("Missing priceId for item");
-      }
+    // Stripe metadata has size limits — keep it compact.
+    // If you later want unlimited cart size, switch to a server-side cartId.
+    const compactItems = items.slice(0, 10).map((it) => ({
+      productId: it.productId || "",
+      name: it.name || "",
+      priceId: it.priceId || "",
+      qty: Math.max(1, Number(it.qty || 1)),
+      color: it.color || null,
+    }));
 
-      return {
-        price: item.priceId,
-        quantity: Math.max(1, item.qty || 1),
-      };
-    });
-
-    // Optional metadata (visible in Stripe dashboard)
-    const metadata = {
-      source: "arcane_store_cart",
-      firebaseUid: userId || "",
-      email: userEmail || "",
-      items: JSON.stringify(
-        items.map((i) => ({
-          productId: i.productId || "",
-          name: i.name || "",
-          qty: i.qty || 1,
-          color: i.color || null,
-        }))
-      ),
-    };
+    console.log("🧺 Creating CART checkout for:", userEmail);
+    console.log("🧾 Items:", compactItems.length);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -87,18 +90,21 @@ exports.handler = async (event) => {
       success_url: `${baseUrl}/store-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/arcane-store.html`,
       customer_email: userEmail || undefined,
-      metadata,
+      metadata: {
+        source: "arcane_store_cart",
+        firebaseUid: userId || "",
+        email: userEmail || "",
+        items: JSON.stringify(compactItems),
+      },
     });
+
+    console.log("✅ Cart checkout session created:", session.id);
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        sessionId: session.id,
-        url: session.url,
-      }),
+      body: JSON.stringify({ sessionId: session.id, url: session.url }),
     };
-
   } catch (error) {
     console.error("🔥 Cart checkout error:", error);
 
@@ -106,7 +112,7 @@ exports.handler = async (event) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        error: error.message || "Failed to create cart checkout",
+        error: error.message || "An unexpected error occurred",
       }),
     };
   }

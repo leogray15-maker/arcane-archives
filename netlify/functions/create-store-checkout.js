@@ -1,5 +1,5 @@
 // netlify/functions/create-store-checkout.js
-// Handles one-time product purchases from the Arcane Store
+// Handles one-time product purchases from the Arcane Store (SINGLE item)
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY || "");
 
@@ -37,7 +37,7 @@ exports.handler = async (event) => {
     }
 
     const body = event.body ? JSON.parse(event.body) : {};
-    const { priceId, userId, userEmail, productName, productId } = body;
+    const { priceId, userId, userEmail, productName, productId, color } = body;
 
     if (!priceId) {
       return {
@@ -59,17 +59,16 @@ exports.handler = async (event) => {
 
     // Create Stripe Checkout Session for ONE-TIME payment
     const session = await stripe.checkout.sessions.create({
-      mode: "payment", // ONE-TIME payment, not subscription
+      mode: "payment",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       billing_address_collection: "required",
       shipping_address_collection: {
-        allowed_countries: ['US', 'CA', 'GB', 'AU', 'NZ', 'IE', 'FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'PT', 'DK', 'SE', 'NO', 'FI'],
+        allowed_countries: [
+          "US","CA","GB","AU","NZ","IE",
+          "FR","DE","IT","ES","NL","BE",
+          "CH","AT","PT","DK","SE","NO","FI"
+        ],
       },
       success_url: `${baseUrl}/store-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/arcane-store.html`,
@@ -78,6 +77,8 @@ exports.handler = async (event) => {
         source: "arcane_store",
         productName: productName || "",
         productId: productId || "",
+        priceId: priceId || "",
+        color: color || "",
         firebaseUid: userId || "",
         email: userEmail || "",
       },
