@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bullion Admin | Arcane Archives</title>
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --bg-card: rgba(15, 23, 42, 0.96);
+            --purple: #9333ea;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #9ca3af;
+            --border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--gold), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), #d97706);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-danger { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--gold);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gold);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(147, 51, 234, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .product-info { padding: 1.5rem; }
+
+        .product-metal {
+            font-size: 0.75rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stock-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .in-stock { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .out-stock { background: rgba(220, 38, 38, 0.2); color: #f87171; }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-light);
+            font-family: inherit;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: rgba(251, 191, 36, 0.2); color: var(--gold); }
+        .status-confirmed { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .status-paid { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .status-shipped { background: rgba(147, 51, 234, 0.2); color: #a78bfa; }
+        .status-delivered { background: rgba(34, 197, 94, 0.3); color: #22c55e; }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success { background: linear-gradient(135deg, #22c55e, #15803d); }
+        .notification.error { background: linear-gradient(135deg, #dc2626, #991b1b); }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪙 Bullion Admin</h1>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
+                <a href="dashboard.html" class="btn btn-secondary" style="text-decoration: none;">Dashboard</a>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('products')">Products</button>
+            <button class="tab" onclick="switchTab('enquiries')">Enquiries</button>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="tab-content active" id="products-tab">
+            <div class="products-grid" id="productsGrid"></div>
+        </div>
+
+        <!-- Enquiries Tab -->
+        <div class="tab-content" id="enquiries-tab">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="enquiriesTable">
+                    <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Product</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="productForm" onsubmit="handleSubmit(event)">
+                <input type="hidden" id="productId">
+
+                <div class="form-group">
+                    <label>Metal *</label>
+                    <select id="metal" required>
+                        <option value="gold">Gold</option>
+                        <option value="silver">Silver</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" id="name" placeholder="e.g., 1 oz Gold Bar" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Weight (grams) *</label>
+                    <input type="number" id="weight" step="0.01" placeholder="31.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Purity *</label>
+                    <input type="text" id="purity" placeholder=".9999" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Premium Over Spot (%) *</label>
+                    <input type="number" id="premium" step="0.01" placeholder="3.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Emoji Icon</label>
+                    <input type="text" id="icon" placeholder="🥇" maxlength="2">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="inStock" style="width: auto; margin-right: 0.5rem;">
+                        In Stock
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let editingProductId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                location.href = 'login.html';
+                return;
+            }
+
+            const adminEmails = ['leogray15@gmail.com'];
+            if (!adminEmails.includes(user.email)) {
+                alert('⚠️ Admin access required');
+                location.href = 'dashboard.html';
+                return;
+            }
+
+            await loadProducts();
+            await loadEnquiries();
+        });
+
+        async function loadProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading...</div>';
+
+            try {
+                const querySnapshot = await getDocs(collection(db, 'BullionProducts'));
+                const products = [];
+                querySnapshot.forEach((doc) => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (products.length === 0) {
+                    grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-dim);">No products yet. Add your first one!</div>';
+                    return;
+                }
+
+                grid.innerHTML = products.map(product => `
+                    <div class="product-card">
+                        <div class="product-image">${product.icon || '🪙'}</div>
+                        <div class="product-info">
+                            <div class="product-metal">${product.metal}</div>
+                            <div class="product-name">${product.name}</div>
+                            <div style="font-size: 0.9rem; color: var(--text-dim); margin: 0.5rem 0;">
+                                ${product.weight}g | ${product.purity} Fine
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-dim);">
+                                Premium: ${product.premium}%
+                            </div>
+                            <div class="stock-badge ${product.inStock ? 'in-stock' : 'out-stock'}">
+                                ${product.inStock ? '✓ In Stock' : '✗ Out of Stock'}
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-secondary" style="flex: 1;" onclick="editProduct('${product.id}')">Edit</button>
+                                <button class="btn btn-danger" style="flex: 1;" onclick="deleteProduct('${product.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showNotification('Failed to load products', 'error');
+            }
+        }
+
+        async function loadEnquiries() {
+            try {
+                const q = query(collection(db, 'BullionEnquiries'), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const enquiries = [];
+                querySnapshot.forEach((doc) => {
+                    enquiries.push({ id: doc.id, ...doc.data() });
+                });
+
+                const tbody = document.getElementById('enquiriesTable');
+
+                if (enquiries.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">No enquiries yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = enquiries.map(enq => {
+                    const date = enq.createdAt?.toDate?.() || new Date();
+                    return `
+                        <tr>
+                            <td>${date.toLocaleDateString()}</td>
+                            <td>
+                                <div>${enq.name}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">${enq.email}</div>
+                            </td>
+                            <td>${enq.productName}</td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--gold);">£${enq.totalPrice?.toFixed(2) || '0.00'}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">${enq.quantity || 1}x units</div>
+                            </td>
+                            <td><span class="status-badge status-${enq.status || 'pending'}">${enq.status || 'pending'}</span></td>
+                            <td>
+                                <select class="btn btn-secondary" style="padding: 0.5rem; font-size: 0.85rem;" onchange="updateEnquiryStatus('${enq.id}', this.value)">
+                                    <option value="">Update Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading enquiries:', error);
+            }
+        }
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        };
+
+        window.openProductModal = () => {
+            editingProductId = null;
+            document.getElementById('modalTitle').textContent = 'Add Product';
+            document.getElementById('productForm').reset();
+            document.getElementById('productModal').classList.add('active');
+        };
+
+        window.closeModal = () => {
+            document.getElementById('productModal').classList.remove('active');
+        };
+
+        window.handleSubmit = async (event) => {
+            event.preventDefault();
+
+            const productData = {
+                metal: document.getElementById('metal').value,
+                name: document.getElementById('name').value.trim(),
+                weight: parseFloat(document.getElementById('weight').value),
+                purity: document.getElementById('purity').value.trim(),
+                premium: parseFloat(document.getElementById('premium').value),
+                icon: document.getElementById('icon').value.trim() || '🪙',
+                inStock: document.getElementById('inStock').checked,
+                updatedAt: new Date()
+            };
+
+            try {
+                if (editingProductId) {
+                    await updateDoc(doc(db, 'BullionProducts', editingProductId), productData);
+                    showNotification('Product updated!', 'success');
+                } else {
+                    productData.createdAt = new Date();
+                    await addDoc(collection(db, 'BullionProducts'), productData);
+                    showNotification('Product added!', 'success');
+                }
+
+                closeModal();
+                await loadProducts();
+            } catch (error) {
+                console.error('Error saving product:', error);
+                showNotification('Failed to save product', 'error');
+            }
+        };
+
+        window.editProduct = async (productId) => {
+            editingProductId = productId;
+            document.getElementById('modalTitle').textContent = 'Edit Product';
+
+            try {
+                const docSnap = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js').then(m => m.getDoc(doc(db, 'BullionProducts', productId)));
+                if (docSnap.exists()) {
+                    const product = docSnap.data();
+                    document.getElementById('metal').value = product.metal;
+                    document.getElementById('name').value = product.name;
+                    document.getElementById('weight').value = product.weight;
+                    document.getElementById('purity').value = product.purity;
+                    document.getElementById('premium').value = product.premium;
+                    document.getElementById('icon').value = product.icon || '';
+                    document.getElementById('inStock').checked = product.inStock;
+                    document.getElementById('productModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+            }
+        };
+
+        window.deleteProduct = async (productId) => {
+            if (!confirm('Delete this product?')) return;
+
+            try {
+                await deleteDoc(doc(db, 'BullionProducts', productId));
+                showNotification('Product deleted!', 'success');
+                await loadProducts();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                showNotification('Failed to delete product', 'error');
+            }
+        };
+
+        window.updateEnquiryStatus = async (enquiryId, newStatus) => {
+            if (!newStatus) return;
+
+            try {
+                await updateDoc(doc(db, 'BullionEnquiries', enquiryId), {
+                    status: newStatus,
+                    updatedAt: new Date()
+                });
+                showNotification(`Status updated to: ${newStatus}`, 'success');
+                await loadEnquiries();
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showNotification('Failed to update status', 'error');
+            }
+        };
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        window.loadProducts = loadProducts;
+        window.loadEnquiries = loadEnquiries;
+    </script>
+</body>
+</html>
