@@ -1,912 +1,1500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcane Store | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
-    
-    <style>
-        :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
-            --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
-            --border-color: rgba(148, 163, 184, 0.5);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcane Store | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <style>
+    :root {
+      --bg-dark: #02010a;
+      --bg-card: rgba(15, 23, 42, 0.96);
+      --purple: #9333ea;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --text-light: #e5e5e5;
+      --text-dim: #9ca3af;
+      --border-color: rgba(148, 163, 184, 0.5);
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .back-btn {
-            position: fixed;
-            top: 1.5rem;
-            left: 1.5rem;
-            z-index: 40;
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            backdrop-filter: blur(12px);
-            transition: all 0.2s ease;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+    }
 
-        .back-btn:hover {
-            color: var(--purple-light);
-            border-color: rgba(147, 51, 234, 0.8);
-            transform: translateX(-2px);
-        }
+    .back-btn {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 40;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
 
-        .header {
-            max-width: 1400px;
-            margin: 2.5rem auto 0;
-            padding: 1.5rem 1.5rem 0.5rem;
-        }
+    .back-btn:hover {
+      color: var(--purple-light);
+      border-color: rgba(147, 51, 234, 0.8);
+      transform: translateX(-2px);
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            font-size: 0.9rem;
-        }
+    .header {
+      max-width: 1400px;
+      margin: 2.5rem auto 0;
+      padding: 1.5rem 1.5rem 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
 
-        .logo img {
-            height: 32px;
-            width: 32px;
-        }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+    }
 
-        .main-content {
-            max-width: 1400px;
-            margin: 0 auto 4rem;
-            padding: 0 1.5rem;
-        }
+    .logo img { height: 32px; width: 32px; }
 
-        .page-hero {
-            text-align: center;
-            margin: 2rem 0 3rem;
-        }
+    /* CART BUTTON */
+    .cart-btn {
+      position: relative;
+      padding: 0.55rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-light);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(12px);
+    }
 
-        .page-hero h1 {
-            font-size: 3rem;
-            margin-bottom: 0.75rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 900;
-        }
+    .cart-btn:hover {
+      border-color: rgba(147, 51, 234, 0.85);
+      transform: translateY(-1px);
+    }
 
-        .page-hero p {
-            font-size: 1.2rem;
-            color: var(--text-dim);
-            max-width: 700px;
-            margin: 0 auto;
-        }
+    .cart-badge {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #000;
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+    }
 
-        .category-filter {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 3rem;
-            flex-wrap: wrap;
-        }
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto 4rem;
+      padding: 0 1.5rem;
+    }
 
-        .category-btn {
-            padding: 0.7rem 1.5rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .page-hero {
+      text-align: center;
+      margin: 2rem 0 3rem;
+    }
 
-        .category-btn:hover,
-        .category-btn.active {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            border-color: var(--purple);
-            color: #fff;
-        }
+    .page-hero h1 {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, var(--purple-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900;
+    }
 
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
-        }
+    .page-hero p {
+      font-size: 1.2rem;
+      color: var(--text-dim);
+      max-width: 700px;
+      margin: 0 auto;
+    }
 
-        .product-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+    .category-filter {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
 
-        .product-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--purple);
-            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.4);
-        }
+    .category-btn {
+      padding: 0.7rem 1.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-        .product-image {
-            width: 100%;
-            height: 280px;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
+    .category-btn:hover,
+    .category-btn.active {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      border-color: var(--purple);
+      color: #fff;
+    }
 
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
 
-        .product-image .placeholder {
-            font-size: 5rem;
-            z-index: 1;
-        }
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
 
-        .image-count {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 0.3rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 2;
-        }
+    .product-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--purple);
+      box-shadow: 0 20px 60px rgba(147, 51, 234, 0.4);
+    }
 
-        .new-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #000;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 0.4rem 0.8rem;
-            border-radius: 999px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            z-index: 2;
-        }
+    .product-image {
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .product-info {
-            padding: 1.5rem;
-        }
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-        .product-category {
-            font-size: 0.75rem;
-            color: var(--purple-light);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+    .product-image .placeholder {
+      font-size: 5rem;
+      z-index: 1;
+    }
 
-        .product-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--text-light);
-        }
+    .image-count {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 2;
+    }
 
-        .product-desc {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
+    .new-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.4rem 0.8rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      z-index: 2;
+    }
 
-        .color-dots {
-            display: flex;
-            gap: 0.4rem;
-            margin-bottom: 1rem;
-        }
+    .product-info { padding: 1.5rem; }
 
-        .color-dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid var(--border-color);
-            background: var(--bg-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6rem;
-        }
+    .product-category {
+      font-size: 0.75rem;
+      color: var(--purple-light);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
 
-        .product-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .product-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+    }
 
-        .product-price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--gold);
-        }
+    .product-desc {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
 
-        .buy-btn {
-            padding: 0.7rem 1.5rem;
-            border-radius: 999px;
-            border: none;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: #fff;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .color-dots {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
 
-        .buy-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
-        }
+    .color-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      background: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+    }
 
-        /* Product Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 1000;
-            padding: 2rem;
-            overflow-y: auto;
-        }
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
 
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
 
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+    .buy-btn {
+      padding: 0.7rem 1.5rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
+    .buy-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
+    }
 
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 2rem;
-            cursor: pointer;
-            line-height: 1;
-        }
+    /* Product Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      padding: 2rem;
+      overflow-y: auto;
+    }
 
-        .modal-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            padding: 2rem;
-        }
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .image-gallery {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
 
-        .main-image {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 16px;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
-        }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
 
-        .main-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+    }
 
-        .thumbnail-strip {
-            display: flex;
-            gap: 0.75rem;
-            overflow-x: auto;
-        }
+    .modal-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      padding: 2rem;
+    }
 
-        .thumbnail {
-            flex-shrink: 0;
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .image-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-        .thumbnail:hover,
-        .thumbnail.active {
-            border-color: var(--purple);
-        }
+    .main-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .main-image img { width: 100%; height: 100%; object-fit: cover; }
 
-        .product-details h2 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
+    .thumbnail-strip {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+    }
 
-        .product-details .price {
-            font-size: 2rem;
-            color: var(--gold);
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-        }
+    .thumbnail {
+      flex-shrink: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-        .option-group {
-            margin-bottom: 1.5rem;
-        }
+    .thumbnail:hover,
+    .thumbnail.active {
+      border-color: var(--purple);
+    }
 
-        .option-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--text-light);
-        }
+    .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
 
-        .color-options {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
+    .product-details h2 { font-size: 2rem; margin-bottom: 0.5rem; }
 
-        .color-option {
-            padding: 0.6rem 1.2rem;
-            border-radius: 999px;
-            border: 2px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-        }
+    .product-details .price {
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
 
-        .color-option:hover {
-            border-color: var(--purple-light);
-        }
+    .option-group { margin-bottom: 1.5rem; }
 
-        .color-option.selected {
-            border-color: var(--purple);
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.1));
-            color: var(--purple-light);
-        }
+    .option-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-light);
+    }
 
-        .add-to-cart-btn {
-            width: 100%;
-            padding: 1rem 2rem;
-            border-radius: 999px;
-            border: none;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: #fff;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 1.5rem;
-        }
+    .color-options {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
 
-        .add-to-cart-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.5);
-        }
+    .color-option {
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      border: 2px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
 
-        .add-to-cart-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+    .color-option:hover { border-color: var(--purple-light); }
 
-        .notification {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            background: linear-gradient(135deg, #22c55e, #15803d);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
+    .color-option.selected {
+      border-color: var(--purple);
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.1));
+      color: var(--purple-light);
+    }
 
-        .notification.error {
-            background: linear-gradient(135deg, #dc2626, #991b1b);
-        }
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+    }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
+    .primary-btn, .secondary-btn {
+      width: 100%;
+      padding: 1rem 1.1rem;
+      border-radius: 999px;
+      border: none;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-        @media (max-width: 768px) {
-            .modal-body {
-                grid-template-columns: 1fr;
-            }
-            
-            .page-hero h1 {
-                font-size: 2rem;
-            }
+    .primary-btn {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+    }
 
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-    
-    <script src="https://js.stripe.com/v3/"></script>
+    .primary-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 30px rgba(147, 51, 234, 0.5);
+    }
+
+    .secondary-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: var(--text-light);
+    }
+
+    .secondary-btn:hover {
+      border-color: rgba(167, 139, 250, 0.8);
+      transform: translateY(-1px);
+    }
+
+    .primary-btn:disabled, .secondary-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      z-index: 2500;
+      animation: slideIn 0.3s ease;
+      max-width: min(420px, calc(100vw - 2rem));
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    /* CART DRAWER */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 1200;
+      display: none;
+    }
+
+    .drawer-overlay.active { display: block; }
+
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: min(420px, 92vw);
+      background: rgba(15, 23, 42, 0.98);
+      border-left: 1px solid rgba(148, 163, 184, 0.28);
+      z-index: 1300;
+      transform: translateX(110%);
+      transition: transform 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(12px);
+    }
+
+    .cart-drawer.active { transform: translateX(0); }
+
+    .cart-head {
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .cart-head h3 {
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--purple-light);
+      font-weight: 900;
+    }
+
+    .cart-close {
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(0,0,0,0.25);
+      color: var(--text-dim);
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .cart-close:hover {
+      color: var(--text-light);
+      border-color: rgba(167, 139, 250, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .cart-body {
+      padding: 1rem 1.25rem;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .cart-empty {
+      color: var(--text-dim);
+      text-align: center;
+      padding: 2.5rem 1rem;
+      line-height: 1.6;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 0.9rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      align-items: center;
+    }
+
+    .cart-item:last-child { border-bottom: none; }
+
+    .cart-thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .cart-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cart-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .cart-name {
+      font-weight: 800;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-sub {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .pill {
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(0,0,0,0.2);
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .cart-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.35rem;
+    }
+
+    .qty {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .qty button {
+      border: none;
+      background: transparent;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 1.05rem;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s ease;
+    }
+
+    .qty button:hover {
+      background: rgba(147, 51, 234, 0.22);
+    }
+
+    .qty span {
+      min-width: 18px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 0.9rem;
+    }
+
+    .remove-btn {
+      border: 1px solid rgba(239,68,68,0.35);
+      background: rgba(239,68,68,0.08);
+      color: #fecaca;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+
+    .remove-btn:hover {
+      border-color: rgba(239,68,68,0.75);
+      transform: translateY(-1px);
+    }
+
+    .cart-foot {
+      padding: 1rem 1.25rem 1.25rem;
+      border-top: 1px solid rgba(148, 163, 184, 0.22);
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .cart-totals {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+
+    .cart-total-value {
+      color: var(--gold);
+      font-size: 1.3rem;
+      font-weight: 900;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: #fff;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .checkout-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(147, 51, 234, 0.45);
+    }
+
+    .checkout-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .hint {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .modal-body { grid-template-columns: 1fr; }
+      .page-hero h1 { font-size: 2rem; }
+      .products-grid { grid-template-columns: 1fr; }
+      .header { margin-top: 2.2rem; }
+      .notification { top: 1rem; right: 1rem; }
+    }
+  </style>
+
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
+
 <body>
-    <a href="dashboard.html" class="back-btn">← Dashboard</a>
+  <a href="dashboard.html" class="back-btn">← Dashboard</a>
 
-    <div class="header">
-        <div class="logo">
-            <img src="ArcaneA.png" alt="Arcane Archives">
-            THE ARCANE ARCHIVES
-        </div>
+  <div class="header">
+    <div class="logo">
+      <img src="ArcaneA.png" alt="Arcane Archives" />
+      THE ARCANE ARCHIVES
     </div>
 
-    <div class="main-content">
-        <div class="page-hero">
-            <h1>Arcane Store</h1>
-            <p>Exclusive branded merchandise for members of The Archives</p>
-        </div>
+    <button class="cart-btn" id="openCartBtn" type="button">
+      🛒 Cart <span class="cart-badge" id="cartCount">0</span>
+    </button>
+  </div>
 
-        <div class="category-filter" id="categoryFilter"></div>
-        <div class="products-grid" id="productsGrid">
-            <div style="text-align: center; padding: 3rem; color: var(--text-dim);">Loading products...</div>
-        </div>
+  <div class="main-content">
+    <div class="page-hero">
+      <h1>Arcane Store</h1>
+      <p>Exclusive branded merchandise for members of The Archives</p>
     </div>
 
-    <!-- Product Detail Modal -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalCategory"></h3>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="image-gallery">
-                    <div class="main-image" id="mainImage"></div>
-                    <div class="thumbnail-strip" id="thumbnailStrip"></div>
+    <div class="category-filter" id="categoryFilter"></div>
+    <div class="products-grid" id="productsGrid">
+      <div style="text-align: center; padding: 3rem; color: var(--text-dim);">Loading products...</div>
+    </div>
+  </div>
+
+  <!-- CART DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Cart drawer">
+    <div class="cart-head">
+      <h3>Your Cart</h3>
+      <button class="cart-close" id="closeCartBtn" type="button" aria-label="Close cart">×</button>
+    </div>
+    <div class="cart-body" id="cartBody"></div>
+    <div class="cart-foot">
+      <div class="cart-totals">
+        <div>Total</div>
+        <div class="cart-total-value" id="cartTotal">$0.00</div>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn" type="button">Checkout Cart</button>
+      <div class="hint">Shipping + billing is collected at checkout.</div>
+    </div>
+  </aside>
+
+  <!-- Product Detail Modal -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalCategory"></h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="image-gallery">
+          <div class="main-image" id="mainImage"></div>
+          <div class="thumbnail-strip" id="thumbnailStrip"></div>
+        </div>
+        <div class="product-details">
+          <h2 id="modalName"></h2>
+          <div class="price" id="modalPrice"></div>
+          <p id="modalDescription" style="color: var(--text-dim); margin-bottom: 2rem; line-height: 1.6;"></p>
+
+          <div class="option-group" id="colorGroup" style="display: none;">
+            <label class="option-label">Select Color</label>
+            <div class="color-options" id="colorOptions"></div>
+          </div>
+
+          <div class="btn-row">
+            <button class="primary-btn" id="addToCartBtn" onclick="handleAddToCart()">
+              Add to Cart
+            </button>
+
+            <button class="secondary-btn" id="buyNowBtn" onclick="handleBuyNowSingle()">
+              Buy Now (Single Item)
+            </button>
+          </div>
+
+          <button id="adminTestBtn" class="primary-btn"
+            onclick="handleTestOrder()"
+            style="display:none; background: linear-gradient(135deg, #f59e0b, #d97706); margin-top: 1rem;">
+            🧪 Test Order (Admin Only)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+    import { getFirestore, collection, getDocs, getDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // NOTE: You currently use a test publishable key in your file.
+    // Keep as-is, but swap to your live key when going live.
+    const stripe = Stripe('pk_test_51QgVCBKfPz4F9rWfbEXAXXvZHv9Nnzfh2gCcZfL04dFnYwvBBCpeCx40xzSNqBV1iR7n1b47U4PGz4c30RxkwF1W00TmjEgb7Q');
+
+    // -----------------------------
+    // STATE
+    // -----------------------------
+    let allProducts = [];
+    let currentFilter = 'all';
+    let currentUser = null;
+    let selectedProduct = null;
+    let selectedColor = null;
+    let currentImageIndex = 0;
+    let isAdmin = false;
+
+    // Cart state in localStorage
+    const CART_KEY = "arcane_cart_v1";
+    function getCart() {
+      try {
+        const raw = localStorage.getItem(CART_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function setCart(items) {
+      localStorage.setItem(CART_KEY, JSON.stringify(items || []));
+      renderCartBadge();
+    }
+
+    function cartItemKey(it) {
+      // Unique per product + color + stripe price
+      return `${it.productId || ""}__${it.priceId || ""}__${it.color || ""}`;
+    }
+
+    function addToCart(item) {
+      const cart = getCart();
+      const key = cartItemKey(item);
+      const existing = cart.find(x => cartItemKey(x) === key);
+      if (existing) {
+        existing.qty = Math.max(1, Number(existing.qty || 1) + Number(item.qty || 1));
+      } else {
+        cart.push({
+          productId: item.productId || "",
+          name: item.name || "",
+          priceId: item.priceId || "",
+          price: Number(item.price || 0),
+          qty: Math.max(1, Number(item.qty || 1)),
+          color: item.color || null,
+          imageUrl: item.imageUrl || ""
+        });
+      }
+      setCart(cart);
+    }
+
+    function updateQty(key, delta) {
+      const cart = getCart();
+      const it = cart.find(x => cartItemKey(x) === key);
+      if (!it) return;
+      it.qty = Math.max(1, Number(it.qty || 1) + delta);
+      setCart(cart);
+      renderCart();
+    }
+
+    function removeItem(key) {
+      const cart = getCart().filter(x => cartItemKey(x) !== key);
+      setCart(cart);
+      renderCart();
+    }
+
+    function clearCart() {
+      setCart([]);
+      renderCart();
+    }
+
+    function cartTotals() {
+      const cart = getCart();
+      const subtotal = cart.reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.qty || 1)), 0);
+      const count = cart.reduce((sum, it) => sum + Number(it.qty || 1), 0);
+      return { subtotal, count };
+    }
+
+    function money(n) {
+      const val = Number(n || 0);
+      return `$${val.toFixed(2)}`;
+    }
+
+    // -----------------------------
+    // CART DRAWER UI
+    // -----------------------------
+    const drawerOverlay = document.getElementById("drawerOverlay");
+    const cartDrawer = document.getElementById("cartDrawer");
+    const cartBody = document.getElementById("cartBody");
+    const cartTotal = document.getElementById("cartTotal");
+    const cartCount = document.getElementById("cartCount");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+
+    function openCart() {
+      drawerOverlay.classList.add("active");
+      cartDrawer.classList.add("active");
+      renderCart();
+    }
+
+    function closeCart() {
+      drawerOverlay.classList.remove("active");
+      cartDrawer.classList.remove("active");
+    }
+
+    document.getElementById("openCartBtn").addEventListener("click", openCart);
+    document.getElementById("closeCartBtn").addEventListener("click", closeCart);
+    drawerOverlay.addEventListener("click", closeCart);
+
+    function renderCartBadge() {
+      const { count } = cartTotals();
+      cartCount.textContent = String(count);
+    }
+
+    function renderCart() {
+      const cart = getCart();
+      const { subtotal } = cartTotals();
+      cartTotal.textContent = money(subtotal);
+
+      if (cart.length === 0) {
+        cartBody.innerHTML = `
+          <div class="cart-empty">
+            <div style="font-size:2.2rem; margin-bottom:.6rem;">🛒</div>
+            Your cart is empty.<br/>
+            Add some Arcane merch and run it up.
+          </div>
+        `;
+        checkoutBtn.disabled = true;
+        return;
+      }
+
+      checkoutBtn.disabled = false;
+
+      cartBody.innerHTML = cart.map(it => {
+        const key = cartItemKey(it);
+        const colorPill = it.color ? `<span class="pill">Color: ${it.color}</span>` : "";
+        const price = money(it.price);
+        const img = it.imageUrl
+          ? `<img src="${it.imageUrl}" alt="${escapeHtml(it.name || "Item")}">`
+          : `📦`;
+
+        return `
+          <div class="cart-item">
+            <div class="cart-thumb">${img}</div>
+            <div class="cart-meta">
+              <div class="cart-name">${escapeHtml(it.name || "Item")}</div>
+              <div class="cart-sub">
+                ${colorPill}
+                <span class="pill">${price} each</span>
+              </div>
+              <div class="cart-controls">
+                <div class="qty" aria-label="Quantity controls">
+                  <button type="button" onclick="window.cartDec('${key}')">−</button>
+                  <span>${Number(it.qty || 1)}</span>
+                  <button type="button" onclick="window.cartInc('${key}')">+</button>
                 </div>
-                <div class="product-details">
-                    <h2 id="modalName"></h2>
-                    <div class="price" id="modalPrice"></div>
-                    <p id="modalDescription" style="color: var(--text-dim); margin-bottom: 2rem; line-height: 1.6;"></p>
-                    
-                    <div class="option-group" id="colorGroup" style="display: none;">
-                        <label class="option-label">Select Color</label>
-                        <div class="color-options" id="colorOptions"></div>
-                    </div>
-
-                    <button class="add-to-cart-btn" onclick="handleBuyNow()">
-                        Buy Now
-                    </button>
-                    
-                    <button id="adminTestBtn" class="add-to-cart-btn" onclick="handleTestOrder()" style="display: none; background: linear-gradient(135deg, #f59e0b, #d97706); margin-top: 1rem;">
-                        🧪 Test Order (Admin Only)
-                    </button>
-                </div>
+                <button class="remove-btn" type="button" onclick="window.cartRemove('${key}')">Remove</button>
+              </div>
             </div>
-        </div>
-    </div>
+          </div>
+        `;
+      }).join("");
+    }
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-        import { getFirestore, collection, getDocs, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+    // expose minimal handlers for inline onclick
+    window.cartInc = (key) => updateQty(key, +1);
+    window.cartDec = (key) => updateQty(key, -1);
+    window.cartRemove = (key) => removeItem(key);
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        };
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const stripe = Stripe('pk_test_51QgVCBKfPz4F9rWfbEXAXXvZHv9Nnzfh2gCcZfL04dFnYwvBBCpeCx40xzSNqBV1iR7n1b47U4PGz4c30RxkwF1W00TmjEgb7Q');
+    // -----------------------------
+    // AUTH + PRODUCTS LOAD
+    // -----------------------------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        location.href = 'login.html';
+        return;
+      }
 
-        let allProducts = [];
-        let currentFilter = 'all';
-        let currentUser = null;
-        let selectedProduct = null;
-        let selectedColor = null;
-        let currentImageIndex = 0;
-        let isAdmin = false;
+      currentUser = user;
 
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                location.href = 'login.html';
-                return;
-            }
+      const userDoc = await getDoc(doc(db, 'Users', user.uid));
+      const userData = userDoc.data() || {};
+      const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
 
-            currentUser = user;
-            const userDoc = await getDoc(doc(db, 'Users', user.uid));
-            const userData = userDoc.data() || {};
-            const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+      // Check if admin
+      const adminEmails = ['leogray15@gmail.com'];
+      isAdmin = adminEmails.includes(user.email);
 
-            // Check if admin
-            const adminEmails = ['leogray15@gmail.com'];
-            isAdmin = adminEmails.includes(user.email);
+      if (!isPaid && !isAdmin) {
+        alert('⚠️ This page is for premium members only.');
+        location.href = 'dashboard.html';
+        return;
+      }
 
-            if (!isPaid && !isAdmin) {
-                alert('⚠️ This page is for premium members only.');
-                location.href = 'dashboard.html';
-                return;
-            }
+      renderCartBadge();
+      await loadProducts();
+    });
 
-            await loadProducts();
+    async function loadProducts() {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Products'));
+        allProducts = [];
+
+        querySnapshot.forEach((d) => {
+          allProducts.push({ id: d.id, ...d.data() });
         });
 
-        async function loadProducts() {
-            try {
-                const querySnapshot = await getDocs(collection(db, 'Products'));
-                allProducts = [];
-                
-                querySnapshot.forEach((doc) => {
-                    allProducts.push({ id: doc.id, ...doc.data() });
-                });
+        allProducts.sort((a, b) => {
+          const dateA = new Date(a.createdAt || 0);
+          const dateB = new Date(b.createdAt || 0);
+          return dateB - dateA;
+        });
 
-                allProducts.sort((a, b) => {
-                    const dateA = new Date(a.createdAt || 0);
-                    const dateB = new Date(b.createdAt || 0);
-                    return dateB - dateA;
-                });
+        setupCategoryFilter();
+        renderProducts();
+      } catch (error) {
+        console.error('Error loading products:', error);
+        document.getElementById('productsGrid').innerHTML = `
+          <div style="text-align: center; padding: 3rem; color: var(--text-dim);">
+            Failed to load products. Please refresh.
+          </div>
+        `;
+      }
+    }
 
-                setupCategoryFilter();
-                renderProducts();
-            } catch (error) {
-                console.error('Error loading products:', error);
-                document.getElementById('productsGrid').innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: var(--text-dim);">
-                        Failed to load products. Please refresh.
-                    </div>
-                `;
-            }
-        }
+    function setupCategoryFilter() {
+      const categories = ['all', ...new Set(allProducts.map(p => p.category))];
+      const filterContainer = document.getElementById('categoryFilter');
 
-        function setupCategoryFilter() {
-            const categories = ['all', ...new Set(allProducts.map(p => p.category))];
-            const filterContainer = document.getElementById('categoryFilter');
-            
-            filterContainer.innerHTML = categories.map(cat => `
-                <button class="category-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">
-                    ${cat === 'all' ? 'All Products' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+      filterContainer.innerHTML = categories.map(cat => `
+        <button class="category-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">
+          ${cat === 'all' ? 'All Products' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+        </button>
+      `).join('');
+
+      filterContainer.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.category;
+          renderProducts();
+        });
+      });
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      const filtered = currentFilter === 'all'
+        ? allProducts
+        : allProducts.filter(p => p.category === currentFilter);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="text-align: center; padding: 3rem; color: var(--text-dim);">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">📦 No products in this category</h2>
+            <p>Check back soon for new items!</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(product => {
+        const imageUrls = product.imageUrls || (product.imageUrl ? [product.imageUrl] : []);
+        const coverImage = imageUrls[0] || '';
+        const imageCount = imageUrls.length;
+
+        return `
+          <div class="product-card" onclick="openProductModal('${product.id}')">
+            <div class="product-image">
+              ${product.isNew ? '<span class="new-badge">New</span>' : ''}
+              ${imageCount > 1 ? `<span class="image-count">📷 ${imageCount}</span>` : ''}
+              ${coverImage
+                ? `<img src="${coverImage}" alt="${escapeHtml(product.name)}">`
+                : '<div class="placeholder">📦</div>'
+              }
+            </div>
+            <div class="product-info">
+              <div class="product-category">${escapeHtml(product.category)}</div>
+              <div class="product-name">${escapeHtml(product.name)}</div>
+              <div class="product-desc">${escapeHtml(product.description)}</div>
+              ${product.colors && product.colors.length > 0 ? `
+                <div class="color-dots">
+                  ${product.colors.slice(0, 5).map(() => '<div class="color-dot">●</div>').join('')}
+                  ${product.colors.length > 5 ? `<div class="color-dot">+${product.colors.length - 5}</div>` : ''}
+                </div>
+              ` : ''}
+              <div class="product-footer">
+                <div class="product-price">$${Number(product.price || 0).toFixed(2)}</div>
+                <button class="buy-btn" onclick="event.stopPropagation(); openProductModal('${product.id}')">
+                  View Details
                 </button>
-            `).join('');
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-            filterContainer.querySelectorAll('.category-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = btn.dataset.category;
-                    renderProducts();
-                });
-            });
+    // -----------------------------
+    // MODAL
+    // -----------------------------
+    window.openProductModal = (productId) => {
+      selectedProduct = allProducts.find(p => p.id === productId);
+      if (!selectedProduct) return;
+
+      selectedColor = null;
+      currentImageIndex = 0;
+
+      const imageUrls = selectedProduct.imageUrls || (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : []);
+      document.getElementById('modalCategory').textContent = String(selectedProduct.category || '').toUpperCase();
+      document.getElementById('modalName').textContent = selectedProduct.name || '';
+      document.getElementById('modalPrice').textContent = `$${Number(selectedProduct.price || 0).toFixed(2)}`;
+      document.getElementById('modalDescription').textContent = selectedProduct.description || '';
+
+      renderImageGallery(imageUrls);
+
+      if (selectedProduct.colors && selectedProduct.colors.length > 0) {
+        document.getElementById('colorGroup').style.display = 'block';
+        document.getElementById('colorOptions').innerHTML = selectedProduct.colors.map(color => `
+          <div class="color-option" onclick="selectColor('${String(color).replaceAll("'", "\\'")}')">
+            ${escapeHtml(color)}
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('colorGroup').style.display = 'none';
+      }
+
+      if (isAdmin) {
+        document.getElementById('adminTestBtn').style.display = 'block';
+      } else {
+        document.getElementById('adminTestBtn').style.display = 'none';
+      }
+
+      document.getElementById('productModal').classList.add('active');
+    };
+
+    function renderImageGallery(imageUrls) {
+      const mainImage = document.getElementById('mainImage');
+      const thumbnailStrip = document.getElementById('thumbnailStrip');
+
+      if (imageUrls.length === 0) {
+        mainImage.innerHTML = '<div class="placeholder" style="font-size: 6rem;">📦</div>';
+        thumbnailStrip.innerHTML = '';
+        return;
+      }
+
+      mainImage.innerHTML = `<img src="${imageUrls[currentImageIndex]}" alt="Product">`;
+
+      if (imageUrls.length > 1) {
+        thumbnailStrip.innerHTML = imageUrls.map((url, index) => `
+          <div class="thumbnail ${index === currentImageIndex ? 'active' : ''}" onclick="changeImage(${index})">
+            <img src="${url}" alt="Thumbnail ${index + 1}">
+          </div>
+        `).join('');
+      } else {
+        thumbnailStrip.innerHTML = '';
+      }
+    }
+
+    window.changeImage = (index) => {
+      currentImageIndex = index;
+      const imageUrls = selectedProduct.imageUrls || (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : []);
+      renderImageGallery(imageUrls);
+    };
+
+    window.selectColor = (color) => {
+      selectedColor = color;
+      document.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.textContent.trim() === color) opt.classList.add('selected');
+      });
+    };
+
+    window.closeModal = () => {
+      document.getElementById('productModal').classList.remove('active');
+    };
+
+    // -----------------------------
+    // ADD TO CART
+    // -----------------------------
+    window.handleAddToCart = async () => {
+      if (!selectedProduct) return;
+
+      if (!selectedProduct.stripePriceId) {
+        showNotification('This product is missing a Stripe price ID.', 'error');
+        return;
+      }
+
+      if (selectedProduct.colors && selectedProduct.colors.length > 0 && !selectedColor) {
+        showNotification('Please select a color', 'error');
+        return;
+      }
+
+      const imageUrls = selectedProduct.imageUrls || (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : []);
+      const coverImage = imageUrls[0] || "";
+
+      addToCart({
+        productId: selectedProduct.id,
+        name: selectedProduct.name,
+        priceId: selectedProduct.stripePriceId,
+        price: Number(selectedProduct.price || 0),
+        qty: 1,
+        color: selectedColor || null,
+        imageUrl: coverImage
+      });
+
+      showNotification('✅ Added to cart');
+      closeModal();
+      openCart();
+    };
+
+    // -----------------------------
+    // SINGLE ITEM BUY NOW (kept for convenience)
+    // -----------------------------
+    window.handleBuyNowSingle = async () => {
+      if (!selectedProduct) return;
+
+      if (!selectedProduct.stripePriceId) {
+        showNotification('This product is missing a Stripe price ID.', 'error');
+        return;
+      }
+
+      if (selectedProduct.colors && selectedProduct.colors.length > 0 && !selectedColor) {
+        showNotification('Please select a color', 'error');
+        return;
+      }
+
+      const btn = document.getElementById("buyNowBtn");
+      btn.disabled = true;
+      btn.textContent = "Processing...";
+
+      try {
+        const response = await fetch('/.netlify/functions/create-store-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            priceId: selectedProduct.stripePriceId,
+            productId: selectedProduct.id,
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            productName: selectedProduct.name,
+            color: selectedColor
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to create checkout');
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else if (data.sessionId) {
+          const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+          if (error) throw error;
         }
+      } catch (error) {
+        console.error('Purchase error:', error);
+        showNotification(error.message || 'Something went wrong', 'error');
+        btn.disabled = false;
+        btn.textContent = "Buy Now (Single Item)";
+      }
+    };
 
-        function renderProducts() {
-            const grid = document.getElementById('productsGrid');
-            const filtered = currentFilter === 'all' 
-                ? allProducts 
-                : allProducts.filter(p => p.category === currentFilter);
+    // -----------------------------
+    // CART CHECKOUT (MULTI ITEM)
+    // -----------------------------
+    checkoutBtn.addEventListener("click", async () => {
+      const cart = getCart();
+      if (!cart.length) return;
 
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: var(--text-dim);">
-                        <h2 style="font-size: 2rem; margin-bottom: 1rem;">📦 No products in this category</h2>
-                        <p>Check back soon for new items!</p>
-                    </div>
-                `;
-                return;
-            }
+      checkoutBtn.disabled = true;
+      checkoutBtn.textContent = "Creating checkout...";
 
-            grid.innerHTML = filtered.map(product => {
-                const imageUrls = product.imageUrls || (product.imageUrl ? [product.imageUrl] : []);
-                const coverImage = imageUrls[0] || '';
-                const imageCount = imageUrls.length;
+      try {
+        const items = cart.map(it => ({
+          productId: it.productId,
+          name: it.name,
+          priceId: it.priceId,
+          qty: Math.max(1, Number(it.qty || 1)),
+          color: it.color || null
+        }));
 
-                return `
-                    <div class="product-card" onclick="openProductModal('${product.id}')">
-                        <div class="product-image">
-                            ${product.isNew ? '<span class="new-badge">New</span>' : ''}
-                            ${imageCount > 1 ? `<span class="image-count">📷 ${imageCount}</span>` : ''}
-                            ${coverImage 
-                                ? `<img src="${coverImage}" alt="${product.name}">` 
-                                : '<div class="placeholder">📦</div>'
-                            }
-                        </div>
-                        <div class="product-info">
-                            <div class="product-category">${product.category}</div>
-                            <div class="product-name">${product.name}</div>
-                            <div class="product-desc">${product.description}</div>
-                            ${product.colors && product.colors.length > 0 ? `
-                                <div class="color-dots">
-                                    ${product.colors.slice(0, 5).map(() => '<div class="color-dot">●</div>').join('')}
-                                    ${product.colors.length > 5 ? `<div class="color-dot">+${product.colors.length - 5}</div>` : ''}
-                                </div>
-                            ` : ''}
-                            <div class="product-footer">
-                                <div class="product-price">$${product.price.toFixed(2)}</div>
-                                <button class="buy-btn" onclick="event.stopPropagation(); openProductModal('${product.id}')">
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        const response = await fetch('/.netlify/functions/create-store-cart-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items,
+            userId: currentUser?.uid || "",
+            userEmail: currentUser?.email || ""
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Failed to create cart checkout");
+
+        // clear cart immediately (optional). If you prefer, clear only after store-success validates session.
+        clearCart();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else if (data.sessionId) {
+          const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+          if (error) throw error;
+        } else {
+          throw new Error("Checkout session created, but no redirect info returned.");
         }
+      } catch (err) {
+        console.error("Cart checkout error:", err);
+        showNotification(err.message || "Cart checkout failed", "error");
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = "Checkout Cart";
+      }
+    });
 
-        window.openProductModal = (productId) => {
-            selectedProduct = allProducts.find(p => p.id === productId);
-            if (!selectedProduct) return;
+    // -----------------------------
+    // ADMIN TEST ORDER (unchanged concept)
+    // -----------------------------
+    window.handleTestOrder = async () => {
+      if (!selectedProduct || !isAdmin) return;
 
-            selectedColor = null;
-            currentImageIndex = 0;
+      if (selectedProduct.colors && selectedProduct.colors.length > 0 && !selectedColor) {
+        showNotification('Please select a color first', 'error');
+        return;
+      }
 
-            const imageUrls = selectedProduct.imageUrls || (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : []);
+      if (!confirm('Create a test order for this product? This will appear in your orders dashboard.')) return;
 
-            document.getElementById('modalCategory').textContent = selectedProduct.category.toUpperCase();
-            document.getElementById('modalName').textContent = selectedProduct.name;
-            document.getElementById('modalPrice').textContent = `$${selectedProduct.price.toFixed(2)}`;
-            document.getElementById('modalDescription').textContent = selectedProduct.description;
+      try {
+        const btn = document.getElementById('adminTestBtn');
+        btn.disabled = true;
+        btn.textContent = 'Creating Test Order...';
 
-            renderImageGallery(imageUrls);
+        const testOrderId = `test_${Date.now()}`;
 
-            if (selectedProduct.colors && selectedProduct.colors.length > 0) {
-                document.getElementById('colorGroup').style.display = 'block';
-                document.getElementById('colorOptions').innerHTML = selectedProduct.colors.map(color => `
-                    <div class="color-option" onclick="selectColor('${color}')">
-                        ${color}
-                    </div>
-                `).join('');
-            } else {
-                document.getElementById('colorGroup').style.display = 'none';
-            }
-
-            // Show admin test button if admin
-            if (isAdmin) {
-                document.getElementById('adminTestBtn').style.display = 'block';
-            }
-
-            document.getElementById('productModal').classList.add('active');
+        const orderData = {
+          source: 'arcane_store_test',
+          items: [{
+            productId: selectedProduct.id,
+            name: selectedProduct.name,
+            priceId: selectedProduct.stripePriceId || 'test_price',
+            qty: 1,
+            color: selectedColor || null
+          }],
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          customerName: 'Admin Test User',
+          shippingAddress: {
+            line1: '123 Test Street',
+            line2: 'Suite 100',
+            city: 'Test City',
+            state: 'TC',
+            postal_code: '12345',
+            country: 'US'
+          },
+          stripeSessionId: testOrderId,
+          stripePaymentIntentId: `pi_test_${Date.now()}`,
+          amountTotal: Number(selectedProduct.price || 0),
+          currency: 'usd',
+          paymentStatus: 'paid',
+          orderStatus: 'pending',
+          createdAt: new Date(),
+          updatedAt: new Date()
         };
 
-        function renderImageGallery(imageUrls) {
-            const mainImage = document.getElementById('mainImage');
-            const thumbnailStrip = document.getElementById('thumbnailStrip');
+        await setDoc(doc(db, 'Orders', testOrderId), orderData);
 
-            if (imageUrls.length === 0) {
-                mainImage.innerHTML = '<div class="placeholder" style="font-size: 6rem;">📦</div>';
-                thumbnailStrip.innerHTML = '';
-                return;
-            }
+        showNotification('✅ Test order created successfully!', 'success');
 
-            mainImage.innerHTML = `<img src="${imageUrls[currentImageIndex]}" alt="Product">`;
+        setTimeout(() => {
+          window.location.href = `store-success.html?session_id=${testOrderId}`;
+        }, 1200);
+      } catch (error) {
+        console.error('Test order error:', error);
+        showNotification(`Failed to create test order: ${error.message}`, 'error');
+        const btn = document.getElementById('adminTestBtn');
+        btn.disabled = false;
+        btn.textContent = '🧪 Test Order (Admin Only)';
+      }
+    };
 
-            if (imageUrls.length > 1) {
-                thumbnailStrip.innerHTML = imageUrls.map((url, index) => `
-                    <div class="thumbnail ${index === currentImageIndex ? 'active' : ''}" onclick="changeImage(${index})">
-                        <img src="${url}" alt="Thumbnail ${index + 1}">
-                    </div>
-                `).join('');
-            } else {
-                thumbnailStrip.innerHTML = '';
-            }
-        }
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 4000);
+    }
 
-        window.changeImage = (index) => {
-            currentImageIndex = index;
-            const imageUrls = selectedProduct.imageUrls || (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : []);
-            renderImageGallery(imageUrls);
-        };
-
-        window.selectColor = (color) => {
-            selectedColor = color;
-            document.querySelectorAll('.color-option').forEach(opt => {
-                opt.classList.remove('selected');
-                if (opt.textContent.trim() === color) {
-                    opt.classList.add('selected');
-                }
-            });
-        };
-
-        window.closeModal = () => {
-            document.getElementById('productModal').classList.remove('active');
-        };
-
-        window.handleBuyNow = async () => {
-            if (!selectedProduct) return;
-
-            if (selectedProduct.colors && selectedProduct.colors.length > 0 && !selectedColor) {
-                showNotification('Please select a color', 'error');
-                return;
-            }
-
-            try {
-                document.querySelector('.add-to-cart-btn').disabled = true;
-                document.querySelector('.add-to-cart-btn').textContent = 'Processing...';
-
-                const response = await fetch('/.netlify/functions/create-store-checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        priceId: selectedProduct.stripePriceId,
-                        productId: selectedProduct.id,
-                        userId: currentUser.uid,
-                        userEmail: currentUser.email,
-                        productName: selectedProduct.name,
-                        color: selectedColor
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to create checkout');
-                }
-
-                if (data.url) {
-                    window.location.href = data.url;
-                } else if (data.sessionId) {
-                    const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
-                    if (error) throw error;
-                }
-            } catch (error) {
-                console.error('Purchase error:', error);
-                showNotification(error.message || 'Something went wrong', 'error');
-                document.querySelector('.add-to-cart-btn').disabled = false;
-                document.querySelector('.add-to-cart-btn').textContent = 'Buy Now';
-            }
-        };
-
-        // Admin Test Order Function
-        window.handleTestOrder = async () => {
-            if (!selectedProduct || !isAdmin) return;
-
-            if (selectedProduct.colors && selectedProduct.colors.length > 0 && !selectedColor) {
-                showNotification('Please select a color first', 'error');
-                return;
-            }
-
-            if (!confirm('Create a test order for this product? This will appear in your orders dashboard.')) {
-                return;
-            }
-
-            try {
-                const btn = document.getElementById('adminTestBtn');
-                btn.disabled = true;
-                btn.textContent = 'Creating Test Order...';
-
-                // Import Firestore functions
-                const { addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js');
-
-                // Create fake order directly in Firestore
-                const testOrderId = `test_${Date.now()}`;
-                const orderData = {
-                    source: 'arcane_store_test',
-                    items: [{
-                        productId: selectedProduct.id,
-                        name: selectedProduct.name,
-                        priceId: selectedProduct.stripePriceId || 'test_price',
-                        qty: 1,
-                        color: selectedColor || null
-                    }],
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    customerName: 'Admin Test User',
-                    shippingAddress: {
-                        line1: '123 Test Street',
-                        line2: 'Suite 100',
-                        city: 'Test City',
-                        state: 'TC',
-                        postal_code: '12345',
-                        country: 'US'
-                    },
-                    stripeSessionId: testOrderId,
-                    stripePaymentIntentId: `pi_test_${Date.now()}`,
-                    amountTotal: selectedProduct.price,
-                    currency: 'usd',
-                    paymentStatus: 'paid',
-                    orderStatus: 'pending',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                };
-
-                // Save to Orders collection with test session ID
-                const { setDoc, doc: firestoreDoc } = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js');
-                await setDoc(firestoreDoc(db, 'Orders', testOrderId), orderData);
-
-                showNotification('✅ Test order created successfully!', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = `store-success.html?session_id=${testOrderId}`;
-                }, 1500);
-
-            } catch (error) {
-                console.error('Test order error:', error);
-                showNotification(`Failed to create test order: ${error.message}`, 'error');
-                const btn = document.getElementById('adminTestBtn');
-                btn.disabled = false;
-                btn.textContent = '🧪 Test Order (Admin Only)';
-            }
-        };
-
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
-        }
-    </script>
+    // init cart badge
+    renderCartBadge();
+  </script>
 </body>
 </html>

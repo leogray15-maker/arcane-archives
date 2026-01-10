@@ -55,6 +55,7 @@
         .nav-links {
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -69,15 +70,15 @@
             display: inline-block;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: #fff;
-        }
-
         .btn-secondary {
             background: rgba(15, 23, 42, 0.9);
             color: var(--text-light);
             border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: rgba(147, 51, 234, 0.7);
+            color: var(--purple-light);
         }
 
         .stats-grid {
@@ -135,6 +136,7 @@
         td {
             padding: 1rem;
             border-top: 1px solid var(--border-color);
+            vertical-align: top;
         }
 
         tr:hover {
@@ -198,14 +200,17 @@
             color: var(--text-dim);
         }
 
-        @media (max-width: 768px) {
-            .orders-table {
-                overflow-x: auto;
-            }
+        .muted {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
 
-            table {
-                min-width: 800px;
-            }
+        @media (max-width: 768px) {
+            body { padding: 1.25rem; }
+            .orders-table { overflow-x: auto; }
+            table { min-width: 880px; }
         }
     </style>
 </head>
@@ -239,7 +244,7 @@
                 <thead>
                     <tr>
                         <th>Order Date</th>
-                        <th>Product</th>
+                        <th>Items</th>
                         <th>Customer</th>
                         <th>Amount</th>
                         <th>Status</th>
@@ -284,7 +289,7 @@
             }
 
             const adminEmails = ['leogray15@gmail.com'];
-            
+
             if (!adminEmails.includes(user.email)) {
                 alert('⚠️ Admin access required');
                 location.href = 'dashboard.html';
@@ -298,10 +303,10 @@
             try {
                 const q = query(collection(db, 'Orders'), orderBy('createdAt', 'desc'));
                 const querySnapshot = await getDocs(q);
-                
+
                 allOrders = [];
-                querySnapshot.forEach((doc) => {
-                    allOrders.push({ id: doc.id, ...doc.data() });
+                querySnapshot.forEach((d) => {
+                    allOrders.push({ id: d.id, ...d.data() });
                 });
 
                 updateStats();
@@ -318,12 +323,37 @@
 
         function updateStats() {
             const totalOrders = allOrders.length;
-            const pendingOrders = allOrders.filter(o => o.orderStatus === 'pending').length;
-            const totalRevenue = allOrders.reduce((sum, o) => sum + (o.amountTotal || 0), 0);
+            const pendingOrders = allOrders.filter(o => (o.orderStatus || 'pending') === 'pending').length;
+            const totalRevenue = allOrders.reduce((sum, o) => sum + (Number(o.amountTotal) || 0), 0);
 
             document.getElementById('totalOrders').textContent = totalOrders;
             document.getElementById('pendingOrders').textContent = pendingOrders;
             document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+        }
+
+        function getItemsSummary(order) {
+            const items = Array.isArray(order.items) ? order.items : [];
+            if (items.length === 0) return { title: 'Unknown Items', details: '' };
+
+            const totalQty = items.reduce((s, it) => s + Math.max(1, Number(it.qty || 1)), 0);
+            const first = items[0];
+            const firstName = first?.name || first?.productId || 'Item';
+
+            // show “+X more” based on qty, not array length
+            const more = Math.max(0, totalQty - 1);
+            const title = more > 0 ? `${firstName} (+${more} more)` : `${firstName}`;
+
+            const detailLines = items.slice(0, 3).map(it => {
+                const nm = it.name || it.productId || 'Item';
+                const q = Math.max(1, Number(it.qty || 1));
+                const c = it.color ? ` • ${it.color}` : '';
+                return `${nm} ×${q}${c}`;
+            });
+
+            const extraLines = (items.length > 3) ? `\n…and ${items.length - 3} more line(s)` : '';
+            const details = (detailLines.join('\n') + extraLines).trim();
+
+            return { title, details };
         }
 
         function renderOrders() {
@@ -343,26 +373,29 @@
 
             tbody.innerHTML = allOrders.map(order => {
                 const date = order.createdAt?.toDate?.() || new Date();
-                const formattedDate = date.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
                 });
+
+                const { title, details } = getItemsSummary(order);
 
                 return `
                     <tr>
                         <td>${formattedDate}</td>
                         <td>
-                            <strong>${order.productName || 'Unknown Product'}</strong>
+                            <strong>${escapeHtml(title)}</strong>
+                            ${details ? `<div class="muted" style="white-space:pre-line">${escapeHtml(details)}</div>` : ''}
                         </td>
                         <td>
-                            <div>${order.customerName || 'N/A'}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-dim);">${order.userEmail || ''}</div>
+                            <div>${escapeHtml(order.customerName || 'N/A')}</div>
+                            <div class="muted">${escapeHtml(order.userEmail || '')}</div>
                         </td>
-                        <td><strong style="color: var(--gold);">$${(order.amountTotal || 0).toFixed(2)}</strong></td>
+                        <td><strong style="color: var(--gold);">$${(Number(order.amountTotal || 0)).toFixed(2)}</strong></td>
                         <td>
-                            <span class="status-badge status-${order.orderStatus || 'pending'}">
-                                ${order.orderStatus || 'pending'}
+                            <span class="status-badge status-${escapeHtml(order.orderStatus || 'pending')}">
+                                ${escapeHtml(order.orderStatus || 'pending')}
                             </span>
                         </td>
                         <td>
@@ -379,6 +412,15 @@
             }).join('');
         }
 
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
         window.updateOrderStatus = async (orderId, newStatus) => {
             if (!newStatus) return;
 
@@ -389,9 +431,7 @@
                 });
 
                 const order = allOrders.find(o => o.id === orderId);
-                if (order) {
-                    order.orderStatus = newStatus;
-                }
+                if (order) order.orderStatus = newStatus;
 
                 updateStats();
                 alert(`✅ Order status updated to: ${newStatus}`);

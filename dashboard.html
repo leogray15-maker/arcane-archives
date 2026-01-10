@@ -101,6 +101,83 @@ body {
   text-decoration: underline;
 }
 
+
+/* Balance */
+.balance-row{
+  margin-top: 1.2rem;
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.balance-card{
+  flex: 1 1 260px;
+  background: rgba(15,23,42,.85);
+  border: 1px solid rgba(148,163,184,.35);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+}
+.balance-label{
+  font-size:.75rem;
+  color:#a3a3a3;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:.25rem;
+}
+.balance-value{
+  font-size:1.6rem;
+  font-weight:800;
+  color:#fbbf24;
+  line-height:1;
+}
+.balance-sub{
+  margin-top:.35rem;
+  font-size:.8rem;
+  color:#9ca3af;
+}
+.balance-actions{
+  display:flex;
+  flex-direction:column;
+  gap:.5rem;
+  align-items:flex-end;
+}
+.balance-btn{
+  display:inline-block;
+  padding:.55rem .9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(167,139,250,.6);
+  background: rgba(147, 51, 234, 0.18);
+  color:#e5e5e5;
+  font-size:.85rem;
+  font-weight:700;
+  text-decoration:none;
+  white-space:nowrap;
+  transition: all .2s;
+}
+.balance-btn:hover{
+  transform: translateY(-1px);
+  border-color:#9333ea;
+  box-shadow: 0 10px 25px rgba(147,51,234,0.25);
+}
+.balance-btn.secondary{
+  border-color: rgba(148,163,184,.35);
+  background: rgba(2,1,10,.25);
+  color:#a3a3a3;
+}
+.balance-btn.secondary:hover{
+  border-color:#a78bfa;
+  color:#e5e5e5;
+  box-shadow:none;
+}
+@media (max-width: 768px){
+  .balance-actions{ align-items:stretch; width:100%; }
+  .balance-btn{ width:100%; text-align:center; }
+}
+
+
 /* TradingView Widgets */
 .tv-stack{
   display:flex;
@@ -114,67 +191,6 @@ body {
   overflow:hidden;
   border:1px solid rgba(148,163,184,.35);
   background:rgba(15,23,42,.96);
-}
-
-.tv-adv-card{
-  border-radius:20px;
-  border:1px solid rgba(148,163,184,.35);
-  background:rgba(15,23,42,.96);
-  overflow:hidden;
-}
-
-.tv-adv-head{
-  padding:1rem 1rem .75rem;
-  border-bottom:1px solid rgba(148,163,184,.22);
-}
-
-.tv-adv-title{
-  font-weight:700;
-  letter-spacing:.02em;
-  margin-bottom:.65rem;
-}
-
-.tv-adv-tabs{
-  display:flex;
-  gap:.5rem;
-  overflow-x:auto;
-  padding-bottom:.25rem;
-  -webkit-overflow-scrolling:touch;
-}
-
-.tv-adv-tabs::-webkit-scrollbar{ height:6px; }
-.tv-adv-tabs::-webkit-scrollbar-thumb{ background:rgba(148,163,184,.25); border-radius:999px; }
-
-.tv-tab{
-  flex:0 0 auto;
-  font-size:.78rem;
-  padding:.45rem .7rem;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,.28);
-  background:rgba(2,1,10,.35);
-  color:#e5e5e5;
-  cursor:pointer;
-  transition:all .15s;
-}
-
-.tv-tab:hover{
-  border-color:#9333ea;
-  transform:translateY(-1px);
-}
-
-.tv-tab.active{
-  border-color:rgba(167,139,250,.9);
-  background:rgba(147, 51, 234, 0.18);
-}
-
-.tv-adv-body{
-  /* mobile-first height, grows on desktop */
-  height: clamp(320px, 55vh, 520px);
-}
-
-.tv-adv-chart{
-  width:100%;
-  height:100%;
 }
 
 /* Section Headers */
@@ -314,7 +330,23 @@ body {
     <h1>Welcome back, <span id="username">Member</span> 👋</h1>
     <p>Your command center for mastering the game</p>
 
-    <div id="payBanner" class="banner">
+    
+
+    <div class="balance-row">
+      <div class="balance-card" aria-label="Account balance">
+        <div>
+          <div class="balance-label">Account Balance</div>
+          <div class="balance-value" id="accountBalance">£0.00</div>
+          <div class="balance-sub">Earn commissions in Referrals. Spend them in Arcane Store.</div>
+        </div>
+        <div class="balance-actions">
+          <a class="balance-btn" href="arcane-store.html">🛍️ Shop with Balance</a>
+          <a class="balance-btn secondary" href="referrals.html">🎯 View Earnings</a>
+        </div>
+      </div>
+    </div>
+
+<div id="payBanner" class="banner">
       🔒 <strong>Upgrade to unlock all features</strong><br>
       <a href="index.html#pricing">Enter the Arcane Archives →</a>
     </div>
@@ -326,27 +358,9 @@ body {
     <div class="tv-ticker-wrap">
       <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-ticker-tape.js"></script>
       <tv-ticker-tape symbols='CMCMARKETS:GOLD,OANDA:XAGUSD,BITSTAMP:BTCUSD,VANTAGE:SP500,BITSTAMP:ETHUSD'
-        item-size="compact" show-hover></tv-ticker-tape>
+        item-size="compact"></tv-ticker-tape>
     </div>
-
-    <!-- Advanced chart (with mobile-friendly symbol slider) -->
-    <div class="tv-adv-card">
-      <div class="tv-adv-head">
-        <div class="tv-adv-title">📊 Advanced Chart</div>
-        <div class="tv-adv-tabs" role="tablist" aria-label="Chart symbols">
-          <button class="tv-tab active" data-symbol="CMCMARKETS:GOLD" role="tab" aria-selected="true">GOLD</button>
-          <button class="tv-tab" data-symbol="OANDA:XAGUSD" role="tab" aria-selected="false">XAGUSD</button>
-          <button class="tv-tab" data-symbol="BITSTAMP:BTCUSD" role="tab" aria-selected="false">BTCUSD</button>
-          <button class="tv-tab" data-symbol="VANTAGE:SP500" role="tab" aria-selected="false">SP500</button>
-          <button class="tv-tab" data-symbol="BITSTAMP:ETHUSD" role="tab" aria-selected="false">ETHUSD</button>
-        </div>
-      </div>
-
-      <div class="tv-adv-body">
-        <div class="tv-adv-chart" id="tvAdvancedChart"></div>
-      </div>
-    </div>
-  </div>
+</div>
 
   <!-- PRIORITY FEATURES -->
   <div class="section-header">🔥 Core Features</div>
@@ -506,7 +520,7 @@ body {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -521,64 +535,32 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* TradingView Advanced Chart */
-function renderAdvancedChart(symbol) {
-  const target = document.getElementById("tvAdvancedChart");
-  if (!target) return;
 
-  // Clear previous widget
-  target.innerHTML = "";
 
-  const script = document.createElement("script");
-  script.type = "text/javascript";
-  script.async = true;
-  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+async function ensureAffiliateProfile(user) {
+  const ref = doc(db, "Affiliates", user.uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) return snap.data();
 
-  // Dark theme + responsive sizing (container controls height)
-  script.textContent = JSON.stringify({
-    autosize: true,
-    symbol: symbol,
-    interval: "60",
-    timezone: "Etc/UTC",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    allow_symbol_change: true,
-    withdateranges: true,
-    hide_side_toolbar: false,
-    hide_top_toolbar: false,
-    save_image: false,
-    calendar: false,
-    support_host: "https://www.tradingview.com"
-  });
-
-  target.appendChild(script);
+  // Create a fresh affiliate profile for new users (so balance always exists)
+  const starter = {
+    userId: user.uid,
+    availableBalance: 0,
+    pendingBalance: 0,
+    totalEarnings: 0,
+    totalWithdrawn: 0,
+    createdAt: serverTimestamp(),
+    lastUpdated: serverTimestamp()
+  };
+  await setDoc(ref, starter, { merge: true });
+  return starter;
 }
 
-function setupChartTabs() {
-  const tabs = Array.from(document.querySelectorAll(".tv-tab"));
-  if (!tabs.length) return;
-
-  tabs.forEach(btn => {
-    btn.addEventListener("click", () => {
-      tabs.forEach(t => {
-        t.classList.remove("active");
-        t.setAttribute("aria-selected", "false");
-      });
-      btn.classList.add("active");
-      btn.setAttribute("aria-selected", "true");
-      renderAdvancedChart(btn.dataset.symbol);
-    });
-  });
-
-  // Initial render from the active tab
-  const active = tabs.find(t => t.classList.contains("active")) || tabs[0];
-  active.classList.add("active");
-  active.setAttribute("aria-selected", "true");
-  renderAdvancedChart(active.dataset.symbol);
+function moneyGBP(value) {
+  const n = Number(value || 0);
+  return `£${n.toFixed(2)}`;
 }
 
-document.addEventListener("DOMContentLoaded", setupChartTabs);
 
 window.go = (href) => location.href = href;
 
@@ -604,6 +586,11 @@ onAuthStateChanged(auth, async (user) => {
     // Update username display
     const username = data.Username || data.FirstName || user.email.split("@")[0];
     document.getElementById("username").textContent = username;
+
+    // Load account balance (affiliate commissions)
+    const aff = await ensureAffiliateProfile(user);
+    document.getElementById("accountBalance").textContent = moneyGBP(aff.availableBalance);
+
 
     // Check if admin
     const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
