@@ -545,6 +545,10 @@
                     <button class="add-to-cart-btn" onclick="handleBuyNow()">
                         Buy Now
                     </button>
+                    
+                    <button id="adminTestBtn" class="add-to-cart-btn" onclick="handleTestOrder()" style="display: none; background: linear-gradient(135deg, #f59e0b, #d97706); margin-top: 1rem;">
+                        🧪 Test Order (Admin Only)
+                    </button>
                 </div>
             </div>
         </div>
@@ -575,6 +579,7 @@
         let selectedProduct = null;
         let selectedColor = null;
         let currentImageIndex = 0;
+        let isAdmin = false;
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -587,7 +592,11 @@
             const userData = userDoc.data() || {};
             const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
 
-            if (!isPaid) {
+            // Check if admin
+            const adminEmails = ['leogray15@gmail.com'];
+            isAdmin = adminEmails.includes(user.email);
+
+            if (!isPaid && !isAdmin) {
                 alert('⚠️ This page is for premium members only.');
                 location.href = 'dashboard.html';
                 return;
@@ -723,6 +732,11 @@
                 document.getElementById('colorGroup').style.display = 'none';
             }
 
+            // Show admin test button if admin
+            if (isAdmin) {
+                document.getElementById('adminTestBtn').style.display = 'block';
+            }
+
             document.getElementById('productModal').classList.add('active');
         };
 
@@ -811,6 +825,78 @@
                 showNotification(error.message || 'Something went wrong', 'error');
                 document.querySelector('.add-to-cart-btn').disabled = false;
                 document.querySelector('.add-to-cart-btn').textContent = 'Buy Now';
+            }
+        };
+
+        // Admin Test Order Function
+        window.handleTestOrder = async () => {
+            if (!selectedProduct || !isAdmin) return;
+
+            if (selectedProduct.colors && selectedProduct.colors.length > 0 && !selectedColor) {
+                showNotification('Please select a color first', 'error');
+                return;
+            }
+
+            if (!confirm('Create a test order for this product? This will appear in your orders dashboard.')) {
+                return;
+            }
+
+            try {
+                const btn = document.getElementById('adminTestBtn');
+                btn.disabled = true;
+                btn.textContent = 'Creating Test Order...';
+
+                // Import Firestore functions
+                const { addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js');
+
+                // Create fake order directly in Firestore
+                const testOrderId = `test_${Date.now()}`;
+                const orderData = {
+                    source: 'arcane_store_test',
+                    items: [{
+                        productId: selectedProduct.id,
+                        name: selectedProduct.name,
+                        priceId: selectedProduct.stripePriceId || 'test_price',
+                        qty: 1,
+                        color: selectedColor || null
+                    }],
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    customerName: 'Admin Test User',
+                    shippingAddress: {
+                        line1: '123 Test Street',
+                        line2: 'Suite 100',
+                        city: 'Test City',
+                        state: 'TC',
+                        postal_code: '12345',
+                        country: 'US'
+                    },
+                    stripeSessionId: testOrderId,
+                    stripePaymentIntentId: `pi_test_${Date.now()}`,
+                    amountTotal: selectedProduct.price,
+                    currency: 'usd',
+                    paymentStatus: 'paid',
+                    orderStatus: 'pending',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+
+                // Save to Orders collection with test session ID
+                const { setDoc, doc: firestoreDoc } = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js');
+                await setDoc(firestoreDoc(db, 'Orders', testOrderId), orderData);
+
+                showNotification('✅ Test order created successfully!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = `store-success.html?session_id=${testOrderId}`;
+                }, 1500);
+
+            } catch (error) {
+                console.error('Test order error:', error);
+                showNotification(`Failed to create test order: ${error.message}`, 'error');
+                const btn = document.getElementById('adminTestBtn');
+                btn.disabled = false;
+                btn.textContent = '🧪 Test Order (Admin Only)';
             }
         };
 
