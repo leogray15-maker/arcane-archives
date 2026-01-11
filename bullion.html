@@ -421,7 +421,7 @@
 
         <!-- Live Price Widgets -->
         <div class="price-widgets">
-            <div class="price-widget">
+            <div class="price-widget" id="goldPriceWidget" data-metal="gold">
                 <div class="widget-header">
                     <div class="widget-icon">🥇</div>
                     <div class="widget-title">Gold (XAU/USD)</div>
@@ -441,7 +441,7 @@
                 </div>
             </div>
 
-            <div class="price-widget">
+            <div class="price-widget" id="silverPriceWidget" data-metal="silver" style="display: none;">
                 <div class="widget-header">
                     <div class="widget-icon">🥈</div>
                     <div class="widget-title">Silver (XAG/USD)</div>
@@ -763,9 +763,20 @@ Payment must be received within 48 hours to secure spot price.`);
         window.switchMetal = function(metal) {
             currentMetal = metal;
 
+            // Update active button
             document.querySelectorAll('.metal-btn').forEach(btn => btn.classList.remove('active'));
             event.target.closest('.metal-btn').classList.add('active');
 
+            // Show/hide price widgets based on selected metal
+            document.querySelectorAll('.price-widget').forEach(widget => {
+                if (widget.getAttribute('data-metal') === metal) {
+                    widget.style.display = 'block';
+                } else {
+                    widget.style.display = 'none';
+                }
+            });
+
+            // Render products for selected metal
             renderProducts(metal);
         };
 
