@@ -282,24 +282,98 @@
     .tile.locked::after{
       content:"🔒 Members";
       position:absolute;
-      right: 8px;
-      top: 8px;
-      font-size: .7rem;
+      right: 6px;
+      top: 6px;
+      font-size: .65rem;
       font-weight: 900;
-      letter-spacing: .08em;
+      letter-spacing: .06em;
       text-transform: uppercase;
-      padding: .3rem .6rem;
+      padding: .25rem .5rem;
       border-radius: 999px;
       border: 1px solid rgba(167,139,250,.25);
-      background: rgba(0,0,0,.6);
+      background: rgba(0,0,0,.75);
       color: var(--purpleLight);
       white-space: nowrap;
       pointer-events: none;
+      z-index: 1;
     }
 
     /* Give locked tiles padding so content doesn't overlap badge */
     .tile.locked .tile-content{
-      padding-right: 90px;
+      padding-right: 85px;
+    }
+
+    /* Locked Access Modal */
+    .locked-modal-overlay{
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .locked-modal-overlay.active{
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .locked-modal{
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(.92);
+      z-index: 9999;
+      background: linear-gradient(135deg, rgba(15,23,42,.98), rgba(17,24,39,.98));
+      border: 1px solid rgba(167,139,250,.45);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 480px;
+      width: calc(100% - 2rem);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+      box-shadow: 0 25px 50px rgba(0,0,0,.6);
+    }
+    .locked-modal.active{
+      opacity: 1;
+      pointer-events: all;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .locked-modal-icon{
+      font-size: 3.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      line-height: 1;
+    }
+
+    .locked-modal h3{
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: .75rem;
+      color: var(--purpleLight);
+    }
+
+    .locked-modal p{
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .locked-modal-actions{
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+
+    .locked-modal-actions .btn{
+      flex: 1;
+      min-width: 140px;
+      justify-content: center;
+      text-align: center;
     }
 
     /* Modal */
@@ -442,6 +516,36 @@
 
       .tile{
         padding: .9rem;
+      }
+
+      /* Locked modal mobile optimizations */
+      .locked-modal{
+        padding: 1.5rem;
+        width: calc(100% - 2rem);
+        max-width: 400px;
+      }
+
+      .locked-modal-icon{
+        font-size: 3rem;
+        margin-bottom: .8rem;
+      }
+
+      .locked-modal h3{
+        font-size: 1.35rem;
+      }
+
+      .locked-modal p{
+        font-size: .95rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .locked-modal-actions{
+        flex-direction: column;
+      }
+
+      .locked-modal-actions .btn{
+        width: 100%;
+        min-width: 0;
       }
     }
 
@@ -666,6 +770,18 @@
     </div>
   </div>
 
+  <!-- Locked Access Modal -->
+  <div class="locked-modal-overlay" id="lockedOverlay"></div>
+  <div class="locked-modal" id="lockedModal">
+    <div class="locked-modal-icon">🔒</div>
+    <h3>Members Only</h3>
+    <p>This feature is exclusive to Arcane Archives members. Upgrade now to unlock full access to all courses, live trading floor, weekly calls, and more.</p>
+    <div class="locked-modal-actions">
+      <button class="btn btn-secondary" id="lockedCloseBtn">Close</button>
+      <button class="btn btn-primary" id="upgradeToPricingBtn">View Plans</button>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
@@ -701,6 +817,11 @@
     const txModal = document.getElementById("txModal");
     const txBody = document.getElementById("txBody");
     const txCloseBtn = document.getElementById("txCloseBtn");
+
+    const lockedOverlay = document.getElementById("lockedOverlay");
+    const lockedModal = document.getElementById("lockedModal");
+    const lockedCloseBtn = document.getElementById("lockedCloseBtn");
+    const upgradeToPricingBtn = document.getElementById("upgradeToPricingBtn");
 
     const adminSection = document.getElementById("adminSection");
 
@@ -763,8 +884,23 @@
       txModal.classList.remove("active");
     }
 
+    function openLockedModal(){
+      lockedOverlay.classList.add("active");
+      lockedModal.classList.add("active");
+    }
+    function closeLockedModal(){
+      lockedOverlay.classList.remove("active");
+      lockedModal.classList.remove("active");
+    }
+
     txOverlay.addEventListener("click", closeTx);
     txCloseBtn.addEventListener("click", closeTx);
+
+    lockedOverlay.addEventListener("click", closeLockedModal);
+    lockedCloseBtn.addEventListener("click", closeLockedModal);
+    upgradeToPricingBtn.addEventListener("click", () => {
+      location.href = "index.html#pricing";
+    });
 
     historyBtn.addEventListener("click", async () => {
       openTx();
@@ -838,9 +974,9 @@
         }
 
         tile.addEventListener("click", () => {
-          // If needs paid and user isn't paid/admin, redirect to pricing
+          // If needs paid and user isn't paid/admin, show locked modal
           if (needsPaid && !isPaid && !isAdmin){
-            location.href = "index.html#pricing";
+            openLockedModal();
             return;
           }
           if (href) location.href = href;
