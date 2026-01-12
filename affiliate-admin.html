@@ -388,7 +388,9 @@
       query,
       where,
       orderBy,
-      increment
+      increment,
+      addDoc,
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -651,16 +653,33 @@
     }
 
     window.approveWithdrawal = async (withdrawalId, userId, amount) => {
-      if (!confirm(`Approve withdrawal of £${amount.toFixed(2)}?`)) return;
+      if (!confirm(`Approve withdrawal of £${amount.toFixed(2)}?\n\nThis will:\n• Mark withdrawal as completed\n• Deduct £${amount.toFixed(2)} from user's balance\n• Create transaction record`)) return;
 
       try {
-        // Update withdrawal status
+        // 1. Update withdrawal status
         await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
           status: 'completed',
-          completedAt: new Date()
+          completedAt: new Date(),
+          processedBy: auth.currentUser?.uid
         });
 
-        showSuccess('✅ Withdrawal approved!');
+        // 2. Deduct from user's balance
+        const affiliateRef = doc(db, 'Affiliates', userId);
+        await updateDoc(affiliateRef, {
+          availableBalance: increment(-amount),
+          balance: increment(-amount)
+        });
+
+        // 3. Create transaction record
+        await addDoc(collection(db, 'BalanceTransactions'), {
+          userId: userId,
+          type: 'withdrawal',
+          amount: -amount,
+          note: `Withdrawal processed - £${amount.toFixed(2)}`,
+          createdAt: serverTimestamp()
+        });
+
+        showSuccess(`✅ Withdrawal approved! £${amount.toFixed(2)} deducted from user balance.`);
         await loadWithdrawals();
         await loadStats();
         await loadAffiliates();
