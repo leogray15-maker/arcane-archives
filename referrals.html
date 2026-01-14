@@ -721,50 +721,52 @@
         });
 
         async function loadReferralStats(referralCode) {
-            const q = query(
-                collection(db, 'Users'),
-                where('referredBy', '==', referralCode)
-            );
+            try {
+                // Query Users collection directly for accurate counts
+                const usersRef = collection(db, 'Users');
+                const q = query(usersRef, where('referredBy', '==', referralCode));
+                const querySnapshot = await getDocs(q);
 
-            onSnapshot(q, (snapshot) => {
-                const total = snapshot.size;
+                let total = querySnapshot.size;
                 let active = 0;
-                let pending = 0;
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.isPaid || data.subscriptionStatus === 'active') {
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    if (userData.isPaid === true || userData.subscriptionStatus === 'active') {
                         active++;
-                    } else {
-                        pending++;
                     }
                 });
 
+                const pending = total - active;
                 const monthlyEarnings = active * 25;
 
                 document.getElementById('totalReferrals').textContent = total;
                 document.getElementById('activeMembers').textContent = active;
                 document.getElementById('pendingReferrals').textContent = pending;
                 document.getElementById('monthlyEarnings').textContent = `£${monthlyEarnings}`;
-            });
+
+            } catch (error) {
+                console.error('Error loading referral stats:', error);
+                // Show zeros on error
+                document.getElementById('totalReferrals').textContent = '0';
+                document.getElementById('activeMembers').textContent = '0';
+                document.getElementById('pendingReferrals').textContent = '0';
+                document.getElementById('monthlyEarnings').textContent = '£0';
+            }
         }
 
         async function loadReferredMembers(referralCode) {
             console.log('Loading referrals for code:', referralCode);
             
             try {
-                const q = query(
-                    collection(db, 'Users'),
-                    where('referredBy', '==', referralCode),
-                    limit(50)
-                );
-
-                const snapshot = await getDocs(q);
                 const tbody = document.getElementById('referralsTableBody');
 
-                console.log('Found', snapshot.size, 'referrals');
+                // Query Users collection for anyone who used this referral code
+                const usersRef = collection(db, 'Users');
+                const q = query(usersRef, where('referredBy', '==', referralCode));
+                const querySnapshot = await getDocs(q);
 
-                if (snapshot.empty) {
+                if (querySnapshot.empty) {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="4" style="text-align:center;color:var(--text-dim);">
@@ -775,31 +777,32 @@
                     return;
                 }
 
-                tbody.innerHTML = '';
+                console.log('Found', querySnapshot.size, 'referrals');
 
-                // Sort manually by joinedAt
+                // Convert to array and sort by joinedAt (newest first)
                 const referrals = [];
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    referrals.push(data);
+                querySnapshot.forEach((doc) => {
+                    referrals.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Sort by joinedAt (newest first)
                 referrals.sort((a, b) => {
-                    const aTime = a.joinedAt?.toMillis() || 0;
-                    const bTime = b.joinedAt?.toMillis() || 0;
+                    const aTime = a.joinedAt?.toMillis ? a.joinedAt.toMillis() : 0;
+                    const bTime = b.joinedAt?.toMillis ? b.joinedAt.toMillis() : 0;
                     return bTime - aTime;
                 });
 
-                referrals.forEach((data) => {
-                    const isActive = data.subscriptionStatus === 'active' || data.isPaid === true;
+                tbody.innerHTML = '';
+
+                referrals.forEach((userData) => {
+                    const isActive = userData.isPaid === true || userData.subscriptionStatus === 'active';
                     const status = isActive ? 'active' : 'pending';
                     const monthlyValue = isActive ? '£25' : '£0';
+                    const username = userData.Username || userData.Email?.split('@')[0] || 'New Member';
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${formatDate(data.joinedAt)}</td>
-                        <td>${data.Username || 'New Member'}</td>
+                        <td>${formatDate(userData.joinedAt)}</td>
+                        <td>${username}</td>
                         <td><span class="status-badge ${status}">${isActive ? 'Active' : 'Pending'}</span></td>
                         <td>${monthlyValue}/mo</td>
                     `;

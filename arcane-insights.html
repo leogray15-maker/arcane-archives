@@ -419,8 +419,10 @@
                 <div class="rewards-preview">
                     <h4>🏆 Upcoming Streak Rewards</h4>
                     <ul>
+                        <li><strong>30 Days:</strong> Exclusive trading playbook</li>
                         <li><strong>90 Days:</strong> 1-on-1 strategy call with Leo</li>
-                        <li><strong>180 Days:</strong> Mystery reward + public recognition</li>
+                        <li><strong>180 Days:</strong> Lifetime access to premium signals</li>
+                        <li><strong>365 Days:</strong> Mystery reward + public recognition</li>
                     </ul>
                 </div>
             </div>
@@ -441,14 +443,14 @@
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Your Firebase config - UPDATE THESE WITH YOUR ACTUAL VALUES
+        // Firebase config
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -457,13 +459,36 @@
 
         let currentUser = null;
 
-        // Auth Check
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
+        // Auth Check - Require paid membership
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                // Check if user is paid
+                const userDoc = await getDoc(doc(db, 'Users', user.uid));
+                if (!userDoc.exists()) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
+
+                if (!isPaid) {
+                    alert('🔒 Arcane Insights requires an active membership. Redirecting to pricing...');
+                    window.location.href = 'index.html#pricing';
+                    return;
+                }
+
+                // User is authenticated and paid
                 currentUser = user;
                 loadUserStreak();
                 loadTodaysPost();
-            } else {
+            } catch (error) {
+                console.error('Auth error:', error);
                 window.location.href = 'login.html';
             }
         });

@@ -66,6 +66,7 @@ async function processAffiliateCommission(email) {
 
     const userDoc = usersSnapshot.docs[0];
     const userData = userDoc.data();
+    const userId = userDoc.id;
     const referralCode = userData.referredBy;
 
     if (!referralCode) {
@@ -87,21 +88,49 @@ async function processAffiliateCommission(email) {
     }
 
     const referrerId = referrerSnapshot.docs[0].id;
+    const referrerData = referrerSnapshot.docs[0].data();
     console.log("👤 Referrer ID:", referrerId);
 
     const affiliateRef = db.collection("Affiliates").doc(referrerId);
     const affiliateDoc = await affiliateRef.get();
 
     const commission = 25;
+    
+    // Create referral entry for the list
+    const referralEntry = {
+      username: userData.Username || email.split('@')[0],
+      joinedAt: userData.joinedAt || admin.firestore.FieldValue.serverTimestamp(),
+      status: 'active', // They paid, so active
+      userId: userId
+    };
 
     if (affiliateDoc.exists()) {
-      await affiliateRef.update({
-        balance: admin.firestore.FieldValue.increment(commission),
-        availableBalance: admin.firestore.FieldValue.increment(commission),
-        totalEarned: admin.firestore.FieldValue.increment(commission),
-        activeReferrals: admin.firestore.FieldValue.increment(1),
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-      });
+      // Check if this referral already exists in the list
+      const currentList = affiliateDoc.data().referralsList || [];
+      const existingIndex = currentList.findIndex(r => r.userId === userId);
+      
+      if (existingIndex >= 0) {
+        // Update existing referral to active
+        currentList[existingIndex].status = 'active';
+        await affiliateRef.update({
+          balance: admin.firestore.FieldValue.increment(commission),
+          availableBalance: admin.firestore.FieldValue.increment(commission),
+          totalEarned: admin.firestore.FieldValue.increment(commission),
+          activeReferrals: admin.firestore.FieldValue.increment(1),
+          referralsList: currentList,
+          lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } else {
+        // Add new referral
+        await affiliateRef.update({
+          balance: admin.firestore.FieldValue.increment(commission),
+          availableBalance: admin.firestore.FieldValue.increment(commission),
+          totalEarned: admin.firestore.FieldValue.increment(commission),
+          activeReferrals: admin.firestore.FieldValue.increment(1),
+          referralsList: admin.firestore.FieldValue.arrayUnion(referralEntry),
+          lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
       console.log("✅ Updated affiliate balance +£" + commission);
 
       // Log balance transaction
@@ -109,19 +138,24 @@ async function processAffiliateCommission(email) {
         userId: referrerId,
         type: "commission",
         amount: commission,
-        note: `Referral commission for ${email}`,
+        note: `Referral commission for ${userData.Username || email}`,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
     } else {
+      // Create new affiliate doc with proper structure
       await affiliateRef.set({
         userId: referrerId,
         referralCode: referralCode,
         balance: commission,
         availableBalance: commission,
+        pendingBalance: 0,
         totalEarned: commission,
         totalWithdrawn: 0,
         activeReferrals: 1,
+        totalReferrals: 1,
+        referralsList: [referralEntry],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
         lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
       });
       console.log("✅ Created new affiliate with balance: £" + commission);
@@ -130,7 +164,7 @@ async function processAffiliateCommission(email) {
         userId: referrerId,
         type: "commission",
         amount: commission,
-        note: `Referral commission for ${email}`,
+        note: `Referral commission for ${userData.Username || email}`,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
@@ -140,12 +174,79 @@ async function processAffiliateCommission(email) {
       affiliateId: referrerId,
       amount: commission,
       type: "referral",
-      note: `Commission for referral signup: ${email}`,
+      note: `Commission for referral signup: ${userData.Username || email}`,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
   } catch (err) {
     console.error("❌ Commission processing error:", err.message);
+  }
+}
+
+// NEW: Track pending referrals when user signs up (before payment)
+async function trackPendingReferral(email, referralCode, username) {
+  if (!referralCode || !db) return;
+
+  try {
+    console.log("📝 Tracking pending referral for code:", referralCode);
+
+    const referrerSnapshot = await db
+      .collection("Users")
+      .where("referralCode", "==", referralCode.toUpperCase())
+      .limit(1)
+      .get();
+
+    if (referrerSnapshot.empty) {
+      console.log("⚠️ Referrer not found for code:", referralCode);
+      return;
+    }
+
+    const referrerId = referrerSnapshot.docs[0].id;
+    const affiliateRef = db.collection("Affiliates").doc(referrerId);
+    const affiliateDoc = await affiliateRef.get();
+
+    // Get userId from the Users collection
+    const newUserSnapshot = await db
+      .collection("Users")
+      .where("Email", "==", email)
+      .limit(1)
+      .get();
+
+    const userId = newUserSnapshot.empty ? null : newUserSnapshot.docs[0].id;
+
+    const pendingEntry = {
+      username: username || email.split('@')[0],
+      joinedAt: admin.firestore.FieldValue.serverTimestamp(),
+      status: 'pending',
+      userId: userId || email // Use email as fallback if no userId yet
+    };
+
+    if (affiliateDoc.exists()) {
+      await affiliateRef.update({
+        totalReferrals: admin.firestore.FieldValue.increment(1),
+        referralsList: admin.firestore.FieldValue.arrayUnion(pendingEntry),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      await affiliateRef.set({
+        userId: referrerId,
+        referralCode: referralCode.toUpperCase(),
+        balance: 0,
+        availableBalance: 0,
+        pendingBalance: 0,
+        totalEarned: 0,
+        totalWithdrawn: 0,
+        activeReferrals: 0,
+        totalReferrals: 1,
+        referralsList: [pendingEntry],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    console.log("✅ Tracked pending referral");
+  } catch (err) {
+    console.error("❌ Error tracking pending referral:", err.message);
   }
 }
 
