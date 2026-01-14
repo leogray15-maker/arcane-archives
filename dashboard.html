@@ -298,6 +298,22 @@
       z-index: 1;
     }
 
+    /* Arcane Insights special tile */
+    .tile-insights{
+      background: radial-gradient(circle at top, rgba(147,51,234,.12), rgba(15,23,42,.90));
+      border-color: rgba(147,51,234,.35);
+    }
+    .tile-insights:hover{
+      border-color: rgba(167,139,250,.65);
+      box-shadow: 0 18px 35px rgba(147,51,234,.25);
+    }
+    .tile-insights .tile-desc{
+      font-weight: 700;
+    }
+    .tile-insights #streakDisplay{
+      color: var(--gold);
+    }
+
     /* Give locked tiles padding so content doesn't overlap badge */
     .tile.locked .tile-content{
       padding-right: 82px;
@@ -626,6 +642,16 @@
         </div>
       </div>
 
+      <div class="tile tile-insights" data-paid="true" data-href="arcane-insights.html">
+        <div class="tile-icon" id="insightsEmoji">⚡</div>
+        <div class="tile-content">
+          <div class="tile-title">Arcane Insights</div>
+          <div class="tile-desc">
+            <span id="streakDisplay">0 day streak</span> • Daily wisdom
+          </div>
+        </div>
+      </div>
+
       <div class="tile" data-paid="true" data-href="alerts.html">
         <div class="tile-icon">📈</div>
         <div class="tile-content">
@@ -669,6 +695,14 @@
           <div class="tile-content">
             <div class="tile-title">Admin Trades & Stocks</div>
             <div class="tile-desc">Manage trades & alerts</div>
+          </div>
+        </div>
+
+        <div class="tile" data-admin="true" data-href="arcane-insights-admin.html">
+          <div class="tile-icon">⚡</div>
+          <div class="tile-content">
+            <div class="tile-title">Arcane Insights Admin</div>
+            <div class="tile-desc">Manage daily posts</div>
           </div>
         </div>
 
@@ -991,6 +1025,44 @@
         console.warn("Users read failed:", e);
       }
 
+      // Load user's Arcane Insights streak
+      try{
+        const streakRef = doc(db, "userStreaks", user.uid);
+        const streakSnap = await getDoc(streakRef);
+        if (streakSnap.exists()){
+          const streakData = streakSnap.data();
+          const streak = streakData.currentStreak || 0;
+          
+          // Update streak display
+          const streakDisplay = document.getElementById("streakDisplay");
+          if (streakDisplay){
+            streakDisplay.textContent = `${streak} day streak`;
+          }
+
+          // Update emoji based on streak level
+          const insightsEmoji = document.getElementById("insightsEmoji");
+          if (insightsEmoji){
+            if (streak >= 365) {
+              insightsEmoji.textContent = "👑";
+            } else if (streak >= 180) {
+              insightsEmoji.textContent = "💎";
+            } else if (streak >= 90) {
+              insightsEmoji.textContent = "⚡";
+            } else if (streak >= 30) {
+              insightsEmoji.textContent = "🏆";
+            } else if (streak >= 7) {
+              insightsEmoji.textContent = "🔥";
+            } else if (streak > 0) {
+              insightsEmoji.textContent = "✨";
+            } else {
+              insightsEmoji.textContent = "⚡";
+            }
+          }
+        }
+      }catch(e){
+        console.warn("Streak load failed:", e);
+      }
+
       wireTiles(isPaid, isAdmin);
 
       // Balance listener
@@ -1024,4 +1096,3 @@
     });
   </script>
 </body>
-</html>
