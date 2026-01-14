@@ -1,410 +1,425 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arcane Alerts | The Arcane Archives</title>
-  <link rel="icon" href="ArcaneA.png" />
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
-      color: #e5e7eb;
-      font-family: 'Inter', system-ui, sans-serif;
-      min-height: 100vh;
-      padding: 0.5rem;
-    }
-    .container { max-width: 1600px; margin: 0 auto; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Free Trading Signals | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
     
-    /* TOP NAVIGATION BAR */
-    .top-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 40;
-      background: rgba(15, 23, 42, 0.98);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-      padding: 0.75rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    
-    .nav-btn {
-      padding: 0.6rem 1.2rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
-      color: #9ca3af;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    
-    .nav-btn:hover {
-      background: rgba(139, 92, 246, 0.2);
-      color: #a78bfa;
-      border-color: #9333ea;
-    }
-    
-    .market-data-btn {
-      border-color: rgba(251, 191, 36, 0.4);
-      background: rgba(251, 191, 36, 0.1);
-      color: #fbbf24;
-      font-weight: 600;
-    }
-    
-    .market-data-btn:hover {
-      background: rgba(251, 191, 36, 0.2);
-      border-color: #fbbf24;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(251, 191, 36, 0.3);
-    }
-    
-    .header { 
-      text-align: center; 
-      margin: 5rem 0 1.5rem;
-      padding: 0 1rem;
-    }
-    .header h1 {
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      background: linear-gradient(135deg, #a855f7, #ec4899);
-      -webkit-background-clip: text; 
-      -webkit-text-fill-color: transparent;
-      font-weight: 700; 
-      margin-bottom: 0.5rem;
-    }
-    .header p { color: #9ca3af; font-size: 1rem; }
-    
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-      margin-bottom: 2rem;
-    }
-    .chart-wrapper {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      overflow: hidden;
-    }
-    .chart-header {
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    }
-    .chart-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #e5e7eb;
-    }
-    .chart-subtitle {
-      font-size: 0.9rem;
-      color: #6b7280;
-      margin-top: 0.5rem;
-    }
-    .tradingview-widget-container {
-      width: 100% !important;
-      height: 700px !important;
-      min-height: 700px !important;
-    }
-    .tradingview-widget-container__widget {
-      width: 100% !important;
-      height: 100% !important;
-    }
-    
-    /* PERFORMANCE SECTION */
-    .performance-section {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-    
-    .section-title {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #a855f7;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    
-    .stat-card {
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-    }
-    
-    .stat-label {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-    }
-    
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #e5e7eb;
-    }
-    
-    .stat-value.green { color: #22c55e; }
-    .stat-value.red { color: #ef4444; }
-    .stat-value.purple { color: #a855f7; }
-    .stat-value.gold { color: #fbbf24; }
-    
-    .table-container {
-      overflow-x: auto;
-      margin-top: 2rem;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    
-    th {
-      text-align: left;
-      padding: 1rem;
-      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
-      color: #9ca3af;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    td {
-      padding: 1rem;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-    }
-    
-    tr:hover {
-      background: rgba(139, 92, 246, 0.05);
-    }
-    
-    .result-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    
-    .result-badge.win {
-      background: rgba(34, 197, 94, 0.2);
-      color: #22c55e;
-    }
-    
-    .result-badge.loss {
-      background: rgba(239, 68, 68, 0.2);
-      color: #ef4444;
-    }
-    
-    .result-badge.be {
-      background: rgba(251, 191, 36, 0.2);
-      color: #fbbf24;
-    }
-    
-    .loading {
-      text-align: center;
-      padding: 2rem;
-      color: #9ca3af;
-    }
-    
-    @media (max-width: 768px) {
-      body { padding: 0.25rem; }
-      .top-nav {
-        flex-wrap: wrap;
-        padding: 0.5rem;
-      }
-      .nav-btn {
-        font-size: 0.8rem;
-        padding: 0.5rem 1rem;
-      }
-      .header { margin: 6rem 0 1rem; }
-      .charts-grid { gap: 2rem; }
-      .chart-wrapper { padding: 1rem; }
-      .chart-title { font-size: 1.25rem; }
-      .tradingview-widget-container {
-        height: 600px !important;
-        min-height: 600px !important;
-      }
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .section-title { font-size: 1.5rem; }
-      .performance-section { padding: 1.5rem; }
-      table { font-size: 0.85rem; }
-      th, td { padding: 0.75rem 0.5rem; }
-    }
-    
-    @media (min-width: 1800px) {
-      .tradingview-widget-container {
-        height: 900px !important;
-        min-height: 900px !important;
-      }
-    }
-  </style>
+    <style>
+        :root {
+            --bg-dark: #02010a;
+            --purple: #9333ea;
+            --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --text-light: #e5e5e5;
+            --text-dim: #9ca3af;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
+            color: var(--text-light);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            line-height: 1.6;
+            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: calc(1.5rem + env(safe-area-inset-top, 0));
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 5rem 1.5rem 3rem; 
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+        }
+
+        .steps {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .step-card {
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-card h3 {
+            font-size: 1.4rem;
+            color: var(--purple-light);
+        }
+
+        .step-card p {
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.1rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+        }
+
+        .btn-telegram {
+            background: linear-gradient(135deg, #0088cc, #0077b5);
+            color: white;
+        }
+
+        .btn-telegram:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 136, 204, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: var(--gold);
+            margin-top: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(251, 191, 36, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .info-box {
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-box h4 {
+            color: var(--purple-light);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .info-box ul {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
+        .warning-box {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .warning-box p {
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        .bonus-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .bonus-box h4 {
+            color: #22c55e;
+            margin-bottom: 1rem;
+        }
+
+        .bonus-box p {
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .cta-section {
+            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cta-section p {
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .cta-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2rem;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .verified-badge .icon {
+            font-size: 3rem;
+        }
+
+        .verified-badge p {
+            color: var(--purple-light);
+            font-weight: 600;
+            margin: 0.5rem 0 0 0;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .step-card { padding: 1.5rem; }
+            .cta-buttons { grid-template-columns: 1fr; }
+            .step-header { flex-direction: column; text-align: center; }
+        }
+    </style>
 </head>
 <body>
-  <!-- TOP NAVIGATION -->
-  <div class="top-nav">
-    <a href="dashboard.html" class="nav-btn">← Dashboard</a>
-    <a href="market-data.html" class="nav-btn market-data-btn">📊 Market Data Hub</a>
-  </div>
+    <a href="dashboard.html" class="back-btn">← Back</a>
 
-  <div class="container">
-    <div class="header">
-      <h1>Arcane Trading Floor</h1>
-      <p>Live market data, trade signals, and transparent performance tracking</p>
-    </div>
-    
-    <!-- CHARTS SECTION -->
-    <div class="charts-grid">
-      <div class="chart-wrapper">
-        <div class="chart-header">
-          <div class="chart-title">📈 XAUUSD (Gold)</div>
-          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
+    <div class="container">
+        <div class="hero">
+            <h1>🔡 Free Trading Signals</h1>
+            <p class="subtitle">
+                Join via my Vantage referral link, verify on Telegram, and get access to exclusive trade signals for Gold, Silver, BTC, Indices & More.
+            </p>
         </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {"autosize":true,"symbol":"OANDA:XAUUSD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
-          </script>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <div class="chart-header">
-          <div class="chart-title">🪙 XAGUSD (Silver)</div>
-          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {"autosize":true,"symbol":"OANDA:XAGUSD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
-          </script>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <div class="chart-header">
-          <div class="chart-title">💵 DXY (Dollar Index)</div>
-          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {"autosize":true,"symbol":"CAPITALCOM:DXY","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
-          </script>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <div class="chart-header">
-          <div class="chart-title">📊 SPX (S&P 500)</div>
-          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {"autosize":true,"symbol":"CAPITALCOM:US500","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
-          </script>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <div class="chart-header">
-          <div class="chart-title">🏢 US30 (Dow Jones)</div>
-          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {"autosize":true,"symbol":"OANDA:US30USD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
-          </script>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <div class="chart-header">
-          <div class="chart-title">💻 NQ (Nasdaq)</div>
-          <div class="chart-subtitle">15min • Live Updates • Drag to pan, pinch to zoom</div>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-          {"autosize":true,"symbol":"OANDA:NAS100USD","interval":"15","timezone":"Etc/UTC","theme":"dark","style":"1","locale":"en","allow_symbol_change":true,"calendar":false,"hide_top_toolbar":false,"hide_legend":false,"save_image":true,"backgroundColor":"#0F0F0F","support_host":"https://www.tradingview.com"}
-          </script>
-        </div>
-      </div>
-    </div>
-    
-    <!-- PERFORMANCE OVERVIEW SECTION -->
-    <div class="performance-section">
-      <h2 class="section-title">📊 Performance Overview</h2>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Wins</div>
-          <div class="stat-value green" id="winsCount">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Losses</div>
-          <div class="stat-value red" id="lossesCount">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Break Even</div>
-          <div class="stat-value" id="beCount">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value purple" id="winRate">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Net Pips</div>
-          <div class="stat-value gold" id="netPips">-</div>
-        </div>
-      </div>
 
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Pair</th>
-              <th>Direction</th>
-              <th>Entry</th>
-              <th>Exit</th>
-              <th>Result</th>
-              <th>Pips</th>
-            </tr>
-          </thead>
-          <tbody id="historyTableBody">
-            <tr>
-              <td colspan="7" class="loading">
-                Loading trade history...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <div class="steps">
+            <!-- STEP 1: VANTAGE -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h3>Create Vantage Account</h3>
+                </div>
+                <p>
+                    Sign up using my referral link below. This is required to receive signals and ensures you get the best trading conditions with rebates on every trade.
+                </p>
 
-  </div>
-  <script type="module" src="alerts.js"></script>
+                <a href="https://www.vantagemarkets.com/open-live-account/?affid=NzM2ODYwNw==" target="_blank" class="btn btn-primary">
+                    📈 Open Vantage Live Account
+                </a>
+
+                <div class="bonus-box">
+                    <h4>💰 Want to Earn Rebates Too?</h4>
+                    <p>
+                        Become a Sub-IB and earn commissions when your friends/family copy my trades! You'll get rebates on their volume while they get signals.
+                    </p>
+                </div>
+
+                <a href="https://partners.vantagemarkets.com/ib-cpa-register/?url=ib&affid=7368607" target="_blank" class="btn btn-secondary">
+                    💎 Become a Sub-IB (Advanced)
+                </a>
+
+                <div class="info-box">
+                    <h4>💡 Why Vantage Markets?</h4>
+                    <ul>
+                        <li>Ultra-low spreads & institutional execution</li>
+                        <li>Trade rebates on every lot you trade</li>
+                        <li>Required for signal group access</li>
+                        <li>Regulated broker with excellent reputation</li>
+                        <li>Sub-IB program for earning passive income</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- STEP 2: TELEGRAM -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h3>Message Me on Telegram</h3>
+                </div>
+                <p>
+                    After creating your account, send me a direct message on Telegram with your Vantage account ID for verification.
+                </p>
+
+                <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
+                    ✈️ Message on Telegram
+                </a>
+
+                <div class="info-box">
+                    <h4>📝 What to Include:</h4>
+                    <ul>
+                        <li>Your Vantage account ID (trading account number)</li>
+                        <li>Confirmation that you signed up via my link</li>
+                        <li>If you became a Sub-IB, mention that too</li>
+                        <li>Any questions you might have</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- STEP 3: GET ADDED -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h3>Get Added to Signal Group</h3>
+                </div>
+                <p>
+                    Once I verify your account (usually within 24-48 hours), I'll add you to the exclusive Telegram signal group where you'll receive trade alerts in real-time.
+                </p>
+
+                <div class="verified-badge">
+                    <div style="text-align: center; width: 100%;">
+                        <div class="icon">✅</div>
+                        <p>Wait for Verification</p>
+                        <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
+                            Typically takes 24-48 hours
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IMPORTANT NOTE -->
+        <div class="warning-box">
+            <h4>⚠️ Important Note</h4>
+            <p>
+                The signal group is <strong>completely free</strong> but requires account verification to ensure all members are genuine traders. Create your account through the link above and message me your account ID on Telegram. Verification typically takes 24-48 hours.
+            </p>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <h2>Ready to Start?</h2>
+            <p>Create your Vantage account, verify on Telegram, and get added to the signal group.</p>
+
+            <div class="cta-buttons">
+                <a href="https://www.vantagemarkets.com/open-live-account/?affid=NzM2ODYwNw==" target="_blank" class="btn btn-primary">
+                    📈 Open Live Account
+                </a>
+                <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
+                    ✈️ Verify on Telegram
+                </a>
+            </div>
+
+            <p style="margin-top: 2rem; font-size: 0.9rem;">
+                Want more advanced signals and education? 
+                <a href="index.html#pricing" style="color: var(--purple-light); text-decoration: none; font-weight: 600;">
+                    Join Premium Membership →
+                </a>
+            </p>
+        </div>
+    </div>
 </body>
 </html>
