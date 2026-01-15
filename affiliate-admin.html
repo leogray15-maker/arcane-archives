@@ -349,6 +349,60 @@
       </div>
     </div>
 
+    <!-- Monthly Earnings Calculator -->
+    <div class="admin-card">
+      <h2 class="section-title">📊 Monthly Earnings Calculator</h2>
+      <p style="color: var(--text-dim); margin-bottom: 1.5rem;">
+        Calculate how much each affiliate earned this month (£25 per active referral)
+      </p>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <button id="calculateMonthlyBtn" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: white; border: none; font-weight: 600; cursor: pointer;">
+          🔄 Calculate Current Month Earnings
+        </button>
+        <button id="exportCSVBtn" class="btn-secondary" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: rgba(251, 191, 36, 0.2); color: var(--gold); border: 1px solid var(--gold); font-weight: 600; cursor: pointer; margin-left: 1rem;">
+          📥 Export to CSV
+        </button>
+      </div>
+
+      <div id="monthlyCalculation" style="display: none;">
+        <div style="background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--purple-light); margin-bottom: 1rem;">Calculation Summary</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div>
+              <div style="color: var(--text-dim); font-size: 0.9rem;">Total Users with Referrals</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--purple-light);" id="totalAffiliatesCount">0</div>
+            </div>
+            <div>
+              <div style="color: var(--text-dim); font-size: 0.9rem;">Total Active Referrals</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--green);" id="totalActiveRefs">0</div>
+            </div>
+            <div>
+              <div style="color: var(--text-dim); font-size: 0.9rem;">Total Monthly Payout</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--gold);" id="totalMonthlyPayout">£0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="monthlyEarningsTable">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Referral Code</th>
+                <th>Active Referrals</th>
+                <th>Monthly Earnings</th>
+                <th>Payment Method</th>
+                <th>Already Paid</th>
+              </tr>
+            </thead>
+            <tbody id="monthlyEarningsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Withdrawal Requests -->
     <div class="admin-card">
       <h2 class="section-title">💰 Withdrawal Requests</h2>
@@ -708,6 +762,159 @@
         showError('Failed to reject withdrawal: ' + error.message);
       }
     };
+
+    // Monthly Earnings Calculator
+    document.getElementById('calculateMonthlyBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('calculateMonthlyBtn');
+      btn.disabled = true;
+      btn.textContent = '🔄 Calculating...';
+
+      try {
+        // Get all users
+        const usersSnapshot = await getDocs(collection(db, 'Users'));
+        
+        const affiliateEarnings = [];
+        let totalActiveRefs = 0;
+        let totalPayout = 0;
+
+        // For each user, count their active referrals
+        for (const userDoc of usersSnapshot.docs) {
+          const userData = userDoc.data();
+          const referralCode = userData.referralCode;
+          
+          if (!referralCode) continue;
+
+          // Query users who were referred by this code
+          const referralsQuery = query(
+            collection(db, 'Users'),
+            where('referredBy', '==', referralCode)
+          );
+          const referralsSnapshot = await getDocs(referralsQuery);
+
+          // Count active (paid) referrals
+          let activeCount = 0;
+          referralsSnapshot.forEach((refDoc) => {
+            const refData = refDoc.data();
+            if (refData.isPaid === true || refData.subscriptionStatus === 'active') {
+              activeCount++;
+            }
+          });
+
+          // Only include if they have active referrals
+          if (activeCount > 0) {
+            const monthlyEarnings = activeCount * 25;
+            totalActiveRefs += activeCount;
+            totalPayout += monthlyEarnings;
+
+            affiliateEarnings.push({
+              userId: userDoc.id,
+              username: userData.Username || userData.Email?.split('@')[0] || 'Unknown',
+              email: userData.Email || 'No email',
+              referralCode: referralCode,
+              activeReferrals: activeCount,
+              monthlyEarnings: monthlyEarnings,
+              paymentMethod: userData.paymentPreferences?.method || 'Not set',
+              bankDetails: userData.paymentPreferences?.bankDetails || null,
+              cryptoWallet: userData.paymentPreferences?.cryptoWallet || null
+            });
+          }
+        }
+
+        // Update summary stats
+        document.getElementById('totalAffiliatesCount').textContent = affiliateEarnings.length;
+        document.getElementById('totalActiveRefs').textContent = totalActiveRefs;
+        document.getElementById('totalMonthlyPayout').textContent = `£${totalPayout}`;
+
+        // Display table
+        displayMonthlyEarnings(affiliateEarnings);
+        document.getElementById('monthlyCalculation').style.display = 'block';
+
+        btn.textContent = '✅ Calculated!';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = '🔄 Calculate Current Month Earnings';
+        }, 2000);
+
+      } catch (error) {
+        console.error('Error calculating earnings:', error);
+        showError('Failed to calculate earnings: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = '🔄 Calculate Current Month Earnings';
+      }
+    });
+
+    function displayMonthlyEarnings(earnings) {
+      const tbody = document.getElementById('monthlyEarningsBody');
+      tbody.innerHTML = '';
+
+      // Sort by monthly earnings (highest first)
+      earnings.sort((a, b) => b.monthlyEarnings - a.monthlyEarnings);
+
+      earnings.forEach((affiliate) => {
+        const row = document.createElement('tr');
+        
+        // Determine if already paid this month (check if they have available balance)
+        const alreadyPaid = affiliate.monthlyEarnings === 0 ? '✅' : '⏳ Pending';
+
+        row.innerHTML = `
+          <td><strong>${affiliate.username}</strong></td>
+          <td>${affiliate.email}</td>
+          <td><code style="background: rgba(147, 51, 234, 0.2); padding: 0.25rem 0.5rem; border-radius: 4px;">${affiliate.referralCode}</code></td>
+          <td style="text-align: center;"><strong>${affiliate.activeReferrals}</strong></td>
+          <td><strong style="color: var(--gold);">£${affiliate.monthlyEarnings}</strong></td>
+          <td>
+            ${affiliate.paymentMethod === 'bank' ? '🏦 Bank Transfer' : 
+              affiliate.paymentMethod === 'crypto' ? '₿ Crypto' : 
+              '⚠️ Not Set'}
+          </td>
+          <td>${alreadyPaid}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Store for CSV export
+      window.currentEarningsData = earnings;
+    }
+
+    // Export to CSV
+    document.getElementById('exportCSVBtn').addEventListener('click', () => {
+      if (!window.currentEarningsData || window.currentEarningsData.length === 0) {
+        showError('⚠️ Please calculate monthly earnings first!');
+        return;
+      }
+
+      const now = new Date();
+      const month = now.toLocaleString('default', { month: 'long' });
+      const year = now.getFullYear();
+
+      let csv = `Arcane Archives - Monthly Affiliate Payouts - ${month} ${year}\n\n`;
+      csv += 'Username,Email,Referral Code,Active Referrals,Monthly Earnings,Payment Method,Bank Details,Crypto Wallet\n';
+
+      window.currentEarningsData.forEach((affiliate) => {
+        const bankDetails = affiliate.bankDetails ? 
+          `"${affiliate.bankDetails.accountName || ''} | ${affiliate.bankDetails.sortCode || ''} | ${affiliate.bankDetails.accountNumber || ''}"` : 
+          'Not provided';
+        
+        const cryptoWallet = affiliate.cryptoWallet || 'Not provided';
+
+        csv += `"${affiliate.username}","${affiliate.email}","${affiliate.referralCode}",${affiliate.activeReferrals},£${affiliate.monthlyEarnings},${affiliate.paymentMethod},${bankDetails},${cryptoWallet}\n`;
+      });
+
+      // Calculate total
+      const total = window.currentEarningsData.reduce((sum, a) => sum + a.monthlyEarnings, 0);
+      csv += `\n,,,TOTAL,£${total}`;
+
+      // Download
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `arcane-affiliates-${month}-${year}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      showSuccess('✅ CSV exported successfully!');
+    });
   </script>
 </body>
 </html>
