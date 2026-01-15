@@ -413,8 +413,10 @@ button:disabled {
     </form>
 
     <div class="success" id="successMsg">
-      <strong>Account created successfully!</strong><br>
-      Redirecting you to the dashboard...
+      <strong>✅ Account created successfully!</strong><br>
+      <strong>📧 Verification email sent!</strong><br><br>
+      Please check your email inbox (and spam folder) to verify your account.<br>
+      <small style="margin-top: 0.5rem; display: block;">Redirecting to login in <span id="countdown">8</span> seconds...</small>
     </div>
 
     <div class="error" id="errorMsg"></div>
@@ -427,7 +429,7 @@ button:disabled {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -533,11 +535,30 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
     
     await setDoc(doc(db, "Users", user.uid), userData);
     
+    // Send verification email
+    try {
+      await sendEmailVerification(user);
+      console.log('Verification email sent');
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      // Continue anyway - user can request verification later
+    }
+    
     successMsg.style.display = 'block';
     
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1500);
+    // Countdown timer
+    let seconds = 8;
+    const countdownEl = document.getElementById('countdown');
+    
+    const countdownInterval = setInterval(() => {
+      seconds--;
+      if (countdownEl) countdownEl.textContent = seconds;
+      
+      if (seconds <= 0) {
+        clearInterval(countdownInterval);
+        window.location.href = 'login.html';
+      }
+    }, 1000);
     
   } catch (error) {
     console.error('Signup error:', error);
