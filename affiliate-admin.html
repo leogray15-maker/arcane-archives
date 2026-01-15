@@ -384,6 +384,24 @@
           </div>
         </div>
 
+        <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px;">
+          <h4 style="color: var(--gold); margin-bottom: 0.5rem;">💰 Credit Earnings to Accounts</h4>
+          <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
+            This will add earnings to each user's Pending Balance with a 7-day hold. After 7 days, you'll need to manually clear them to Available Balance.
+          </p>
+          <button id="creditAllBtn" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: linear-gradient(135deg, var(--gold), #d97706); color: #000; border: none; font-weight: 700; cursor: pointer;">
+            💸 Credit All to Pending Balance (7-day hold)
+          </button>
+        </div>
+
+        <div id="pendingTransactions" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px;">
+          <h4 style="color: var(--green); margin-bottom: 0.5rem;">⏳ Pending Clearances</h4>
+          <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;" id="pendingInfo"></p>
+          <button id="clearPendingBtn" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: linear-gradient(135deg, var(--green), #16a34a); color: white; border: none; font-weight: 700; cursor: pointer;">
+            ✅ Clear All Pending to Available (Send Emails)
+          </button>
+        </div>
+
         <div class="table-container">
           <table id="monthlyEarningsTable">
             <thead>
@@ -438,13 +456,16 @@
       collection,
       getDocs,
       doc,
+      getDoc,
+      setDoc,
       updateDoc,
       query,
       where,
       orderBy,
       increment,
       addDoc,
-      serverTimestamp
+      serverTimestamp,
+      writeBatch
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -915,6 +936,247 @@
 
       showSuccess('✅ CSV exported successfully!');
     });
+
+    // Credit All Earnings to Pending Balance
+    document.getElementById('creditAllBtn').addEventListener('click', async () => {
+      if (!window.currentEarningsData || window.currentEarningsData.length === 0) {
+        showError('⚠️ Please calculate earnings first!');
+        return;
+      }
+
+      const totalAmount = window.currentEarningsData.reduce((sum, a) => sum + a.monthlyEarnings, 0);
+      const clearanceDate = new Date();
+      clearanceDate.setDate(clearanceDate.getDate() + 7);
+      
+      const confirm = window.confirm(
+        `Credit earnings to ${window.currentEarningsData.length} affiliates?\n\n` +
+        `Total: £${totalAmount}\n` +
+        `Hold Period: 7 days\n` +
+        `Available: ${clearanceDate.toLocaleDateString()}\n\n` +
+        `This will add earnings to Pending Balance.`
+      );
+
+      if (!confirm) return;
+
+      const btn = document.getElementById('creditAllBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Processing...';
+
+      try {
+        const batch = writeBatch(db);
+        const currentMonth = new Date().toISOString().slice(0, 7); // "2026-01"
+        let successCount = 0;
+
+        for (const affiliate of window.currentEarningsData) {
+          // Get current affiliate balance
+          const affiliateRef = doc(db, 'Affiliates', affiliate.userId);
+          const affiliateSnap = await getDoc(affiliateRef);
+          
+          const currentPending = affiliateSnap.exists() ? (affiliateSnap.data().pendingBalance || 0) : 0;
+          const newPending = currentPending + affiliate.monthlyEarnings;
+
+          // Update Affiliates doc
+          if (affiliateSnap.exists()) {
+            batch.update(affiliateRef, {
+              pendingBalance: newPending,
+              lastCredited: serverTimestamp(),
+              lastCreditedMonth: currentMonth
+            });
+          } else {
+            batch.set(affiliateRef, {
+              userId: affiliate.userId,
+              referralCode: affiliate.referralCode,
+              pendingBalance: affiliate.monthlyEarnings,
+              availableBalance: 0,
+              totalEarned: 0,
+              totalReferrals: affiliate.activeReferrals,
+              activeReferrals: affiliate.activeReferrals,
+              lastCredited: serverTimestamp(),
+              lastCreditedMonth: currentMonth
+            });
+          }
+
+          // Create pending transaction record
+          const transactionRef = doc(collection(db, 'PendingCommissions'));
+          batch.set(transactionRef, {
+            userId: affiliate.userId,
+            username: affiliate.username,
+            email: affiliate.email,
+            amount: affiliate.monthlyEarnings,
+            activeReferrals: affiliate.activeReferrals,
+            month: currentMonth,
+            creditedAt: serverTimestamp(),
+            clearanceDate: clearanceDate.toISOString(),
+            status: 'pending',
+            processedBy: currentUser.uid
+          });
+
+          successCount++;
+        }
+
+        await batch.commit();
+
+        showSuccess(`✅ Successfully credited ${successCount} affiliates!\n\nTotal: £${totalAmount}\nClears: ${clearanceDate.toLocaleDateString()}`);
+        
+        btn.textContent = '✅ Credited!';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = '💸 Credit All to Pending Balance (7-day hold)';
+        }, 3000);
+
+        // Show pending clearances section
+        checkPendingClearances();
+
+      } catch (error) {
+        console.error('Error crediting earnings:', error);
+        showError('Failed to credit earnings: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = '💸 Credit All to Pending Balance (7-day hold)';
+      }
+    });
+
+    // Check for pending clearances
+    async function checkPendingClearances() {
+      try {
+        const now = new Date().toISOString();
+        const pendingQuery = query(
+          collection(db, 'PendingCommissions'),
+          where('status', '==', 'pending'),
+          where('clearanceDate', '<=', now)
+        );
+        
+        const pendingSnapshot = await getDocs(pendingQuery);
+        
+        if (!pendingSnapshot.empty) {
+          const totalAmount = pendingSnapshot.docs.reduce((sum, doc) => sum + doc.data().amount, 0);
+          document.getElementById('pendingInfo').textContent = 
+            `${pendingSnapshot.size} affiliates (£${totalAmount}) ready to clear`;
+          document.getElementById('pendingTransactions').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error checking pending:', error);
+      }
+    }
+
+    // Clear Pending to Available
+    document.getElementById('clearPendingBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('clearPendingBtn');
+      
+      const confirmClear = window.confirm(
+        'Clear all pending commissions to Available Balance?\n\n' +
+        'This will:\n' +
+        '• Move funds from Pending to Available\n' +
+        '• Send email notifications to users\n' +
+        '• Allow users to withdraw\n\n' +
+        'Continue?'
+      );
+
+      if (!confirmClear) return;
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Processing...';
+
+      try {
+        const now = new Date().toISOString();
+        const pendingQuery = query(
+          collection(db, 'PendingCommissions'),
+          where('status', '==', 'pending'),
+          where('clearanceDate', '<=', now)
+        );
+        
+        const pendingSnapshot = await getDocs(pendingQuery);
+        
+        if (pendingSnapshot.empty) {
+          showError('No pending commissions ready to clear');
+          btn.disabled = false;
+          btn.textContent = '✅ Clear All Pending to Available (Send Emails)';
+          return;
+        }
+
+        const batch = writeBatch(db);
+        let successCount = 0;
+        const emailList = [];
+
+        for (const pendingDoc of pendingSnapshot.docs) {
+          const data = pendingDoc.data();
+          
+          // Update Affiliates doc: Move from pending to available
+          const affiliateRef = doc(db, 'Affiliates', data.userId);
+          const affiliateSnap = await getDoc(affiliateRef);
+          
+          if (affiliateSnap.exists()) {
+            const current = affiliateSnap.data();
+            const newPending = (current.pendingBalance || 0) - data.amount;
+            const newAvailable = (current.availableBalance || 0) + data.amount;
+            const newTotalEarned = (current.totalEarned || 0) + data.amount;
+            
+            batch.update(affiliateRef, {
+              pendingBalance: Math.max(0, newPending),
+              availableBalance: newAvailable,
+              totalEarned: newTotalEarned,
+              lastCleared: serverTimestamp()
+            });
+          }
+
+          // Update pending commission status
+          batch.update(pendingDoc.ref, {
+            status: 'cleared',
+            clearedAt: serverTimestamp(),
+            clearedBy: currentUser.uid
+          });
+
+          // Create balance transaction record
+          const transactionRef = doc(collection(db, 'BalanceTransactions'));
+          batch.set(transactionRef, {
+            userId: data.userId,
+            type: 'commission_cleared',
+            amount: data.amount,
+            description: `Monthly commission for ${data.month} (${data.activeReferrals} active referrals)`,
+            createdAt: serverTimestamp(),
+            processedBy: currentUser.uid
+          });
+
+          emailList.push({
+            email: data.email,
+            username: data.username,
+            amount: data.amount,
+            month: data.month
+          });
+
+          successCount++;
+        }
+
+        await batch.commit();
+
+        // Log emails to send (you'll need to set up email service)
+        console.log('📧 Send emails to:', emailList);
+        
+        showSuccess(
+          `✅ Successfully cleared ${successCount} commissions!\n\n` +
+          `Emails to send:\n${emailList.map(e => `${e.username}: £${e.amount}`).join('\n')}\n\n` +
+          `(Email notifications logged in console)`
+        );
+
+        btn.textContent = '✅ Cleared!';
+        document.getElementById('pendingTransactions').style.display = 'none';
+        
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = '✅ Clear All Pending to Available (Send Emails)';
+        }, 3000);
+
+        await loadStats();
+
+      } catch (error) {
+        console.error('Error clearing pending:', error);
+        showError('Failed to clear pending: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = '✅ Clear All Pending to Available (Send Emails)';
+      }
+    });
+
+    // Check pending on page load
+    setTimeout(checkPendingClearances, 1000);
   </script>
 </body>
 </html>
