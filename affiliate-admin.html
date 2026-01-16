@@ -481,6 +481,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    let currentUser = null;
+
     const successMessage = document.getElementById('successMessage');
     const errorMessage = document.getElementById('errorMessage');
 
@@ -507,7 +509,7 @@
       }
 
       const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
-      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'gefruLBk5qMXDZGmWdSo6wPNo3E3'];
+      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
 
       if (!ADMIN_EMAILS.includes(user.email) && !ADMIN_UIDS.includes(user.uid)) {
         showError('Access denied. Admin only.');
@@ -516,6 +518,8 @@
         }, 2000);
         return;
       }
+
+      currentUser = user;
 
       // Load data
       await loadStats();
