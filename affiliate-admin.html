@@ -465,7 +465,8 @@
       increment,
       addDoc,
       serverTimestamp,
-      writeBatch
+      writeBatch,
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -732,40 +733,83 @@
     }
 
     window.approveWithdrawal = async (withdrawalId, userId, amount) => {
-      if (!confirm(`Approve withdrawal of £${amount.toFixed(2)}?\n\nThis will:\n• Mark withdrawal as completed\n• Deduct £${amount.toFixed(2)} from user's balance\n• Create transaction record`)) return;
-
       try {
-        // 1. Update withdrawal status
-        await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
-          status: 'completed',
-          completedAt: new Date(),
-          processedBy: auth.currentUser?.uid
-        });
-
-        // 2. Deduct from user's balance
+        // First, check current balance
         const affiliateRef = doc(db, 'Affiliates', userId);
-        await updateDoc(affiliateRef, {
-          availableBalance: increment(-amount),
-          balance: increment(-amount)
+        const affiliateSnap = await getDoc(affiliateRef);
+        
+        if (!affiliateSnap.exists()) {
+          showError('❌ User affiliate account not found');
+          return;
+        }
+
+        const currentBalance = affiliateSnap.data().availableBalance || 0;
+
+        // Check if sufficient balance
+        if (currentBalance < amount) {
+          showError(`❌ Cannot approve! User only has £${currentBalance.toFixed(2)} but requesting £${amount.toFixed(2)}`);
+          return;
+        }
+
+        // Confirm with admin
+        if (!confirm(
+          `Approve withdrawal of £${amount.toFixed(2)}?\n\n` +
+          `Current Balance: £${currentBalance.toFixed(2)}\n` +
+          `After Withdrawal: £${(currentBalance - amount).toFixed(2)}\n\n` +
+          `This will:\n` +
+          `• Mark withdrawal as completed\n` +
+          `• Deduct £${amount.toFixed(2)} from available balance\n` +
+          `• Create transaction record`
+        )) return;
+
+        // Use transaction for atomic operation (prevents race conditions)
+        await runTransaction(db, async (transaction) => {
+          // Re-check balance in transaction
+          const freshDoc = await transaction.get(affiliateRef);
+          const freshBalance = freshDoc.data().availableBalance || 0;
+
+          if (freshBalance < amount) {
+            throw new Error(`Insufficient balance: £${freshBalance} < £${amount}`);
+          }
+
+          const withdrawalRef = doc(db, 'WithdrawalRequests', withdrawalId);
+          const transactionRef = doc(collection(db, 'BalanceTransactions'));
+
+          // Update affiliate balance
+          transaction.update(affiliateRef, {
+            availableBalance: freshBalance - amount,
+            totalWithdrawn: (freshDoc.data().totalWithdrawn || 0) + amount,
+            lastWithdrawal: serverTimestamp()
+          });
+
+          // Mark withdrawal as completed
+          transaction.update(withdrawalRef, {
+            status: 'completed',
+            completedAt: serverTimestamp(),
+            processedBy: currentUser.uid
+          });
+
+          // Create transaction record
+          transaction.set(transactionRef, {
+            userId: userId,
+            type: 'withdrawal',
+            amount: -amount,
+            description: `Withdrawal processed - £${amount.toFixed(2)}`,
+            balanceBefore: freshBalance,
+            balanceAfter: freshBalance - amount,
+            createdAt: serverTimestamp(),
+            processedBy: currentUser.uid
+          });
         });
 
-        // 3. Create transaction record
-        await addDoc(collection(db, 'BalanceTransactions'), {
-          userId: userId,
-          type: 'withdrawal',
-          amount: -amount,
-          note: `Withdrawal processed - £${amount.toFixed(2)}`,
-          createdAt: serverTimestamp()
-        });
-
-        showSuccess(`✅ Withdrawal approved! £${amount.toFixed(2)} deducted from user balance.`);
+        showSuccess(`✅ Withdrawal approved! £${amount.toFixed(2)} deducted from balance.`);
         await loadWithdrawals();
         await loadStats();
         await loadAffiliates();
 
       } catch (error) {
         console.error('Error approving withdrawal:', error);
-        showError('Failed to approve withdrawal: ' + error.message);
+        showError('❌ Failed to approve withdrawal: ' + error.message);
       }
     };
 
@@ -970,11 +1014,22 @@
         const batch = writeBatch(db);
         const currentMonth = new Date().toISOString().slice(0, 7); // "2026-01"
         let successCount = 0;
+        let skippedCount = 0;
 
         for (const affiliate of window.currentEarningsData) {
           // Get current affiliate balance
           const affiliateRef = doc(db, 'Affiliates', affiliate.userId);
           const affiliateSnap = await getDoc(affiliateRef);
+          
+          // Check if already credited this month (prevent duplicate credits)
+          if (affiliateSnap.exists()) {
+            const lastCreditedMonth = affiliateSnap.data().lastCreditedMonth;
+            if (lastCreditedMonth === currentMonth) {
+              console.log(`Skipping ${affiliate.username} - already credited for ${currentMonth}`);
+              skippedCount++;
+              continue; // Skip this user
+            }
+          }
           
           const currentPending = affiliateSnap.exists() ? (affiliateSnap.data().pendingBalance || 0) : 0;
           const newPending = currentPending + affiliate.monthlyEarnings;
@@ -1020,7 +1075,11 @@
 
         await batch.commit();
 
-        showSuccess(`✅ Successfully credited ${successCount} affiliates!\n\nTotal: £${totalAmount}\nClears: ${clearanceDate.toLocaleDateString()}`);
+        const message = skippedCount > 0 
+          ? `✅ Successfully credited ${successCount} affiliates!\n⚠️ Skipped ${skippedCount} (already credited this month)\n\nTotal: £${totalAmount}\nClears: ${clearanceDate.toLocaleDateString()}`
+          : `✅ Successfully credited ${successCount} affiliates!\n\nTotal: £${totalAmount}\nClears: ${clearanceDate.toLocaleDateString()}`;
+        
+        showSuccess(message);
         
         btn.textContent = '✅ Credited!';
         setTimeout(() => {
