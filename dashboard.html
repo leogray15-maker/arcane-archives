@@ -566,6 +566,78 @@
       }
     }
 
+    /* Admin Modal Styles */
+    .admin-modal{
+      max-width: 900px;
+      width: calc(100% - 2rem);
+    }
+
+    .admin-modal-body{
+      padding: 0;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .admin-panel-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+
+    .admin-panel-tile{
+      border-radius: 12px;
+      border: 1px solid rgba(251,191,36,.28);
+      background: rgba(15,23,42,.90);
+      padding: 1.25rem;
+      display: flex;
+      gap: .95rem;
+      align-items: center;
+      cursor: pointer;
+      transition: all .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-panel-tile:hover{
+      transform: translateY(-2px);
+      border-color: rgba(251,191,36,.55);
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      background: rgba(15,23,42,.98);
+    }
+
+    .admin-panel-icon{
+      width: 44px;
+      text-align: center;
+      font-size: 1.5rem;
+      opacity: .95;
+      flex: 0 0 auto;
+    }
+
+    .admin-panel-content{
+      min-width: 0;
+      flex: 1;
+    }
+
+    .admin-panel-title{
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: .15rem;
+      font-size: 1rem;
+    }
+
+    .admin-panel-desc{
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.25;
+    }
+
+    @media (max-width: 768px){
+      .admin-panel-grid{
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 420px){
       .tile-icon{
         font-size: 1.2rem;
@@ -689,44 +761,69 @@
     <!-- ADMIN TOOLS (completely hidden for non-admin) -->
     <div id="adminSection" style="display:none;">
       <div class="section-title">🛠️ Admin Tools</div>
-      <div class="grid" id="adminGrid">
-        <div class="tile" data-admin="true" data-href="admin-panel.html">
-          <div class="tile-icon">🛠️</div>
+      <div class="grid admin-grid">
+        <!-- Main Admin Panel Tile -->
+        <div class="tile admin-main-tile" style="cursor:pointer;">
+          <div class="tile-icon">👑</div>
           <div class="tile-content">
-            <div class="tile-title">Admin Trades & Stocks</div>
-            <div class="tile-desc">Manage trades & alerts</div>
+            <div class="tile-title">Admin Panel</div>
+            <div class="tile-desc">Central admin control hub</div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="tile" data-admin="true" data-href="arcane-insight-admin.html">
-          <div class="tile-icon">⚡</div>
-          <div class="tile-content">
-            <div class="tile-title">Arcane Insights Admin</div>
-            <div class="tile-desc">Manage daily posts</div>
-          </div>
+    <!-- Admin Panel Modal -->
+    <div class="overlay" id="adminOverlay"></div>
+    <div class="modal admin-modal" id="adminModal">
+      <div class="modal-header">
+        <div>
+          <h3 style="margin:0;">👑 Admin Control Panel</h3>
+          <p style="margin:.35rem 0 0; color:var(--muted); font-size:.85rem;">Manage all platform functions</p>
         </div>
-
-        <div class="tile" data-admin="true" data-href="affiliate-admin.html">
-          <div class="tile-icon">💸</div>
-          <div class="tile-content">
-            <div class="tile-title">Affiliate Admin</div>
-            <div class="tile-desc">Withdrawals & payouts</div>
+        <button class="modal-close" id="adminCloseBtn">✕</button>
+      </div>
+      <div class="modal-body admin-modal-body">
+        <!-- Admin Panel Grid -->
+        <div class="admin-panel-grid">
+          <div class="admin-panel-tile" style="cursor:pointer;" data-href="admin-trades.html">
+            <div class="admin-panel-icon">🔧</div>
+            <div class="admin-panel-content">
+              <div class="admin-panel-title">Admin Trades & Stocks</div>
+              <div class="admin-panel-desc">Manage trades & alerts</div>
+            </div>
           </div>
-        </div>
-
-        <div class="tile" data-admin="true" data-href="store-admin.html">
-          <div class="tile-icon">🛍️</div>
-          <div class="tile-content">
-            <div class="tile-title">Store Admin</div>
-            <div class="tile-desc">Products & inventory</div>
+          
+          <div class="admin-panel-tile" style="cursor:pointer;" data-href="insights-admin.html">
+            <div class="admin-panel-icon">⚡</div>
+            <div class="admin-panel-content">
+              <div class="admin-panel-title">Arcane Insights Admin</div>
+              <div class="admin-panel-desc">Manage daily posts</div>
+            </div>
           </div>
-        </div>
-
-        <div class="tile" data-admin="true" data-href="bullion-admin.html">
-          <div class="tile-icon">🪙</div>
-          <div class="tile-content">
-            <div class="tile-title">Bullion Admin</div>
-            <div class="tile-desc">Manage bullion listings</div>
+          
+          <div class="admin-panel-tile" style="cursor:pointer;" data-href="affiliate-admin.html">
+            <div class="admin-panel-icon">💸</div>
+            <div class="admin-panel-content">
+              <div class="admin-panel-title">Affiliate Admin</div>
+              <div class="admin-panel-desc">Withdrawals & payouts</div>
+            </div>
+          </div>
+          
+          <div class="admin-panel-tile" style="cursor:pointer;" data-href="store-admin.html">
+            <div class="admin-panel-icon">🛍️</div>
+            <div class="admin-panel-content">
+              <div class="admin-panel-title">Store Admin</div>
+              <div class="admin-panel-desc">Products & inventory</div>
+            </div>
+          </div>
+          
+          <div class="admin-panel-tile" style="cursor:pointer;" data-href="bullion-admin.html">
+            <div class="admin-panel-icon">🪙</div>
+            <div class="admin-panel-content">
+              <div class="admin-panel-title">Bullion Admin</div>
+              <div class="admin-panel-desc">Manage bullion listings</div>
+            </div>
           </div>
         </div>
       </div>
@@ -843,6 +940,9 @@
     const enterArchivesBtn = document.getElementById("enterArchivesBtn");
 
     const adminSection = document.getElementById("adminSection");
+    const adminOverlay = document.getElementById("adminOverlay");
+    const adminModal = document.getElementById("adminModal");
+    const adminCloseBtn = document.getElementById("adminCloseBtn");
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await signOut(auth);
@@ -912,6 +1012,16 @@
       lockedModal.classList.remove("active");
     }
 
+    function openAdminModal(){
+      adminOverlay.classList.add("active");
+      adminModal.classList.add("active");
+    }
+
+    function closeAdminModal(){
+      adminOverlay.classList.remove("active");
+      adminModal.classList.remove("active");
+    }
+
     txOverlay.addEventListener("click", closeTx);
     txCloseBtn.addEventListener("click", closeTx);
 
@@ -920,6 +1030,9 @@
     enterArchivesBtn.addEventListener("click", () => {
       location.href = "index.html#pricing";
     });
+
+    adminOverlay.addEventListener("click", closeAdminModal);
+    adminCloseBtn.addEventListener("click", closeAdminModal);
 
     historyBtn.addEventListener("click", async () => {
       openTx();
@@ -973,6 +1086,22 @@
       // Show admin section ONLY for admins
       if (isAdmin){
         adminSection.style.display = "block";
+        
+        // Wire up main admin tile to open modal
+        const adminMainTile = document.querySelector(".admin-main-tile");
+        if (adminMainTile){
+          adminMainTile.addEventListener("click", openAdminModal);
+        }
+        
+        // Wire up individual admin panel tiles
+        document.querySelectorAll(".admin-panel-tile").forEach(tile => {
+          const href = tile.getAttribute("data-href");
+          if (href){
+            tile.addEventListener("click", () => {
+              location.href = href;
+            });
+          }
+        });
       }
 
       document.querySelectorAll(".tile").forEach(tile => {
