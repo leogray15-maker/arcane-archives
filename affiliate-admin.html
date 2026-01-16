@@ -321,6 +321,10 @@
           <div class="stat-label">Pending Withdrawals</div>
           <div class="stat-value" id="pendingWithdrawals">£-</div>
         </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.1)); border-color: var(--green);">
+          <div class="stat-label">💰 Total Paid Out</div>
+          <div class="stat-value" style="color: var(--green);" id="totalPaidOut">£-</div>
+        </div>
       </div>
 
       <!-- Affiliates Table -->
@@ -437,7 +441,7 @@
               <th>User</th>
               <th>Amount</th>
               <th>Method</th>
-              <th>Details</th>
+              <th style="min-width: 250px;">Payment Details</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -534,11 +538,15 @@
         const withdrawalsSnapshot = await getDocs(
           query(collection(db, 'WithdrawalRequests'), where('status', '==', 'pending'))
         );
+        const completedWithdrawalsSnapshot = await getDocs(
+          query(collection(db, 'WithdrawalRequests'), where('status', '==', 'completed'))
+        );
 
         let totalAffiliatesCount = 0;
         let activeReferralsCount = 0;
         let totalCommissionsAmount = 0;
         let pendingWithdrawalsAmount = 0;
+        let totalPaidOutAmount = 0;
 
         // Count affiliates (users with referral codes who have referrals)
         const referralCodes = new Set();
@@ -568,10 +576,17 @@
           pendingWithdrawalsAmount += (data.amount || 0);
         });
 
+        // Calculate total paid out (completed withdrawals)
+        completedWithdrawalsSnapshot.forEach(doc => {
+          const data = doc.data();
+          totalPaidOutAmount += (data.amount || 0);
+        });
+
         document.getElementById('totalAffiliates').textContent = totalAffiliatesCount;
         document.getElementById('activeReferrals').textContent = activeReferralsCount;
         document.getElementById('totalCommissions').textContent = `£${totalCommissionsAmount.toFixed(2)}`;
         document.getElementById('pendingWithdrawals').textContent = `£${pendingWithdrawalsAmount.toFixed(2)}`;
+        document.getElementById('totalPaidOut').textContent = `£${totalPaidOutAmount.toFixed(2)}`;
 
       } catch (error) {
         console.error('Error loading stats:', error);
@@ -700,13 +715,37 @@
                              withdrawal.status === 'completed' ? 'status-active' : 
                              'status-inactive';
 
+          // Format payment details
+          let paymentDetails = '-';
+          if (withdrawal.method === 'bank' && withdrawal.bankDetails) {
+            const bank = withdrawal.bankDetails;
+            paymentDetails = `
+              <div style="font-size: 0.85rem; line-height: 1.4;">
+                <strong>🏦 Bank Transfer</strong><br/>
+                <span style="color: var(--text-dim);">Name:</span> ${bank.accountName || '-'}<br/>
+                <span style="color: var(--text-dim);">Sort:</span> ${bank.sortCode || '-'}<br/>
+                <span style="color: var(--text-dim);">Account:</span> ${bank.accountNumber || '-'}
+              </div>
+            `;
+          } else if (withdrawal.method === 'crypto' && withdrawal.cryptoWallet) {
+            paymentDetails = `
+              <div style="font-size: 0.85rem; line-height: 1.4;">
+                <strong>₿ Crypto</strong><br/>
+                <span style="color: var(--text-dim);">Wallet:</span><br/>
+                <code style="font-size: 0.75rem; word-break: break-all;">${withdrawal.cryptoWallet}</code>
+              </div>
+            `;
+          } else if (withdrawal.details) {
+            paymentDetails = withdrawal.details;
+          }
+
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${date}</td>
-            <td>${user.Username || 'Unknown'}</td>
+            <td><strong>${user.Username || 'Unknown'}</strong><br/><small style="color: var(--text-dim);">${user.Email || ''}</small></td>
             <td><strong style="color: var(--gold);">£${withdrawal.amount.toFixed(2)}</strong></td>
-            <td>${withdrawal.method || '-'}</td>
-            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${withdrawal.details || '-'}</td>
+            <td>${withdrawal.method === 'bank' ? '🏦 Bank' : withdrawal.method === 'crypto' ? '₿ Crypto' : '-'}</td>
+            <td style="max-width: 300px;">${paymentDetails}</td>
             <td>
               <span class="status-badge ${statusClass}">
                 ${withdrawal.status || 'pending'}
