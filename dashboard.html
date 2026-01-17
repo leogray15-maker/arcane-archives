@@ -756,6 +756,22 @@
         </div>
       </div>
 
+      <div class="tile" data-href="inner-circle.html">
+        <div class="tile-icon">👑</div>
+        <div class="tile-content">
+          <div class="tile-title">Inner Circle</div>
+          <div class="tile-desc">1:1 Mentorship • £4,997</div>
+        </div>
+      </div>
+
+      <div class="tile tile-retreat" data-href="retreat.html">
+        <div class="tile-icon">🌴</div>
+        <div class="tile-content">
+          <div class="tile-title">2028 Retreat</div>
+          <div class="tile-desc">Epic adventure awaits</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ADMIN TOOLS (completely hidden for non-admin) -->
@@ -898,6 +914,17 @@
     </div>
   </div>
 
+  <!-- Coming Soon Modal (for Retreat) -->
+  <div class="locked-modal-overlay" id="comingSoonOverlay"></div>
+  <div class="locked-modal" id="comingSoonModal">
+    <div class="locked-modal-icon">🌴</div>
+    <h3>Coming Soon</h3>
+    <p>The 2028 Retreat details are being finalized. Stay tuned for qualification requirements, destination reveal, and how you can earn your spot at this epic adventure!</p>
+    <div class="locked-modal-actions">
+      <button class="btn btn-primary" id="comingSoonCloseBtn">Got it</button>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
@@ -938,6 +965,10 @@
     const lockedModal = document.getElementById("lockedModal");
     const lockedCloseBtn = document.getElementById("lockedCloseBtn");
     const enterArchivesBtn = document.getElementById("enterArchivesBtn");
+
+    const comingSoonOverlay = document.getElementById("comingSoonOverlay");
+    const comingSoonModal = document.getElementById("comingSoonModal");
+    const comingSoonCloseBtn = document.getElementById("comingSoonCloseBtn");
 
     const adminSection = document.getElementById("adminSection");
     const adminOverlay = document.getElementById("adminOverlay");
@@ -1022,6 +1053,16 @@
       adminModal.classList.remove("active");
     }
 
+    function openComingSoonModal(){
+      comingSoonOverlay.classList.add("active");
+      comingSoonModal.classList.add("active");
+    }
+
+    function closeComingSoonModal(){
+      comingSoonOverlay.classList.remove("active");
+      comingSoonModal.classList.remove("active");
+    }
+
     txOverlay.addEventListener("click", closeTx);
     txCloseBtn.addEventListener("click", closeTx);
 
@@ -1030,6 +1071,9 @@
     enterArchivesBtn.addEventListener("click", () => {
       location.href = "index.html#pricing";
     });
+
+    comingSoonOverlay.addEventListener("click", closeComingSoonModal);
+    comingSoonCloseBtn.addEventListener("click", closeComingSoonModal);
 
     adminOverlay.addEventListener("click", closeAdminModal);
     adminCloseBtn.addEventListener("click", closeAdminModal);
@@ -1108,6 +1152,7 @@
         const href = tile.getAttribute("data-href");
         const needsPaid = tile.getAttribute("data-paid") === "true";
         const needsAdmin = tile.getAttribute("data-admin") === "true";
+        const isRetreat = tile.classList.contains("tile-retreat");
 
         // Admin tiles only work if user is admin
         if (needsAdmin && !isAdmin){
@@ -1122,6 +1167,12 @@
         }
 
         tile.addEventListener("click", () => {
+          // Special handling for retreat tile - always show coming soon
+          if (isRetreat){
+            openComingSoonModal();
+            return;
+          }
+          
           // If needs paid and user isn't paid/admin, show locked modal
           if (needsPaid && !isPaid && !isAdmin){
             openLockedModal();

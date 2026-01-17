@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inner Circle Application | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+
+  <style>
+    :root{
+      --bg1:#111827;
+      --bg2:#02010a;
+      --bg3:#000;
+      --border: rgba(148,163,184,.28);
+      --gold: #fbbf24;
+      --purple: #9333ea;
+      --purple2:#7e22ce;
+      --purpleLight:#a78bfa;
+      --text:#e5e5e5;
+      --muted:#9ca3af;
+      --danger:#ef4444;
+      --success:#22c55e;
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2) 60%, var(--bg3));
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container{
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .back-btn{
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 2rem;
+      transition: color .2s;
+    }
+    .back-btn:hover{
+      color: var(--purpleLight);
+    }
+
+    .header{
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 1.5rem;
+      background: radial-gradient(circle at top, rgba(147,51,234,.2), rgba(15,23,42,.98));
+      border: 1px solid rgba(148,163,184,.35);
+      border-radius: 20px;
+    }
+
+    .crown-badge{
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+      color: #000;
+      padding: .5rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: .75rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h1{
+      font-size: 2.5rem;
+      margin-bottom: .75rem;
+      background: linear-gradient(135deg, var(--gold), var(--purpleLight));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .subtitle{
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .form-container{
+      background: rgba(15,23,42,.90);
+      border: 1px solid rgba(148,163,184,.35);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .info-box{
+      background: rgba(251,191,36,.1);
+      border: 1px solid rgba(251,191,36,.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .info-box h3{
+      color: var(--gold);
+      font-size: 1.1rem;
+      margin-bottom: .75rem;
+    }
+
+    .info-box p{
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: .95rem;
+    }
+
+    .form-group{
+      margin-bottom: 2rem;
+    }
+
+    .form-group label{
+      display: block;
+      font-weight: 700;
+      margin-bottom: .75rem;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .label-required{
+      color: var(--danger);
+      margin-left: .25rem;
+    }
+
+    .label-hint{
+      display: block;
+      font-weight: 400;
+      color: var(--muted);
+      font-size: .85rem;
+      margin-top: .35rem;
+      line-height: 1.4;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    select,
+    textarea{
+      width: 100%;
+      padding: .95rem 1.1rem;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: .95rem;
+      font-family: inherit;
+      transition: all .2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+      outline: none;
+      border-color: var(--purpleLight);
+      background: rgba(0,0,0,.5);
+    }
+
+    textarea{
+      min-height: 140px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .radio-group,
+    .checkbox-group{
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+    }
+
+    .radio-option,
+    .checkbox-option{
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: 1rem;
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .radio-option:hover,
+    .checkbox-option:hover{
+      border-color: var(--purpleLight);
+      background: rgba(147,51,234,.08);
+    }
+
+    .radio-option input,
+    .checkbox-option input{
+      width: auto;
+      cursor: pointer;
+    }
+
+    .radio-option label,
+    .checkbox-option label{
+      margin: 0;
+      cursor: pointer;
+      flex: 1;
+      font-weight: 400;
+    }
+
+    .btn-submit{
+      width: 100%;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all .3s;
+      letter-spacing: .05em;
+      margin-top: 1rem;
+    }
+
+    .btn-submit:hover:not(:disabled){
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(251,191,36,.35);
+    }
+
+    .btn-submit:disabled{
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .success-message{
+      display: none;
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(135deg, rgba(34,197,94,.15), rgba(147,51,234,.15));
+      border: 1px solid var(--success);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+    }
+
+    .success-message.show{
+      display: block;
+    }
+
+    .success-icon{
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .success-message h2{
+      font-size: 2rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    .success-message p{
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: .75rem;
+    }
+
+    .error-message{
+      background: rgba(239,68,68,.1);
+      border: 1px solid var(--danger);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      color: var(--danger);
+      font-size: .9rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .error-message.show{
+      display: block;
+    }
+
+    @media (max-width: 768px){
+      h1{
+        font-size: 2rem;
+      }
+
+      .form-container{
+        padding: 1.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="inner-circle.html" class="back-btn">← Back to Inner Circle Details</a>
+
+    <div class="header">
+      <span class="crown-badge">👑 Application Required</span>
+      <h1>Inner Circle Application</h1>
+      <p class="subtitle">
+        This isn't just trading coaching - it's complete life transformation.<br>
+        Trading, business, health, mindset, wealth building - we cover it all.
+      </p>
+    </div>
+
+    <!-- Success Message (hidden initially) -->
+    <div class="success-message" id="successMessage">
+      <div class="success-icon">✅</div>
+      <h2>Application Submitted!</h2>
+      <p>Thanks for applying to The Arcane Inner Circle.</p>
+      <p>Leo will review your application and get back to you within 48 hours via email.</p>
+      <p style="color: var(--gold); font-weight: 700; margin-top: 1.5rem;">Check your inbox (and spam folder) for a response.</p>
+    </div>
+
+    <!-- Application Form -->
+    <div class="form-container" id="formContainer">
+      <div class="info-box">
+        <h3>⚠️ What This Really Is</h3>
+        <p>The Inner Circle isn't just about learning to trade. It's about building a complete life: multiple income streams (trading, business, referrals), optimizing your health and energy, mastering your psychology, and creating real wealth. If you're just looking for signals or a trading system, The Arcane Archives (£128/month) is better. This is for people ready to transform everything.</p>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+
+      <form id="applicationForm">
+        <!-- Basic Info -->
+        <div class="form-group">
+          <label>
+            Full Name <span class="label-required">*</span>
+          </label>
+          <input type="text" id="fullName" name="fullName" required placeholder="John Smith" />
+        </div>
+
+        <div class="form-group">
+          <label>
+            Email <span class="label-required">*</span>
+          </label>
+          <input type="email" id="email" name="email" required placeholder="your@email.com" />
+        </div>
+
+        <div class="form-group">
+          <label>
+            Phone Number <span class="label-required">*</span>
+            <span class="label-hint">For WhatsApp/Telegram direct access</span>
+          </label>
+          <input type="tel" id="phone" name="phone" required placeholder="+44 7XXX XXXXXX" />
+        </div>
+
+        <div class="form-group">
+          <label>
+            Location (City/Country) <span class="label-required">*</span>
+            <span class="label-hint">Helps coordinate in-person dinner</span>
+          </label>
+          <input type="text" id="location" name="location" required placeholder="London, UK" />
+        </div>
+
+        <!-- Current Situation -->
+        <div class="form-group">
+          <label>
+            What's your current situation? <span class="label-required">*</span>
+            <span class="label-hint">Check all that apply</span>
+          </label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="sit1" name="situation" value="Trading (actively or learning)" />
+              <label for="sit1">Trading (actively or learning)</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="sit2" name="situation" value="Running a business" />
+              <label for="sit2">Running a business / side hustle</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="sit3" name="situation" value="9-5 job" />
+              <label for="sit3">9-5 job (want to escape)</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="sit4" name="situation" value="Building online presence" />
+              <label for="sit4">Building online presence / content</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="sit5" name="situation" value="Student / early career" />
+              <label for="sit5">Student / early in career</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="sit6" name="situation" value="Affiliate marketing / referrals" />
+              <label for="sit6">Affiliate marketing / building referral income</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trading Experience -->
+        <div class="form-group">
+          <label>
+            Trading experience level? <span class="label-required">*</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="exp1" name="tradingExperience" value="Never traded" required />
+              <label for="exp1">Never traded / complete beginner</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="exp2" name="tradingExperience" value="0-6 months" />
+              <label for="exp2">0-6 months (learning basics)</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="exp3" name="tradingExperience" value="6-12 months" />
+              <label for="exp3">6-12 months</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="exp4" name="tradingExperience" value="1-2 years" />
+              <label for="exp4">1-2 years</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="exp5" name="tradingExperience" value="2+ years" />
+              <label for="exp5">2+ years (experienced)</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="exp6" name="tradingExperience" value="Not interested in trading" />
+              <label for="exp6">Not interested in trading (here for business/life)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Are you currently profitable? <span class="label-required">*</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="prof1" name="profitable" value="Yes, consistently profitable" required />
+              <label for="prof1">Yes, consistently profitable</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="prof2" name="profitable" value="Break even / small profits" />
+              <label for="prof2">Break even / small profits</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="prof3" name="profitable" value="Still losing but learning" />
+              <label for="prof3">Still losing but learning</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="prof4" name="profitable" value="Haven't started live trading yet" />
+              <label for="prof4">Haven't started live trading yet</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            What's your current monthly income? <span class="label-required">*</span>
+            <span class="label-hint">From all sources combined</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="inc1" name="monthlyIncome" value="Under £1,000" required />
+              <label for="inc1">Under £1,000/month</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="inc2" name="monthlyIncome" value="£1,000 - £2,500" />
+              <label for="inc2">£1,000 - £2,500/month</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="inc3" name="monthlyIncome" value="£2,500 - £5,000" />
+              <label for="inc3">£2,500 - £5,000/month</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="inc4" name="monthlyIncome" value="£5,000 - £10,000" />
+              <label for="inc4">£5,000 - £10,000/month</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="inc5" name="monthlyIncome" value="£10,000+" />
+              <label for="inc5">£10,000+/month</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Which income streams interest you most? <span class="label-required">*</span>
+            <span class="label-hint">Check all that apply - we'll focus on these</span>
+          </label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream1" name="incomeStreams" value="Day trading (XAUUSD, Forex)" />
+              <label for="stream1">Day trading (XAUUSD, Forex)</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream2" name="incomeStreams" value="Swing trading / Investing" />
+              <label for="stream2">Swing trading / Long-term investing</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream3" name="incomeStreams" value="Affiliate marketing / Referrals" />
+              <label for="stream3">Affiliate marketing / Building referral income</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream4" name="incomeStreams" value="Online business / E-commerce" />
+              <label for="stream4">Online business / E-commerce</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream5" name="incomeStreams" value="Content creation / Personal brand" />
+              <label for="stream5">Content creation / Building personal brand</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream6" name="incomeStreams" value="Service business / Consulting" />
+              <label for="stream6">Service business / Consulting / Coaching</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="stream7" name="incomeStreams" value="Real estate / Alternative investments" />
+              <label for="stream7">Real estate / Alternative investments</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            What's your current trading capital? <span class="label-required">*</span>
+            <span class="label-hint">If not trading yet, put "Not applicable"</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="cap0" name="capital" value="Not applicable / Not trading yet" required />
+              <label for="cap0">Not applicable / Not trading yet</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="cap1" name="capital" value="Under £1,000" />
+              <label for="cap1">Under £1,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="cap2" name="capital" value="£1,000 - £5,000" />
+              <label for="cap2">£1,000 - £5,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="cap3" name="capital" value="£5,000 - £10,000" />
+              <label for="cap3">£5,000 - £10,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="cap4" name="capital" value="£10,000 - £50,000" />
+              <label for="cap4">£10,000 - £50,000</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="cap5" name="capital" value="£50,000+" />
+              <label for="cap5">£50,000+</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals & Life Vision -->
+        <div class="form-group">
+          <label>
+            What's your 12-month vision? <span class="label-required">*</span>
+            <span class="label-hint">Where do you want to be in a year? Income, lifestyle, health, freedom - paint the picture</span>
+          </label>
+          <textarea id="vision" name="vision" required placeholder="Example: £10k/month from trading + affiliate income. Living in Bali. Down to 12% body fat. Running my own business full-time. Zero reliance on 9-5."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            What areas of life need the most work? <span class="label-required">*</span>
+            <span class="label-hint">Check all that apply - we focus on what matters most</span>
+          </label>
+          <div class="checkbox-group">
+            <div class="checkbox-option">
+              <input type="checkbox" id="area1" name="focusAreas" value="Wealth - Making more money" />
+              <label for="area1">💰 Wealth - Making more money</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="area2" name="focusAreas" value="Trading - Becoming consistently profitable" />
+              <label for="area2">📈 Trading - Becoming consistently profitable</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="area3" name="focusAreas" value="Business - Building income streams" />
+              <label for="area3">💼 Business - Building multiple income streams</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="area4" name="focusAreas" value="Health - Body composition, energy, fitness" />
+              <label for="area4">💪 Health - Body composition, energy, fitness</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="area5" name="focusAreas" value="Mindset - Psychology, discipline, mental game" />
+              <label for="area5">🧠 Mindset - Psychology, discipline, mental toughness</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="area6" name="focusAreas" value="Time freedom - Escaping 9-5, building flexibility" />
+              <label for="area6">🏖️ Time Freedom - Escaping 9-5, location independence</label>
+            </div>
+            <div class="checkbox-option">
+              <input type="checkbox" id="area7" name="focusAreas" value="Relationships - Social life, connections, influence" />
+              <label for="area7">🤝 Relationships - Network, social circle, influence</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            What's your biggest obstacle right now? <span class="label-required">*</span>
+            <span class="label-hint">What's actually stopping you from getting where you want to be?</span>
+          </label>
+          <textarea id="obstacle" name="obstacle" required placeholder="Example: Can't stay consistent. Start strong then fall off. Don't have proven systems. Struggle with discipline when shit gets hard. Lack of accountability."></textarea>
+        </div>
+
+        <!-- Health & Lifestyle -->
+        <div class="form-group">
+          <label>
+            Current health/fitness level? <span class="label-required">*</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="health1" name="healthLevel" value="Elite - Train regularly, dialed in" required />
+              <label for="health1">Elite - Train regularly, nutrition dialed in</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="health2" name="healthLevel" value="Good - Active, relatively healthy" />
+              <label for="health2">Good - Active, relatively healthy</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="health3" name="healthLevel" value="Average - Could be better" />
+              <label for="health3">Average - Could be better, inconsistent</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="health4" name="healthLevel" value="Poor - Need major improvements" />
+              <label for="health4">Poor - Need major improvements, out of shape</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="health5" name="healthLevel" value="Not a priority right now" />
+              <label for="health5">Not a priority right now</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Do you have any health goals? (Optional)
+          </label>
+          <textarea id="healthGoals" name="healthGoals" placeholder="Example: Drop to 10% body fat. Fix my sleep. Build muscle. Increase energy. Quit vaping/drinking."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Why do you want the Inner Circle vs. The Arcane Archives membership? <span class="label-required">*</span>
+            <span class="label-hint">What are you actually looking for? Be real</span>
+          </label>
+          <textarea id="whyCoaching" name="whyCoaching" required placeholder="Example: I'm done with half-assing it. I need someone who's been there to call me out, keep me accountable, and help me build everything - not just watch courses. I want direct access and real guidance."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            What would success look like 6 months from now? <span class="label-required">*</span>
+          </label>
+          <textarea id="successMetrics" name="successMetrics" required placeholder="Example: £5k/month passive income from trading + affiliates. Down 15lbs. Quit my job. Have a proven system I can scale. Actually consistent with my habits for once."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            How many hours per week can you dedicate to trading/learning? <span class="label-required">*</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="time1" name="timeCommitment" value="1-5 hours" required />
+              <label for="time1">1-5 hours (part-time, limited availability)</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="time2" name="timeCommitment" value="5-10 hours" />
+              <label for="time2">5-10 hours (serious part-time)</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="time3" name="timeCommitment" value="10-20 hours" />
+              <label for="time3">10-20 hours (treating it like a job)</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="time4" name="timeCommitment" value="20+ hours" />
+              <label for="time4">20+ hours (full-time focus)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Commitment -->
+        <div class="form-group">
+          <label>
+            Are you ready to invest £4,997 right now? <span class="label-required">*</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="ready1" name="readyToInvest" value="Yes, ready to pay now" required />
+              <label for="ready1">Yes, ready to pay now</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="ready2" name="readyToInvest" value="Yes, need 1-2 weeks" />
+              <label for="ready2">Yes, need 1-2 weeks to get funds ready</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="ready3" name="readyToInvest" value="Not sure, need to discuss" />
+              <label for="ready3">Not sure, need to discuss payment options</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="ready4" name="readyToInvest" value="No, just exploring" />
+              <label for="ready4">No, just exploring options</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Final Questions -->
+        <div class="form-group">
+          <label>
+            Are you currently a member of The Arcane Archives? <span class="label-required">*</span>
+          </label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="member1" name="currentMember" value="Yes, active member" required />
+              <label for="member1">Yes, active member</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="member2" name="currentMember" value="No, but interested" />
+              <label for="member2">No, but interested in joining</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="member3" name="currentMember" value="Previous member" />
+              <label for="member3">Previous member</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Anything else Leo should know? (Optional)
+          </label>
+          <textarea id="additional" name="additional" placeholder="Any questions, concerns, or additional context about your situation..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Submit Application
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const form = document.getElementById('applicationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const formContainer = document.getElementById('formContainer');
+
+    let currentUserEmail = '';
+    let currentUserId = '';
+
+    // Check auth
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        location.href = "login.html";
+      } else {
+        currentUserEmail = user.email;
+        currentUserId = user.uid;
+        // Pre-fill email if available
+        document.getElementById('email').value = user.email || '';
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Clear previous errors
+      errorMessage.classList.remove('show');
+      errorMessage.textContent = '';
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        // Helper function to get all checked checkbox values
+        const getCheckedValues = (name) => {
+          return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+            .map(cb => cb.value);
+        };
+
+        // Collect form data
+        const formData = {
+          // Basic Info
+          fullName: document.getElementById('fullName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          location: document.getElementById('location').value.trim(),
+          
+          // Current Situation
+          situation: getCheckedValues('situation'),
+          tradingExperience: document.querySelector('input[name="tradingExperience"]:checked').value,
+          
+          // Financial
+          monthlyIncome: document.querySelector('input[name="monthlyIncome"]:checked').value,
+          incomeStreams: getCheckedValues('incomeStreams'),
+          capital: document.querySelector('input[name="capital"]:checked').value,
+          profitable: document.querySelector('input[name="profitable"]:checked')?.value || 'Not applicable',
+          
+          // Goals & Vision
+          vision: document.getElementById('vision').value.trim(),
+          focusAreas: getCheckedValues('focusAreas'),
+          obstacle: document.getElementById('obstacle').value.trim(),
+          
+          // Health & Lifestyle
+          healthLevel: document.querySelector('input[name="healthLevel"]:checked').value,
+          healthGoals: document.getElementById('healthGoals').value.trim(),
+          
+          // Why Inner Circle
+          whyCoaching: document.getElementById('whyCoaching').value.trim(),
+          successMetrics: document.getElementById('successMetrics').value.trim(),
+          timeCommitment: document.querySelector('input[name="timeCommitment"]:checked').value,
+          
+          // Financial Readiness
+          readyToInvest: document.querySelector('input[name="readyToInvest"]:checked').value,
+          currentMember: document.querySelector('input[name="currentMember"]:checked').value,
+          
+          // Optional
+          additional: document.getElementById('additional').value.trim(),
+          
+          // Metadata
+          userId: currentUserId,
+          userEmail: currentUserEmail,
+          submittedAt: serverTimestamp(),
+          status: 'pending'
+        };
+
+        // Validation: Ensure at least one checkbox is selected for required checkbox groups
+        if (formData.situation.length === 0) {
+          throw new Error('Please select at least one option for "Current Situation"');
+        }
+        if (formData.incomeStreams.length === 0) {
+          throw new Error('Please select at least one income stream that interests you');
+        }
+        if (formData.focusAreas.length === 0) {
+          throw new Error('Please select at least one area of life to focus on');
+        }
+
+        // Save to Firestore
+        await addDoc(collection(db, 'InnerCircleApplications'), formData);
+
+        // Show success message
+        formContainer.style.display = 'none';
+        successMessage.classList.add('show');
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (error) {
+        console.error('Submission error:', error);
+        errorMessage.textContent = `Error submitting application: ${error.message}. Please try again or contact support.`;
+        errorMessage.classList.add('show');
+        
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Application';
+      }
+    });
+  </script>
+</body>
+</html>

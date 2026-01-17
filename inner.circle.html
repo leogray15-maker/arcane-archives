@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Arcane Inner Circle | £4,997</title>
+  <link rel="icon" href="ArcaneA.png" />
+
+  <style>
+    :root{
+      --bg1:#111827;
+      --bg2:#02010a;
+      --bg3:#000;
+      --border: rgba(148,163,184,.28);
+      --gold: #fbbf24;
+      --purple: #9333ea;
+      --purple2:#7e22ce;
+      --purpleLight:#a78bfa;
+      --text:#e5e5e5;
+      --muted:#9ca3af;
+      --danger:#ef4444;
+      --success:#22c55e;
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2) 60%, var(--bg3));
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container{
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Back button */
+    .back-btn{
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 2rem;
+      transition: color .2s;
+    }
+    .back-btn:hover{
+      color: var(--purpleLight);
+    }
+
+    /* Hero Section */
+    .hero{
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 3rem 1.5rem;
+      background: radial-gradient(circle at top, rgba(147,51,234,.2), rgba(15,23,42,.98));
+      border: 1px solid rgba(148,163,184,.35);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before{
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(251,191,36,.08) 0%, transparent 70%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse{
+      0%, 100% { opacity: .5; }
+      50% { opacity: 1; }
+    }
+
+    .hero-content{
+      position: relative;
+      z-index: 1;
+    }
+
+    .crown-badge{
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+      color: #000;
+      padding: .5rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: .8rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 24px rgba(251,191,36,.3);
+    }
+
+    h1{
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--gold), var(--purpleLight));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle{
+      font-size: 1.25rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .price-container{
+      margin: 2rem 0;
+    }
+
+    .price{
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-bottom: .5rem;
+    }
+
+    .price-subtitle{
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* What's Included Section */
+    .section{
+      margin-bottom: 3rem;
+    }
+
+    .section-header{
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-header h2{
+      font-size: 2rem;
+      margin-bottom: .75rem;
+      color: var(--text);
+    }
+
+    .section-header p{
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* Feature Cards */
+    .features-grid{
+      display: grid;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .feature-card{
+      background: rgba(15,23,42,.90);
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all .3s ease;
+    }
+
+    .feature-card:hover{
+      border-color: rgba(251,191,36,.5);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.4);
+    }
+
+    .feature-header{
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-icon{
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .feature-content h3{
+      font-size: 1.35rem;
+      margin-bottom: .5rem;
+      color: var(--text);
+    }
+
+    .feature-content p{
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: .95rem;
+    }
+
+    .feature-highlight{
+      display: inline-block;
+      background: rgba(251,191,36,.12);
+      color: var(--gold);
+      padding: .35rem .75rem;
+      border-radius: 6px;
+      font-size: .85rem;
+      font-weight: 700;
+      margin-top: .75rem;
+    }
+
+    /* Comparison Section */
+    .comparison{
+      background: rgba(15,23,42,.60);
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .comparison h3{
+      text-align: center;
+      font-size: 1.75rem;
+      margin-bottom: 2rem;
+      color: var(--text);
+    }
+
+    .comparison-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .comparison-col h4{
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      padding-bottom: .75rem;
+      border-bottom: 2px solid rgba(148,163,184,.28);
+    }
+
+    .comparison-col.archives h4{
+      color: var(--purpleLight);
+      border-bottom-color: var(--purpleLight);
+    }
+
+    .comparison-col.inner-circle h4{
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .comparison-item{
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      margin-bottom: 1rem;
+      font-size: .95rem;
+      color: var(--muted);
+    }
+
+    .comparison-item .check{
+      color: var(--success);
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .comparison-item.highlight{
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* Limited Spots */
+    .limited-spots{
+      background: linear-gradient(135deg, rgba(239,68,68,.15), rgba(147,51,234,.15));
+      border: 1px solid rgba(239,68,68,.35);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .limited-spots h4{
+      font-size: 1.25rem;
+      color: var(--danger);
+      margin-bottom: .5rem;
+    }
+
+    .limited-spots p{
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-section{
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: radial-gradient(circle at top, rgba(251,191,36,.12), rgba(15,23,42,.98));
+      border: 1px solid rgba(251,191,36,.35);
+      border-radius: 24px;
+      margin-bottom: 3rem;
+    }
+
+    .cta-section h3{
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .cta-section p{
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .btn-primary{
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+      color: #000;
+      padding: 1.2rem 3rem;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 1.1rem;
+      text-decoration: none;
+      transition: all .3s ease;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 12px 32px rgba(251,191,36,.3);
+      letter-spacing: .05em;
+    }
+
+    .btn-primary:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(251,191,36,.45);
+    }
+
+    /* FAQ */
+    .faq{
+      margin-bottom: 3rem;
+    }
+
+    .faq h3{
+      text-align: center;
+      font-size: 1.75rem;
+      margin-bottom: 2rem;
+      color: var(--text);
+    }
+
+    .faq-item{
+      background: rgba(15,23,42,.60);
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .faq-item h4{
+      font-size: 1.1rem;
+      margin-bottom: .75rem;
+      color: var(--gold);
+    }
+
+    .faq-item p{
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: .95rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px){
+      h1{
+        font-size: 2rem;
+      }
+
+      .price{
+        font-size: 2.5rem;
+      }
+
+      .comparison-grid{
+        grid-template-columns: 1fr;
+      }
+
+      .hero-subtitle{
+        font-size: 1.05rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-content">
+        <span class="crown-badge">👑 Limited to 10 Members</span>
+        <h1>The Arcane Inner Circle</h1>
+        <p class="hero-subtitle">
+          Direct access to Leo. Personal mentorship. In-person connection.<br>
+          This is where real transformation happens.
+        </p>
+        <div class="price-container">
+          <div class="price">£4,997</div>
+          <div class="price-subtitle">One-time investment • Lifetime access</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- What's Included -->
+    <section class="section">
+      <div class="section-header">
+        <h2>What You're Getting</h2>
+        <p>Everything in The Arcane Archives, plus direct access to me personally.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-content">
+              <h3>12 Private 1:1 Sessions</h3>
+              <p>6 months of 2x monthly calls. We analyze your trades, build your systems, and accelerate your results. Not group coaching—actual 1:1 time where we focus entirely on you.</p>
+              <span class="feature-highlight">Value: £3,000+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">🍽️</div>
+            <div class="feature-content">
+              <h3>In-Person Dinner</h3>
+              <p>We meet face-to-face. No cameras, no content—just real conversation about your business, trading, and life. This is where the real breakthroughs happen. London/Essex area or you travel to me.</p>
+              <span class="feature-highlight">Value: £500-1,000</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">💬</div>
+            <div class="feature-content">
+              <h3>Direct Message Access</h3>
+              <p>WhatsApp/Telegram for 6 months. Quick questions, trade reviews, mindset check-ins—you get direct access when you need it. No waiting in group chats.</p>
+              <span class="feature-highlight">Priority Response</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">🏔️</div>
+            <div class="feature-content">
+              <h3>2028 Retreat Priority + £1,500 Discount</h3>
+              <p>When the retreat happens in 2028, you get first access and £1,500 off. You're investing now, you get rewarded later. This alone makes the Inner Circle investment pay for itself.</p>
+              <span class="feature-highlight">Exclusive Access</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">♾️</div>
+            <div class="feature-content">
+              <h3>Lifetime Inner Circle Community</h3>
+              <p>After the 6 months, you keep access to the Inner Circle community forever. You're not just a client—you're part of the crew. Priority on everything I release.</p>
+              <span class="feature-highlight">Forever Access</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">📚</div>
+            <div class="feature-content">
+              <h3>Everything in The Arcane Archives</h3>
+              <p>1,200+ modules on trading, business, mindset. Stock picks, daily insights, live calls, trading alerts, referral system—everything included. Full platform access forever.</p>
+              <span class="feature-highlight">£128/month value</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Limited Spots -->
+    <div class="limited-spots">
+      <h4>⚠️ Limited to 10 Members Only</h4>
+      <p>I can only work with 10 people at this level and deliver the results you deserve. When spots are filled, this closes. No exceptions.</p>
+    </div>
+
+    <!-- Comparison -->
+    <div class="comparison">
+      <h3>Archives vs. Inner Circle</h3>
+      <div class="comparison-grid">
+        <div class="comparison-col archives">
+          <h4>The Arcane Archives<br>£128/month</h4>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>1,200+ course modules</span>
+          </div>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>Stock picks & trading alerts</span>
+          </div>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>Daily Arcane Insights</span>
+          </div>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>Community access</span>
+          </div>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>Weekly live calls</span>
+          </div>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>Referral commission system</span>
+          </div>
+        </div>
+
+        <div class="comparison-col inner-circle">
+          <h4>The Arcane Inner Circle<br>£4,997 one-time</h4>
+          <div class="comparison-item">
+            <span class="check">✓</span>
+            <span>Everything in Archives</span>
+          </div>
+          <div class="comparison-item highlight">
+            <span class="check">✓</span>
+            <span>12 private 1:1 sessions with Leo</span>
+          </div>
+          <div class="comparison-item highlight">
+            <span class="check">✓</span>
+            <span>In-person dinner</span>
+          </div>
+          <div class="comparison-item highlight">
+            <span class="check">✓</span>
+            <span>Direct WhatsApp/Telegram access</span>
+          </div>
+          <div class="comparison-item highlight">
+            <span class="check">✓</span>
+            <span>Retreat priority + £1,500 discount</span>
+          </div>
+          <div class="comparison-item highlight">
+            <span class="check">✓</span>
+            <span>Lifetime Inner Circle status</span>
+          </div>
+          <div class="comparison-item highlight">
+            <span class="check">✓</span>
+            <span>Priority on all new releases</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <h3>Ready to Join?</h3>
+      <p>
+        This isn't for everyone. If you're serious about your trading, your business, and your life—<br>
+        and you want direct access to someone who's been through it—this is for you.
+      </p>
+      <a href="#apply" class="btn-primary" id="applyBtn">Apply for Inner Circle</a>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq">
+      <h3>Questions?</h3>
+      
+      <div class="faq-item">
+        <h4>What happens after the 6 months?</h4>
+        <p>The 12 1:1 calls and direct message access end after 6 months, but you keep lifetime access to the Inner Circle community, all platform content, and priority on everything I release. You can renew 1:1 coaching at £497/month if you want to continue.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>When is the in-person dinner?</h4>
+        <p>We schedule this within your first 3 months. You come to London/Essex or I travel to you (UK only). We'll coordinate timing that works for both of us.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Can I pay in installments?</h4>
+        <p>Right now it's one-time payment only at £4,997. This keeps it exclusive and ensures serious commitment. If you need to discuss payment options, reach out directly.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>What if I'm already an Archives member?</h4>
+        <p>Perfect—you already understand the quality. Your Inner Circle payment is £4,997 and includes everything listed above. Your Archives membership continues as usual and is included in your Inner Circle access.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>How do I know if this is for me?</h4>
+        <p>If you're already profitable or close to it, building a business, and you want to accelerate—this is for you. If you're brand new and struggling with basics, start with The Arcane Archives first (£128/month), then upgrade when you're ready.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+      projectId: "arcane-archives-3b0f5",
+      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+      messagingSenderId: "264237235055",
+      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Check auth
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        location.href = "login.html";
+      }
+    });
+
+    // Apply button - link to application form
+    document.getElementById("applyBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      location.href = "inner-circle-apply.html";
+    });
+  </script>
+</body>
+</html>
