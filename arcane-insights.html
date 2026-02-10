@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Arcane Insights | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --bg-dark: #02010a;
@@ -34,7 +38,7 @@
         /* Back Button - Consistent with your other pages */
         .back-btn {
             position: fixed;
-            top: 1.5rem;
+            top: calc(1.5rem + env(safe-area-inset-top, 0px));
             left: 1.5rem;
             z-index: 40;
             padding: 0.6rem 1.2rem;
@@ -437,58 +441,23 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Firebase with Enhanced Auth Guard -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        import { protectPage, db } from './auth-guard.js';
+        import { doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
         let currentUser = null;
 
-        // Auth Check - Require paid membership
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            try {
-                // Check if user is paid
-                const userDoc = await getDoc(doc(db, 'Users', user.uid));
-                if (!userDoc.exists()) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const userData = userDoc.data();
-                const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
-
-                if (!isPaid) {
-                    alert('🔒 Arcane Insights requires an active membership. Redirecting to pricing...');
-                    window.location.href = 'index.html#pricing';
-                    return;
-                }
-
-                // User is authenticated and paid
+        // Use centralized auth protection with modern locked overlay
+        protectPage({
+            requirePayment: true,
+            allowAdmin: true,
+            onSuccess: (user, userData) => {
                 currentUser = user;
                 loadUserStreak();
                 loadTodaysPost();
-            } catch (error) {
-                console.error('Auth error:', error);
+            },
+            onFailure: () => {
                 window.location.href = 'login.html';
             }
         });

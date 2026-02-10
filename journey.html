@@ -2,80 +2,244 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leo's Journey | The Arcane Archives</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>The Journey | Leo Gray</title>
     <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="description" content="From selling cigarettes at school to building The Arcane Archives. The unfiltered story of Leo Gray.">
     
     <style>
         :root {
-            --bg-dark: #020617;
-            --bg-card: #0f172a;
-            --purple: #a855f7;
+            --bg-dark: #0a0a0a;
+            --bg-elevated: #121212;
+            --bg-card: #1a1a1a;
+            --purple: #9333ea;
             --purple-dark: #7e22ce;
+            --purple-light: #a78bfa;
             --gold: #fbbf24;
             --red: #ef4444;
-            --green: #22c55e;
-            --text: #e5e7eb;
-            --text-dim: #9ca3af;
+            --green: #10b981;
+            --text: #f5f5f5;
+            --text-dim: #a1a1a1;
+            --border: rgba(148, 163, 184, 0.2);
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
         
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #0a0a0a 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Inter', sans-serif;
+            background: var(--bg-dark);
             color: var(--text);
-            line-height: 1.6;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-light), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--purple-light);
         }
         
         /* Hero */
         .hero {
-            min-height: 70vh;
+            min-height: 80vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 2rem;
-            background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+            padding: calc(8rem + env(safe-area-inset-top, 0px)) 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 70%);
+            pointer-events: none;
         }
         
         .hero-content {
-            max-width: 800px;
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
             animation: fadeInUp 1s ease;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid var(--purple);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--purple-light);
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
         }
         
         .hero-title {
-            font-size: clamp(2rem, 6vw, 4rem);
+            font-size: clamp(3rem, 8vw, 5rem);
             font-weight: 900;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--gold), var(--purple));
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, white, var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
         }
         
         .hero-subtitle {
-            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-size: clamp(1.125rem, 3vw, 1.75rem);
             color: var(--text-dim);
             margin-bottom: 1rem;
+            line-height: 1.5;
         }
 
-        .hero-age {
+        .hero-meta {
             font-size: 1.125rem;
-            color: var(--purple);
+            color: var(--purple-light);
             font-weight: 600;
+            margin-top: 2rem;
         }
         
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* Stats Row */
+        .stats-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(180deg, transparent, rgba(147, 51, 234, 0.03));
+        }
+
+        .stats-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            animation: fadeInUp 1s ease;
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 1.125rem;
+            font-weight: 500;
         }
         
         /* Timeline Container */
+        .timeline-section {
+            padding: 5rem 2rem;
+        }
+
         .timeline-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 2rem 1rem 5rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, white, var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-dim);
         }
         
         .timeline {
@@ -86,7 +250,7 @@
         .timeline::before {
             content: '';
             position: absolute;
-            left: 20px;
+            left: 25px;
             top: 0;
             bottom: 0;
             width: 3px;
@@ -100,365 +264,520 @@
         /* Chapter Card */
         .chapter {
             position: relative;
-            padding-left: 60px;
-            margin-bottom: 3rem;
+            padding-left: 80px;
+            margin-bottom: 4rem;
             opacity: 0;
             transform: translateY(30px);
             transition: all 0.6s ease;
         }
-        
+
         .chapter.visible {
             opacity: 1;
             transform: translateY(0);
         }
         
-        /* Timeline node */
         .chapter-node {
             position: absolute;
-            left: 10px;
+            left: 12px;
             top: 10px;
-            width: 22px;
-            height: 22px;
+            width: 28px;
+            height: 28px;
             background: var(--purple);
-            border: 4px solid var(--bg-dark);
             border-radius: 50%;
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
             z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .chapter:hover .chapter-node {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(147, 51, 234, 0.7);
         }
         
         .chapter-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            border-radius: 1rem;
-            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
             transition: all 0.3s ease;
         }
-        
-        .chapter-card:hover {
+
+        .chapter:hover .chapter-card {
             transform: translateX(5px);
             border-color: var(--purple);
-            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.2);
+            box-shadow: 0 20px 50px rgba(147, 51, 234, 0.15);
         }
         
         .chapter-header {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-        
-        .chapter-year {
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: var(--gold);
-            background: rgba(251, 191, 36, 0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         
         .chapter-emoji {
-            font-size: 1.5rem;
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+        
+        .chapter-year {
+            color: var(--purple-light);
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
         }
         
         .chapter-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 0.75rem;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+            color: white;
+            line-height: 1.2;
         }
         
         .chapter-description {
-            color: var(--text-dim);
-            line-height: 1.7;
-            margin-bottom: 1rem;
+            color: var(--text);
+            line-height: 1.75;
+            font-size: 1.075rem;
+            margin-bottom: 1.5rem;
         }
         
         .chapter-lesson {
+            padding: 1.25rem;
+            background: rgba(147, 51, 234, 0.05);
+            border-left: 4px solid var(--purple);
+            border-radius: 8px;
             font-style: italic;
-            color: var(--purple);
-            padding: 0.75rem 1rem;
-            background: rgba(168, 85, 247, 0.1);
-            border-left: 3px solid var(--purple);
-            border-radius: 0.5rem;
-            margin-top: 1rem;
+            color: var(--text-dim);
+            font-size: 1.05rem;
         }
-        
-        /* Special chapter styles */
+
+        /* Chapter Types */
+        .chapter.loss .chapter-node {
+            background: var(--red);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        }
+
+        .chapter.loss .chapter-lesson {
+            border-left-color: var(--red);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .chapter.highlight .chapter-card {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.03), var(--bg-card));
+        }
+
         .chapter.highlight .chapter-node {
             background: var(--gold);
             box-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
         }
-        
-        .chapter.highlight .chapter-card {
-            border-color: var(--gold);
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(168, 85, 247, 0.05));
-        }
-        
-        .chapter.loss .chapter-node {
-            background: var(--red);
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+
+        .chapter.highlight .chapter-lesson {
+            border-left-color: var(--gold);
+            background: rgba(251, 191, 36, 0.05);
         }
         
         .chapter.win .chapter-node {
             background: var(--green);
-            box-shadow: 0 0 25px rgba(34, 197, 94, 0.6);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+        }
+
+        .chapter.win .chapter-lesson {
+            border-left-color: var(--green);
+            background: rgba(16, 185, 129, 0.05);
         }
         
         /* CTA Section */
         .cta-section {
-            max-width: 800px;
-            margin: 5rem auto 3rem;
-            padding: 3rem 2rem;
+            max-width: 900px;
+            margin: 5rem auto 4rem;
+            padding: 4rem 2rem;
             text-align: center;
-            background: var(--bg-card);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 1.5rem;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), var(--bg-card));
+            border: 2px solid var(--purple);
+            border-radius: 24px;
         }
         
         .cta-title {
-            font-size: clamp(1.75rem, 5vw, 2.5rem);
-            font-weight: 800;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple), var(--gold));
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, white, var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .cta-description {
-            color: var(--text-dim);
-            margin-bottom: 2rem;
-            font-size: 1.125rem;
+            color: var(--text);
+            margin-bottom: 2.5rem;
+            font-size: 1.25rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .cta-button {
             display: inline-block;
-            padding: 1rem 2.5rem;
+            padding: 1.25rem 3rem;
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
             color: white;
             text-decoration: none;
-            border-radius: 0.75rem;
-            font-weight: 600;
+            border-radius: 12px;
+            font-weight: 700;
             font-size: 1.125rem;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
         }
         
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(168, 85, 247, 0.4);
+            box-shadow: 0 8px 30px rgba(147, 51, 234, 0.5);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--purple-light);
+        }
+
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.875rem;
         }
         
         /* Mobile Optimization */
         @media (max-width: 768px) {
+            .nav-container {
+                padding: 1rem 1.5rem;
+            }
+
+            .hero {
+                padding: calc(6rem + env(safe-area-inset-top, 0px)) 1.5rem 3rem;
+            }
+
             .timeline::before {
                 left: 15px;
             }
             
             .chapter {
-                padding-left: 50px;
+                padding-left: 60px;
             }
             
             .chapter-node {
                 left: 6px;
+                width: 20px;
+                height: 20px;
             }
             
             .chapter-card {
-                padding: 1.25rem;
+                padding: 1.75rem;
             }
             
             .chapter-title {
-                font-size: 1.25rem;
+                font-size: 1.5rem;
             }
             
             .chapter-description {
-                font-size: 0.95rem;
+                font-size: 1rem;
+            }
+
+            .chapter-emoji {
+                font-size: 2rem;
             }
             
             .cta-section {
                 margin: 3rem 1rem 2rem;
-                padding: 2rem 1.5rem;
+                padding: 2.5rem 1.5rem;
+            }
+
+            .stats-container {
+                gap: 2rem;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
+            </a>
+            <a href="index.html" class="nav-link">← Back to Home</a>
+        </div>
+    </nav>
     
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
+            <span class="hero-badge">THE UNFILTERED STORY</span>
             <h1 class="hero-title">The Journey</h1>
-            <p class="hero-subtitle">From broke and lost to building something real</p>
-            <p class="hero-age">21 years old. Still just getting started.</p>
+            <p class="hero-subtitle">
+                From selling cigarettes at school to losing £100K in crypto to building The Arcane Archives. 
+                This is the real story — no filters, no bullshit.
+            </p>
+            <p class="hero-meta">21 years old. Still just getting started.</p>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">£80K+</div>
+                <div class="stat-label">Invested in Education</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">£100K</div>
+                <div class="stat-label">Lost & Learned From</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">7+</div>
+                <div class="stat-label">Ventures Built</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Lessons Learned</div>
+            </div>
         </div>
     </section>
     
-    <!-- Timeline -->
-    <div class="timeline-container">
-        <div class="timeline">
-            
-            <!-- Chapter 1: The Hustler Kid -->
-            <div class="chapter">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">💰</span>
-                        <span class="chapter-year">School Days (~2014-2018)</span>
-                    </div>
-                    <h2 class="chapter-title">The Hustler Kid</h2>
-                    <p class="chapter-description">
-                        Never could focus in school, probably ADHD lol. But I could focus on making money. Started selling cigarettes at school for £1 each – 20 in a pack, sometimes selling 2 packs (smoked some too). That's when I realized I had a hustler's mindset. School wasn't teaching me what I needed to learn.
-                    </p>
-                    <div class="chapter-lesson">
-                        "The education system failed me, but the streets taught me everything."
+    <!-- Timeline Section -->
+    <section class="timeline-section">
+        <div class="timeline-container">
+            <div class="section-header">
+                <h2 class="section-title">Every Chapter Matters</h2>
+                <p class="section-subtitle">The wins, the losses, and everything in between</p>
+            </div>
+
+            <div class="timeline">
+                
+                <!-- Chapter 1: The Hustler Kid -->
+                <div class="chapter">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">💰</span>
+                            <span class="chapter-year">2014-2018 • School Days</span>
+                        </div>
+                        <h2 class="chapter-title">The Hustler Kid</h2>
+                        <p class="chapter-description">
+                            Never could focus in school — probably ADHD. But I could focus on making money. Started selling cigarettes at school for £1 each. 20 in a pack, sometimes selling 2 packs (smoked some too). That's when I realized I had a hustler's mindset. School wasn't teaching me what I needed to learn.
+                        </p>
+                        <div class="chapter-lesson">
+                            "The education system failed me, but the streets taught me everything."
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Chapter 2: The Grind Begins -->
-            <div class="chapter">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">💪</span>
-                        <span class="chapter-year">2016-2018</span>
-                    </div>
-                    <h2 class="chapter-title">The Grind Begins</h2>
-                    <p class="chapter-description">
-                        Left school, tried college for 6 months doing some iMedia course – it was shit. At 16, started making garden patio slabs, landscaping, working in a window company. Did bin bag manufacturing for literally an hour before I walked out because it felt robotic. Tried a few other jobs. None of them felt right. I was searching for something more.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Every 'wrong' job taught me what I didn't want to become."
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chapter 3: Chef Life -->
-            <div class="chapter">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">👨‍🍳</span>
-                        <span class="chapter-year">2017-2024</span>
-                    </div>
-                    <h2 class="chapter-title">Chef Life</h2>
-                    <p class="chapter-description">
-                        Started as a chef at 17 in a local restaurant. Boss was good to me, took me to a hotel, spa, and restaurant. Then got sacked because the boss above him didn't like me. Worked in a few pubs after – most of it was deep-fried frozen shit and microwave meals. Not what I signed up for. I loved being a chef but hated the reality of chain restaurants. All while building businesses on the side – ecommerce, building watches, had an SMMA business. I was always hustling for freedom.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Passion without freedom is just a well-decorated prison."
+                
+                <!-- Chapter 2: The Grind Begins -->
+                <div class="chapter">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">💪</span>
+                            <span class="chapter-year">2016-2018 • The Search</span>
+                        </div>
+                        <h2 class="chapter-title">The Grind Begins</h2>
+                        <p class="chapter-description">
+                            Left school, tried college for 6 months doing some iMedia course — it was shit. At 16, started making garden patio slabs, landscaping, working in a window company. Did bin bag manufacturing for literally an hour before I walked out because it felt robotic. Tried a few other jobs. None of them felt right. I was searching for something more.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Every 'wrong' job taught me what I didn't want to become."
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Chapter 4: The £100K Lesson -->
-            <div class="chapter loss">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">💔</span>
-                        <span class="chapter-year">2020-2021</span>
-                    </div>
-                    <h2 class="chapter-title">The £100K Lesson</h2>
-                    <p class="chapter-description">
-                        Around 2020, I invested £17k into crypto. Bull run happened and I was up £100k profit. First market cycle, didn't know you never sell your BTC, ETH, XRP, SOL. Then bear market hit and instead of buying more, I panic sold. Lost the £100k profit. That pain? That taught me everything.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Your biggest losses are your best investments if you learn from them."
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chapter 5: Investing in Knowledge -->
-            <div class="chapter">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">📚</span>
-                        <span class="chapter-year">2016-Present</span>
-                    </div>
-                    <h2 class="chapter-title">Investing in Knowledge</h2>
-                    <p class="chapter-description">
-                        Since I was 16, I've been buying courses non-stop. Not just trading – life, business, money, health, everything. If I see a course that's worth it, I buy it. Spent thousands on courses and 1-1 mentorship over the years. Some people think it's a waste of money. I know it saves time and energy. You're either spending time figuring it out yourself, or you're buying someone else's years of experience. I chose the shortcut.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Courses don't make you successful. Applying what you learn does."
+                
+                <!-- Chapter 3: Chef Life -->
+                <div class="chapter">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">👨‍🍳</span>
+                            <span class="chapter-year">2017-2024 • Chef Era</span>
+                        </div>
+                        <h2 class="chapter-title">Chef Life</h2>
+                        <p class="chapter-description">
+                            Started as a chef at 17 in a local restaurant. Boss was good to me, took me to a hotel, spa, and restaurant. Then got sacked because the boss above him didn't like me. Worked in a few pubs after — most of it was deep-fried frozen shit and microwave meals. Not what I signed up for. I loved being a chef but hated the reality of chain restaurants.
+                            <br><br>
+                            All while building businesses on the side — ecommerce, building watches, had an SMMA business. I was always hustling for freedom.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Passion without freedom is just a well-decorated prison."
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Chapter 6: Trading Journey -->
-            <div class="chapter">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">📈</span>
-                        <span class="chapter-year">2021-2024</span>
-                    </div>
-                    <h2 class="chapter-title">Trading Journey</h2>
-                    <p class="chapter-description">
-                        Started trading in 2021. Was unprofitable for 2 years straight. Most people would've quit. I didn't. Then something clicked – started seeing consistent profitability for nearly 2 years. Refined my system, mastered my psychology. The pain from crypto taught me discipline. The losses from trading taught me patience. Now I'm profitable and teaching others.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Success is just failure that refused to quit."
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chapter 7: Scotland - The Awakening -->
-            <div class="chapter highlight">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">🏔️</span>
-                        <span class="chapter-year">2024-2025</span>
-                    </div>
-                    <h2 class="chapter-title">Scotland: The Awakening</h2>
-                    <p class="chapter-description">
-                        Got an amazing opportunity to work at a multi-million £ estate in Scotland – hotel, spa, restaurants, golf course, the lot. Gorgeous place. Worked as a chef for a month, then my eczema flared up – worst anyone had ever seen, dermatologists and hospitals included. Was off for 5+ months, living the dream, trading in a gorgeous environment, eating amazing food. The company treated me incredible. 
-                        <br><br>
-                        Went back to work for a couple months, then got sacked for riding a golf buggy (even though I had permission from the golf team, but HR and head chef didn't like it). My health was the real reason but they didn't state it. 
-                        <br><br>
-                        But here's the thing – during those 5 months off, I discovered my purpose: to help others in all realms. That pain, that isolation, that struggle... it showed me what I'm meant to do.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Sometimes you need to break down completely to discover who you really are."
+                
+                <!-- Chapter 4: The £100K Lesson -->
+                <div class="chapter loss">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">💔</span>
+                            <span class="chapter-year">2020-2021 • The Loss</span>
+                        </div>
+                        <h2 class="chapter-title">The £100K Lesson</h2>
+                        <p class="chapter-description">
+                            Around 2020, I invested £17K into crypto. Bull run happened and I was up £100K profit. First market cycle, didn't understand the game yet. Made every rookie mistake in the book.
+                            <br><br>
+                            Then bear market hit. Instead of buying more, I panic sold. Lost the entire £100K profit. That pain? That taught me everything. Discipline. Patience. Long-term thinking. The most expensive lessons are always the most valuable.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Your biggest losses are your best investments if you learn from them."
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Chapter 8: The Arcane Archives -->
-            <div class="chapter win highlight">
-                <div class="chapter-node"></div>
-                <div class="chapter-card">
-                    <div class="chapter-header">
-                        <span class="chapter-emoji">🔮</span>
-                        <span class="chapter-year">2025-Present</span>
-                    </div>
-                    <h2 class="chapter-title">The Arcane Archives</h2>
-                    <p class="chapter-description">
-                        Built The Arcane Archives from scratch. This isn't just another trading course or business program. This is everything I've learned from selling cigarettes at school to losing £100k in crypto to discovering my purpose in a Scottish hospital bed. 
-                        <br><br>
-                        Trading education, business development, personal transformation – the complete path to freedom. I'm 21, still learning, still growing, still building. But I know my purpose now: to help others break free from the matrix and build the lives they actually want.
-                    </p>
-                    <div class="chapter-lesson">
-                        "Your purpose finds you when you're ready to stop running from the pain."
+                
+                <!-- Chapter 5: Investing in Knowledge -->
+                <div class="chapter">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">📚</span>
+                            <span class="chapter-year">2016-Present • The Investment</span>
+                        </div>
+                        <h2 class="chapter-title">Investing in Knowledge</h2>
+                        <p class="chapter-description">
+                            Since I was 16, I've been buying courses non-stop. Not just trading — life, business, money, health, everything. If I see a course that's worth it, I buy it. Spent over £80,000 on courses and 1-on-1 mentorship over the years.
+                            <br><br>
+                            Some people think it's a waste of money. I know it saves time and energy. You're either spending time figuring it out yourself, or you're buying someone else's years of experience. I chose the shortcut.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Education is never an expense. It's the only investment that always pays back."
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Chapter 6: Trading Journey -->
+                <div class="chapter">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">📈</span>
+                            <span class="chapter-year">2021-Present • The Trading Path</span>
+                        </div>
+                        <h2 class="chapter-title">Trading Journey</h2>
+                        <p class="chapter-description">
+                            Started trading in 2021. Was unprofitable for 2 years straight. Most people would've quit. I didn't.
+                            <br><br>
+                            Then something clicked — started seeing consistent profitability for the past 2 years. Refined my system, mastered my psychology. The pain from crypto taught me discipline. The losses from trading taught me patience. Now I'm profitable and teaching others the real path.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Success is just failure that refused to quit."
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chapter 7: Scotland - The Awakening -->
+                <div class="chapter highlight">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">🏔️</span>
+                            <span class="chapter-year">2024-2025 • The Awakening</span>
+                        </div>
+                        <h2 class="chapter-title">Scotland: The Turning Point</h2>
+                        <p class="chapter-description">
+                            Got an amazing opportunity to work at a multi-million £ estate in Scotland — hotel, spa, restaurants, golf course, the lot. Gorgeous place. Worked as a chef for a month, then my eczema flared up — worst anyone had ever seen, dermatologists and hospitals included.
+                            <br><br>
+                            Was off for 5+ months, living in this beautiful environment, trading, reflecting. The company treated me incredible. Went back to work for a couple months, then got sacked for riding a golf buggy (even though I had permission from the golf team, but HR and head chef didn't like it).
+                            <br><br>
+                            But here's the thing — during those 5 months off, isolated and broken down, I discovered my purpose: to help others across all realms of life. That pain, that isolation, that struggle... it showed me what I'm meant to do.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Sometimes you need to break down completely to discover who you really are."
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chapter 8: The Arcane Archives -->
+                <div class="chapter win highlight">
+                    <div class="chapter-node"></div>
+                    <div class="chapter-card">
+                        <div class="chapter-header">
+                            <span class="chapter-emoji">🔮</span>
+                            <span class="chapter-year">2025-Present • The Mission</span>
+                        </div>
+                        <h2 class="chapter-title">The Arcane Archives</h2>
+                        <p class="chapter-description">
+                            Built The Arcane Archives from scratch. This isn't just another trading course or business program. This is everything I've learned from selling cigarettes at school to losing £100K in crypto to discovering my purpose in a Scottish hospital bed.
+                            <br><br>
+                            3,330+ modules covering trading, business, health, psychology, and the knowledge they don't want you to have. Trading education, business development, personal transformation — the complete path to freedom.
+                            <br><br>
+                            I'm 21, still learning, still growing, still building. But I know my purpose now: to help others break free from mediocrity and build the lives they actually want. Not through theory. Through real experience that survived the filter.
+                        </p>
+                        <div class="chapter-lesson">
+                            "Your purpose finds you when you're ready to stop running from the pain."
+                        </div>
+                    </div>
+                </div>
+                
             </div>
-            
         </div>
-    </div>
+    </section>
     
     <!-- CTA -->
     <section class="cta-section">
         <h2 class="cta-title">Your Turn</h2>
         <p class="cta-description">
-            I'm not here to sell you dreams. I'm here to show you the real path – the one with losses, failures, and lessons that actually matter. If you're ready to start your own journey, I'll show you everything I know.
+            I'm not here to sell you dreams. I'm here to show you the real path — the one with losses, failures, and lessons that actually matter. I spent £80,000+ and years of trial and error so you don't have to. Everything that survived the filter is inside The Arcane Archives.
         </p>
         <a href="index.html#pricing" class="cta-button">Join The Archives</a>
     </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="login.html">Login</a>
+                <a href="Privacy-policy.html">Privacy Policy</a>
+                <a href="terms-of-service.html">Terms</a>
+            </div>
+            <div class="footer-bottom">
+                © 2025 The Arcane Archives. All rights reserved.
+            </div>
+        </div>
+    </footer>
     
     <script>
-        // Intersection Observer for animations
+        // Smooth scroll animation for timeline
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -466,11 +785,10 @@
                 }
             });
         }, {
-            threshold: 0.15,
-            rootMargin: '0px 0px -50px 0px'
+            threshold: 0.2,
+            rootMargin: '0px 0px -80px 0px'
         });
         
-        // Observe all chapters
         document.querySelectorAll('.chapter').forEach(chapter => {
             observer.observe(chapter);
         });

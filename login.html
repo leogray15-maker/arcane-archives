@@ -2,18 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Login | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
     <style>
         :root {
-            --bg-dark: #02010a;
+            --bg-dark: #0a0a0a;
+            --bg-elevated: #121212;
+            --bg-card: #1a1a1a;
             --purple: #9333ea;
             --purple-dark: #7e22ce;
             --purple-light: #a78bfa;
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
+            --text: #f5f5f5;
+            --text-dim: #a1a1a1;
+            --border: rgba(148, 163, 184, 0.2);
+            --red: #ef4444;
         }
 
         * {
@@ -23,83 +31,202 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 2rem 1rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Back Button */
+        .back-link {
+            position: fixed;
+            top: calc(2rem + env(safe-area-inset-top, 0px));
+            left: 2rem;
+            z-index: 100;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--purple-light);
+            border-color: var(--purple);
+            transform: translateX(-4px);
+        }
+
+        /* Container */
         .login-container {
-            max-width: 450px;
+            max-width: 480px;
             width: 100%;
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
-            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.05), var(--bg-card));
+            border: 2px solid var(--border);
             border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
         }
 
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .login-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Logo Section */
         .logo-section {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .logo-section img {
             width: 80px;
             height: 80px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 16px;
         }
 
         .logo-section h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, white, var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
+            line-height: 1.2;
         }
 
         .logo-section p {
             color: var(--text-dim);
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
 
+        /* Form */
         .form-group {
             margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.625rem;
+            font-size: 0.875rem;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--text);
         }
 
         .form-group input {
             width: 100%;
-            padding: 0.9rem 1rem;
+            padding: 0.875rem 1rem;
             border-radius: 12px;
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            background: rgba(15, 23, 42, 0.95);
-            color: var(--text-light);
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            color: var(--text);
             font-size: 1rem;
             transition: all 0.2s;
+            font-family: inherit;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
         }
 
+        .form-group input::placeholder {
+            color: var(--text-dim);
+        }
+
+        /* Password Field */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 0.25rem;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--purple-light);
+        }
+
+        /* Remember Me */
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 0.875rem;
+            color: var(--text-dim);
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: var(--purple-light);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: var(--purple);
+        }
+
+        /* Button */
         .login-btn {
             width: 100%;
-            padding: 0.9rem;
+            padding: 1rem;
             border-radius: 12px;
             border: none;
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
@@ -107,228 +234,209 @@
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 0.5rem;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
         }
 
         .login-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+            box-shadow: 0 8px 24px rgba(147, 51, 234, 0.4);
         }
 
         .login-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .forgot-password {
-            text-align: center;
-            margin-top: 1rem;
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
         }
 
-        .forgot-password a {
-            color: var(--purple-light);
-            text-decoration: none;
-            font-size: 0.9rem;
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
         }
 
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
-
-        .signup-link {
-            text-align: center;
-            margin-top: 1.5rem;
+        .divider span {
             color: var(--text-dim);
+            font-size: 0.875rem;
         }
 
-        .signup-link a {
-            color: var(--purple-light);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
-
-        .info-box {
-            margin-top: 1.5rem;
+        /* Google Button */
+        .google-btn {
+            width: 100%;
             padding: 1rem;
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 12px;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            text-align: center;
-            line-height: 1.5;
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
         }
 
-        .back-home {
+        .google-btn:hover {
+            border-color: var(--purple);
+            background: rgba(147, 51, 234, 0.05);
+            transform: translateY(-2px);
+        }
+
+        /* Signup Link */
+        .signup-prompt {
             text-align: center;
             margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
         }
 
-        .back-home a {
+        .signup-prompt p {
             color: var(--text-dim);
+            font-size: 0.875rem;
+        }
+
+        .signup-prompt a {
+            color: var(--purple-light);
             text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .back-home a:hover {
-            color: var(--purple-light);
-        }
-
-        .message {
-            padding: 0.9rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            text-align: center;
-            font-size: 0.95rem;
-            display: none;
-            line-height: 1.6;
-        }
-
-        .error-message {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-        }
-
-        .success-message {
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #22c55e;
-        }
-
-        .warning-message {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            color: #fbbf24;
-        }
-
-        .resend-btn {
-            margin-top: 0.75rem;
-            padding: 0.6rem 1.2rem;
-            background: rgba(147, 51, 234, 0.2);
-            border: 1px solid var(--purple);
-            color: var(--purple-light);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: color 0.2s;
         }
 
-        .resend-btn:hover:not(:disabled) {
-            background: rgba(147, 51, 234, 0.3);
-            transform: translateY(-1px);
+        .signup-prompt a:hover {
+            color: var(--purple);
         }
 
-        .resend-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        /* Error Message */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            color: var(--red);
+            font-size: 0.875rem;
+            display: none;
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin-right: 0.5rem;
+        .error-message.show {
+            display: block;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        /* Responsive */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
 
-        @media (max-width: 480px) {
+            .back-link {
+                top: calc(1rem + env(safe-area-inset-top, 0px));
+                left: 1rem;
+            }
+
             .login-container {
                 padding: 2rem 1.5rem;
             }
 
             .logo-section h1 {
-                font-size: 1.5rem;
+                font-size: 1.75rem;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
             }
         }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-link">← Back to Home</a>
+
     <div class="login-container">
-        <div class="logo-section">
-            <img src="ArcaneA.png" alt="The Arcane Archives">
-            <h1>Welcome Back</h1>
-            <p>Sign in to access The Arcane Archives</p>
-        </div>
-
-        <div id="errorMessage" class="message error-message"></div>
-        <div id="successMessage" class="message success-message"></div>
-        <div id="warningMessage" class="message warning-message"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    placeholder="your@email.com" 
-                    required
-                    autocomplete="email"
-                >
+        <div class="login-content">
+            <div class="logo-section">
+                <img src="ArcaneA.png" alt="Arcane Archives Logo">
+                <h1>Welcome Back</h1>
+                <p>Login to access The Archives</p>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    placeholder="Enter your password" 
-                    required
-                    autocomplete="current-password"
-                >
+            <div class="error-message" id="errorMessage"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="your@email.com" 
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            placeholder="Enter your password" 
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button type="button" class="toggle-password" id="togglePassword">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Log In
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>or</span>
             </div>
 
-            <button type="submit" class="login-btn" id="loginBtn">
-                Login
+            <button class="google-btn" id="googleBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.509h3.232c1.891-1.742 2.982-4.305 2.982-7.35z" fill="#4285F4"/>
+                    <path d="M10 20c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123H1.064v2.59A9.996 9.996 0 0010 20z" fill="#34A853"/>
+                    <path d="M4.405 11.9c-.2-.6-.314-1.24-.314-1.9 0-.66.114-1.3.314-1.9V5.51H1.064A9.996 9.996 0 000 10c0 1.614.386 3.14 1.064 4.49l3.34-2.59z" fill="#FBBC05"/>
+                    <path d="M10 3.977c1.468 0 2.786.505 3.823 1.496l2.868-2.868C14.959.99 12.695 0 10 0 6.09 0 2.71 2.24 1.064 5.51l3.34 2.59C5.19 5.736 7.395 3.977 10 3.977z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
             </button>
-        </form>
 
-        <div class="forgot-password">
-            <a href="#" id="forgotPasswordLink">Forgot password?</a>
-        </div>
-
-        <div class="signup-link">
-            Don't have an account? <a href="signup.html">Sign Up</a>
-        </div>
-
-        <div class="info-box">
-            💡 <strong>First time?</strong> Sign up first, then verify your email before logging in
-        </div>
-
-        <div class="back-home">
-            <a href="index.html">← Back to Home</a>
+            <div class="signup-prompt">
+                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword,
-            sendPasswordResetEmail,
-            sendEmailVerification,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            updateDoc,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -336,256 +444,95 @@
             projectId: "arcane-archives-3b0f5",
             storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
             messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
+            measurementId: "G-YGPLQHDXMM"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
 
-        console.log('✅ Firebase initialized');
+        // Password toggle
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
 
-        const loginForm = document.getElementById("loginForm");
-        const loginBtn = document.getElementById("loginBtn");
-        const errorMessage = document.getElementById("errorMessage");
-        const successMessage = document.getElementById("successMessage");
-        const warningMessage = document.getElementById("warningMessage");
-        const forgotPasswordLink = document.getElementById("forgotPasswordLink");
-
-        // Check if user is already logged in
-        onAuthStateChanged(auth, (user) => {
-            if (user && user.emailVerified) {
-                console.log("✅ User already logged in and verified:", user.email);
-                window.location.href = "dashboard.html";
-            }
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
         });
 
-        function showError(message) {
-            console.error("❌ LOGIN ERROR:", message);
-            errorMessage.innerHTML = message;
-            errorMessage.style.display = "block";
-            successMessage.style.display = "none";
-            warningMessage.style.display = "none";
-        }
+        // Email/Password login
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
 
-        function showSuccess(message) {
-            console.log("✅ LOGIN SUCCESS:", message);
-            successMessage.innerHTML = message;
-            successMessage.style.display = "block";
-            errorMessage.style.display = "none";
-            warningMessage.style.display = "none";
-        }
-
-        function showWarning(message) {
-            console.warn("⚠️ WARNING:", message);
-            warningMessage.innerHTML = message;
-            warningMessage.style.display = "block";
-            errorMessage.style.display = "none";
-            successMessage.style.display = "none";
-        }
-
-        function hideMessages() {
-            errorMessage.style.display = "none";
-            successMessage.style.display = "none";
-            warningMessage.style.display = "none";
-        }
-
-        // Email/Password Login
-        loginForm.addEventListener("submit", async (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            hideMessages();
-
-            console.log("=== STARTING LOGIN PROCESS ===");
-
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
-
-            console.log("Login attempt for:", email);
-
-            if (!email || !password) {
-                showError("⚠️ Please enter both email and password");
-                return;
-            }
-
-            // Basic email validation
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showError("⚠️ Please enter a valid email address");
-                return;
-            }
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
+            loginBtn.textContent = 'Logging in...';
+            errorMessage.classList.remove('show');
 
             try {
-                console.log("Step 1: Signing in with Firebase Auth...");
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                console.log("✅ Auth successful:", user.email);
-                console.log("Email verified:", user.emailVerified);
-
-                // Check if email is verified
-                if (!user.emailVerified) {
-                    console.warn("⚠️ Email not verified");
-                    showWarning(`
-                        <strong>📧 Email Verification Required</strong><br><br>
-                        Please verify your email before logging in.<br>
-                        Check your inbox (and <strong>spam folder</strong>) for the verification link.<br><br>
-                        <button class="resend-btn" id="resendVerificationBtn">
-                            📨 Resend Verification Email
-                        </button>
-                    `);
-                    
-                    // Add event listener to resend button
-                    setTimeout(() => {
-                        const resendBtn = document.getElementById('resendVerificationBtn');
-                        if (resendBtn) {
-                            resendBtn.addEventListener('click', async () => {
-                                resendBtn.disabled = true;
-                                resendBtn.innerHTML = '<span class="loading-spinner"></span>Sending...';
-                                try {
-                                    console.log("Resending verification email...");
-                                    await sendEmailVerification(user);
-                                    console.log("✅ Verification email sent");
-                                    showSuccess(`
-                                        <strong>✅ Verification Email Sent!</strong><br><br>
-                                        Check your inbox and spam folder for the verification link.<br>
-                                        <small>The email may take a few minutes to arrive.</small>
-                                    `);
-                                } catch (err) {
-                                    console.error("Resend error:", err);
-                                    let errorMsg = "Failed to send verification email.";
-                                    if (err.code === 'auth/too-many-requests') {
-                                        errorMsg = "Too many requests. Please try again in a few minutes.";
-                                    }
-                                    showError(errorMsg);
-                                    resendBtn.disabled = false;
-                                    resendBtn.textContent = '📨 Resend Verification Email';
-                                }
-                            });
-                        }
-                    }, 100);
-                    
-                    // Sign out the unverified user
-                    console.log("Signing out unverified user...");
-                    await auth.signOut();
-                    
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = "Login";
-                    return;
-                }
-
-                // Update last login and verification status
-                console.log("Step 2: Updating Firestore...");
-                try {
-                    await updateDoc(doc(db, "Users", user.uid), {
-                        lastLoginDate: serverTimestamp(),
-                        emailVerified: true
-                    });
-                    console.log("✅ Firestore updated");
-                } catch (e) {
-                    console.warn("Could not update last login:", e);
-                }
-
-                console.log("=== LOGIN COMPLETE ===");
-                showSuccess(`
-                    <strong>🎉 Login Successful!</strong><br>
-                    Redirecting to your dashboard...
-                `);
-                
-                setTimeout(() => {
-                    console.log("Redirecting to dashboard...");
-                    window.location.href = "dashboard.html";
-                }, 1500);
-
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = 'dashboard.html';
             } catch (error) {
-                console.error("❌ LOGIN ERROR:", error);
-                console.error("Error code:", error.code);
-                console.error("Error message:", error.message);
-
-                let errorMsg = "❌ Login failed. Please check your credentials.";
-                
-                if (error.code === 'auth/invalid-email') {
-                    errorMsg = "❌ Invalid email address format";
-                } else if (error.code === 'auth/user-disabled') {
-                    errorMsg = "❌ This account has been disabled. Please contact support.";
-                } else if (error.code === 'auth/user-not-found') {
-                    errorMsg = "❌ No account found with this email. <a href='signup.html' style='color: #a78bfa; text-decoration: underline;'>Sign up here</a>";
-                } else if (error.code === 'auth/wrong-password') {
-                    errorMsg = "❌ Incorrect password. <a href='#' id='resetPasswordLink' style='color: #a78bfa; text-decoration: underline;'>Reset password?</a>";
-                } else if (error.code === 'auth/invalid-credential') {
-                    errorMsg = "❌ Invalid email or password. Please try again.";
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMsg = "❌ Too many failed login attempts. Please reset your password or try again later.";
-                } else if (error.code === 'auth/network-request-failed') {
-                    errorMsg = "❌ Network error. Please check your internet connection.";
-                }
-
-                showError(errorMsg);
-                
-                // Add click handler for inline reset password link
-                setTimeout(() => {
-                    const resetLink = document.getElementById('resetPasswordLink');
-                    if (resetLink) {
-                        resetLink.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            forgotPasswordLink.click();
-                        });
-                    }
-                }, 100);
-                
-                loginBtn.disabled = false;
-                loginBtn.textContent = "Login";
-            }
-        });
-
-        // Forgot Password
-        forgotPasswordLink.addEventListener("click", async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById("email").value.trim();
-            
-            if (!email) {
-                showWarning("⚠️ Please enter your email address first, then click 'Forgot password?'");
-                document.getElementById("email").focus();
-                return;
-            }
-
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showError("⚠️ Please enter a valid email address");
-                return;
-            }
-
-            try {
-                console.log("Sending password reset email to:", email);
-                await sendPasswordResetEmail(auth, email);
-                console.log("✅ Password reset email sent");
-                showSuccess(`
-                    <strong>✅ Password Reset Email Sent!</strong><br><br>
-                    Check your inbox at <strong>${email}</strong><br>
-                    <small>(Don't forget to check spam folder)</small>
-                `);
-            } catch (error) {
-                console.error("Password reset error:", error);
-                
-                let errorMsg = "❌ Could not send reset email. Please try again.";
+                console.error('Login error:', error);
+                let message = 'Failed to log in. Please check your credentials.';
                 
                 if (error.code === 'auth/user-not-found') {
-                    errorMsg = "❌ No account found with this email. <a href='signup.html' style='color: #a78bfa; text-decoration: underline;'>Sign up here</a>";
+                    message = 'No account found with this email.';
+                } else if (error.code === 'auth/wrong-password') {
+                    message = 'Incorrect password.';
                 } else if (error.code === 'auth/too-many-requests') {
-                    errorMsg = "❌ Too many requests. Please try again in a few minutes.";
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMsg = "❌ Invalid email address";
+                    message = 'Too many failed attempts. Please try again later.';
                 }
                 
-                showError(errorMsg);
+                errorMessage.textContent = message;
+                errorMessage.classList.add('show');
+                
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Log In';
             }
         });
 
-        // Handle Enter key in password field
-        document.getElementById("password").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                loginForm.dispatchEvent(new Event("submit"));
+        // Google login
+        const googleBtn = document.getElementById('googleBtn');
+        
+        googleBtn.addEventListener('click', async () => {
+            googleBtn.disabled = true;
+            googleBtn.textContent = 'Connecting...';
+            errorMessage.classList.remove('show');
+
+            try {
+                await signInWithPopup(auth, googleProvider);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                console.error('Google login error:', error);
+                errorMessage.textContent = 'Failed to sign in with Google. Please try again.';
+                errorMessage.classList.add('show');
+                
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.509h3.232c1.891-1.742 2.982-4.305 2.982-7.35z" fill="#4285F4"/>
+                        <path d="M10 20c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123H1.064v2.59A9.996 9.996 0 0010 20z" fill="#34A853"/>
+                        <path d="M4.405 11.9c-.2-.6-.314-1.24-.314-1.9 0-.66.114-1.3.314-1.9V5.51H1.064A9.996 9.996 0 000 10c0 1.614.386 3.14 1.064 4.49l3.34-2.59z" fill="#FBBC05"/>
+                        <path d="M10 3.977c1.468 0 2.786.505 3.823 1.496l2.868-2.868C14.959.99 12.695 0 10 0 6.09 0 2.71 2.24 1.064 5.51l3.34 2.59C5.19 5.736 7.395 3.977 10 3.977z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                `;
+            }
+        });
+
+        // Check if already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = 'dashboard.html';
             }
         });
     </script>

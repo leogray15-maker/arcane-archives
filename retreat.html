@@ -2,24 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>The Arcane Archives Retreat | Coming 2028</title>
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="180x180" href="ArcaneA.png">
     <meta name="apple-mobile-web-app-title" content="Arcane Archives">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-dark: #02010a;
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.7);
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-border: rgba(139, 92, 246, 0.25);
+            --white: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-300: #d4d4d8;
+            --gray-400: #a1a1aa;
+            --gray-500: #71717a;
+            --gray-600: #52525b;
+            --border: rgba(63, 63, 70, 0.5);
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
+            --gold-glow: rgba(251, 191, 36, 0.1);
+            --gold-border: rgba(251, 191, 36, 0.2);
         }
 
         * {
@@ -35,12 +47,38 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
-            color: var(--text-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--white);
             min-height: 100vh;
             min-height: -webkit-fill-available;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 60%;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.06), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .back-btn {
@@ -48,145 +86,224 @@
             top: calc(1.5rem + env(safe-area-inset-top, 0));
             left: 1.5rem;
             z-index: 40;
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            color: var(--gray-400);
             text-decoration: none;
-            font-size: 0.85rem;
-            backdrop-filter: blur(12px);
+            font-size: 0.8rem;
+            font-weight: 500;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent-border);
+            color: var(--accent-light);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 960px;
             margin: 0 auto;
-            padding: 4rem 1.5rem;
+            padding: 5rem 1.5rem 4rem;
+            position: relative;
+            z-index: 1;
+            overflow-x: hidden;
         }
 
+        /* Hero */
         .hero {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
 
         .logo {
-            width: 120px;
-            height: 120px;
+            display: block;
+            width: 80px;
+            height: 80px;
             margin: 0 auto 2rem;
             opacity: 0.9;
         }
 
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            background: var(--accent-glow);
+            border: 1px solid var(--accent-border);
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--accent-light);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
         .hero h1 {
-            font-size: 3rem;
+            font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+            font-weight: 900;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            color: var(--white);
+            letter-spacing: -0.04em;
+            line-height: 1.15;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            line-height: 1.2;
+            background-clip: text;
         }
 
         .hero .subtitle {
-            font-size: 1.5rem;
-            color: var(--gold);
-            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            color: var(--gray-400);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.01em;
         }
 
         .hero .date {
-            font-size: 1.2rem;
-            color: var(--text-dim);
+            font-size: 0.9rem;
+            color: var(--gray-500);
             margin-bottom: 2rem;
+            letter-spacing: -0.01em;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 0.75rem 2rem;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
+        /* Cards */
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
         }
 
-        .content-card {
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            border-radius: 24px;
-            padding: 3rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
         }
 
         .section-title {
-            font-size: 2rem;
-            color: var(--purple-light);
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-
-        .feature {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 16px;
-            border: 1px solid rgba(147, 51, 234, 0.3);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--white);
             margin-bottom: 1rem;
-        }
-
-        .feature h3 {
-            color: var(--purple-light);
-            margin-bottom: 0.5rem;
-            font-size: 1.3rem;
-        }
-
-        .feature p {
-            color: var(--text-dim);
-            line-height: 1.6;
+            letter-spacing: -0.03em;
         }
 
         .description {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             line-height: 1.8;
-            color: var(--text-dim);
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto 3rem;
+            color: var(--gray-400);
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            letter-spacing: -0.01em;
         }
 
-        .cta-box {
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(76, 29, 149, 0.2));
-            border: 2px solid var(--purple);
-            border-radius: 20px;
-            padding: 3rem;
+        .text-center {
             text-align: center;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature {
+            padding: 1.5rem;
+            background: rgba(139, 92, 246, 0.04);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .feature:hover {
+            border-color: var(--accent-border);
+            background: rgba(139, 92, 246, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature h3 {
+            color: var(--gray-100);
+            margin-bottom: 0.35rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .feature p {
+            color: var(--gray-500);
+            line-height: 1.6;
+            font-size: 0.85rem;
+        }
+
+        /* CTA Box */
+        .cta-box {
+            background: rgba(139, 92, 246, 0.04);
+            border: 1px solid var(--accent-border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .cta-box .lock-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
         }
 
         .cta-box h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--gold);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--white);
+            letter-spacing: -0.02em;
         }
 
         .cta-box p {
-            font-size: 1.2rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--gray-400);
+            line-height: 1.7;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .lock-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.7;
+        .highlight-text {
+            color: var(--accent-light) !important;
+            font-size: 1rem !important;
+            font-weight: 600;
+            margin-top: 1.5rem !important;
+            letter-spacing: -0.01em;
+        }
+
+        /* Stay Updated */
+        .quote-text {
+            color: var(--gray-400);
+            font-size: 1rem;
+            margin-top: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
@@ -194,11 +311,7 @@
                 font-size: 2rem;
             }
 
-            .hero .subtitle {
-                font-size: 1.2rem;
-            }
-
-            .content-card {
+            .card {
                 padding: 2rem 1.5rem;
             }
 
@@ -209,24 +322,25 @@
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    <a href="dashboard.html" class="back-btn">← Dashboard</a>
 
     <div class="container">
         <div class="hero">
             <img src="ArcaneA.png" alt="The Arcane Archives" class="logo">
-            <h1>🌴 The Arcane Archives Retreat 🌴</h1>
-            <p class="subtitle">An Epic Adventure Awaits</p>
-            <p class="date">📅 Coming 2028</p>
-            <span class="badge">🔒 DETAILS TO BE ANNOUNCED</span>
+            <div class="badge">Coming 2028</div>
+            <h1>The Arcane Archives <span>Retreat</span></h1>
+            <p class="subtitle">An epic adventure for top performers.</p>
+            <p class="date">Details to be announced</p>
         </div>
 
-        <div class="content-card">
-            <h2 class="section-title">✨ The Ultimate Reward</h2>
-            
+        <!-- The Ultimate Reward -->
+        <div class="card text-center">
+            <p class="section-label">The Vision</p>
+            <h2 class="section-title">The Ultimate Reward</h2>
             <p class="description">
-                Imagine turquoise waters, luxury accommodations, and an unforgettable experience with the top performers 
-                from The Arcane Archives community. This isn't just a trip—it's a celebration of your dedication, 
-                your wins, and your journey to mastery.
+                Turquoise waters, luxury accommodations, and an unforgettable experience with the top performers
+                from The Arcane Archives community. Not just a trip -- a celebration of your dedication, your wins,
+                and your journey to mastery.
             </p>
 
             <div class="features-grid">
@@ -235,31 +349,26 @@
                     <h3>Exotic Destination</h3>
                     <p>A breathtaking location that will take your breath away</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">🏨</div>
                     <h3>5-Star Luxury</h3>
-                    <p>Premium accommodations for the top achievers</p>
+                    <p>Premium accommodations for top achievers</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">🎯</div>
                     <h3>Exclusive Access</h3>
                     <p>Network with the elite members of our community</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">🍾</div>
                     <h3>VIP Treatment</h3>
                     <p>All-inclusive experience you'll never forget</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">📈</div>
                     <h3>Mastermind Sessions</h3>
                     <p>Learn from the best traders and entrepreneurs</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">🎉</div>
                     <h3>Epic Celebrations</h3>
@@ -268,48 +377,48 @@
             </div>
         </div>
 
-        <div class="content-card">
-            <h2 class="section-title">🎯 How to Qualify</h2>
-            
+        <!-- How to Qualify -->
+        <div class="card text-center">
+            <p class="section-label">Qualification</p>
+            <h2 class="section-title">How to Qualify</h2>
+
             <div class="cta-box">
                 <div class="lock-icon">🔒</div>
                 <h2>Qualification Details Coming Soon</h2>
                 <p>
-                    We're crafting the perfect qualification system to reward our top performers. 
-                    Stay tuned for announcements on how you can earn your spot at this epic retreat.
+                    We're crafting the perfect qualification system to reward our top performers.
+                    Stay tuned for announcements on how you can earn your spot.
                 </p>
-                <p style="color: var(--gold); font-size: 1.3rem; margin-top: 2rem;">
-                    💎 This is your chance to join the elite 💎
+                <p class="highlight-text">
+                    This is your chance to join the elite.
                 </p>
             </div>
         </div>
 
-        <div class="content-card">
-            <h2 class="section-title">🚀 Start Preparing Now</h2>
-            
+        <!-- Start Preparing -->
+        <div class="card text-center">
+            <p class="section-label">Get Ready</p>
+            <h2 class="section-title">Start Preparing Now</h2>
             <p class="description">
                 While details are still being finalized, you can start positioning yourself as a top performer:
             </p>
 
-            <div class="features-grid" style="margin-top: 2rem;">
+            <div class="features-grid">
                 <div class="feature">
                     <div class="feature-icon">👥</div>
                     <h3>Build Your Network</h3>
                     <p>Start referring members to The Arcane Archives</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">📊</div>
                     <h3>Master Your Craft</h3>
                     <p>Complete the trading modules and apply the knowledge</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">💰</div>
                     <h3>Generate Results</h3>
                     <p>Build your trading profits and referral income</p>
                 </div>
-
                 <div class="feature">
                     <div class="feature-icon">🏆</div>
                     <h3>Stay Consistent</h3>
@@ -318,17 +427,163 @@
             </div>
         </div>
 
-        <div class="content-card" style="text-align: center;">
-            <h2 class="section-title">📢 Stay Updated</h2>
+        <!-- Stay Updated -->
+        <div class="card text-center">
+            <p class="section-label">Updates</p>
+            <h2 class="section-title">Stay Updated</h2>
             <p class="description">
-                Full details including destination, qualification requirements, and dates will be announced soon. 
-                Keep crushing it, and you could be on your way to paradise! 🌴
+                Full details including destination, qualification requirements, and dates will be announced soon.
+                Keep crushing it, and you could be on your way to paradise.
             </p>
-            <p style="color: var(--purple-light); font-size: 1.3rem; margin-top: 2rem; font-weight: 700;">
+            <p class="quote-text">
                 The journey of a thousand miles begins with a single step.<br>
-                Start yours today. 🚀
+                Start yours today.
             </p>
         </div>
     </div>
+
+    <!-- Locked Page Overlay for Non-Subscribers -->
+    <div id="lockedOverlay" class="locked-overlay">
+        <div class="locked-modal">
+            <div class="locked-icon-lg">🔒</div>
+            <h2>Premium Content</h2>
+            <p>The 2028 Retreat details are exclusively available to active subscribers.</p>
+            <p class="locked-sub">Unlock access to this and all premium features with a subscription.</p>
+            <div class="locked-actions">
+                <a href="index.html#pricing" class="locked-btn primary">Unlock Access</a>
+                <a href="dashboard.html" class="locked-btn secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .locked-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(9, 9, 11, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .locked-overlay.show {
+            display: flex;
+        }
+
+        .locked-modal {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--accent-border);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .locked-icon-lg {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .locked-modal h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--white);
+            letter-spacing: -0.03em;
+        }
+
+        .locked-modal p {
+            color: var(--gray-400);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .locked-sub {
+            font-size: 0.85rem !important;
+            margin-bottom: 2rem !important;
+            color: var(--gray-500) !important;
+        }
+
+        .locked-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .locked-btn {
+            display: block;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
+        }
+
+        .locked-btn.primary {
+            background: var(--white);
+            color: var(--bg-primary);
+        }
+
+        .locked-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(250, 250, 250, 0.15);
+        }
+
+        .locked-btn.secondary {
+            background: transparent;
+            color: var(--gray-400);
+            border: 1px solid var(--border);
+        }
+
+        .locked-btn.secondary:hover {
+            border-color: var(--accent-border);
+            color: var(--accent-light);
+        }
+
+        @media (max-width: 480px) {
+            .locked-modal {
+                padding: 2rem 1.5rem;
+            }
+
+            .locked-icon-lg {
+                font-size: 2.5rem;
+            }
+
+            .locked-modal h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+
+    <script type="module">
+        import { protectPage } from './auth-guard.js';
+
+        protectPage({
+            requirePayment: true,
+            allowAdmin: true,
+            onSuccess: (user, userData) => {
+                console.log('Retreat access granted');
+            },
+            onFailure: () => {
+                const overlay = document.getElementById('lockedOverlay');
+                if (overlay) {
+                    overlay.classList.add('show');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

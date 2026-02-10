@@ -1,7 +1,8 @@
 // alerts.js
 // Arcane Alerts with custom pips/notes modal
+// Uses centralized auth-guard for protection and admin detection
 
-import { protectPage, db } from "./auth-guard.js";
+import { protectPage, db, ADMIN_UIDS } from "./auth-guard.js";
 import {
   collection,
   addDoc,
@@ -18,8 +19,7 @@ import {
 let currentUser = null;
 let isAdmin = false;
 
-const ADMIN_UIDS = [];
-const ADMIN_EMAILS = ["leogray15@gmail.com"];
+const ADMIN_EMAILS = ["leogray15@gmail.com", "lorenzo.versari@icloud.com"];
 
 const LIVE_ALERTS_COLLECTION = "alerts_live";
 const HISTORY_COLLECTION = "alerts_history";
@@ -28,10 +28,13 @@ const HISTORY_COLLECTION = "alerts_history";
 let pendingAction = null;
 
 protectPage({
+  requirePayment: true,
+  allowAdmin: true,
   onSuccess: (user, userData) => {
     currentUser = user;
     const email = (user.email || "").toLowerCase();
-    isAdmin = ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
+    // Use centralized admin check from auth-guard + fallback email check
+    isAdmin = userData.isAdmin || ADMIN_EMAILS.includes(email);
 
     setupAdminForm();
     subscribeToLiveAlerts();

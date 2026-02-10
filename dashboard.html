@@ -2,661 +2,1159 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Dashboard | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
 
   <style>
-    :root{
-      --bg1:#111827;
-      --bg2:#02010a;
-      --bg3:#000;
-      --border: rgba(148,163,184,.28);
-      --gold: #fbbf24;
+    :root {
+      --bg-dark: #0a0a0a;
+      --bg-elevated: #121212;
+      --bg-card: #1a1a1a;
       --purple: #9333ea;
-      --purple2:#7e22ce;
-      --purpleLight:#a78bfa;
-      --text:#e5e5e5;
-      --muted:#9ca3af;
-      --danger:#ef4444;
-      --success:#22c55e;
+      --purple-dark: #7e22ce;
+      --purple-light: #a78bfa;
+      --gold: #fbbf24;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #f5f5f5;
+      --text-dim: #a1a1a1;
+      --border: rgba(148, 163, 184, 0.2);
     }
 
-    *{ margin:0; padding:0; box-sizing:border-box; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
 
-    body{
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at top, var(--bg1), var(--bg2) 60%, var(--bg3));
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Inter', sans-serif;
+      background: var(--bg-dark);
       color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .container{
-      max-width: 1200px;
+    .container {
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
+      padding: calc(2rem + env(safe-area-inset-top, 0px)) max(2rem, env(safe-area-inset-right, 0px)) calc(4rem + env(safe-area-inset-bottom, 0px)) max(2rem, env(safe-area-inset-left, 0px));
     }
 
     /* Header */
-    .header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       gap: 1rem;
-      flex-wrap:wrap;
-      margin-bottom: 1.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:.7rem;
-      font-weight: 900;
-      letter-spacing: .12em;
-      font-size: .85rem;
-      text-transform: uppercase;
-    }
-    .brand img{ width: 32px; height: 32px; border-radius: 8px; }
-
-    .header-actions{
-      display:flex;
-      gap: .75rem;
-      align-items:center;
-      flex-wrap:wrap;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 800;
+      font-size: 1.125rem;
+      background: linear-gradient(135deg, var(--purple-light), white);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .pill-btn{
-      cursor:pointer;
-      border-radius: 999px;
-      padding: .6rem 1rem;
-      font-weight: 900;
-      font-size: .85rem;
+    .brand img { 
+      width: 40px; 
+      height: 40px; 
+      border-radius: 8px; 
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      cursor: pointer;
+      border-radius: 8px;
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.875rem;
       border: 1px solid var(--border);
-      background: rgba(0,0,0,.22);
+      background: var(--bg-card);
       color: var(--text);
-      transition: all .15s ease;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:.5rem;
-      white-space:nowrap;
-    }
-    .pill-btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(167,139,250,.55);
-    }
-
-    .logout{
-      border-color: rgba(239,68,68,.35);
-      color: var(--danger);
-    }
-    .logout:hover{
-      border-color: rgba(239,68,68,.7);
-      background: rgba(239,68,68,.08);
-    }
-
-    /* Welcome */
-    .welcome{
-      background: radial-gradient(circle at top, rgba(147,51,234,.16), rgba(15,23,42,.98));
-      border: 1px solid rgba(148,163,184,.35);
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 1.1rem;
-    }
-    .welcome h1{
-      font-size: 2rem;
-      margin-bottom: .5rem;
-    }
-    .welcome p{
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    /* Balance card */
-    .balance-card{
-      margin-top: 1.2rem;
-      padding: 1.2rem 1.2rem;
-      border-radius: 16px;
-      border: 1px solid rgba(148,163,184,.28);
-      background: rgba(2,6,23,.35);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 1rem;
-    }
-
-    .balance-left .label{
-      font-size:.75rem;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      color: var(--muted);
-      font-weight: 900;
-      margin-bottom:.35rem;
-    }
-
-    .balance-amount{
-      font-size: 1.85rem;
-      font-weight: 900;
-      color: var(--gold);
-      line-height: 1.05;
+      transition: all 0.2s ease;
+      text-decoration: none;
       display: inline-flex;
-      align-items: baseline;
-      gap: .55rem;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
     }
 
-    .pulse-dot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(34,197,94,.9);
-      opacity: 0;
-      transform: translateY(-2px);
-    }
-
-    .balance-sub{
-      color: var(--muted);
-      font-size: .9rem;
-      margin-top: .35rem;
-      line-height: 1.4;
-    }
-
-    .balance-actions{
-      display:flex;
-      gap: .75rem;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .btn{
-      border:none;
-      cursor:pointer;
-      font-weight: 900;
-      border-radius: 999px;
-      padding: .65rem 1rem;
-      font-size: .85rem;
-      transition: all .15s ease;
-      white-space:nowrap;
-    }
-
-    .btn-primary{
-      background: linear-gradient(135deg, var(--purple), var(--purple2));
-      color: #fff;
-      border: 1px solid rgba(167,139,250,.35);
-    }
-    .btn-primary:hover{
+    .pill-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 12px 28px rgba(147,51,234,.32);
+      border-color: var(--purple);
+      background: rgba(147, 51, 234, 0.1);
+      color: var(--purple-light);
     }
 
-    .btn-secondary{
-      background: rgba(0,0,0,.22);
-      color: var(--text);
-      border: 1px solid rgba(148,163,184,.28);
-    }
-    .btn-secondary:hover{
-      transform: translateY(-1px);
-      border-color: rgba(167,139,250,.55);
+    .logout {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: var(--red);
     }
 
-    /* TradingView ticker */
-    .tv-ticker-wrap{
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,.10);
-      background: #000;
-      padding: 6px 0;
-      margin: 0 0 1.6rem;
-    }
-    .tv-ticker-wrap a,
-    .tv-ticker-wrap span{
-      opacity: .7;
-      font-size: .72rem;
+    .logout:hover {
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
     }
 
-    /* Section headings */
-    .section-title{
-      margin: 1.5rem 0 1rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--purpleLight);
-      font-weight: 900;
-      font-size: .85rem;
-      display:flex;
-      align-items:center;
-      gap:.55rem;
-    }
-
-    /* Tiles */
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.35rem;
-    }
-
-    .tile{
-      border-radius: 16px;
-      border: 1px solid rgba(251,191,36,.28);
-      background: rgba(15,23,42,.90);
-      padding: 1rem;
-      min-height: 84px;
-      display:flex;
-      gap: .75rem;
-      align-items:center;
-      cursor:pointer;
-      transition: all .15s ease;
+    /* Welcome Section */
+    .welcome {
+      background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), var(--bg-card));
+      border: 2px solid var(--purple);
+      border-radius: 24px;
+      padding: 3rem;
+      margin-bottom: 3rem;
       position: relative;
       overflow: hidden;
     }
 
-    .tile:hover{
-      transform: translateY(-2px);
-      border-color: rgba(251,191,36,.55);
-      box-shadow: 0 18px 35px rgba(0,0,0,.35);
-    }
-
-    .tile-icon{
-      width: 40px;
-      text-align:center;
-      font-size: 1.35rem;
-      opacity: .95;
-      flex: 0 0 auto;
-    }
-
-    .tile-content{ 
-      min-width: 0; 
-      flex: 1;
-    }
-    .tile-title{ 
-      font-weight: 900;
-      line-height: 1.3;
-    }
-    .tile-desc{
-      color: var(--muted);
-      font-size: .85rem;
-      margin-top: .15rem;
-      line-height: 1.25;
-    }
-
-    /* Lock badge - optimized for mobile */
-    .tile.locked::after{
-      content:"🔒 Members";
-      position:absolute;
-      right: 5px;
-      top: 5px;
-      font-size: .62rem;
-      font-weight: 900;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      padding: .22rem .45rem;
-      border-radius: 999px;
-      border: 1px solid rgba(167,139,250,.25);
-      background: rgba(0,0,0,.75);
-      color: var(--purpleLight);
-      white-space: nowrap;
+    .welcome::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 70%);
       pointer-events: none;
+    }
+
+    .welcome-content {
+      position: relative;
       z-index: 1;
     }
 
-    /* Arcane Insights special tile */
-    .tile-insights{
-      background: radial-gradient(circle at top, rgba(147,51,234,.12), rgba(15,23,42,.90));
-      border-color: rgba(147,51,234,.35);
-    }
-    .tile-insights:hover{
-      border-color: rgba(167,139,250,.65);
-      box-shadow: 0 18px 35px rgba(147,51,234,.25);
-    }
-    .tile-insights .tile-desc{
-      font-weight: 700;
-    }
-    .tile-insights #streakDisplay{
-      color: var(--gold);
+    .welcome h1 {
+      font-size: clamp(1.75rem, 4vw, 3rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, white, var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.75rem;
+      line-height: 1.1;
     }
 
-    /* Give locked tiles padding so content doesn't overlap badge */
-    .tile.locked .tile-content{
-      padding-right: 82px;
+    .welcome > p {
+      color: var(--text-dim);
+      font-size: 1.125rem;
+      margin-bottom: 2.5rem;
     }
 
-    /* Locked Access Modal */
-    .locked-modal-overlay{
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,.7);
-      backdrop-filter: blur(4px);
-      z-index: 9998;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-    }
-    .locked-modal-overlay.active{
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .locked-modal{
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(.92);
-      z-index: 9999;
-      background: linear-gradient(135deg, rgba(15,23,42,.98), rgba(17,24,39,.98));
-      border: 1px solid rgba(167,139,250,.45);
-      border-radius: 20px;
+    /* Balance Card */
+    .balance-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 16px;
       padding: 2rem;
-      max-width: 480px;
-      width: calc(100% - 2rem);
-      opacity: 0;
-      pointer-events: none;
-      transition: all .25s ease;
-      box-shadow: 0 25px 50px rgba(0,0,0,.6);
-    }
-    .locked-modal.active{
-      opacity: 1;
-      pointer-events: all;
-      transform: translate(-50%, -50%) scale(1);
     }
 
-    .locked-modal-icon{
-      font-size: 3.5rem;
-      text-align: center;
-      margin-bottom: 1rem;
+    .balance-left {
+      flex: 1;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .balance-amount {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .balance-amount span:first-child {
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--gold), #fcd34d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       line-height: 1;
     }
 
-    .locked-modal h3{
-      font-size: 1.5rem;
-      text-align: center;
-      margin-bottom: .75rem;
-      color: var(--purpleLight);
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
     }
 
-    .locked-modal p{
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.5;
+        transform: scale(1.1);
+      }
+    }
+
+    .balance-sub {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+
+    .balance-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--purple);
+      background: rgba(147, 51, 234, 0.1);
+      color: var(--purple-light);
+      transform: translateY(-1px);
+    }
+
+    /* TradingView Ticker */
+    .tv-ticker-wrap {
+      margin-bottom: 3rem;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    /* Tile */
+    .tile {
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .tile:hover {
+      transform: translateY(-4px);
+      border-color: var(--purple);
+      box-shadow: 0 12px 30px rgba(147, 51, 234, 0.3);
+    }
+
+    .tile-icon {
+      font-size: 2rem;
+      width: 50px;
       text-align: center;
-      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .tile-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tile-title {
+      font-weight: 700;
+      font-size: 1.125rem;
+      margin-bottom: 0.25rem;
+      color: white;
+    }
+
+    .tile-desc {
+      color: var(--text-dim);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    /* Special Tiles */
+    .tile-insights {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), var(--bg-card));
+    }
+
+    .tile-insights:hover {
+      border-color: var(--gold);
+      box-shadow: 0 12px 30px rgba(251, 191, 36, 0.3);
+    }
+
+    .tile-retreat {
+      border-color: var(--green);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), var(--bg-card));
+    }
+
+    .tile-retreat:hover {
+      border-color: var(--green);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Locked Badge */
+    .tile.locked {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .tile.locked::after {
+      content: '🔒 LOCKED';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid var(--red);
+      color: var(--red);
+      padding: 0.375rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .tile.locked:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Admin Section */
+    .admin-grid .tile {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), var(--bg-card));
+    }
+
+    .admin-grid .tile:hover {
+      border-color: var(--gold);
+      box-shadow: 0 12px 30px rgba(251, 191, 36, 0.3);
+    }
+
+    /* Modal Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      z-index: 1000;
+      display: none;
+      max-width: 500px;
+      width: calc(100% - 2rem);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal.active {
+      display: block;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--red);
+    }
+
+    .modal h3 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal p {
+      color: var(--text-dim);
       line-height: 1.6;
       margin-bottom: 1.5rem;
     }
 
-    .locked-modal-actions{
+    .modal-actions {
       display: flex;
-      gap: .75rem;
-      flex-wrap: wrap;
-    }
-
-    .locked-modal-actions .btn{
-      flex: 1;
-      min-width: 140px;
-      justify-content: center;
-      text-align: center;
-    }
-
-    /* Modal */
-    .modal-overlay{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.75);
-      display:none;
-      z-index: 2000;
-    }
-    .modal-overlay.active{ display:block; }
-
-    .modal{
-      position:fixed;
-      left:50%;
-      top:50%;
-      transform: translate(-50%, -50%);
-      width: min(680px, 92vw);
-      background: rgba(15,23,42,.98);
-      border: 1px solid rgba(148,163,184,.28);
-      border-radius: 18px;
-      z-index: 2100;
-      display:none;
-      overflow:hidden;
-    }
-    .modal.active{ display:block; }
-
-    .modal-head{
-      padding: 1.05rem 1.2rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border-bottom: 1px solid rgba(148,163,184,.18);
-    }
-    .modal-head h3{
-      font-size: 1rem;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--purpleLight);
-      font-weight: 900;
-    }
-    .modal-close{
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,.25);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      cursor:pointer;
-      font-size: 1.2rem;
-    }
-
-    .modal-body{
-      padding: 1rem 1.2rem 1.2rem;
-      max-height: 70vh;
-      overflow:auto;
-    }
-
-    .tx{
-      padding:.85rem .8rem;
-      border: 1px solid rgba(148,163,184,.18);
-      border-radius: 14px;
-      background: rgba(0,0,0,.22);
-      display:flex;
-      justify-content:space-between;
       gap: 1rem;
-      margin-bottom: .75rem;
-    }
-    .tx .left{ min-width:0; }
-    .tx .type{ font-weight: 900; }
-    .tx .meta{
-      color: var(--muted);
-      font-size: .85rem;
-      margin-top: .15rem;
-      line-height: 1.3;
-      white-space: pre-line;
-    }
-    .tx .amt{ font-weight: 900; }
-    .tx .amt.pos{ color: var(--success); }
-    .tx .amt.neg{ color: #f87171; }
-
-    .empty{
-      color: var(--muted);
-      text-align:center;
-      padding: 2rem 1rem;
-      line-height: 1.6;
+      margin-top: 2rem;
     }
 
-    /* Responsive */
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 860px){
-      .balance-card{
-        flex-direction:column;
-        align-items:stretch;
-      }
-      .balance-actions{
-        width:100%;
-        justify-content:flex-start;
-      }
-    }
-
-    @media (max-width: 640px){
-      .container{ padding: 1.5rem 1rem 3rem; }
-      .welcome{ padding: 1.4rem; }
-      .welcome h1{ font-size: 1.55rem; }
-
-      .balance-card{
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .balance-actions{
-        width: 100%;
-        display:flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .balance-actions .btn{
-        flex: 1 1 auto;
-        min-width: 140px;
-        text-align:center;
-      }
-
-      /* Smaller badge on mobile */
-      .tile.locked::after{
-        font-size: .6rem;
-        padding: .2rem .42rem;
-        right: 4px;
-        top: 4px;
-        letter-spacing: .04em;
-      }
-
-      .tile.locked .tile-content{
-        padding-right: 78px;
-      }
-
-      .tile{
-        padding: .9rem;
-      }
-
-      /* Locked modal mobile optimizations */
-      .locked-modal{
-        padding: 1.5rem;
-        width: calc(100% - 2rem);
-        max-width: 400px;
-      }
-
-      .locked-modal-icon{
-        font-size: 3rem;
-        margin-bottom: .8rem;
-      }
-
-      .locked-modal h3{
-        font-size: 1.35rem;
-      }
-
-      .locked-modal p{
-        font-size: .95rem;
-        margin-bottom: 1.25rem;
-      }
-
-      .locked-modal-actions{
-        flex-direction: column;
-      }
-
-      .locked-modal-actions .btn{
-        width: 100%;
-        min-width: 0;
-      }
-    }
-
-    /* Admin Modal Styles */
-    .admin-modal{
+    /* Admin Modal */
+    .admin-modal {
       max-width: 900px;
-      width: calc(100% - 2rem);
-    }
-
-    .admin-modal-body{
-      padding: 0;
-      max-height: 70vh;
+      max-height: 80vh;
       overflow-y: auto;
     }
 
-    .admin-panel-grid{
+    .admin-panel-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1rem;
       padding: 1.5rem;
     }
 
-    .admin-panel-tile{
+    /* Admin tiles with gold accent */
+    .admin-modal .tile {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), var(--bg-card));
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .admin-modal .tile:hover {
+      border-color: var(--gold);
+      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.25);
+      transform: translateY(-3px);
+    }
+
+    .admin-modal .tile-title {
+      color: var(--gold);
+    }
+
+    .admin-panel-tile {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      border: 1px solid rgba(251,191,36,.28);
-      background: rgba(15,23,42,.90);
       padding: 1.25rem;
       display: flex;
-      gap: .95rem;
+      gap: 1rem;
       align-items: center;
       cursor: pointer;
-      transition: all .2s ease;
-      position: relative;
-      overflow: hidden;
+      transition: all 0.2s ease;
     }
 
-    .admin-panel-tile:hover{
+    .admin-panel-tile:hover {
       transform: translateY(-2px);
-      border-color: rgba(251,191,36,.55);
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
-      background: rgba(15,23,42,.98);
+      border-color: var(--gold);
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.2);
     }
 
-    .admin-panel-icon{
-      width: 44px;
-      text-align: center;
+    .admin-panel-icon {
       font-size: 1.5rem;
-      opacity: .95;
-      flex: 0 0 auto;
+      width: 40px;
+      text-align: center;
+      flex-shrink: 0;
     }
 
-    .admin-panel-content{
-      min-width: 0;
+    .admin-panel-content {
       flex: 1;
+      min-width: 0;
     }
 
-    .admin-panel-title{
-      font-weight: 900;
-      line-height: 1.3;
-      margin-bottom: .15rem;
-      font-size: 1rem;
+    .admin-panel-title {
+      font-weight: 700;
+      margin-bottom: 0.25rem;
     }
 
-    .admin-panel-desc{
-      color: var(--muted);
-      font-size: .85rem;
-      line-height: 1.25;
+    .admin-panel-desc {
+      color: var(--text-dim);
+      font-size: 0.85rem;
     }
 
-    @media (max-width: 768px){
-      .admin-panel-grid{
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      .welcome {
+        padding: 2rem;
+      }
+
+      .balance-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .balance-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .balance-actions .btn {
+        flex: 1;
+        min-width: 140px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header {
+        padding-bottom: 1rem;
+      }
+
+      .brand {
+        font-size: 1rem;
+      }
+
+      .brand img {
+        width: 32px;
+        height: 32px;
+      }
+
+      .pill-btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .welcome {
+        padding: 1.5rem;
+      }
+
+      .welcome h1 {
+        font-size: 1.75rem;
+      }
+
+      .balance-amount span:first-child {
+        font-size: 2.5rem;
+      }
+
+      .balance-card {
+        padding: 1.5rem;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+
+      .tile {
+        padding: 1.25rem;
+      }
+
+      .tile-icon {
+        font-size: 1.75rem;
+        width: 40px;
+      }
+
+      .tile-title {
+        font-size: 1rem;
+      }
+
+      .modal {
+        padding: 2rem;
+      }
+
+      .admin-panel-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 420px){
-      .tile-icon{
-        font-size: 1.2rem;
-        width: 36px;
+    /* ================================================
+       ADMIN POPUP - PURPLE GRADIENT DESIGN
+       ================================================ */
+    .admin-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 99998;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .admin-overlay.show {
+      display: block;
+      opacity: 1;
+    }
+
+    .admin-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 20px;
+      padding: 0;
+      max-width: 1000px;
+      width: 92%;
+      max-height: 85vh;
+      overflow: hidden;
+      z-index: 99999;
+      display: none;
+      box-shadow: 0 25px 100px rgba(0, 0, 0, 0.8);
+    }
+
+    .admin-popup.show {
+      display: block;
+    }
+
+    .admin-popup-header {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(147, 51, 234, 0.15));
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .admin-popup-title h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin: 0;
+    }
+
+    .admin-close-btn {
+      background: transparent;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: var(--text-dim);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .admin-close-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .admin-popup-content {
+      padding: 2rem;
+      max-height: calc(85vh - 80px);
+      overflow-y: auto;
+    }
+
+    .admin-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .admin-tool-tile {
+      background: rgba(30, 27, 75, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .admin-tool-tile:hover {
+      background: rgba(30, 27, 75, 0.8);
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
+    }
+
+    .admin-tool-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      flex-shrink: 0;
+    }
+
+    .admin-tool-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .admin-tool-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .admin-tool-desc {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* ================================================
+       FLOATING ADMIN BUTTON (FAB) - Silicon Valley Style
+       ================================================ */
+    .admin-fab {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 9999;
+      display: none;
+    }
+
+    .admin-fab.show {
+      display: block;
+    }
+
+    .admin-fab-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 2px solid var(--gold);
+      color: var(--gold);
+      font-size: 1.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow:
+        0 10px 40px rgba(251, 191, 36, 0.3),
+        0 0 0 0 rgba(251, 191, 36, 0.4);
+      animation: fabPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes fabPulse {
+      0%, 100% {
+        box-shadow:
+          0 10px 40px rgba(251, 191, 36, 0.3),
+          0 0 0 0 rgba(251, 191, 36, 0.4);
+      }
+      50% {
+        box-shadow:
+          0 10px 40px rgba(251, 191, 36, 0.4),
+          0 0 0 8px rgba(251, 191, 36, 0);
+      }
+    }
+
+    .admin-fab-btn:hover {
+      transform: scale(1.1) rotate(5deg);
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+      color: #0a0a0a;
+      border-color: var(--gold);
+      box-shadow: 0 20px 60px rgba(251, 191, 36, 0.5);
+      animation: none;
+    }
+
+    .admin-fab-tooltip {
+      position: absolute;
+      right: calc(100% + 1rem);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .admin-fab-btn:hover + .admin-fab-tooltip {
+      opacity: 1;
+    }
+
+    /* ================================================
+       PAGE TRANSITIONS - Smooth Silicon Valley Feel
+       ================================================ */
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-dark);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .page-transition-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .page-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .page-loader-logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      animation: logoFloat 1.5s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .page-loader-bar {
+      width: 200px;
+      height: 4px;
+      background: var(--bg-elevated);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .page-loader-progress {
+      height: 100%;
+      width: 30%;
+      background: linear-gradient(90deg, var(--purple), var(--purple-light));
+      border-radius: 4px;
+      animation: loadProgress 1s ease-in-out infinite;
+    }
+
+    @keyframes loadProgress {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    /* ================================================
+       SKELETON LOADING - Modern Content Placeholders
+       ================================================ */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.5s ease-in-out infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes skeletonShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ================================================
+       ENHANCED TILE INTERACTIONS
+       ================================================ */
+    .tile {
+      transform: translateY(0);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tile:active:not(.locked) {
+      transform: scale(0.98);
+    }
+
+    .tile::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 16px;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(147, 51, 234, 0.15), transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .tile:hover::before {
+      opacity: 1;
+    }
+
+    /* ================================================
+       FADE-IN ANIMATIONS
+       ================================================ */
+    .fade-in-up {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+
+    /* ================================================
+       PREMIUM BADGE SHIMMER
+       ================================================ */
+    .tile[data-paid="true"]:not(.locked) .tile-title::after {
+      content: '✨';
+      margin-left: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    /* ================================================
+       GLASSMORPHISM EFFECTS
+       ================================================ */
+    .glass {
+      background: rgba(26, 26, 26, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* ================================================
+       RESPONSIVE FAB
+       ================================================ */
+    @media (max-width: 640px) {
+      .admin-fab {
+        bottom: 1.5rem;
+        right: 1.5rem;
       }
 
-      .tile-title{
-        font-size: .95rem;
+      .admin-fab-btn {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
       }
 
-      .tile-desc{
-        font-size: .8rem;
+      .admin-fab-tooltip {
+        display: none;
+      }
+    }
+
+    /* ================================================
+       MOBILE OPTIMIZED ADMIN POPUP
+       ================================================ */
+    @media (max-width: 768px) {
+      .admin-popup {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        transform: none;
+        border: none;
+      }
+
+      .admin-popup-header {
+        padding: 1rem 1.25rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(135deg, rgba(30, 27, 75, 0.98), rgba(15, 23, 42, 0.98));
+        backdrop-filter: blur(20px);
+      }
+
+      .admin-popup-title h2 {
+        font-size: 1.25rem;
+      }
+
+      .admin-close-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+      }
+
+      .admin-popup-content {
+        padding: 1rem;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .admin-popup-content > p {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+
+      .admin-tools-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .admin-tool-tile {
+        padding: 1rem;
+        border-radius: 12px;
+        min-height: 70px;
+      }
+
+      .admin-tool-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.5rem;
+        background: rgba(251, 191, 36, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .admin-tool-title {
+        font-size: 0.95rem;
+      }
+
+      .admin-tool-desc {
+        font-size: 0.8rem;
+        line-height: 1.3;
+      }
+
+      /* Better touch targets */
+      .admin-tool-tile:active {
+        transform: scale(0.98);
+        background: rgba(30, 27, 75, 0.9);
+      }
+    }
+
+    @media (max-width: 380px) {
+      .admin-popup-title h2 {
+        font-size: 1.1rem;
+      }
+
+      .admin-tool-tile {
+        padding: 0.875rem;
+      }
+
+      .admin-tool-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
       }
     }
   </style>
 </head>
 
 <body>
+  <!-- Page Transition Overlay -->
+  <div class="page-transition-overlay" id="pageTransition">
+    <div class="page-loader">
+      <img src="ArcaneA.png" alt="Loading" class="page-loader-logo" />
+      <div class="page-loader-bar">
+        <div class="page-loader-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Admin Button (FAB) -->
+  <div class="admin-fab" id="adminFab">
+    <button class="admin-fab-btn" onclick="window.openAdminPopup()" aria-label="Admin Panel">
+      👑
+    </button>
+    <span class="admin-fab-tooltip">Admin Panel</span>
+  </div>
+
   <div class="container">
+    <!-- Header -->
     <div class="header">
       <div class="brand">
         <img src="ArcaneA.png" alt="Arcane" />
@@ -669,37 +1167,56 @@
       </div>
     </div>
 
+    <!-- Welcome Section -->
     <div class="welcome">
-      <h1 id="welcomeTitle">Welcome back 👋</h1>
-      <p>Your command center for mastering the game</p>
+      <div class="welcome-content">
+        <h1 id="welcomeTitle">Welcome back 👋</h1>
+        <p>Your command center for mastering life</p>
 
-      <div class="balance-card">
-        <div class="balance-left">
-          <div class="label">ACCOUNT BALANCE</div>
-          <div class="balance-amount">
-            <span id="accountBalance">£0.00</span>
-            <span class="pulse-dot" id="balancePulse"></span>
+        <div class="balance-card">
+          <div class="balance-left">
+            <div class="label">ACCOUNT BALANCE</div>
+            <div class="balance-amount">
+              <span id="accountBalance">£0.00</span>
+              <span class="pulse-dot" id="balancePulse"></span>
+            </div>
+            <div class="balance-sub">Withdraw commissions or spend in The Arcane Store</div>
           </div>
-          <div class="balance-sub">Withdraw Commissions or spend them in The Arcane Store.</div>
-        </div>
 
-        <div class="balance-actions">
-          <button class="btn btn-primary" id="shopBtn">🛍️ Store</button>
-          <button class="btn btn-secondary" id="historyBtn">🧾 Balance History</button>
-          <button class="btn btn-secondary" id="earningsBtn">💸 Referrals</button>
+          <div class="balance-actions">
+            <button class="btn btn-primary" id="shopBtn">🛍️ Store</button>
+            <button class="btn btn-secondary" id="historyBtn">🧾 History</button>
+            <button class="btn btn-secondary" id="earningsBtn">💸 Referrals</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- TradingView Ticker Tape -->
     <div class="tv-ticker-wrap">
-      <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-ticker-tape.js"></script>
-      <tv-ticker-tape
-        symbols="CMCMARKETS:GOLD,OANDA:XAGUSD,BITSTAMP:BTCUSD,VANTAGE:SP500,BITSTAMP:ETHUSD"
-        item-size="compact"
-        theme="dark"
-        show-hover>
-      </tv-ticker-tape>
+      <!-- TradingView Widget BEGIN -->
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+          "symbols": [
+            {"proName": "FOREXCOM:XAUUSD", "title": "Gold"},
+            {"proName": "FOREXCOM:XAGUSD", "title": "Silver"},
+            {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+            {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
+            {"proName": "BITSTAMP:ETHUSD", "title": "Ethereum"},
+            {"proName": "FX_IDC:EURUSD", "title": "EUR/USD"},
+            {"proName": "FX:GBPUSD", "title": "GBP/USD"}
+          ],
+          "showSymbolLogo": true,
+          "isTransparent": true,
+          "displayMode": "adaptive",
+          "colorTheme": "dark",
+          "locale": "en"
+        }
+        </script>
+      </div>
+      <!-- TradingView Widget END -->
     </div>
 
     <!-- CORE FEATURES -->
@@ -710,7 +1227,7 @@
         <div class="tile-icon">📚</div>
         <div class="tile-content">
           <div class="tile-title">Archives</div>
-          <div class="tile-desc">Notion Courses / Modules</div>
+          <div class="tile-desc">3,330+ Modules • Complete Vault</div>
         </div>
       </div>
 
@@ -727,8 +1244,8 @@
       <div class="tile" data-paid="true" data-href="alerts.html">
         <div class="tile-icon">📈</div>
         <div class="tile-content">
-          <div class="tile-title">Arcane Trading Floor</div>
-          <div class="tile-desc">Real-time alerts</div>
+          <div class="tile-title">Trading Floor</div>
+          <div class="tile-desc">Live charts & market data</div>
         </div>
       </div>
 
@@ -736,7 +1253,7 @@
         <div class="tile-icon">🎙️</div>
         <div class="tile-content">
           <div class="tile-title">Live Calls</div>
-          <div class="tile-desc">Weekly education calls</div>
+          <div class="tile-desc">Weekly education sessions</div>
         </div>
       </div>
 
@@ -744,7 +1261,7 @@
         <div class="tile-icon">💼</div>
         <div class="tile-content">
           <div class="tile-title">Stock Picks</div>
-          <div class="tile-desc">Long-term investments</div>
+          <div class="tile-desc">Long-term investment ideas</div>
         </div>
       </div>
 
@@ -752,7 +1269,7 @@
         <div class="tile-icon">🛍️</div>
         <div class="tile-content">
           <div class="tile-title">Store</div>
-          <div class="tile-desc">Exclusive merch</div>
+          <div class="tile-desc">Exclusive merchandise</div>
         </div>
       </div>
 
@@ -774,80 +1291,10 @@
 
     </div>
 
-    <!-- ADMIN TOOLS (completely hidden for non-admin) -->
-    <div id="adminSection" style="display:none;">
-      <div class="section-title">🛠️ Admin Tools</div>
-      <div class="grid admin-grid">
-        <!-- Main Admin Panel Tile -->
-        <div class="tile admin-main-tile" style="cursor:pointer;">
-          <div class="tile-icon">👑</div>
-          <div class="tile-content">
-            <div class="tile-title">Admin Panel</div>
-            <div class="tile-desc">Central admin control hub</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Admin Panel Modal -->
-    <div class="overlay" id="adminOverlay"></div>
-    <div class="modal admin-modal" id="adminModal">
-      <div class="modal-header">
-        <div>
-          <h3 style="margin:0;">👑 Admin Control Panel</h3>
-          <p style="margin:.35rem 0 0; color:var(--muted); font-size:.85rem;">Manage all platform functions</p>
-        </div>
-        <button class="modal-close" id="adminCloseBtn">✕</button>
-      </div>
-      <div class="modal-body admin-modal-body">
-        <!-- Admin Panel Grid -->
-        <div class="admin-panel-grid">
-          <div class="admin-panel-tile" style="cursor:pointer;" data-href="admin-panel.html">
-            <div class="admin-panel-icon">🔧</div>
-            <div class="admin-panel-content">
-              <div class="admin-panel-title">Admin Trades & Stocks</div>
-              <div class="admin-panel-desc">Manage trades & alerts</div>
-            </div>
-          </div>
-          
-          <div class="admin-panel-tile" style="cursor:pointer;" data-href="arcane-insight-admin.html">
-            <div class="admin-panel-icon">⚡</div>
-            <div class="admin-panel-content">
-              <div class="admin-panel-title">Arcane Insights Admin</div>
-              <div class="admin-panel-desc">Manage daily posts</div>
-            </div>
-          </div>
-          
-          <div class="admin-panel-tile" style="cursor:pointer;" data-href="affiliate-admin.html">
-            <div class="admin-panel-icon">💸</div>
-            <div class="admin-panel-content">
-              <div class="admin-panel-title">Affiliate Admin</div>
-              <div class="admin-panel-desc">Withdrawals & payouts</div>
-            </div>
-          </div>
-          
-          <div class="admin-panel-tile" style="cursor:pointer;" data-href="store-admin.html">
-            <div class="admin-panel-icon">🛍️</div>
-            <div class="admin-panel-content">
-              <div class="admin-panel-title">Store Admin</div>
-              <div class="admin-panel-desc">Products & inventory</div>
-            </div>
-          </div>
-          
-          <div class="admin-panel-tile" style="cursor:pointer;" data-href="bullion-admin.html">
-            <div class="admin-panel-icon">🪙</div>
-            <div class="admin-panel-content">
-              <div class="admin-panel-title">Bullion Admin</div>
-              <div class="admin-panel-desc">Manage bullion listings</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- FREE ACCESS -->
-    <div class="section-title">🆓 Free Access</div>
+    <div class="section-title">🎁 Free Access</div>
     <div class="grid">
+      
       <div class="tile" data-href="referrals.html">
         <div class="tile-icon">🎯</div>
         <div class="tile-content">
@@ -865,7 +1312,7 @@
       </div>
 
       <div class="tile" data-href="free-signals.html">
-        <div class="tile-icon">🧲</div>
+        <div class="tile-icon">🎁</div>
         <div class="tile-content">
           <div class="tile-title">Free Signals</div>
           <div class="tile-desc">Starter access</div>
@@ -880,399 +1327,355 @@
         </div>
       </div>
 
-      <div class="tile" data-href="journey.html">
-        <div class="tile-icon">🧭</div>
-        <div class="tile-content">
-          <div class="tile-title">Leo's Journey</div>
-          <div class="tile-desc">Updates & progress</div>
+    </div>
+
+    <!-- ADMIN TOOLS (hidden for non-admin) -->
+    <!-- ⚡ ADMIN TOOLS - ONLY FOR ADMINS -->
+    <div id="adminSection" style="display:none;">
+      <div class="section-title">⚡ Admin Tools</div>
+      <div class="grid admin-grid">
+        <div class="tile admin-trigger" onclick="openAdminPopup()" style="cursor:pointer;">
+          <div class="tile-icon">👑</div>
+          <div class="tile-content">
+            <div class="tile-title">Admin Panel</div>
+            <div class="tile-desc">Click to open control hub</div>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 
-  <!-- Balance History Modal -->
-  <div class="modal-overlay" id="txOverlay"></div>
-  <div class="modal" id="txModal">
-    <div class="modal-head">
-      <h3>Balance History</h3>
-      <button class="modal-close" id="txCloseBtn">×</button>
+  <!-- Locked Modal -->
+  <div class="overlay" id="lockedOverlay" onclick="closeLockedModal()"></div>
+  <div class="modal" id="lockedModal">
+    <div class="modal-header">
+      <div>
+        <h3>🔒 Premium Feature</h3>
+        <p>This feature requires an active subscription</p>
+      </div>
+      <button class="modal-close" onclick="closeLockedModal()">✕</button>
     </div>
-    <div class="modal-body" id="txBody">
-      <div class="empty">Loading…</div>
-    </div>
-  </div>
-
-  <!-- Locked Access Modal -->
-  <div class="locked-modal-overlay" id="lockedOverlay"></div>
-  <div class="locked-modal" id="lockedModal">
-    <div class="locked-modal-icon">🔒</div>
-    <h3>Members Only</h3>
-    <p>This feature is exclusive to Arcane Archives members. Upgrade now to unlock full access to all courses, live trading floor, weekly calls, and more.</p>
-    <div class="locked-modal-actions">
-      <button class="btn btn-secondary" id="lockedCloseBtn">Close</button>
-      <button class="btn btn-primary" id="enterArchivesBtn">Enter The Arcane Archives</button>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="window.location.href='index.html#pricing'">Unlock Now</button>
+      <button class="btn btn-secondary" onclick="closeLockedModal()">Maybe Later</button>
     </div>
   </div>
 
-  <!-- Coming Soon Modal (for Retreat) -->
-  <div class="locked-modal-overlay" id="comingSoonOverlay"></div>
-  <div class="locked-modal" id="comingSoonModal">
-    <div class="locked-modal-icon">🌴</div>
-    <h3>Coming Soon</h3>
-    <p>The 2028 Retreat details are being finalized. Stay tuned for qualification requirements, destination reveal, and how you can earn your spot at this epic adventure!</p>
-    <div class="locked-modal-actions">
-      <button class="btn btn-primary" id="comingSoonCloseBtn">Got it</button>
+  <!-- ADMIN POPUP - NEW DESIGN -->
+  <div class="admin-overlay" id="adminOverlay" onclick="closeAdminPopup()"></div>
+  <div class="admin-popup" id="adminPopup">
+    <div class="admin-popup-header">
+      <div class="admin-popup-title">
+        <h2>👑 Admin Control Panel</h2>
+      </div>
+      <button class="admin-close-btn" onclick="closeAdminPopup()">✕</button>
+    </div>
+    
+    <div class="admin-popup-content">
+      <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Manage all platform functions</p>
+
+      <div class="admin-tools-grid">
+        <!-- Trades & Alerts Admin (Master Control) -->
+        <a href="admin-panel.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">📈</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">Trades & Alerts</div>
+            <div class="admin-tool-desc">Manage stock picks & trade alerts</div>
+          </div>
+        </a>
+
+        <!-- Arcane Insights Admin -->
+        <a href="arcane-insight-admin.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">⚡</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">Arcane Insights</div>
+            <div class="admin-tool-desc">Daily posts & content</div>
+          </div>
+        </a>
+
+        <!-- Affiliate Admin -->
+        <a href="affiliate-admin.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">💰</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">Affiliate Admin</div>
+            <div class="admin-tool-desc">Withdrawals & payouts</div>
+          </div>
+        </a>
+
+        <!-- Store Admin -->
+        <a href="store-admin.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">🛍️</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">Store Admin</div>
+            <div class="admin-tool-desc">Products & inventory</div>
+          </div>
+        </a>
+
+        <!-- Store Orders -->
+        <a href="store-orders.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">📦</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">Store Orders</div>
+            <div class="admin-tool-desc">Order fulfillment</div>
+          </div>
+        </a>
+
+        <!-- Bullion Admin -->
+        <a href="bullion-admin.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">🥇</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">Bullion Admin</div>
+            <div class="admin-tool-desc">Gold & silver inventory</div>
+          </div>
+        </a>
+
+        <!-- CRM - Member Intelligence Platform -->
+        <a href="arcane-crm.html" class="admin-tool-tile">
+          <div class="admin-tool-icon">📊</div>
+          <div class="admin-tool-content">
+            <div class="admin-tool-title">CRM</div>
+            <div class="admin-tool-desc">Member intelligence</div>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, onSnapshot, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
       authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-      projectId: "arcane-archives-3b0f5",
-      storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-      messagingSenderId: "264237235055",
-      appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+      projectId: "arcane-archives-3b0f5"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const ADMIN_UIDS = new Set([
-      "U4PvQ0dilBco97hgXp3Awl45JX92",
-      "gefruLBk5qMXDZGmWdSo6wPNo3E3"
-    ]);
+    const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
 
-    const accountBalanceEl = document.getElementById("accountBalance");
-    const pulseEl = document.getElementById("balancePulse");
-    const welcomeTitle = document.getElementById("welcomeTitle");
+    let currentUser = null;
+    let isPaid = false;
+    let isAdmin = false;
 
-    const shopBtn = document.getElementById("shopBtn");
-    const historyBtn = document.getElementById("historyBtn");
-    const earningsBtn = document.getElementById("earningsBtn");
-
-    const txOverlay = document.getElementById("txOverlay");
-    const txModal = document.getElementById("txModal");
-    const txBody = document.getElementById("txBody");
-    const txCloseBtn = document.getElementById("txCloseBtn");
-
-    const lockedOverlay = document.getElementById("lockedOverlay");
-    const lockedModal = document.getElementById("lockedModal");
-    const lockedCloseBtn = document.getElementById("lockedCloseBtn");
-    const enterArchivesBtn = document.getElementById("enterArchivesBtn");
-
-    const comingSoonOverlay = document.getElementById("comingSoonOverlay");
-    const comingSoonModal = document.getElementById("comingSoonModal");
-    const comingSoonCloseBtn = document.getElementById("comingSoonCloseBtn");
-
-    const adminSection = document.getElementById("adminSection");
-    const adminOverlay = document.getElementById("adminOverlay");
-    const adminModal = document.getElementById("adminModal");
-    const adminCloseBtn = document.getElementById("adminCloseBtn");
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      await signOut(auth);
-      location.href = "login.html";
-    });
-
-    shopBtn.addEventListener("click", () => location.href = "arcane-store.html");
-    earningsBtn.addEventListener("click", () => location.href = "referrals.html");
-
-    function escapeHtml(str){
-      return String(str ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function moneyGBP(n){
-      const x = Number(n || 0);
-      return `£${x.toFixed(2)}`;
-    }
-
-    function animateNumber(from, to, ms=800){
-      const start = performance.now();
-      const f = Number(from || 0);
-      const t = Number(to || 0);
-
-      const step = (now) => {
-        const p = Math.min(1, (now - start) / ms);
-        const eased = 1 - Math.pow(1 - p, 3);
-        const val = f + (t - f) * eased;
-        accountBalanceEl.textContent = moneyGBP(val);
-        if (p < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
-    }
-
-    function pulse(){
-      pulseEl.style.opacity = "1";
-      pulseEl.animate(
-        [
-          { transform:"scale(1)", boxShadow:"0 0 0 rgba(34,197,94,0)" },
-          { transform:"scale(1.35)", boxShadow:"0 0 18px rgba(34,197,94,.55)" },
-          { transform:"scale(1)", boxShadow:"0 0 0 rgba(34,197,94,0)" }
-        ],
-        { duration: 900, easing:"ease-out" }
-      );
-      setTimeout(() => { pulseEl.style.opacity = "0"; }, 900);
-    }
-
-    function openTx(){
-      txOverlay.classList.add("active");
-      txModal.classList.add("active");
-    }
-    function closeTx(){
-      txOverlay.classList.remove("active");
-      txModal.classList.remove("active");
-    }
-
-    function openLockedModal(){
-      lockedOverlay.classList.add("active");
-      lockedModal.classList.add("active");
-    }
-    function closeLockedModal(){
-      lockedOverlay.classList.remove("active");
-      lockedModal.classList.remove("active");
-    }
-
-    function openAdminModal(){
-      adminOverlay.classList.add("active");
-      adminModal.classList.add("active");
-    }
-
-    function closeAdminModal(){
-      adminOverlay.classList.remove("active");
-      adminModal.classList.remove("active");
-    }
-
-    function openComingSoonModal(){
-      comingSoonOverlay.classList.add("active");
-      comingSoonModal.classList.add("active");
-    }
-
-    function closeComingSoonModal(){
-      comingSoonOverlay.classList.remove("active");
-      comingSoonModal.classList.remove("active");
-    }
-
-    txOverlay.addEventListener("click", closeTx);
-    txCloseBtn.addEventListener("click", closeTx);
-
-    lockedOverlay.addEventListener("click", closeLockedModal);
-    lockedCloseBtn.addEventListener("click", closeLockedModal);
-    enterArchivesBtn.addEventListener("click", () => {
-      location.href = "index.html#pricing";
-    });
-
-    comingSoonOverlay.addEventListener("click", closeComingSoonModal);
-    comingSoonCloseBtn.addEventListener("click", closeComingSoonModal);
-
-    adminOverlay.addEventListener("click", closeAdminModal);
-    adminCloseBtn.addEventListener("click", closeAdminModal);
-
-    historyBtn.addEventListener("click", async () => {
-      openTx();
-      await loadTransactions();
-    });
-
-    async function loadTransactions(){
-      try{
-        txBody.innerHTML = `<div class="empty">Loading…</div>`;
-
-        const q1 = query(
-          collection(db, "BalanceTransactions"),
-          where("userId", "==", auth.currentUser.uid),
-          orderBy("createdAt", "desc"),
-          limit(30)
-        );
-
-        const snap = await getDocs(q1);
-        if (!snap.empty){
-          const rows = [];
-          snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
-
-          txBody.innerHTML = rows.map(tx => {
-            const dt = tx.createdAt?.toDate?.() ? tx.createdAt.toDate() : null;
-            const when = dt ? dt.toLocaleString() : "—";
-            const amt = Number(tx.amount || 0);
-            const cls = amt >= 0 ? "pos" : "neg";
-            const sign = amt >= 0 ? "+" : "−";
-
-            return `
-              <div class="tx">
-                <div class="left">
-                  <div class="type">${escapeHtml(tx.type || "balance")}</div>
-                  <div class="meta">${escapeHtml(tx.note || "")}\n${escapeHtml(when)}</div>
-                </div>
-                <div class="amt ${cls}">${sign}${Math.abs(amt).toFixed(2)} GBP</div>
-              </div>
-            `;
-          }).join("");
-          return;
-        }
-
-        txBody.innerHTML = `<div class="empty">No transactions yet.</div>`;
-      } catch(err){
-        console.error(err);
-        txBody.innerHTML = `<div class="empty">Couldn't load transactions.</div>`;
+    // Make functions global IMMEDIATELY
+    window.openAdminPopup = function() {
+      console.log('🔥 openAdminPopup called! isAdmin:', isAdmin);
+      if (!isAdmin) {
+        console.log('⛔ Not admin, returning');
+        return;
       }
-    }
+      
+      const adminOverlay = document.getElementById('adminOverlay');
+      const adminPopup = document.getElementById('adminPopup');
+      console.log('📦 Elements:', { overlay: !!adminOverlay, popup: !!adminPopup });
+      
+      if (adminOverlay) adminOverlay.classList.add('show');
+      if (adminPopup) adminPopup.classList.add('show');
+      document.body.style.overflow = 'hidden';
+      console.log('✅ Admin popup opened!');
+    };
 
-    function wireTiles(isPaid, isAdmin){
-      // Show admin section ONLY for admins
-      if (isAdmin){
-        adminSection.style.display = "block";
-        
-        // Wire up main admin tile to open modal
-        const adminMainTile = document.querySelector(".admin-main-tile");
-        if (adminMainTile){
-          adminMainTile.addEventListener("click", openAdminModal);
-        }
-        
-        // Wire up individual admin panel tiles
-        document.querySelectorAll(".admin-panel-tile").forEach(tile => {
-          const href = tile.getAttribute("data-href");
-          if (href){
-            tile.addEventListener("click", () => {
-              location.href = href;
-            });
-          }
-        });
-      }
+    window.closeAdminPopup = function() {
+      console.log('❌ Closing admin popup');
+      const adminOverlay = document.getElementById('adminOverlay');
+      const adminPopup = document.getElementById('adminPopup');
+      if (adminOverlay) adminOverlay.classList.remove('show');
+      if (adminPopup) adminPopup.classList.remove('show');
+      document.body.style.overflow = '';
+    };
 
-      document.querySelectorAll(".tile").forEach(tile => {
-        const href = tile.getAttribute("data-href");
-        const needsPaid = tile.getAttribute("data-paid") === "true";
-        const needsAdmin = tile.getAttribute("data-admin") === "true";
-        const isRetreat = tile.classList.contains("tile-retreat");
+    // Legacy function names for backwards compatibility
+    window.openAdminModal = window.openAdminPopup;
+    window.closeAdminModal = window.closeAdminPopup;
 
-        // Admin tiles only work if user is admin
-        if (needsAdmin && !isAdmin){
-          return;
-        }
-
-        // Add or remove lock class based on paid status
-        if (needsPaid && !isPaid && !isAdmin){
-          tile.classList.add("locked");
-        } else {
-          tile.classList.remove("locked");
-        }
-
-        tile.addEventListener("click", () => {
-          // Special handling for retreat tile - always show coming soon
-          if (isRetreat){
-            openComingSoonModal();
-            return;
-          }
-          
-          // If needs paid and user isn't paid/admin, show locked modal
-          if (needsPaid && !isPaid && !isAdmin){
-            openLockedModal();
-            return;
-          }
-          if (href) location.href = href;
-        });
-      });
-    }
+    window.closeLockedModal = function() {
+      const overlay = document.getElementById('lockedOverlay');
+      const modal = document.getElementById('lockedModal');
+      if (overlay) overlay.classList.remove('active');
+      if (modal) modal.classList.remove('active');
+    };
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user){
-        location.href = "login.html";
+      if (!user) {
+        window.location.href = 'login.html';
         return;
       }
 
-      const isAdmin = ADMIN_UIDS.has(user.uid);
+      currentUser = user;
+      isAdmin = ADMIN_UIDS.includes(user.uid);
 
-      let isPaid = false;
-      try{
-        const uref = doc(db, "Users", user.uid);
-        const usnap = await getDoc(uref);
-        if (usnap.exists()){
-          const u = usnap.data();
-          const name = u.Username || u.username || u.displayName || "";
-          welcomeTitle.textContent = name ? `Welcome back, ${name} 👋` : "Welcome back 👋";
-          isPaid = (u.isPaid === true) || (u.subscriptionStatus === "active");
-        }
-      }catch(e){
-        console.warn("Users read failed:", e);
-      }
+      // 🔥 DEBUG ADMIN STATUS
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('👤 USER INFO:');
+      console.log('   Email:', user.email);
+      console.log('   UID:', user.uid);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('👑 ADMIN CHECK:');
+      console.log('   Expected UIDs:', ADMIN_UIDS);
+      console.log('   Is Admin?', isAdmin);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-      // Load user's Arcane Insights streak
-      try{
-        const streakRef = doc(db, "userStreaks", user.uid);
-        const streakSnap = await getDoc(streakRef);
-        if (streakSnap.exists()){
-          const streakData = streakSnap.data();
-          const streak = streakData.currentStreak || 0;
+      // Get user data
+      try {
+        const userDoc = await getDoc(doc(db, 'Users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
           
-          // Update streak display
-          const streakDisplay = document.getElementById("streakDisplay");
-          if (streakDisplay){
-            streakDisplay.textContent = `${streak} day streak`;
+          // Update welcome title with username
+          const welcomeEl = document.getElementById('welcomeTitle');
+          if (welcomeEl) {
+            const username = userData.Username || user.email.split('@')[0];
+            welcomeEl.textContent = `Welcome back, ${username} 👋`;
           }
 
-          // Update emoji based on streak level
-          const insightsEmoji = document.getElementById("insightsEmoji");
-          if (insightsEmoji){
-            if (streak >= 365) {
-              insightsEmoji.textContent = "👑";
-            } else if (streak >= 180) {
-              insightsEmoji.textContent = "💎";
-            } else if (streak >= 90) {
-              insightsEmoji.textContent = "⚡";
-            } else if (streak >= 30) {
-              insightsEmoji.textContent = "🏆";
-            } else if (streak >= 7) {
-              insightsEmoji.textContent = "🔥";
-            } else if (streak > 0) {
-              insightsEmoji.textContent = "✨";
-            } else {
-              insightsEmoji.textContent = "⚡";
-            }
+          // Update account balance display
+          const balanceEl = document.getElementById('accountBalance');
+          if (balanceEl && userData.balance !== undefined) {
+            balanceEl.textContent = `£${userData.balance.toFixed(2)}`;
           }
         }
-      }catch(e){
-        console.warn("Streak load failed:", e);
+      } catch (error) {
+        console.error('Error loading user data:', error);
       }
 
-      wireTiles(isPaid, isAdmin);
-
-      // Balance listener
-      const aref = doc(db, "Affiliates", user.uid);
-      let last = null;
-
-      onSnapshot(aref, (snap) => {
-        if (!snap.exists()){
-          accountBalanceEl.textContent = moneyGBP(0);
-          last = 0;
-          return;
+      // Show admin section and FAB ONLY for admin users
+      if (isAdmin) {
+        console.log('✅ USER IS ADMIN - Showing admin controls');
+        const adminSection = document.getElementById('adminSection');
+        const adminFab = document.getElementById('adminFab');
+        if (adminSection) {
+          adminSection.style.display = 'block';
+          console.log('✅ Admin section visible!');
         }
-        const d = snap.data();
-        const current = Number(d.availableBalance ?? d.balance ?? 0);
-
-        if (last === null){
-          accountBalanceEl.textContent = moneyGBP(current);
-          last = current;
-          return;
+        if (adminFab) {
+          adminFab.classList.add('show');
+          console.log('✅ Admin FAB visible!');
         }
+      } else {
+        console.log('⛔ USER IS NOT ADMIN - Admin controls stay hidden');
+      }
 
-        if (current > last){
-          animateNumber(last, current, 850);
-          pulse();
-        } else {
-          animateNumber(last, current, 550);
+      // Setup navigation
+      setupTileNavigation();
+      setupAdminButton();
+      setupButtons();
+    });
+
+    function setupAdminButton() {
+      console.log('🔧 setupAdminButton called, isAdmin:', isAdmin);
+      const adminTrigger = document.querySelector('.admin-trigger');
+      console.log('🎯 Admin trigger element:', adminTrigger);
+      
+      if (adminTrigger && isAdmin) {
+        adminTrigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('👑 Admin button CLICKED!');
+          window.openAdminModal();
+        });
+        console.log('✅ Admin button listener attached!');
+      } else {
+        console.log('⚠️ Not attaching listener. Trigger:', !!adminTrigger, 'isAdmin:', isAdmin);
+      }
+    }
+
+    function setupTileNavigation() {
+      const tiles = document.querySelectorAll('.tile[data-href]');
+      
+      tiles.forEach(tile => {
+        const href = tile.getAttribute('data-href');
+        const requiresPaid = tile.getAttribute('data-paid') === 'true';
+        
+        // Lock tile if requires payment and user hasn't paid
+        if (requiresPaid && !isPaid && !isAdmin) {
+          tile.classList.add('locked');
         }
+        
+        // Add click handler with smooth transition
+        tile.addEventListener('click', () => {
+          if (requiresPaid && !isPaid && !isAdmin) {
+            showLockedModal();
+            return;
+          }
 
-        last = current;
+          navigateWithTransition(href);
+        });
       });
+    }
+
+    function setupButtons() {
+      // Logout button
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+          await signOut(auth);
+          window.location.href = 'login.html';
+        });
+      }
+
+      // Settings button
+      const settingsBtn = document.getElementById('settingsBtn');
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+          window.location.href = 'settings.html';
+        });
+      }
+    }
+
+    function showLockedModal() {
+      const overlay = document.getElementById('lockedOverlay');
+      const modal = document.getElementById('lockedModal');
+      if (overlay) overlay.classList.add('active');
+      if (modal) modal.classList.add('active');
+    }
+
+    // Page transition for smooth navigation
+    function navigateWithTransition(url) {
+      const transition = document.getElementById('pageTransition');
+      if (transition) {
+        transition.classList.add('active');
+        setTimeout(() => {
+          window.location.href = url;
+        }, 300);
+      } else {
+        window.location.href = url;
+      }
+    }
+
+    // Add tile hover effects (mouse follow gradient)
+    function initTileEffects() {
+      const tiles = document.querySelectorAll('.tile');
+      tiles.forEach(tile => {
+        tile.addEventListener('mousemove', (e) => {
+          const rect = tile.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          tile.style.setProperty('--mouse-x', `${x}%`);
+          tile.style.setProperty('--mouse-y', `${y}%`);
+        });
+      });
+    }
+
+    // Add fade-in animations to grid items
+    function initFadeAnimations() {
+      const tiles = document.querySelectorAll('.tile');
+      tiles.forEach((tile, index) => {
+        tile.classList.add('fade-in-up');
+        tile.style.animationDelay = `${0.1 + (index * 0.05)}s`;
+      });
+    }
+
+    // Initialize effects on load
+    document.addEventListener('DOMContentLoaded', () => {
+      initTileEffects();
+      initFadeAnimations();
     });
   </script>
 </body>

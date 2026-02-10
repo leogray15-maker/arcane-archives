@@ -2,27 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Free Trading Signals | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
-    
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-dark: #02010a;
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.7);
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-border: rgba(139, 92, 246, 0.25);
+            --white: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-300: #d4d4d8;
+            --gray-400: #a1a1aa;
+            --gray-500: #71717a;
+            --gray-600: #52525b;
+            --border: rgba(63, 63, 70, 0.5);
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
+            --gold-glow: rgba(251, 191, 36, 0.1);
+            --gold-border: rgba(251, 191, 36, 0.2);
+            --green: #22c55e;
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
@@ -33,13 +46,39 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: radial-gradient(circle at top, #111827, #02010a 60%, #000);
-            color: var(--text-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--white);
             min-height: 100vh;
             min-height: -webkit-fill-available;
             line-height: 1.6;
             padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 60%;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.06), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .back-btn {
@@ -48,261 +87,361 @@
             left: 1.5rem;
             z-index: 40;
             padding: 0.5rem 1rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            color: var(--gray-400);
             text-decoration: none;
-            font-size: 0.85rem;
-            backdrop-filter: blur(12px);
+            font-size: 0.8rem;
+            font-weight: 500;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
         }
 
-        .container { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            padding: 5rem 1.5rem 3rem; 
+        .back-btn:hover {
+            border-color: var(--accent-border);
+            color: var(--accent-light);
         }
 
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 5rem 1.5rem 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero */
         .hero {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--green);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
         }
 
         .hero h1 {
-            font-size: 2.5rem;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.2;
+            color: var(--white);
+            letter-spacing: -0.04em;
+            line-height: 1.1;
         }
 
         .hero .subtitle {
-            color: var(--text-dim);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto 2rem;
+            color: var(--gray-400);
+            font-size: 1rem;
+            max-width: 620px;
+            margin: 0 auto;
             line-height: 1.7;
+            letter-spacing: -0.01em;
         }
 
+        /* Steps */
         .steps {
             display: grid;
-            gap: 1.5rem;
-            margin-bottom: 3rem;
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
         }
 
         .step-card {
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .step-card:hover {
+            border-color: var(--accent-border);
+            transform: translateY(-2px);
         }
 
         .step-header {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
 
         .step-number {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--accent-border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--accent-light);
             flex-shrink: 0;
         }
 
         .step-card h3 {
-            font-size: 1.4rem;
-            color: var(--purple-light);
+            font-size: 1.25rem;
+            color: var(--white);
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
         .step-card p {
-            color: var(--text-dim);
-            margin-bottom: 1.5rem;
-            line-height: 1.8;
+            color: var(--gray-400);
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+            font-size: 0.9rem;
+            letter-spacing: -0.01em;
         }
 
         .btn {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
-            padding: 1.1rem 2rem;
+            gap: 0.6rem;
+            padding: 0.875rem 1.5rem;
             border-radius: 12px;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
             border: none;
             cursor: pointer;
             text-align: center;
             width: 100%;
+            letter-spacing: -0.01em;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white;
+            background: var(--white);
+            color: var(--bg-primary);
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(250, 250, 250, 0.15);
         }
 
         .btn-telegram {
-            background: linear-gradient(135deg, #0088cc, #0077b5);
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--white);
+            border: 1px solid var(--border);
         }
 
         .btn-telegram:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 136, 204, 0.5);
+            transform: translateY(-1px);
+            border-color: var(--accent-border);
+            background: rgba(139, 92, 246, 0.08);
         }
 
-        .btn-secondary {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            color: var(--gold);
-            margin-top: 1rem;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(251, 191, 36, 0.25);
-            transform: translateY(-3px);
-        }
-
+        /* Info Box */
         .info-box {
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.3);
+            background: rgba(139, 92, 246, 0.04);
+            border: 1px solid rgba(139, 92, 246, 0.12);
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            margin-top: 1.25rem;
         }
 
         .info-box h4 {
-            color: var(--purple-light);
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            color: var(--gray-400);
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         .info-box ul {
-            margin-left: 1.5rem;
-            line-height: 1.8;
-            color: var(--text-dim);
+            list-style: none;
+            padding: 0;
         }
 
+        .info-box li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.3rem 0;
+            color: var(--gray-300);
+            font-size: 0.85rem;
+            letter-spacing: -0.01em;
+        }
+
+        .info-box li::before {
+            content: "";
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* Warning Box */
         .warning-box {
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 12px;
+            background: var(--gold-glow);
+            border: 1px solid var(--gold-border);
+            border-radius: 14px;
             padding: 1.5rem;
             margin: 2rem 0;
         }
 
         .warning-box h4 {
             color: var(--gold);
-            margin-bottom: 1rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
         .warning-box p {
-            color: var(--text-dim);
+            color: var(--gray-300);
             margin: 0;
+            line-height: 1.7;
+            font-size: 0.875rem;
         }
 
-        .bonus-box {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
+        /* Verified Badge */
+        .verified-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.75rem;
+            background: rgba(139, 92, 246, 0.04);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            border-radius: 14px;
+            text-align: center;
+            margin-top: 1.25rem;
         }
 
-        .bonus-box h4 {
-            color: #22c55e;
-            margin-bottom: 1rem;
+        .verified-badge .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
         }
 
-        .bonus-box p {
-            color: var(--text-dim);
-            line-height: 1.8;
+        .verified-badge p {
+            color: var(--accent-light);
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
+            letter-spacing: -0.02em;
         }
 
+        .verified-badge small {
+            color: var(--gray-500);
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        /* CTA Section */
         .cta-section {
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
-            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--accent-border);
             border-radius: 20px;
-            padding: 3rem 2rem;
+            padding: 2.5rem 2rem;
             text-align: center;
             margin-top: 3rem;
         }
 
         .cta-section h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--white);
+            letter-spacing: -0.03em;
         }
 
         .cta-section p {
-            color: var(--text-dim);
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
+            color: var(--gray-400);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
         }
 
         .cta-buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
             max-width: 600px;
-            margin: 0 auto;
+            margin: 0 auto 1.5rem;
         }
 
-        .verified-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 2rem;
-            background: rgba(147, 51, 234, 0.1);
-            border-radius: 12px;
-            text-align: center;
-            margin-top: 1rem;
-            width: 100%;
-        }
-
-        .verified-badge .icon {
-            font-size: 3rem;
-        }
-
-        .verified-badge p {
-            color: var(--purple-light);
+        .upgrade-link {
+            color: var(--accent-light);
+            text-decoration: none;
             font-weight: 600;
-            margin: 0.5rem 0 0 0;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            letter-spacing: -0.01em;
+        }
+
+        .upgrade-link:hover {
+            color: var(--accent);
         }
 
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .step-card { padding: 1.5rem; }
-            .cta-buttons { grid-template-columns: 1fr; }
-            .step-header { flex-direction: column; text-align: center; }
+            .container {
+                padding: 5rem 1.5rem 2rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .step-card {
+                padding: 1.75rem;
+            }
+
+            .step-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-number {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+
+            .cta-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .warning-box {
+                padding: 1.25rem;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="back-btn">← Back</a>
+    <a href="dashboard.html" class="back-btn">← Dashboard</a>
 
     <div class="container">
         <div class="hero">
-            <h1>🔡 Free Trading Signals</h1>
+            <span class="hero-badge">Free Access</span>
+            <h1>Free Trading Signals</h1>
             <p class="subtitle">
-                Join via my Vantage referral link, verify on Telegram, and get access to exclusive trade signals for Gold, Silver, BTC, Indices & More.
+                Join via my Vantage referral link, verify on Telegram, and get access to exclusive trade signals for Gold, Silver, Bitcoin, Indices & More -- completely free.
             </p>
         </div>
 
@@ -314,15 +453,15 @@
                     <h3>Create Vantage Account</h3>
                 </div>
                 <p>
-                    Sign up using my referral link below to copy my trades with the best conditions. No Sub-IB required - just open an account and you're ready to follow signals!
+                    Sign up using my referral link below to copy my trades with the best conditions. No Sub-IB required -- just open an account and you're ready to follow signals.
                 </p>
 
                 <a href="https://www.vantagemarkets.com/open-live-account/?affid=NzM2ODYwNw==" target="_blank" class="btn btn-primary">
-                    📈 Open Vantage Live Account (Free)
+                    Open Vantage Live Account (Free)
                 </a>
 
                 <div class="info-box">
-                    <h4>💡 Why Vantage Markets?</h4>
+                    <h4>Why Vantage Markets</h4>
                     <ul>
                         <li>Ultra-low spreads & institutional execution</li>
                         <li>Trade rebates on every lot you trade</li>
@@ -344,11 +483,11 @@
                 </p>
 
                 <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
-                    ✈️ Message on Telegram
+                    Message on Telegram
                 </a>
 
                 <div class="info-box">
-                    <h4>📝 What to Include:</h4>
+                    <h4>What to Include</h4>
                     <ul>
                         <li>Your Vantage account ID (trading account number)</li>
                         <li>Confirmation that you signed up via my link</li>
@@ -369,20 +508,16 @@
                 </p>
 
                 <div class="verified-badge">
-                    <div style="text-align: center; width: 100%;">
-                        <div class="icon">✅</div>
-                        <p>Wait for Verification</p>
-                        <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
-                            Typically takes 24-48 hours
-                        </small>
-                    </div>
+                    <div class="icon">✅</div>
+                    <p>Wait for Verification</p>
+                    <small>Typically takes 24-48 hours</small>
                 </div>
             </div>
         </div>
 
         <!-- IMPORTANT NOTE -->
         <div class="warning-box">
-            <h4>⚠️ Important Note</h4>
+            <h4>Important Note</h4>
             <p>
                 The signal group is <strong>completely free</strong> but requires account verification to ensure all members are genuine traders. Create your account through the link above and message me your account ID on Telegram. Verification typically takes 24-48 hours.
             </p>
@@ -395,16 +530,16 @@
 
             <div class="cta-buttons">
                 <a href="https://www.vantagemarkets.com/open-live-account/?affid=NzM2ODYwNw==" target="_blank" class="btn btn-primary">
-                    📈 Open Live Account
+                    Open Live Account
                 </a>
                 <a href="https://t.me/Arcaneadvice2028" target="_blank" class="btn btn-telegram">
-                    ✈️ Verify on Telegram
+                    Verify on Telegram
                 </a>
             </div>
 
-            <p style="margin-top: 2rem; font-size: 0.9rem;">
-                Want more advanced signals and education? 
-                <a href="index.html#pricing" style="color: var(--purple-light); text-decoration: none; font-weight: 600;">
+            <p style="font-size: 0.875rem; margin-bottom: 0;">
+                Want more advanced signals and education?
+                <a href="index.html#pricing" class="upgrade-link">
                     Join Premium Membership →
                 </a>
             </p>

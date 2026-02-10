@@ -2,19 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Store Orders | Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
+            --bg-0: #09090b;
+            --bg-1: #0f0f12;
+            --bg-2: #16161a;
+            --bg-3: #1e1e24;
+            --bg-glass: rgba(22, 22, 26, 0.7);
+            --accent: #8b5cf6;
+            --accent-dark: #7c3aed;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-glow-strong: rgba(139, 92, 246, 0.35);
+            --green: #22c55e;
+            --green-glow: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.15);
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
-            --border-color: rgba(148, 163, 184, 0.5);
+            --gold-glow: rgba(251, 191, 36, 0.15);
+            --text-0: #fafafa;
+            --text-1: #a1a1aa;
+            --text-2: #71717a;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
         }
 
         * {
@@ -24,94 +48,181 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--bg-0);
+            background-image:
+                radial-gradient(circle at 50% 0%, var(--accent-glow-strong) 0%, transparent 50%),
+                radial-gradient(circle 1px at center, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px;
+            background-repeat: no-repeat, repeat;
+            color: var(--text-0);
             min-height: 100vh;
-            padding: 2rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .container {
-            max-width: 1400px;
+        /* ── Topbar ── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding-top: env(safe-area-inset-top);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-inner {
+            max-width: 1100px;
             margin: 0 auto;
-        }
-
-        .header {
+            padding: 0.85rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-links {
+        .topbar-brand {
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.65rem;
         }
 
-        .btn {
-            padding: 0.8rem 1.5rem;
-            border-radius: 999px;
-            border: none;
+        .topbar-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .topbar-title {
+            font-size: 0.95rem;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
+            color: var(--text-0);
+            letter-spacing: -0.01em;
+        }
+
+        .topbar-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent-light);
+            background: var(--accent-glow);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+        }
+
+        .topbar-back {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-1);
             text-decoration: none;
-            display: inline-block;
+            transition: color 0.15s;
+        }
+
+        .topbar-back:hover {
+            color: var(--text-0);
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
         .btn-secondary {
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
+            background: var(--bg-2);
+            color: var(--text-1);
+            border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
-            border-color: rgba(147, 51, 234, 0.7);
-            color: var(--purple-light);
+            background: var(--bg-3);
+            color: var(--text-0);
+            border-color: var(--border-hover);
         }
 
+        /* ── Page ── */
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ── Stats Grid ── */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.5rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.35rem 1.5rem;
+            transition: border-color 0.2s;
         }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--gold);
-            margin-bottom: 0.5rem;
+        .stat-card:hover {
+            border-color: var(--border-hover);
         }
 
         .stat-label {
-            color: var(--text-dim);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-2);
+            margin-bottom: 0.6rem;
         }
 
-        .orders-table {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-0);
+            letter-spacing: -0.02em;
+        }
+
+        /* ── Orders Table ── */
+        .orders-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             overflow: hidden;
+        }
+
+        .orders-card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .orders-card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-0);
+        }
+
+        .orders-table-wrap {
+            overflow-x: auto;
         }
 
         table {
@@ -120,145 +231,228 @@
         }
 
         thead {
-            background: rgba(147, 51, 234, 0.1);
+            background: rgba(255, 255, 255, 0.02);
         }
 
         th {
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             text-align: left;
+            font-size: 0.68rem;
             font-weight: 600;
-            color: var(--purple-light);
-            font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
+            color: var(--accent-light);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         td {
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border);
             vertical-align: top;
+            font-size: 0.875rem;
+            color: var(--text-0);
         }
 
-        tr:hover {
-            background: rgba(147, 51, 234, 0.05);
+        tbody tr {
+            transition: background 0.12s;
         }
 
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ── Status Badges ── */
         .status-badge {
-            padding: 0.4rem 0.8rem;
+            padding: 0.3rem 0.7rem;
             border-radius: 999px;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.04em;
             display: inline-block;
+            white-space: nowrap;
         }
 
         .status-pending {
-            background: rgba(251, 191, 36, 0.2);
+            background: var(--gold-glow);
             color: var(--gold);
+            border: 1px solid rgba(251, 191, 36, 0.2);
         }
 
         .status-processing {
-            background: rgba(59, 130, 246, 0.2);
+            background: rgba(59, 130, 246, 0.12);
             color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .status-shipped {
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
+            background: var(--green-glow);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.2);
         }
 
         .status-delivered {
-            background: rgba(147, 51, 234, 0.2);
-            color: var(--purple-light);
+            background: var(--accent-glow);
+            color: var(--accent-light);
+            border: 1px solid rgba(139, 92, 246, 0.2);
         }
 
+        /* ── Action Select ── */
         .action-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--text-light);
-            font-size: 0.85rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-2);
+            color: var(--text-1);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            padding-right: 2rem;
         }
 
         .action-btn:hover {
-            border-color: var(--purple);
-            color: var(--purple-light);
+            border-color: var(--border-hover);
+            color: var(--text-0);
+            background-color: var(--bg-3);
         }
 
+        .action-btn:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .action-btn option {
+            background: var(--bg-2);
+            color: var(--text-0);
+        }
+
+        /* ── Utility ── */
         .loading {
             text-align: center;
-            padding: 3rem;
-            color: var(--text-dim);
+            padding: 3rem 1.5rem;
+            color: var(--text-2);
+            font-size: 0.875rem;
         }
 
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            color: var(--text-dim);
+            color: var(--text-2);
+        }
+
+        .empty-state h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-1);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.85rem;
+            color: var(--text-2);
         }
 
         .muted {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-            line-height: 1.4;
+            color: var(--text-2);
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+            line-height: 1.45;
         }
 
+        /* ── Responsive ── */
         @media (max-width: 768px) {
-            body { padding: 1.25rem; }
-            .orders-table { overflow-x: auto; }
-            table { min-width: 880px; }
+            .page {
+                padding: 1.25rem 1rem 3rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .orders-table-wrap {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 880px;
+            }
+
+            .topbar-inner {
+                padding: 0.75rem 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📦 Store Orders</h1>
-            <div class="nav-links">
-                <a href="store-admin.html" class="btn btn-secondary">Manage Products</a>
-                <a href="dashboard.html" class="btn btn-secondary">Dashboard</a>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-brand">
+                <div class="topbar-icon">📦</div>
+                <span class="topbar-title">Store Orders</span>
+                <span class="topbar-badge">Admin</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <a href="store-admin.html" class="btn btn-secondary" style="text-decoration: none;">Manage Products</a>
+                <a href="dashboard.html" class="topbar-back">← Dashboard</a>
             </div>
         </div>
+    </div>
 
+    <div class="page">
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value" id="totalOrders">0</div>
                 <div class="stat-label">Total Orders</div>
+                <div class="stat-value" id="totalOrders">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="pendingOrders">0</div>
                 <div class="stat-label">Pending</div>
+                <div class="stat-value" id="pendingOrders">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="totalRevenue">$0</div>
                 <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" id="totalRevenue">$0</div>
             </div>
         </div>
 
-        <div class="orders-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order Date</th>
-                        <th>Items</th>
-                        <th>Customer</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTableBody">
-                    <tr>
-                        <td colspan="6">
-                            <div class="loading">Loading orders...</div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="orders-card">
+            <div class="orders-card-header">
+                <span class="orders-card-title">All Orders</span>
+            </div>
+            <div class="orders-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order Date</th>
+                            <th>Items</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="loading">Loading orders...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -339,7 +533,7 @@
             const first = items[0];
             const firstName = first?.name || first?.productId || 'Item';
 
-            // show “+X more” based on qty, not array length
+            // show "+X more" based on qty, not array length
             const more = Math.max(0, totalQty - 1);
             const title = more > 0 ? `${firstName} (+${more} more)` : `${firstName}`;
 

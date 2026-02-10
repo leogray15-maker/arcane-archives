@@ -2,363 +2,664 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Store Admin | Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png">
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg-dark: #02010a;
-      --bg-card: rgba(15, 23, 42, 0.96);
-      --purple: #9333ea;
-      --purple-dark: #7e22ce;
-      --purple-light: #a78bfa;
-      --gold: #fbbf24;
-      --text-light: #e5e5e5;
-      --text-dim: #9ca3af;
-      --border-color: rgba(148, 163, 184, 0.5);
+      --bg-0: #09090b; --bg-1: #0f0f12; --bg-2: #16161a; --bg-3: #1e1e24;
+      --bg-glass: rgba(22, 22, 26, 0.7);
+      --accent: #8b5cf6; --accent-dark: #7c3aed; --accent-light: #a78bfa;
+      --accent-glow: rgba(139, 92, 246, 0.15); --accent-glow-strong: rgba(139, 92, 246, 0.35);
+      --green: #22c55e; --green-glow: rgba(34, 197, 94, 0.15);
+      --red: #ef4444; --red-glow: rgba(239, 68, 68, 0.15);
+      --gold: #fbbf24; --gold-glow: rgba(251, 191, 36, 0.15);
+      --text-0: #fafafa; --text-1: #a1a1aa; --text-2: #71717a;
+      --border: rgba(255, 255, 255, 0.08); --border-hover: rgba(255, 255, 255, 0.15);
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-      color: var(--text-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background-color: var(--bg-0);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow-strong), transparent),
+        radial-gradient(circle 1px at center, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 100% 100%, 24px 24px;
+      color: var(--text-0);
       min-height: 100vh;
-      padding: 2rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .container { max-width: 1400px; margin: 0 auto; }
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding-top: env(safe-area-inset-top, 0px);
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px) saturate(1.6);
+      -webkit-backdrop-filter: blur(20px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+    }
 
-    .header {
+    .topbar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 3rem;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      gap: 1rem;
     }
 
-    .header h1 {
-      font-size: 2.5rem;
-      background: linear-gradient(135deg, var(--purple-light), var(--gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
     }
 
-    .btn {
-      padding: 0.8rem 1.5rem;
-      border-radius: 999px;
-      border: none;
+    .topbar-icon {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-glow);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+    }
+
+    .topbar-title {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text-0);
+      letter-spacing: -0.01em;
+    }
+
+    .topbar-badge {
+      font-size: 0.6875rem;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      background: var(--accent-glow);
+      color: var(--accent-light);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .topbar-back {
+      font-size: 0.8125rem;
+      color: var(--text-1);
+      text-decoration: none;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+    .topbar-back:hover { color: var(--text-0); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.9rem;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      line-height: 1.4;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      background: var(--accent);
       color: #fff;
+      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.3), 0 1px 2px rgba(0,0,0,0.4);
     }
-
     .btn-primary:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5);
+      background: var(--accent-dark);
+      box-shadow: 0 0 20px var(--accent-glow-strong), 0 0 0 1px rgba(139, 92, 246, 0.4);
     }
 
     .btn-secondary {
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-light);
-      border: 1px solid var(--border-color);
+      background: var(--bg-2);
+      color: var(--text-1);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-3);
+      color: var(--text-0);
+      border-color: var(--border-hover);
     }
 
     .btn-danger {
-      background: linear-gradient(135deg, #dc2626, #991b1b);
-      color: #fff;
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.35);
     }
 
+    /* ── Page ── */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Products Grid ── */
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.25rem;
     }
 
     .product-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
-
     .product-card:hover {
-      border-color: var(--purple);
-      box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+      border-color: var(--border-hover);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px var(--border-hover);
+      transform: translateY(-2px);
     }
 
     .product-image {
       width: 100%;
-      height: 250px;
-      background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(251, 191, 36, 0.2));
+      height: 220px;
+      background: linear-gradient(135deg, var(--bg-2), var(--bg-3));
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      position: relative;
     }
-
     .product-image img { width: 100%; height: 100%; object-fit: cover; }
-    .product-image .placeholder { font-size: 4rem; }
+    .product-image .placeholder { font-size: 3rem; opacity: 0.4; }
 
-    .product-info { padding: 1.5rem; }
-
-    .product-name {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
+    .product-info { padding: 1.25rem; }
 
     .product-category {
-      font-size: 0.75rem;
-      color: var(--purple-light);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--accent-light);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.5rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.375rem;
+    }
+
+    .product-name {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--text-0);
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.01em;
     }
 
     .product-price {
-      font-size: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
       color: var(--gold);
       font-weight: 700;
       margin: 0.5rem 0;
+    }
+
+    .product-desc {
+      font-size: 0.8125rem;
+      color: var(--text-2);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-badge-new {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--gold);
+      background: var(--gold-glow);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .product-stripe {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      color: var(--text-2);
+      margin-top: 0.5rem;
+      word-break: break-all;
+    }
+
+    .product-colors {
+      margin-top: 0.75rem;
+      display: flex;
+      gap: 0.375rem;
+      flex-wrap: wrap;
+    }
+
+    .color-tag {
+      font-size: 0.6875rem;
+      padding: 0.2rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-1);
+      background: var(--bg-2);
     }
 
     .product-actions {
       display: flex;
       gap: 0.5rem;
       margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
     }
 
+    /* ── Modal ── */
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      inset: 0;
       background: rgba(0, 0, 0, 0.8);
       z-index: 1000;
       overflow-y: auto;
       padding: 2rem;
     }
-
     .modal.active {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      padding-top: 5vh;
     }
 
     .modal-content {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
+      background: var(--bg-1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
       padding: 2rem;
-      max-width: 650px;
+      max-width: 620px;
       width: 100%;
-      max-height: 90vh;
+      max-height: 85vh;
       overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+    }
+
+    .modal-content::-webkit-scrollbar { width: 6px; }
+    .modal-content::-webkit-scrollbar-track { background: transparent; }
+    .modal-content::-webkit-scrollbar-thumb {
+      background: var(--bg-3);
+      border-radius: 3px;
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
     }
 
     .modal-header h2 {
-      font-size: 1.8rem;
-      color: var(--purple-light);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-0);
+      letter-spacing: -0.02em;
     }
 
     .close-btn {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: 2rem;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      font-size: 1.25rem;
       cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
       line-height: 1;
     }
+    .close-btn:hover {
+      color: var(--text-0);
+      background: var(--bg-3);
+      border-color: var(--border-hover);
+    }
 
-    .form-group { margin-bottom: 1.5rem; }
+    /* ── Form ── */
+    .form-group { margin-bottom: 1.25rem; }
 
     .form-group label {
       display: block;
       margin-bottom: 0.5rem;
-      color: var(--text-light);
+      font-size: 0.6875rem;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-1);
     }
 
     .form-group input,
     .form-group textarea,
     .form-group select {
       width: 100%;
-      padding: 0.8rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      background: rgba(0, 0, 0, 0.3);
-      color: var(--text-light);
-      font-family: inherit;
-      font-size: 0.95rem;
+      padding: 0.625rem 0.875rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-0);
+      color: var(--text-0);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-2);
     }
 
     .form-group textarea { min-height: 100px; resize: vertical; }
 
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.25rem;
+    }
+
+    .form-group select option {
+      background: var(--bg-1);
+      color: var(--text-0);
+    }
+
+    .form-hint {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      margin-top: 0.375rem;
+      display: block;
+    }
+
+    /* ── Image Upload ── */
     .image-upload {
-      border: 2px dashed var(--border-color);
-      border-radius: 12px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
       padding: 2rem;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
+      background: var(--bg-0);
     }
-
-    .image-upload:hover { border-color: var(--purple); }
+    .image-upload:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
     .image-upload input { display: none; }
+
+    .upload-content {
+      color: var(--text-2);
+      font-size: 0.875rem;
+    }
+    .upload-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.6;
+    }
 
     .images-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 0.75rem;
-      margin-top: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      gap: 0.625rem;
+      margin-top: 0.75rem;
     }
 
     .thumb {
       position: relative;
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       overflow: hidden;
-      background: rgba(0,0,0,0.25);
+      background: var(--bg-2);
       aspect-ratio: 1/1;
     }
-
-    .thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
     .thumb .remove {
       position: absolute;
-      top: 6px;
-      right: 6px;
+      top: 4px;
+      right: 4px;
       border: none;
       border-radius: 999px;
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
       font-weight: 800;
-      background: rgba(0,0,0,0.65);
-      color: var(--text-light);
-      border: 1px solid rgba(255,255,255,0.25);
+      font-size: 0.8rem;
+      background: rgba(0,0,0,0.7);
+      color: var(--text-0);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.15s;
     }
+    .thumb .remove:hover { background: var(--red); border-color: var(--red); }
 
     .thumb .badge {
       position: absolute;
-      left: 6px;
-      bottom: 6px;
-      font-size: 0.7rem;
-      padding: 0.25rem 0.5rem;
+      left: 4px;
+      bottom: 4px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      padding: 0.15rem 0.4rem;
       border-radius: 999px;
-      background: rgba(0,0,0,0.65);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: var(--text-light);
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--border);
+      color: var(--text-1);
     }
 
+    /* ── Color pills ── */
     .pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0.7rem;
+      gap: 0.375rem;
+      padding: 0.3rem 0.625rem;
       border-radius: 999px;
-      border: 1px solid var(--border-color);
-      background: rgba(0,0,0,0.25);
-      color: var(--text-light);
-      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      background: var(--bg-2);
+      color: var(--text-0);
+      font-size: 0.8125rem;
     }
 
     .pill button {
       border: none;
       background: none;
-      color: var(--text-dim);
+      color: var(--text-2);
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 1rem;
       line-height: 1;
+      transition: color 0.15s;
+      padding: 0;
     }
-    .pill button:hover { color: #fff; }
+    .pill button:hover { color: var(--red); }
 
+    .color-input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    /* ── Checkbox ── */
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+      color: var(--text-0) !important;
+      cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 16px !important;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── Form Actions ── */
     .form-actions {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       justify-content: flex-end;
-      margin-top: 2rem;
+      margin-top: 1.75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
     }
 
+    /* ── Notification Toast ── */
     .notification {
       position: fixed;
-      top: 2rem;
-      right: 2rem;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
+      top: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-md);
       font-weight: 600;
+      font-size: 0.8125rem;
       z-index: 2000;
       animation: slideIn 0.3s ease;
+      border: 1px solid;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
-    .notification.success { background: linear-gradient(135deg, #22c55e, #15803d); }
-    .notification.error { background: linear-gradient(135deg, #dc2626, #991b1b); }
+    .notification.success {
+      background: var(--green-glow);
+      color: var(--green);
+      border-color: rgba(34, 197, 94, 0.25);
+    }
+    .notification.error {
+      background: var(--red-glow);
+      color: var(--red);
+      border-color: rgba(239, 68, 68, 0.25);
+    }
 
     @keyframes slideIn {
-      from { transform: translateX(400px); opacity: 0; }
+      from { transform: translateX(120px); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
 
+    /* ── Loading / Empty ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: var(--text-2);
+      font-size: 0.875rem;
+    }
+
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-      body { padding: 1.25rem; }
-      .header { 
-        flex-direction: column; 
-        gap: 1.5rem;
-        align-items: stretch;
-        margin-bottom: 2rem;
-      }
-      .header h1 { 
-        font-size: 2rem;
-        text-align: center;
-      }
-      .header > div {
+      .topbar-inner {
         flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .topbar-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
         width: 100%;
       }
-      .header .btn {
-        width: 100%;
+
+      .topbar-actions .btn,
+      .topbar-actions .topbar-back {
+        flex: 1;
         text-align: center;
         justify-content: center;
       }
+
+      .page { padding: 1.25rem 1rem 3rem; }
+
       .products-grid { grid-template-columns: 1fr; }
-      .modal-content { margin: 1rem; }
+
+      .modal {
+        padding: 1rem;
+      }
+      .modal.active { padding-top: 1rem; }
+
+      .modal-content {
+        padding: 1.5rem;
+        max-height: 92vh;
+        border-radius: var(--radius-lg);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🛍️ Store Admin</h1>
-      <div style="display: flex; gap: 1rem; align-items: center;">
-        <a href="store-orders.html" class="btn btn-secondary" style="text-decoration: none;">📦 View Orders</a>
-        <a href="dashboard.html" class="btn btn-secondary" style="text-decoration: none;">← Dashboard</a>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="topbar-icon">&#x1F6CD;&#xFE0F;</div>
+        <span class="topbar-title">Store Admin</span>
+        <span class="topbar-badge">Admin</span>
+      </div>
+      <div class="topbar-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+        <a href="store-orders.html" class="btn btn-secondary" style="text-decoration: none;">&#x1F4E6; Orders</a>
+        <a href="dashboard.html" class="topbar-back">&larr; Dashboard</a>
         <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
       </div>
     </div>
+  </div>
 
+  <!-- Page -->
+  <div class="page">
     <div class="products-grid" id="productsGrid"></div>
   </div>
 
+  <!-- Modal -->
   <div class="modal" id="productModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -371,7 +672,7 @@
 
         <div class="form-group">
           <label>Product Name *</label>
-          <input type="text" id="productName" required>
+          <input type="text" id="productName" placeholder="e.g. Arcane Hoodie" required>
         </div>
 
         <div class="form-group">
@@ -386,57 +687,48 @@
 
         <div class="form-group">
           <label>Price (USD) *</label>
-          <input type="number" id="productPrice" step="0.01" min="0" required>
+          <input type="number" id="productPrice" step="0.01" min="0" placeholder="0.00" required>
         </div>
 
         <!-- Colour variants -->
         <div class="form-group">
           <label>Colour Variants</label>
-
-          <div style="display:flex; gap:0.75rem; align-items:center;">
+          <div class="color-input-row">
             <input type="text" id="colorInput" placeholder="e.g. Black, Purple, Gold">
             <button type="button" class="btn btn-secondary" onclick="addColor()">+ Add</button>
           </div>
-
           <div id="colorsWrap" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem;"></div>
-
-          <small style="color: var(--text-dim); display:block; margin-top:0.5rem;">
-            These will appear as variants in the store product modal.
-          </small>
+          <span class="form-hint">These will appear as variants in the store product modal.</span>
         </div>
 
         <div class="form-group">
           <label>Stripe Price ID *</label>
           <input type="text" id="stripePriceId" placeholder="price_xxxxxxxxxxxxx" required>
-          <small style="color: var(--text-dim); display: block; margin-top: 0.5rem;">
-            Get this from your Stripe Dashboard → Products
-          </small>
+          <span class="form-hint">Get this from your Stripe Dashboard &rarr; Products</span>
         </div>
 
         <div class="form-group">
           <label>Description *</label>
-          <textarea id="productDescription" required></textarea>
+          <textarea id="productDescription" placeholder="Describe the product..." required></textarea>
         </div>
 
         <!-- Multi Photos -->
         <div class="form-group">
           <label>Product Photos</label>
-
           <div class="image-upload" onclick="document.getElementById('imageInput').click()">
             <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(event)">
-            <div id="uploadText">📷 Click to upload one or more images</div>
+            <div id="uploadText" class="upload-content">
+              <div class="upload-icon">&#x1F4F7;</div>
+              <div>Click to upload one or more images</div>
+            </div>
           </div>
-
           <div id="imagesPreviewGrid" class="images-grid"></div>
-
-          <small style="color: var(--text-dim); display:block; margin-top:0.5rem;">
-            First image is the cover. Images are compressed to WebP before upload.
-          </small>
+          <span class="form-hint">First image is the cover. Images are compressed to WebP before upload.</span>
         </div>
 
         <div class="form-group">
-          <label>
-            <input type="checkbox" id="isNew" style="width:auto; margin-right:0.5rem;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="isNew">
             Mark as "New" product
           </label>
         </div>
@@ -505,7 +797,7 @@
 
     async function loadProducts() {
       const grid = document.getElementById('productsGrid');
-      grid.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-dim);">Loading products...</div>';
+      grid.innerHTML = '<div class="empty-state">Loading products...</div>';
 
       try {
         const querySnapshot = await getDocs(collection(db, 'Products'));
@@ -513,7 +805,7 @@
         querySnapshot.forEach((d) => products.push({ id: d.id, ...d.data() }));
 
         if (products.length === 0) {
-          grid.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-dim);">No products yet. Add your first product!</div>';
+          grid.innerHTML = '<div class="empty-state">No products yet. Add your first product!</div>';
           return;
         }
 
@@ -529,15 +821,15 @@
                 <div class="product-category">${escapeHtml(product.category || '')}</div>
                 <div class="product-name">${escapeHtml(product.name || '')}</div>
                 <div class="product-price">${money(product.price)}</div>
-                <div style="font-size:0.85rem; color:var(--text-dim); margin:0.5rem 0;">${escapeHtml(product.description || '')}</div>
-                ${product.isNew ? '<div style="font-size:0.75rem; color:var(--gold); font-weight:600;">⭐ NEW</div>' : ''}
-                <div style="font-size:0.75rem; color:var(--text-dim); margin-top:0.5rem;">
+                <div class="product-desc">${escapeHtml(product.description || '')}</div>
+                ${product.isNew ? '<span class="product-badge-new">NEW</span>' : ''}
+                <div class="product-stripe">
                   Stripe: ${escapeHtml(product.stripePriceId || 'Not set')}
                 </div>
 
                 ${Array.isArray(product.colors) && product.colors.length ? `
-                  <div style="margin-top:0.75rem; display:flex; gap:0.4rem; flex-wrap:wrap;">
-                    ${product.colors.map(c => `<span style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border-color); border-radius:999px; color:var(--text-dim);">${escapeHtml(c)}</span>`).join('')}
+                  <div class="product-colors">
+                    ${product.colors.map(c => `<span class="color-tag">${escapeHtml(c)}</span>`).join('')}
                   </div>
                 ` : ''}
 
@@ -802,7 +1094,7 @@
       }
     };
 
-    // Delete product doc only (safe). If you want to delete images too, we’ll store storage paths.
+    // Delete product doc only (safe). If you want to delete images too, we'll store storage paths.
     window.deleteProduct = async (productId) => {
       if (!confirm('Are you sure you want to delete this product?')) return;
 

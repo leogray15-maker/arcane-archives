@@ -2,296 +2,492 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Live Streams | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
-            --purple-light: #a78bfa;
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.7);
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-border: rgba(139, 92, 246, 0.25);
+            --white: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-300: #d4d4d8;
+            --gray-400: #a1a1aa;
+            --gray-500: #71717a;
+            --gray-600: #52525b;
+            --border: rgba(63, 63, 70, 0.5);
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
-            --border-color: rgba(148, 163, 184, 0.5);
+            --gold-glow: rgba(251, 191, 36, 0.1);
+            --gold-border: rgba(251, 191, 36, 0.2);
+            --green: #22c55e;
             --red: #ef4444;
-            --green: #10b981;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { min-height: 100vh; }
+
+        html {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--white);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 60%;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.06), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .back-btn {
-            position: fixed; top: 1.5rem; left: 1.5rem; z-index: 40;
-            padding: 0.4rem 0.9rem; border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9); color: var(--text-dim);
-            text-decoration: none; font-size: 0.85rem;
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            backdrop-filter: blur(12px); transition: all 0.2s ease;
+            position: fixed;
+            top: calc(1.5rem + env(safe-area-inset-top, 0px));
+            left: 1.5rem;
+            z-index: 40;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            color: var(--gray-400);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
         }
 
         .back-btn:hover {
-            color: var(--purple-light);
-            border-color: rgba(147, 51, 234, 0.8);
-            transform: translateX(-2px);
+            color: var(--accent-light);
+            border-color: var(--accent-border);
         }
 
         .header {
-            max-width: 1200px; margin: 2.5rem auto 0;
+            max-width: 1200px;
+            margin: 2.5rem auto 0;
             padding: 1.5rem 1.5rem 0.5rem;
+            position: relative;
+            z-index: 1;
         }
 
         .logo {
-            display: flex; align-items: center; gap: 0.7rem;
-            font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
         }
 
-        .logo img { height: 32px; width: 32px; }
+        .logo img {
+            height: 28px;
+            width: 28px;
+            opacity: 0.8;
+        }
 
         .main-content {
-            max-width: 1400px; margin: 0 auto;
-            padding: 0 1.5rem 3rem; flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            flex: 1;
+            position: relative;
+            z-index: 1;
         }
 
         .page-card {
             margin-top: 1.5rem;
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
-            border-radius: 24px;
-            border: 1px solid rgba(148, 163, 184, 0.55);
-            box-shadow: 0 30px 120px rgba(15, 23, 42, 0.9), 0 0 40px rgba(147, 51, 234, 0.28);
-            padding: 2rem;
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 2.5rem;
             position: relative;
             overflow: hidden;
         }
 
-        .page-card-inner { position: relative; z-index: 1; }
-        .page-header { margin-bottom: 1.8rem; }
+        .page-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            margin-bottom: 1.8rem;
+        }
 
         .page-header-eyebrow {
-            font-size: 0.8rem; text-transform: uppercase;
-            letter-spacing: 0.16em; color: var(--text-dim);
-            margin-bottom: 0.35rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
         }
 
-        .page-header h1 { font-size: 2rem; margin-bottom: 0.4rem; }
-
-        .page-header h1 span {
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--white);
+            letter-spacing: -0.03em;
         }
 
-        .page-header p { color: var(--text-dim); font-size: 0.95rem; }
+        .page-header p {
+            color: var(--gray-400);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            letter-spacing: -0.01em;
+        }
 
+        /* Live Status */
         .live-status {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            padding: 0.5rem 1rem; border-radius: 999px;
-            font-size: 0.85rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.1em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
             margin-bottom: 1.5rem;
         }
 
         .live-status.live {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid var(--red); color: var(--red);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red);
         }
 
         .live-status.offline {
-            background: rgba(163, 163, 163, 0.15);
-            border: 1px solid var(--text-dim); color: var(--text-dim);
+            background: rgba(113, 113, 122, 0.1);
+            border: 1px solid rgba(113, 113, 122, 0.25);
+            color: var(--gray-500);
         }
 
         .live-status .pulse {
-            width: 8px; height: 8px; border-radius: 50%;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
             animation: pulse 2s ease-in-out infinite;
         }
 
         .live-status.live .pulse { background: var(--red); }
-        .live-status.offline .pulse { background: var(--text-dim); }
+        .live-status.offline .pulse { background: var(--gray-500); }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
+            50% { opacity: 0.4; transform: scale(1.2); }
         }
 
+        /* Stream Container */
         .stream-container {
-            position: relative; width: 100%;
+            position: relative;
+            width: 100%;
             padding-bottom: 56.25%;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 16px; overflow: hidden;
-            border: 1px solid var(--border-color);
+            background: rgba(24, 24, 27, 0.8);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
             margin-bottom: 2rem;
         }
 
         .stream-placeholder {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center; padding: 2rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
         }
 
         .stream-placeholder svg {
-            width: 80px; height: 80px;
-            color: var(--purple-light);
-            margin-bottom: 1.5rem; opacity: 0.6;
+            width: 60px;
+            height: 60px;
+            color: var(--gray-600);
+            margin-bottom: 1.25rem;
+            opacity: 0.5;
         }
 
         .stream-placeholder h3 {
-            font-size: 1.4rem; color: var(--text-light);
-            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-300);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
         .stream-placeholder p {
-            color: var(--text-dim); max-width: 500px;
+            color: var(--gray-500);
+            max-width: 440px;
             line-height: 1.6;
+            font-size: 0.85rem;
+            letter-spacing: -0.01em;
         }
 
         .stream-container iframe {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%; border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
             display: none;
         }
 
         .stream-container iframe.active { display: block; }
 
+        /* Go Live Button (admin) */
         .go-live-btn {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, var(--red), #dc2626);
-            color: white; border: none; border-radius: 999px;
-            font-size: 0.9rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.05em;
-            cursor: pointer; transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.25rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.2s ease;
             margin-bottom: 1rem;
         }
 
         .go-live-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.5);
         }
 
         .go-live-btn .pulse {
-            width: 8px; height: 8px;
-            background: white; border-radius: 50%;
+            width: 6px;
+            height: 6px;
+            background: var(--red);
+            border-radius: 50%;
         }
 
+        /* Stream Info Cards */
         .stream-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem; margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
         }
 
         .info-card {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 1.25rem;
+            background: rgba(139, 92, 246, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
         }
 
         .info-card h3 {
-            font-size: 0.8rem; color: var(--text-dim);
-            text-transform: uppercase; letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
+            font-size: 0.65rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
         }
 
         .info-card p {
-            font-size: 1.2rem; font-weight: 600;
-            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.02em;
         }
 
-        .info-card p.highlight { color: var(--purple-light); }
+        .info-card p.highlight { color: var(--accent-light); }
 
+        /* Schedule Section */
         .schedule-section {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 1.5rem;
+            background: rgba(139, 92, 246, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 14px;
+            padding: 1.5rem;
             margin-top: 2rem;
         }
 
         .schedule-section h2 {
-            font-size: 1.3rem; margin-bottom: 1rem;
-            color: var(--purple-light);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--white);
+            letter-spacing: -0.02em;
         }
 
         .schedule-item {
-            display: flex; justify-content: space-between;
-            align-items: center; padding: 1rem;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 8px; margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem 1.25rem;
+            background: rgba(24, 24, 27, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
         }
 
-        .schedule-day { font-weight: 600; color: var(--gold); }
-        .schedule-time { color: var(--text-dim); }
-
-        footer {
-            margin-top: auto; padding: 2rem 1.5rem;
-            text-align: center;
-            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        .schedule-day {
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 0.875rem;
+            letter-spacing: -0.01em;
         }
 
-        .footer-bottom { color: var(--text-dim); font-size: 0.85rem; }
+        .schedule-time {
+            color: var(--gray-500);
+            font-size: 0.8rem;
+            letter-spacing: -0.01em;
+        }
 
+        .schedule-note {
+            color: var(--gray-500);
+            margin-top: 0.875rem;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            letter-spacing: -0.01em;
+        }
+
+        .schedule-note strong {
+            color: var(--accent-light);
+            font-weight: 600;
+        }
+
+        /* YouTube Input (Admin) */
         .youtube-id-input {
             display: none;
             margin-bottom: 1rem;
             padding: 1rem;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--border-color);
+            background: rgba(24, 24, 27, 0.8);
+            border: 1px solid var(--border);
             border-radius: 12px;
         }
 
         .youtube-id-input input {
             width: 100%;
-            padding: 0.75rem;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid var(--border-color);
+            padding: 0.65rem 0.875rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            color: var(--text-light);
-            font-size: 0.9rem;
+            color: var(--white);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .youtube-id-input input:focus {
+            outline: none;
+            border-color: var(--accent-border);
         }
 
         .youtube-id-input button {
             padding: 0.5rem 1rem;
-            background: var(--purple);
+            background: var(--accent);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
             margin-right: 0.5rem;
+            transition: background 0.2s ease;
         }
 
         .youtube-id-input button:hover {
-            background: var(--purple-dark);
+            background: #7c3aed;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-bottom {
+            color: var(--gray-600);
+            font-size: 0.75rem;
+            letter-spacing: -0.01em;
         }
 
         @media (max-width: 768px) {
-            .page-card { padding: 1.5rem; }
-            .page-header h1 { font-size: 1.6rem; }
+            .page-card {
+                padding: 1.75rem 1.25rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
             .schedule-item {
-                flex-direction: column; gap: 0.5rem;
+                flex-direction: column;
+                gap: 0.35rem;
                 text-align: center;
             }
-            .stream-info { grid-template-columns: repeat(2, 1fr); }
+
+            .stream-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    <a href="dashboard.html" class="back-btn">← Dashboard</a>
 
     <div class="header">
         <div class="logo">
@@ -305,7 +501,7 @@
             <div class="page-card-inner">
                 <header class="page-header">
                     <div class="page-header-eyebrow">Free Weekly Sales Call</div>
-                    <h1><span>Live Streams</span></h1>
+                    <h1>Live Streams</h1>
                     <p>Join Leo every Friday at 7PM UK time for a deep dive into The Arcane Archives. Ask questions, see what's inside, and decide if you're ready to unlock the forbidden knowledge.</p>
                 </header>
 
@@ -328,14 +524,14 @@
                 <div class="stream-container">
                     <div class="stream-placeholder" id="streamPlaceholder">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
                         <h3>Next Stream: Friday 7PM UK Time</h3>
                         <p>Leo goes live every Friday to break down what's inside The Arcane Archives. Free to watch, no login required.</p>
                     </div>
 
-                    <iframe 
-                        src="" 
+                    <iframe
+                        src=""
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowfullscreen
                         id="streamEmbed">
@@ -362,13 +558,13 @@
                 </div>
 
                 <div class="schedule-section">
-                    <h2>🔮 Weekly Call Schedule</h2>
+                    <h2>Weekly Call Schedule</h2>
                     <div class="schedule-item">
                         <span class="schedule-day">Every Friday</span>
-                        <span class="schedule-time">Deep Dive Into The Arcane Archives • 7:00 PM UK Time</span>
+                        <span class="schedule-time">Deep Dive Into The Arcane Archives &middot; 7:00 PM UK Time</span>
                     </div>
-                    <p style="color: var(--text-dim); margin-top: 1rem;">
-                        <strong style="color: var(--purple-light);">What we cover:</strong> Inside look at the platform, course modules, live Q&A, member results, XP system, trading signals, and whether The Archives is right for you.
+                    <p class="schedule-note">
+                        <strong>What we cover:</strong> Inside look at the platform, course modules, live Q&A, member results, XP system, trading signals, and whether The Archives is right for you.
                     </p>
                 </div>
             </div>
@@ -382,24 +578,8 @@
     </footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-            projectId: "arcane-archives-3b0f5",
-            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-            messagingSenderId: "264237235055",
-            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
+        import { checkAuth, db, ADMIN_UIDS } from './auth-guard.js';
+        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
         const liveStatus = document.getElementById('liveStatus');
         const statusText = document.getElementById('statusText');
@@ -410,23 +590,24 @@
 
         let isAdmin = false;
 
-        onAuthStateChanged(auth, (user) => {
-            if (user && ADMIN_EMAILS.includes(user.email)) {
+        // Use centralized auth check (live-streams is free, admin check for controls)
+        checkAuth((user, userData) => {
+            if (user && (ADMIN_UIDS.includes(user.uid) || userData?.isAdmin)) {
                 isAdmin = true;
-                goLiveBtn.style.display = 'inline-flex';
+                if (goLiveBtn) goLiveBtn.style.display = 'inline-flex';
             }
         });
 
         const streamStatusRef = doc(db, 'Settings', 'streamStatus');
-        
+
         onSnapshot(streamStatusRef, (doc) => {
             const data = doc.data();
             const isLive = data?.isLive || false;
             const youtubeId = data?.youtubeId || '';
-            
+
             if (isLive && youtubeId) {
                 liveStatus.className = 'live-status live';
-                statusText.textContent = '🔴 LIVE NOW';
+                statusText.textContent = 'LIVE NOW';
                 streamPlaceholder.style.display = 'none';
                 streamEmbed.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=0`;
                 streamEmbed.classList.add('active');
@@ -451,7 +632,7 @@
 
         window.saveYouTubeId = async function() {
             if (!isAdmin) return alert('Admin only');
-            
+
             const youtubeId = document.getElementById('youtubeId').value.trim();
             if (!youtubeId) return alert('Enter YouTube video ID');
 

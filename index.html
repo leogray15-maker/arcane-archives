@@ -2,30 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Arcane Archives | Forbidden Knowledge Unlocked</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>The Arcane Archives | The Complete Knowledge Vault</title>
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="description" content="Unlock forbidden knowledge. Master money, relationships, health, and mindset. Join The Arcane Archives. £128/month.">
+    <link rel="manifest" href="manifest.json">
+    <meta name="description" content="3,330+ modules across trading, business, health, psychology, and more. The complete vault of knowledge. £128/month.">
+    <meta name="theme-color" content="#030303">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The Arcane Archives | The Complete Knowledge Vault">
+    <meta property="og:description" content="3,330+ modules across trading, business, health, psychology, and more. The complete vault of knowledge.">
+    <meta property="og:image" content="ArcaneA.png">
+    <meta property="og:type" content="website">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-elevated: #121212;
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
+            --bg-primary: #030303;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #0f0f0f;
+            --bg-elevated: #161616;
+            --bg-hover: #1a1a1a;
+
+            --purple: #8b5cf6;
             --purple-light: #a78bfa;
+            --purple-dark: #7c3aed;
+            --purple-glow: rgba(139, 92, 246, 0.4);
+
             --gold: #fbbf24;
-            --text-light: #f5f5f5;
-            --text-dim: #a1a1a1;
-            --border-subtle: rgba(148, 163, 184, 0.1);
-            --border-medium: rgba(148, 163, 184, 0.2);
+            --gold-light: #fcd34d;
+
+            --green: #22c55e;
+            --red: #ef4444;
+
+            --text: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         html {
@@ -33,1208 +60,1324 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Pro Display', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            line-height: 1.65;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 0 2rem; 
+        /* ========== ANIMATED BACKGROUND ========== */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.15), transparent),
+                radial-gradient(ellipse 50% 30% at 90% 10%, rgba(139, 92, 246, 0.08), transparent),
+                radial-gradient(ellipse 50% 30% at 10% 90%, rgba(251, 191, 36, 0.05), transparent),
+                var(--bg-primary);
+            pointer-events: none;
+            z-index: 0;
         }
-        
-        /* Navigation */
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        /* ========== NAVIGATION ========== */
         nav {
-            position: fixed; 
-            top: 0; 
+            position: fixed;
+            top: 0;
             width: 100%;
-            background: rgba(10, 10, 10, 0.98);
+            padding-top: env(safe-area-inset-top, 0px);
+            background: rgba(3, 3, 3, 0.8);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border-medium);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border);
         }
 
         .nav-container {
-            max-width: 1200px; 
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 1.25rem 2rem;
+            padding: 1rem max(2rem, env(safe-area-inset-right, 0px)) 1rem max(2rem, env(safe-area-inset-left, 0px));
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 1.25rem; 
+            font-size: 1rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--purple-light), white);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text);
             text-decoration: none;
-            display: flex; 
-            align-items: center; 
+            display: flex;
+            align-items: center;
             gap: 0.75rem;
-            letter-spacing: -0.01em;
+            letter-spacing: 0.02em;
         }
 
-        .logo img { 
-            height: 40px; 
-            width: auto; 
+        .logo img {
+            height: 36px;
+            width: 36px;
+            border-radius: 8px;
         }
-        
+
+        .logo span {
+            background: linear-gradient(135deg, var(--text), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.625rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--bg-elevated);
+        }
+
         .btn {
-            padding: 1rem 2rem;
-            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
             font-weight: 700;
+            font-size: 0.875rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             border: none;
-            font-size: 1rem;
-            letter-spacing: -0.01em;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
             color: white;
-            box-shadow: 0 4px 16px rgba(147, 51, 234, 0.35);
+            box-shadow: 0 4px 20px var(--purple-glow);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(147, 51, 234, 0.45);
+            box-shadow: 0 8px 30px var(--purple-glow);
         }
 
         .btn-secondary {
-            background: transparent;
-            color: var(--purple-light);
-            border: 2px solid var(--purple);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text);
         }
 
         .btn-secondary:hover {
-            background: rgba(147, 51, 234, 0.1);
-            transform: translateY(-2px);
+            border-color: var(--purple);
+            background: rgba(139, 92, 246, 0.1);
         }
 
-        .btn-black {
-            background: linear-gradient(135deg, #1a1a1a, #000);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-black:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-black {
-            background: #000000;
-            color: var(--purple-light);
-            border: 2px solid var(--purple);
-            font-weight: 900;
-            font-size: 1.1rem;
+        .btn-large {
             padding: 1rem 2.5rem;
+            font-size: 1rem;
+            border-radius: 12px;
         }
 
-        .btn-black:hover {
-            background: rgba(10, 10, 10, 0.9);
-            border-color: var(--purple-light);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+        .btn-xl {
+            padding: 1.25rem 3rem;
+            font-size: 1.125rem;
+            border-radius: 14px;
         }
-        
-        /* Main Content */
+
+        /* ========== MAIN CONTENT ========== */
         main {
-            flex: 1;
-            margin-top: 80px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Hero Section */
-        .hero {
-            padding: 5rem 0 3rem;
-            text-align: center;
-        }
-
-        .hero-card {
-            max-width: 920px;
+        .container {
+            max-width: 1280px;
             margin: 0 auto;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.04), rgba(15, 23, 42, 0.4));
-            border: 1px solid var(--border-medium);
-            border-radius: 24px;
-            padding: 3.5rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            padding: 0 2rem;
         }
 
-        .hero-image {
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-            border-radius: 16px;
-            margin-bottom: 2.5rem;
-            border: 1px solid var(--border-medium);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        /* ========== HERO SECTION ========== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(8rem + env(safe-area-inset-top, 0px)) 0 6rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--purple-light);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--purple-light);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
         }
 
         .hero h1 {
-            font-size: 3.25rem;
-            font-weight: 800;
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, white, var(--purple-light));
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--text), var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.15;
-            letter-spacing: -0.02em;
         }
 
-        .hero .subtitle {
-            font-size: 1.4rem;
-            color: var(--text-light);
-            margin-bottom: 1rem;
-            font-weight: 500;
-            letter-spacing: -0.01em;
+        .hero h1 .highlight {
+            position: relative;
+            display: inline-block;
         }
 
-        .hero p {
-            font-size: 1.125rem;
-            color: var(--text-dim);
-            margin-bottom: 1.5rem;
+        .hero h1 .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 0.1em;
+            left: 0;
+            right: 0;
+            height: 0.15em;
+            background: linear-gradient(90deg, var(--purple), var(--gold));
+            border-radius: 4px;
+            opacity: 0.6;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
             line-height: 1.7;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
         }
 
-        .real-talk {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            border-radius: 16px;
-            padding: 1.75rem;
-            margin: 2rem 0;
-            color: #fca5a5;
-            text-align: left;
-            line-height: 1.75;
+        .hero-cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
         }
 
-        .real-talk strong { 
-            color: #ef4444; 
-            font-weight: 700;
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
         }
 
-        .archives-name {
-            display: block;
-            color: var(--purple-light);
-            font-weight: 700;
-            margin-top: 0.5rem;
-        }
-        
-        /* Section Styles */
-        .section { 
-            padding: 6rem 0; 
-        }
-
-        .section-title {
+        .hero-stat {
             text-align: center;
-            font-size: 2.75rem;
-            font-weight: 800;
-            margin-bottom: 1.25rem;
-            background: linear-gradient(135deg, white, var(--purple-light));
+        }
+
+        .hero-stat-value {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 0.5rem;
         }
 
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.25rem;
-            color: var(--text-dim);
-            margin-bottom: 4rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.65;
+        .hero-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
         }
-        
-        /* Master Grid */
-        .master-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== LOGOS SECTION ========== */
+        .logos-section {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .logos-label {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
             margin-bottom: 2rem;
         }
 
-        .master-card {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 15px;
-            padding: 2rem;
-            transition: all 0.3s;
+        .logos-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            opacity: 0.6;
         }
 
-        .master-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(147, 51, 234, 0.3);
-            border-color: var(--purple);
-        }
-
-        .master-card .icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .master-card h3 {
+        .logo-item {
             font-size: 1.5rem;
-            color: var(--purple-light);
-            margin-bottom: 0.5rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .master-card p {
-            color: var(--text-dim);
-            line-height: 1.6;
+        /* ========== SECTIONS ========== */
+        .section {
+            padding: 6rem 0;
+            position: relative;
         }
 
-        .more-topics {
+        .section-header {
             text-align: center;
-            font-size: 2rem;
-            color: var(--purple-light);
-            margin-top: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 6px;
+            font-size: 0.6875rem;
             font-weight: 700;
+            color: var(--purple-light);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.25rem;
         }
 
-        /* Pricing Section */
-        .pricing-section {
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.04), rgba(15, 23, 42, 0.4));
-            border-radius: 24px;
-            border: 1px solid var(--border-medium);
-            padding: 4.5rem 2rem;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ========== FEATURE GRID ========== */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--purple), var(--gold));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--border-hover);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.9375rem;
+        }
+
+        /* ========== TESTIMONIALS ========== */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .testimonial-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        .testimonial-meta {
+            flex: 1;
+        }
+
+        .testimonial-name {
+            font-weight: 700;
+            margin-bottom: 0.125rem;
+        }
+
+        .testimonial-role {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .testimonial-stars {
+            color: var(--gold);
+            font-size: 1rem;
+        }
+
+        .testimonial-text {
+            line-height: 1.7;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        /* ========== PRICING ========== */
+        .pricing-container {
+            max-width: 550px;
+            margin: 0 auto;
         }
 
         .pricing-card {
-            max-width: 540px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, rgba(147, 51, 234, 0.08), rgba(10, 10, 10, 0.95));
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), var(--bg-card));
             border: 2px solid var(--purple);
-            border-radius: 20px;
-            padding: 3.5rem;
-            box-shadow: 0 0 60px rgba(147, 51, 234, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border-radius: 28px;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--purple), var(--gold), var(--purple));
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: var(--bg-primary);
+            padding: 0.375rem 0.875rem;
+            border-radius: 6px;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .price-wrapper {
+            margin-bottom: 2rem;
         }
 
         .price {
-            font-size: 4.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, white, var(--purple-light));
+            font-size: clamp(3.5rem, 10vw, 5rem);
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--text), var(--purple-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
+            line-height: 1;
             margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
         }
 
         .price-period {
-            color: var(--text-dim);
-            margin-bottom: 2.5rem;
-            font-size: 1.125rem;
+            font-size: 1rem;
+            color: var(--text-muted);
         }
 
         .features-list {
             text-align: left;
-            margin: 2.5rem 0;
+            margin: 2rem 0;
             list-style: none;
         }
 
         .features-list li {
             padding: 1rem 0;
-            color: var(--text-light);
-            border-bottom: 1px solid var(--border-subtle);
-            font-size: 1.05rem;
-            line-height: 1.6;
+            border-bottom: 1px solid var(--border);
+            font-size: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.875rem;
+            color: var(--text-secondary);
         }
 
-        .features-list li:last-child { 
-            border-bottom: none; 
+        .features-list li:last-child {
+            border-bottom: none;
         }
 
-        .security-badges {
+        .features-list li::before {
+            content: '✓';
+            color: var(--green);
+            font-weight: 900;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+            margin-top: 0.1em;
+        }
+
+        .cta-note {
             display: flex;
             justify-content: center;
-            gap: 2rem;
-            margin-top: 2.5rem;
-            color: var(--text-dim);
-            font-size: 0.95rem;
-            flex-wrap: wrap;
-        }
-
-        .security-badges span {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .post-join {
-            margin-top: 2.5rem;
-            padding: 1.75rem;
-            background: rgba(147, 51, 234, 0.06);
-            border-radius: 16px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .post-join p {
-            color: var(--text-dim);
-            font-style: italic;
-            line-height: 1.7;
-        }
-
-        .disclaimer {
-            background: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 2rem auto;
-            max-width: 800px;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        .disclaimer strong { 
-            color: #fca5a5; 
-        }
-
-        /* Journey Section */
-        .journey-section {
-            background: rgba(147, 51, 234, 0.05);
-            border-radius: 20px;
-            padding: 4rem 2rem;
-        }
-
-        .journey-card {
-            max-width: 850px;
-            margin: 0 auto;
-            background: rgba(5, 5, 5, 0.8);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s;
-        }
-
-        .journey-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--purple);
-            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.4);
-        }
-
-        .journey-icon {
-            font-size: 3rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .journey-title {
-            font-size: 2rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .journey-description {
-            color: var(--text-light);
-            line-height: 1.8;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .journey-highlights {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
         }
 
-        .journey-highlight {
-            text-align: center;
-            padding: 1rem;
-            background: rgba(147, 51, 234, 0.1);
-            border-radius: 10px;
-        }
-
-        .journey-highlight .value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--purple-light);
-            margin-bottom: 0.3rem;
-        }
-
-        .journey-highlight .label {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .journey-cta {
-            text-align: center;
-            margin-top: 2rem;
-        }
-        
-        /* Social Proof */
-        .social-proof {
-            background: rgba(147, 51, 234, 0.05);
-            border-radius: 20px;
-            padding: 4rem 2rem;
-        }
-
-        .member-count {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .member-count .number {
-            font-size: 4rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .member-count p {
-            color: var(--text-dim);
-            font-size: 1.2rem;
-            margin-top: 0.5rem;
-        }
-
-        .live-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            color: #10b981;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            animation: dotPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes dotPulse {
-            0%, 100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.5;
-                transform: scale(1.2);
-            }
-        }
-
-        .testimonials {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .testimonial {
-            background: rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            border-radius: 15px;
-            padding: 2rem;
-            transition: all 0.3s;
-        }
-
-        .testimonial:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.3);
-            border-color: var(--purple);
-        }
-
-        .testimonial .stars {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
-
-        .testimonial .quote {
-            font-style: italic;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            line-height: 1.7;
-        }
-
-        .testimonial .author {
-            color: var(--purple-light);
-            font-weight: 700;
-        }
-
-        .testimonial .verified {
-            font-size: 0.85rem;
-            color: #10b981;
-            margin-top: 0.5rem;
-        }
-
-        .recent-wins {
-            background: rgba(147, 51, 234, 0.1);
-            border-radius: 15px;
-            padding: 2rem;
-            overflow: hidden;
-        }
-
-        .recent-wins h3 {
-            color: var(--purple-light);
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .wins-ticker {
+        .cta-note span {
             display: flex;
-            gap: 2rem;
-            animation: scroll 30s linear infinite;
+            align-items: center;
+            gap: 0.375rem;
         }
 
-        .win-item {
-            flex-shrink: 0;
-            background: rgba(147, 51, 234, 0.1);
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            color: var(--text-light);
-            white-space: nowrap;
-            border: 1px solid rgba(147, 51, 234, 0.3);
-        }
-
-        @keyframes scroll {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-        
-        /* FAQ Section */
-        .faq-section {
+        /* ========== JOURNEY SECTION ========== */
+        .journey-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
             max-width: 900px;
             margin: 0 auto;
         }
 
+        .journey-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .journey-stat-value {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--gold), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .journey-stat-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .journey-text {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* ========== FOUNDER SECTION ========== */
+        .founder-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .founder-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .founder-name {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .founder-title {
+            color: var(--purple-light);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .founder-content {
+            color: var(--text-secondary);
+            font-size: 1.0625rem;
+            line-height: 1.8;
+        }
+
+        .founder-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .founder-quote {
+            color: var(--text-muted);
+            font-style: italic;
+            border-left: 3px solid var(--purple);
+            padding-left: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* ========== FAQ ========== */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         .faq-item {
-            background: rgba(147, 51, 234, 0.05);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: var(--border-hover);
         }
 
         .faq-item h3 {
-            color: var(--text-light);
-            font-size: 1.4rem;
-            margin-bottom: 1rem;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            font-size: 1.0625rem;
+            font-weight: 700;
         }
 
         .faq-item p {
-            color: var(--text-dim);
+            color: var(--text-secondary);
             line-height: 1.7;
+            font-size: 0.9375rem;
         }
-        
-        /* Footer */
-        footer {
-            background: rgba(5, 5, 5, 0.95);
-            padding: 2rem;
-            border-top: 1px solid rgba(147, 51, 234, 0.2);
+
+        /* ========== FINAL CTA ========== */
+        .final-cta {
+            padding: 6rem 0;
             text-align: center;
-            margin-top: auto;
-            width: 100%;
+            position: relative;
+        }
+
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 100%, rgba(139, 92, 246, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .final-cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .final-cta h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .final-cta p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+            position: relative;
+            z-index: 1;
         }
 
         .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
         }
 
         .footer-links {
             display: flex;
-            justify-content: center;
             gap: 2rem;
-            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
 
         .footer-links a {
-            color: var(--text-dim);
+            color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.3s;
+            font-size: 0.875rem;
+            transition: color 0.2s;
         }
 
-        .footer-links a:hover { 
-            color: var(--purple-light); 
+        .footer-links a:hover {
+            color: var(--purple-light);
         }
 
-        .footer-bottom {
-            color: var(--text-dim);
-            font-size: 0.9rem;
+        .footer-copyright {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
         }
-        
-        /* Mobile Responsive */
+
+        /* ========== RESPONSIVE ========== */
         @media (max-width: 768px) {
             .container {
-                padding: 0 1.5rem;
+                padding: 0 1.25rem;
             }
 
             .nav-container {
-                padding: 1rem 1.5rem;
-                gap: 1rem;
+                padding: 0.875rem 1.25rem;
             }
 
-            .logo {
-                font-size: 14px;
-                flex: 1;
-            }
-
-            .logo img {
-                height: 28px;
-            }
-
-            .btn-primary {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.85rem;
-                white-space: nowrap;
+            .nav-link {
+                display: none;
             }
 
             .hero {
-                padding: 2rem 0;
+                padding: calc(7rem + env(safe-area-inset-top, 0px)) 0 4rem;
+                min-height: auto;
             }
 
-            .hero h1 { 
-                font-size: 2rem; 
+            .hero-stats {
+                gap: 2rem;
             }
 
-            .hero .subtitle { 
-                font-size: 1.2rem; 
+            .hero-cta {
+                flex-direction: column;
+                align-items: stretch;
             }
 
-            .hero-card { 
-                padding: 2rem 1rem; 
+            .hero-cta .btn {
+                width: 100%;
             }
 
-            .section { 
-                padding: 4rem 0; 
+            .section {
+                padding: 4rem 0;
             }
 
-            .section-title {
-                font-size: 2rem;
+            .feature-grid,
+            .testimonials-grid {
+                grid-template-columns: 1fr;
             }
 
-            .section-subtitle {
-                font-size: 1rem;
+            .pricing-card {
+                padding: 2rem;
             }
 
-            .master-grid, 
-            .testimonials { 
-                grid-template-columns: 1fr; 
+            .journey-stats {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
-            .journey-card {
-                padding: 2rem 1.5rem;
+            .journey-card,
+            .founder-card {
+                padding: 2rem;
             }
 
-            .journey-highlights {
-                grid-template-columns: 1fr 1fr;
+            .logos-grid {
+                gap: 2rem;
             }
 
-            .security-badges { 
-                flex-direction: column; 
-                gap: 0.5rem; 
-            }
-
-            .member-count .number {
-                font-size: 3rem;
-            }
-
-            .price {
-                font-size: 3rem;
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
             }
 
             .footer-links {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: center;
-            }
-
-            .hero-card .btn,
-            .pricing-card .btn {
-                width: 100%;
+                justify-content: center;
             }
         }
 
         @media (max-width: 480px) {
             .hero h1 {
-                font-size: 1.75rem;
+                font-size: 2rem;
             }
 
-            .hero .subtitle {
-                font-size: 1rem;
+            .pricing-badge {
+                position: static;
+                display: inline-block;
+                margin-bottom: 1.5rem;
             }
 
-            .section-title {
-                font-size: 1.75rem;
-            }
-
-            .journey-highlights {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Loading Screen */
-        #loadingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: #0a0a0a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
-
-        #loadingScreen img {
-            width: 150px;
-            height: 150px;
-            margin-bottom: 3rem;
-            animation: logoPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes logoPulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1.05);
-                opacity: 0.8;
+            .cta-note {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
 
-        .loading-bar-container {
-            width: 300px;
-            max-width: 90%;
-            margin-bottom: 1rem;
+        /* ========== SCROLL ANIMATIONS ========== */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .loading-bar-track {
-            width: 100%;
-            height: 6px;
-            background: rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        #loadingBar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #9333ea, #a78bfa);
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        #loadingText {
-            color: #a78bfa;
-            font-weight: 600;
-            font-size: 1.1rem;
-            min-height: 30px;
-            text-align: center;
+        /* Safe area for notched devices */
+        @supports (padding: max(0px)) {
+            .nav-container,
+            .container {
+                padding-left: max(1.25rem, env(safe-area-inset-left));
+                padding-right: max(1.25rem, env(safe-area-inset-right));
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- Loading Screen -->
-<div id="loadingScreen">
-    <img src="ArcaneA.png" alt="The Arcane Archives">
-    <div class="loading-bar-container">
-        <div class="loading-bar-track">
-            <div id="loadingBar"></div>
-        </div>
-    </div>
-    <div id="loadingText">Unlocking the archives...</div>
-</div>
+<!-- Background Effects -->
+<div class="bg-gradient"></div>
+<div class="grid-overlay"></div>
 
-<script>
-(function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
-    
-    const messages = [
-        'Unlocking the archives...',
-        'Preparing your journey...',
-        'Keep this a secret...',
-        'Loading forbidden knowledge...',
-        'Initializing consciousness shift...',
-        'Breaking the matrix...'
-    ];
-    
-    let progress = 0;
-    let messageIndex = 0;
-    
-    const messageInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        loadingText.textContent = messages[messageIndex];
-    }, 800);
-    
-    const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }
-        loadingBar.style.width = progress + '%';
-    }, 200);
-    
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            progress = 100;
-            clearInterval(interval);
-            clearInterval(messageInterval);
-            loadingBar.style.width = '100%';
-            loadingText.textContent = 'Welcome to the archives...';
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.visibility = 'hidden';
-                setTimeout(() => {
-                    loadingScreen.remove();
-                }, 500);
-            }, 300);
-        }, 500);
-    });
-})();
-</script>
-
+<!-- Navigation -->
 <nav>
     <div class="nav-container">
         <a href="index.html" class="logo">
-            <img src="ArcaneA.png" alt="Logo"> THE ARCANE ARCHIVES
+            <img src="ArcaneA.png" alt="Logo">
+            <span>THE ARCANE ARCHIVES</span>
         </a>
-        <a href="login.html" class="btn btn-primary">Login</a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#pricing" class="nav-link">Pricing</a>
+            <a href="login.html" class="btn btn-primary">Member Login</a>
+        </div>
     </div>
 </nav>
 
 <main>
+    <!-- HERO SECTION -->
     <section class="hero">
         <div class="container">
-            <div class="hero-card">
-                <img src="hero.png" alt="The Arcane Archives" class="hero-image">
-                <h1>The knowledge they don't want you to know…</h1>
-                <p class="subtitle">Master money, relationships, health, and mindset. Join The Arcane Archives.</p>
-                <p>Most men are trapped in mediocrity. Broke, confused, alone. They don't know how to build wealth, attract quality women, or even control their own minds. This isn't your fault — but it's your responsibility to fix it.</p>
-                
-                <div class="real-talk">
-                    <strong>Real talk:</strong> If you're sick of watching other guys win while you're stuck refreshing job boards, doom-scrolling, or wondering why she ghosted you — this is for you.
-                    <span class="archives-name">The Arcane Archives</span>
-                    gives you the playbook they gatekeep. Business. Psychology. Game. Health. Everything you need to stop being invisible and start being undeniable.
+            <div class="hero-content">
+                <span class="hero-badge">The Complete Knowledge Vault</span>
+
+                <h1>
+                    <span class="gradient-text">Everything You Need</span><br>
+                    <span class="highlight">In One Place</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    3,330+ premium modules covering trading, business, health, psychology, and the knowledge they don't want you to have. This is the last platform you'll ever need.
+                </p>
+
+                <div class="hero-cta">
+                    <a href="#pricing" class="btn btn-primary btn-xl">Get Instant Access</a>
+                    <a href="#features" class="btn btn-secondary btn-large">See What's Inside</a>
                 </div>
 
-                <a href="#pricing" class="btn btn-black">Join The Arcane Archives</a>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-value">3,330+</div>
+                        <div class="hero-stat-label">Premium Modules</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value">45+</div>
+                        <div class="hero-stat-label">Complete Courses</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value">∞</div>
+                        <div class="hero-stat-label">Lifetime Updates</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="section" id="what-you-master">
+    <!-- TRUST LOGOS -->
+    <section class="logos-section">
         <div class="container">
-            <h2 class="section-title">What You'll Master</h2>
-            <p class="section-subtitle">Arcane knowledge across multiple domains</p>
-
-            <div class="master-grid">
-                <div class="master-card">
-                    <div class="icon">💰</div>
-                    <h3>Money & Business</h3>
-                    <p>Build wealth, escape the 9-5, and create multiple income streams using proven strategies.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">❤️</div>
-                    <h3>Women & Game</h3>
-                    <p>Master attraction, dating dynamics, and relationships — no more confusion.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">💪</div>
-                    <h3>Health & Body</h3>
-                    <p>Optimize Health, testosterone, build an elite physique, and unlock peak physical performance.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">✨</div>
-                    <h3>Spirituality & Universal Laws</h3>
-                    <p>Understand manifestation, energy, and the hidden laws that shape reality.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">📚</div>
-                    <h3>Philosophy</h3>
-                    <p>Learn from the greats — Stoicism and arcane wisdom for modern times.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">🧠</div>
-                    <h3>Human Nature</h3>
-                    <p>Decode psychology, influence, persuasion, and what makes people tick.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">🔥</div>
-                    <h3>Mindset</h3>
-                    <p>Develop mental toughness, discipline, and the unstoppable mindset of winners.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">👁️</div>
-                    <h3>The Elites</h3>
-                    <p>Understand power structures, hidden agendas, and how the top 0.01% really operate.</p>
-                </div>
-
-                <div class="master-card">
-                    <div class="icon">📈</div>
-                    <h3>Investing</h3>
-                    <p>Grow your wealth through smart investments, crypto, and financial intelligence.</p>
-                </div>
+            <div class="logos-label">Covering Every Domain of Life</div>
+            <div class="logos-grid">
+                <div class="logo-item">💹 Trading</div>
+                <div class="logo-item">💼 Business</div>
+                <div class="logo-item">💪 Health</div>
+                <div class="logo-item">🧠 Psychology</div>
+                <div class="logo-item">📈 Investing</div>
             </div>
-
-            <div class="more-topics">45+ Courses, 3330+ Modules</div>
         </div>
     </section>
 
-    <!-- PRICING SECTION -->
-    <section class="section" id="pricing">
+    <!-- FEATURES SECTION -->
+    <section class="section fade-in-section" id="features">
         <div class="container">
-            <div class="pricing-section">
-                <h2 class="section-title">Join The Arcane Archives</h2>
-                <p class="section-subtitle">One price. Full access. Forever.</p>
+            <div class="section-header">
+                <span class="section-badge">What's Inside</span>
+                <h2 class="section-title">Master Every Domain</h2>
+                <p class="section-subtitle">Complete systems, not surface-level content. Everything you need to win.</p>
+            </div>
 
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💹</div>
+                    <h3 class="feature-title">Trading Mastery</h3>
+                    <p class="feature-description">Complete trading strategy on commodities, forex, and stocks. Real systems for risk management, market psychology, and consistent profitability.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3 class="feature-title">Business & Entrepreneurship</h3>
+                    <p class="feature-description">From zero to profitable business. High-ticket consulting, sales mastery, copywriting, content strategy, and scaling systems.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">❤️</div>
+                    <h3 class="feature-title">Dating & Relationships</h3>
+                    <p class="feature-description">Complete game mastery. Female psychology, attraction triggers, frame control, and relationship dynamics.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💪</div>
+                    <h3 class="feature-title">Health & Optimization</h3>
+                    <p class="feature-description">Testosterone optimization, elite physique building, nutrition protocols, biohacking, and peak performance systems.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title">Psychology & Mindset</h3>
+                    <p class="feature-description">Master your mind first. Discipline protocols, emotional mastery, consciousness elevation, and mental frameworks that work.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👁️</div>
+                    <h3 class="feature-title">Alternative Knowledge</h3>
+                    <p class="feature-description">The knowledge they don't want accessible. How elites operate, hidden power structures, and expanding your perception of reality.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">Investing & Wealth</h3>
+                    <p class="feature-description">Long-term wealth building. Stock analysis, crypto, precious metals, and making your money work harder than you do.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎙️</div>
+                    <h3 class="feature-title">Weekly Live Calls</h3>
+                    <p class="feature-description">Direct access to Leo Gray. Weekly Q&A, live trading analysis, strategy discussions, and real-time support.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Life Strategy</h3>
+                    <p class="feature-description">Leadership protocols, decision-making frameworks, productivity systems, and the complete OS for life on your terms.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOCIAL PROOF -->
+    <section class="section fade-in-section" style="background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.03), transparent);">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Social Proof</span>
+                <h2 class="section-title">Real Results</h2>
+                <p class="section-subtitle">Members transforming their reality across every domain</p>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">J</div>
+                        <div class="testimonial-meta">
+                            <div class="testimonial-name">James K.</div>
+                            <div class="testimonial-role">Business Owner, UK</div>
+                        </div>
+                        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p class="testimonial-text">
+                        "Best investment I've made. The trading modules taught me more in 2 months than 2 years on YouTube. Just closed my first profitable gold trade at £800. The business content is insane too."
+                    </p>
+                    <span class="verified-badge">✓ Verified Member</span>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">M</div>
+                        <div class="testimonial-meta">
+                            <div class="testimonial-name">Marcus T.</div>
+                            <div class="testimonial-role">Consultant, USA</div>
+                        </div>
+                        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p class="testimonial-text">
+                        "Finally understand how attraction actually works. Applied the dating principles and went from invisible to having 3 dates lined up. The psychology content alone is worth 10x the price."
+                    </p>
+                    <span class="verified-badge">✓ Verified Member</span>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">T</div>
+                        <div class="testimonial-meta">
+                            <div class="testimonial-name">Tom R.</div>
+                            <div class="testimonial-role">Engineer, Australia</div>
+                        </div>
+                        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    <p class="testimonial-text">
+                        "The health and mindset modules changed my life. Lost 12kg, hit new PRs at the gym, and feel sharper than ever. Worth every penny for the discipline frameworks alone."
+                    </p>
+                    <span class="verified-badge">✓ Verified Member</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section fade-in-section" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Simple Pricing</span>
+                <h2 class="section-title">Join The Archives</h2>
+                <p class="section-subtitle">One subscription. Complete access. Lifetime value.</p>
+            </div>
+
+            <div class="pricing-container">
                 <div class="pricing-card">
-                    <div class="price">£128</div>
-                    <p class="price-period">per month</p>
+                    <span class="pricing-badge">UNLIMITED ACCESS</span>
+
+                    <div class="price-wrapper">
+                        <div class="price">£128</div>
+                        <p class="price-period">per month • Cancel anytime</p>
+                    </div>
 
                     <ul class="features-list">
-                        <li>-Full curriculum: Money, Health, Relationships, Mindset, etc</li>
-                        <li>-Weekly live calls & Q&A sessions</li>
-                        <li>-Private community access</li>
-                        <li>-Real-time trade alerts & market insights</li>
-                        <li>-Exclusive resources & playbooks</li>
-                        <li>-Regular updates & new content</li>
-                        <li>-Cancel anytime, no tricks</li>
+                        <li>3,330+ Premium Modules (Lifetime Access)</li>
+                        <li>45+ Complete Courses Across All Domains</li>
+                        <li>Trading Strategy: Commodities, Forex, Stocks</li>
+                        <li>Complete Business Building Systems</li>
+                        <li>Dating & Relationship Mastery</li>
+                        <li>Health Optimization & Biohacking</li>
+                        <li>Psychology & Mindset Frameworks</li>
+                        <li>Weekly Live Calls with Leo Gray</li>
+                        <li>Private Community Access</li>
+                        <li>Real-Time Market Alerts</li>
+                        <li>All Future Content & Updates</li>
                     </ul>
 
-                    <button class="btn btn-black" onclick="checkout()" style="width: 100%; margin-top: 1rem;">Get Instant Access</button>
+                    <button class="btn btn-primary btn-xl" onclick="checkout()" style="width: 100%;">
+                        Get Instant Access Now
+                    </button>
 
-                    <div class="security-badges">
-                        <span>🔒 Secure Checkout</span>
-                        <span>💳 Stripe Protected</span>
-                        <span>✓ Cancel Anytime</span>
+                    <div class="cta-note">
+                        <span>⚡ Instant access</span>
+                        <span>🔒 Secure checkout</span>
+                        <span>✓ Cancel anytime</span>
                     </div>
-
-                    <div class="post-join">
-                        <p>After joining, you'll get immediate access to the full platform. Log in with your email and start leveling up today.</p>
-                    </div>
-                </div>
-
-                <div class="disclaimer">
-                    <strong>Disclaimer:</strong> This is not financial advice. Results vary. The Arcane Archives provides education and community — your success depends on your work ethic and execution.
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Journey Section -->
-    <section class="section">
+    <!-- THE JOURNEY -->
+    <section class="section fade-in-section" style="background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.03), transparent);">
         <div class="container">
-            <div class="journey-section">
-                <h2 class="section-title">From Rock Bottom to The Archives</h2>
-                <p class="section-subtitle">The journey that created this platform</p>
+            <div class="section-header">
+                <span class="section-badge">Origin Story</span>
+                <h2 class="section-title">The Journey</h2>
+                <p class="section-subtitle">From rock bottom to building The Arcane Archives</p>
+            </div>
 
-                <div class="journey-card">
-                    <div class="journey-icon">🧬</div>
-                    <h3 class="journey-title">Leo's Journey</h3>
-                    <p class="journey-description">
-                        Started as a warehouse worker, then became a chef, then lost everything... three times. 
-                        The Arcane Archives was born from years of pain, learning, and transformation. Every lesson inside 
-                        came from real blood, sweat, and breakthroughs.
+            <div class="journey-card">
+                <div class="journey-stats">
+                    <div>
+                        <div class="journey-stat-value">£80K+</div>
+                        <div class="journey-stat-label">Invested in Education</div>
+                    </div>
+                    <div>
+                        <div class="journey-stat-value">£100K</div>
+                        <div class="journey-stat-label">Lost & Learned From</div>
+                    </div>
+                    <div>
+                        <div class="journey-stat-value">7+</div>
+                        <div class="journey-stat-label">Ventures Built</div>
+                    </div>
+                </div>
+
+                <p class="journey-text">
+                    From selling cigarettes at school to losing £100K in crypto to discovering purpose in a Scottish hospital bed. This is the unfiltered story of how The Arcane Archives was built — through real pain, real losses, and real lessons.
+                </p>
+
+                <a href="journey.html" class="btn btn-secondary btn-large" style="width: 100%;">
+                    Read The Full Story →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOUNDER -->
+    <section class="section fade-in-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Built From Experience</span>
+                <h2 class="section-title">Not Theory. Real Lessons.</h2>
+            </div>
+
+            <div class="founder-card">
+                <div class="founder-header">
+                    <h3 class="founder-name">Leo Gray</h3>
+                    <p class="founder-title">Founder, The Arcane Archives</p>
+                </div>
+
+                <div class="founder-content">
+                    <p>
+                        Leo Gray is an entrepreneur and the founder of The Arcane Archives. Since 16, he has invested over £80,000 learning how money, systems, and human behavior truly work — not through theory, but through real experience.
                     </p>
 
-                    <div class="journey-highlights">
-                        <div class="journey-highlight">
-                            <div class="value">6+ Years</div>
-                            <div class="label">Of Grinding</div>
-                        </div>
-                        <div class="journey-highlight">
-                            <div class="value">7+ Ventures</div>
-                            <div class="label">Failed & Won</div>
-                        </div>
-                        <div class="journey-highlight">
-                            <div class="value">£80K+</div>
-                            <div class="label">Invested Learning</div>
-                        </div>
-                        <div class="journey-highlight">
-                            <div class="value">10,000+</div>
-                            <div class="label">Hours Studying</div>
-                        </div>
-                        <div class="journey-highlight">
-                            <div class="value">10,000+</div>
-                            <div class="label">Attempts & Errors</div>
-                        </div>
-                    </div>
-
-                    <p class="journey-description" style="font-style: italic; color: var(--text-dim);">
-                        "I built this so you don't have to waste years figuring it out alone. Every chapter, every lesson, 
-                        every strategy — it's all here. This is the map I wish I had."
+                    <p>
+                        After building and breaking multiple ventures, he distilled the principles that survived into The Arcane Archives: a comprehensive vault of strategies and frameworks for those seeking clarity, sovereignty, and long-term leverage in life.
                     </p>
 
-                    <div class="journey-cta">
-                        <a href="journey.html" class="btn btn-secondary">See The Full Journey →</a>
-                    </div>
+                    <p>
+                        What makes The Arcane Archives different is simple: <strong style="color: var(--text);">it's what actually works.</strong> No guru nonsense. No recycled motivational content. Just tested systems across trading, business, health, psychology, and the knowledge most platforms won't touch.
+                    </p>
+
+                    <p class="founder-quote">
+                        "I spent £80,000+ and years of trial and error so you don't have to. Everything that survived the filter is inside The Archives. This is your shortcut."
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section" id="social-proof">
+    <!-- FAQ -->
+    <section class="section fade-in-section">
         <div class="container">
-            <div class="social-proof">
-                <div class="member-count">
-                    <div class="number">30+</div>
-                    <p>Individuals already inside, stacking wins daily</p>
-                    <div class="live-indicator">
-                        <span class="pulse-dot"></span>
-                        <span>8 members online now</span>
-                    </div>
-                </div>
-
-                <div class="testimonials">
-                    <div class="testimonial">
-                        <div class="stars">⭐⭐⭐⭐⭐</div>
-                        <p class="quote">"I went from broke and confused to closing my first £2K client in 3 weeks. The business modules alone are worth 10x the price."</p>
-                        <p class="author">— James, 24, UK</p>
-                        <p class="verified">✓ Verified Member</p>
-                    </div>
-
-                    <div class="testimonial">
-                        <div class="stars">⭐⭐⭐⭐⭐</div>
-                        <p class="quote">"Finally understand why I was invisible to women. Applied the game principles and got my first date in months. This stuff WORKS."</p>
-                        <p class="author">— Marcus, 27, USA</p>
-                        <p class="verified">✓ Verified Member</p>
-                    </div>
-
-                    <div class="testimonial">
-                        <div class="stars">⭐⭐⭐⭐⭐</div>
-                        <p class="quote">"The mindset content hit different. I stopped making excuses and started making moves. Lost 15kg and feel unstoppable."</p>
-                        <p class="author">— Tom, 29, Australia</p>
-                        <p class="verified">✓ Verified Member</p>
-                    </div>
-                </div>
-
-                <div class="recent-wins">
-                    <h3>🏆 Recent Wins</h3>
-                    <div class="wins-ticker">
-                        <div class="win-item">💰 John made his first $1K online</div>
-                        <div class="win-item">💪 Mike hit a new PR at the gym</div>
-                        <div class="win-item">❤️ Tom got his first date in months</div>
-                        <div class="win-item">📈 Sam closed his first client at $2K</div>
-                        <div class="win-item">🎯 Jake lost 10kg this month</div>
-                        <div class="win-item">⚡ Ben launched his first business</div>
-                        <div class="win-item">💰 John made his first $1K online</div>
-                        <div class="win-item">💪 Mike hit a new PR at the gym</div>
-                    </div>
-                </div>
+            <div class="section-header">
+                <span class="section-badge">FAQ</span>
+                <h2 class="section-title">Common Questions</h2>
             </div>
-        </div>
-    </section>
 
-    <section class="section" id="faq">
-        <div class="container">
-            <h2 class="section-title">Questions?</h2>
-            <p class="section-subtitle">Everything you need to know</p>
-
-            <div class="faq-section">
+            <div class="faq-container">
                 <div class="faq-item">
                     <h3>What exactly do I get?</h3>
-                    <p>You get lifetime access to our full library of courses on money, health, relationships, and mindset. Plus weekly live calls, a private community, trade alerts, and all future updates.</p>
+                    <p>3,330+ modules across 45+ complete courses covering trading, business, health, dating, psychology, and alternative knowledge. Plus weekly live calls, private community access, market alerts, and lifetime updates.</p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>Is this a one-time payment?</h3>
-                    <p>No, it's £128/month. Cancel anytime with zero hassle. No sneaky contracts or hidden fees.</p>
+                    <h3>Is this a one-time payment or subscription?</h3>
+                    <p>It's £128/month. You can cancel anytime with no hassle. However, there are no refunds once you gain access — this ensures only serious, committed members join.</p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>What if I'm a complete beginner?</h3>
-                    <p>Perfect. The content is designed to take you from zero to competent. We break everything down step-by-step — no gatekeeping, no fluff.</p>
+                    <h3>I'm a complete beginner. Will this work for me?</h3>
+                    <p>Absolutely. The platform is structured to take you from zero to advanced across every domain. Everything is broken down step-by-step with clear pathways.</p>
                 </div>
 
                 <div class="faq-item">
-                    <h3>How is this different from YouTube?</h3>
-                    <p>YouTube gives you surface-level content designed for ad revenue. We give you the real playbooks, community accountability, and direct access to people who've done it. Big difference.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h3>Can I really cancel anytime?</h3>
-                    <p>Yes. Seriously. No hoops to jump through. If it's not for you, cancel in your account settings. We respect your time and money.</p>
+                    <h3>How is this different from YouTube or free content?</h3>
+                    <p>YouTube gives surface-level content for ad revenue. We give you complete systems, proven strategies, and nothing held back. Plus live mentorship and community support.</p>
                 </div>
 
                 <div class="faq-item">
                     <h3>What if I have more questions?</h3>
-                    <p>Email us or reach out on Telegram. We're real people building this thing — we'll get back to you.</p>
+                    <p>Reach out via Telegram or email. Real person, real responses. However, if you need extensive convincing, you're probably not ready.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="final-cta-content">
+                <h2>Ready to Transform?</h2>
+                <p>Join thousands of members already mastering every domain of life.</p>
+                <a href="#pricing" class="btn btn-primary btn-xl">Get Instant Access</a>
             </div>
         </div>
     </section>
 </main>
 
 <footer>
-    <div class="footer-content">
-        <div class="footer-links">
-            <a href="login.html">Login</a>
-            <a href="Privacy-policy.html">Privacy Policy</a>
-            <a href="terms-of-service.html">Terms of Service</a>
-            <a href="refund-policy.html">Refund Policy</a>
-        </div>
-        <div class="footer-bottom">
-            © 2024 The Arcane Archives. All rights reserved.
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="login.html">Login</a>
+                <a href="Privacy-policy.html">Privacy Policy</a>
+                <a href="terms-of-service.html">Terms of Service</a>
+                <a href="refund-policy.html">Refund Policy</a>
+            </div>
+            <div class="footer-copyright">
+                © 2025 The Arcane Archives. All rights reserved.
+            </div>
         </div>
     </div>
 </footer>
@@ -1264,10 +1407,6 @@
     window.checkout = async function checkout() {
         const user = auth.currentUser;
 
-        if (!user) {
-            alert("After payment, you'll log in to activate your access.");
-        }
-
         try {
             const response = await fetch("/.netlify/functions/create-checkout-session", {
                 method: "POST",
@@ -1293,6 +1432,24 @@
             alert("Something went wrong: " + error.message);
         }
     };
+
+    // Scroll animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in-section').forEach(section => {
+        observer.observe(section);
+    });
 </script>
 
 </body>

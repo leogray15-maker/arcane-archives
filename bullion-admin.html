@@ -2,301 +2,674 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Bullion Admin | Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #02010a;
-            --bg-card: rgba(15, 23, 42, 0.96);
-            --purple: #9333ea;
+            --bg-0: #09090b;
+            --bg-1: #0f0f12;
+            --bg-2: #16161a;
+            --bg-3: #1e1e24;
+            --bg-glass: rgba(22, 22, 26, 0.7);
+            --accent: #8b5cf6;
+            --accent-dark: #7c3aed;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-glow-strong: rgba(139, 92, 246, 0.35);
+            --green: #22c55e;
+            --green-glow: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.15);
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #9ca3af;
-            --border-color: rgba(148, 163, 184, 0.5);
+            --gold-glow: rgba(251, 191, 36, 0.15);
+            --text-0: #fafafa;
+            --text-1: #a1a1aa;
+            --text-2: #71717a;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-0);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow-strong), transparent),
+                radial-gradient(circle 1px at center, rgba(255,255,255,0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px;
+            color: var(--text-0);
             min-height: 100vh;
-            padding: 2rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .container { max-width: 1400px; margin: 0 auto; }
+        /* ── Topbar ─────────────────────────────────── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding-top: env(safe-area-inset-top, 0px);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border-bottom: 1px solid var(--border);
+        }
 
-        .header {
+        .topbar-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 56px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 3rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            justify-content: space-between;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--gold), var(--purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .btn {
-            padding: 0.8rem 1.5rem;
+        .topbar-icon {
+            font-size: 1.35rem;
+            line-height: 1;
+        }
+
+        .topbar-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-0);
+            letter-spacing: -0.01em;
+        }
+
+        .topbar-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent-light);
+            background: var(--accent-glow);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            padding: 0.2rem 0.55rem;
             border-radius: 999px;
+        }
+
+        .topbar-back {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-1);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .topbar-back:hover {
+            color: var(--text-0);
+        }
+
+        /* ── Buttons ────────────────────────────────── */
+        .btn {
+            font-family: 'Inter', sans-serif;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
             border: none;
             font-weight: 600;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            white-space: nowrap;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--gold), #d97706);
-            color: #000;
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.5), 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dark);
+            box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.6), 0 4px 12px var(--accent-glow-strong);
         }
 
         .btn-secondary {
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
+            background: var(--bg-2);
+            color: var(--text-1);
+            border: 1px solid var(--border);
         }
 
-        .btn-danger { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; }
+        .btn-secondary:hover {
+            background: var(--bg-3);
+            color: var(--text-0);
+            border-color: var(--border-hover);
+        }
 
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        /* ── Page Layout ────────────────────────────── */
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ── Pill Tabs ──────────────────────────────── */
         .tabs {
-            display: flex;
-            gap: 1rem;
+            display: inline-flex;
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 3px;
             margin-bottom: 2rem;
-            border-bottom: 2px solid var(--border-color);
         }
 
         .tab {
-            padding: 1rem 2rem;
-            background: none;
+            font-family: 'Inter', sans-serif;
+            padding: 0.5rem 1.25rem;
+            background: transparent;
             border: none;
-            color: var(--text-dim);
-            font-size: 1rem;
+            color: var(--text-2);
+            font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;
-            position: relative;
-            transition: all 0.2s;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
+        }
+
+        .tab:hover {
+            color: var(--text-1);
         }
 
         .tab.active {
-            color: var(--gold);
+            background: var(--bg-3);
+            color: var(--text-0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
         }
 
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--gold);
+        .tab-content {
+            display: none;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content.active {
+            display: block;
+        }
 
+        /* ── Products Grid ──────────────────────────── */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 1.25rem;
         }
 
         .product-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
         }
 
         .product-image {
             width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(147, 51, 234, 0.2));
+            height: 180px;
+            background: linear-gradient(135deg, var(--accent-glow), var(--gold-glow));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
+            font-size: 3.5rem;
+            border-bottom: 1px solid var(--border);
         }
 
-        .product-info { padding: 1.5rem; }
+        .product-info {
+            padding: 1.25rem;
+        }
 
         .product-metal {
-            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 600;
             color: var(--gold);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.4rem;
         }
 
         .product-name {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
+            color: var(--text-0);
             margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .product-details {
+            font-size: 0.8rem;
+            color: var(--text-2);
+            margin-bottom: 0.15rem;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .stock-badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.65rem;
             border-radius: 999px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            margin: 0.5rem 0;
+            margin-top: 0.65rem;
         }
 
-        .in-stock { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-        .out-stock { background: rgba(220, 38, 38, 0.2); color: #f87171; }
+        .in-stock {
+            background: var(--green-glow);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .out-stock {
+            background: var(--red-glow);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
 
         .product-actions {
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
         }
 
+        /* ── Enquiries Table ────────────────────────── */
+        .table-wrapper {
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-2);
+        }
+
+        th {
+            padding: 0.85rem 1rem;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-2);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            font-size: 0.85rem;
+            color: var(--text-1);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: background 0.1s;
+        }
+
+        tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .status-pending {
+            background: var(--gold-glow);
+            color: var(--gold);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .status-confirmed {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .status-paid {
+            background: var(--green-glow);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .status-shipped {
+            background: var(--accent-glow);
+            color: var(--accent-light);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .status-delivered {
+            background: rgba(34, 197, 94, 0.18);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        /* ── Modal ──────────────────────────────────── */
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 1000;
             padding: 2rem;
             overflow-y: auto;
         }
 
-        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
+            background: var(--bg-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
             padding: 2rem;
-            max-width: 600px;
+            max-width: 540px;
             width: 100%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            align-items: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
         .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 2rem;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            color: var(--text-2);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            font-size: 1.2rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
         }
 
-        .form-group { margin-bottom: 1.5rem; }
+        .close-btn:hover {
+            background: var(--bg-3);
+            color: var(--text-0);
+            border-color: var(--border-hover);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-2);
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 0.8rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--text-light);
-            font-family: inherit;
+            padding: 0.6rem 0.85rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-0);
+            color: var(--text-0);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-2);
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2371717a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            padding-right: 2rem;
+        }
+
+        .form-group select option {
+            background: var(--bg-1);
+            color: var(--text-0);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .checkbox-label span {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-1);
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         .form-actions {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             justify-content: flex-end;
-            margin-top: 2rem;
+            margin-top: 1.75rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        thead {
-            background: rgba(251, 191, 36, 0.1);
-        }
-
-        th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: var(--gold);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-
-        td {
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        tr:hover {
-            background: rgba(251, 191, 36, 0.05);
-        }
-
-        .status-badge {
-            padding: 0.4rem 0.8rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-pending { background: rgba(251, 191, 36, 0.2); color: var(--gold); }
-        .status-confirmed { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-        .status-paid { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-        .status-shipped { background: rgba(147, 51, 234, 0.2); color: #a78bfa; }
-        .status-delivered { background: rgba(34, 197, 94, 0.3); color: #22c55e; }
-
+        /* ── Notification Toast ─────────────────────── */
         .notification {
             position: fixed;
-            top: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
             font-weight: 600;
             z-index: 2000;
-            animation: slideIn 0.3s ease;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
-        .notification.success { background: linear-gradient(135deg, #22c55e, #15803d); }
-        .notification.error { background: linear-gradient(135deg, #dc2626, #991b1b); }
+        .notification.success {
+            background: var(--green-glow);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.1);
+        }
+
+        .notification.error {
+            background: var(--red-glow);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.1);
+        }
 
         @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ── Responsive ─────────────────────────────── */
+        @media (max-width: 768px) {
+            .topbar-inner {
+                padding: 0 1rem;
+                height: 50px;
+            }
+
+            .topbar-badge {
+                display: none;
+            }
+
+            .page {
+                padding: 1.25rem 1rem 3rem;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .tabs {
+                width: 100%;
+            }
+
+            .tab {
+                flex: 1;
+                text-align: center;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 600px;
+            }
+
+            .modal-content {
+                border-radius: var(--radius-lg);
+                padding: 1.5rem;
+            }
+
+            .btn-primary {
+                font-size: 0.75rem;
+                padding: 0.45rem 0.75rem;
+            }
+
+            .topbar-back {
+                font-size: 0.75rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🪙 Bullion Admin</h1>
-            <div style="display: flex; gap: 1rem;">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-brand">
+                <div class="topbar-icon">🪙</div>
+                <span class="topbar-title">Bullion Admin</span>
+                <span class="topbar-badge">Admin</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
-                <a href="dashboard.html" class="btn btn-secondary" style="text-decoration: none;">Dashboard</a>
+                <a href="dashboard.html" class="topbar-back">&larr; Dashboard</a>
             </div>
         </div>
+    </div>
 
+    <!-- Page Content -->
+    <div class="page">
+        <!-- Pill Tabs -->
         <div class="tabs">
             <button class="tab active" onclick="switchTab('products')">Products</button>
             <button class="tab" onclick="switchTab('enquiries')">Enquiries</button>
@@ -309,21 +682,23 @@
 
         <!-- Enquiries Tab -->
         <div class="tab-content" id="enquiries-tab">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Customer</th>
-                        <th>Product</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="enquiriesTable">
-                    <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enquiriesTable">
+                        <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-2);">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -371,9 +746,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>
+                    <label class="checkbox-label">
                         <input type="checkbox" id="inStock" style="width: auto; margin-right: 0.5rem;">
-                        In Stock
+                        <span>In Stock</span>
                     </label>
                 </div>
 
@@ -424,7 +799,7 @@
 
         async function loadProducts() {
             const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading...</div>';
+            grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-2);">Loading...</div>';
 
             try {
                 const querySnapshot = await getDocs(collection(db, 'BullionProducts'));
@@ -434,7 +809,7 @@
                 });
 
                 if (products.length === 0) {
-                    grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-dim);">No products yet. Add your first one!</div>';
+                    grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-2);">No products yet. Add your first one!</div>';
                     return;
                 }
 
@@ -444,10 +819,10 @@
                         <div class="product-info">
                             <div class="product-metal">${product.metal}</div>
                             <div class="product-name">${product.name}</div>
-                            <div style="font-size: 0.9rem; color: var(--text-dim); margin: 0.5rem 0;">
-                                ${product.weight}g | ${product.purity} Fine
+                            <div class="product-details">
+                                ${product.weight}g &middot; ${product.purity} Fine
                             </div>
-                            <div style="font-size: 0.9rem; color: var(--text-dim);">
+                            <div class="product-details">
                                 Premium: ${product.premium}%
                             </div>
                             <div class="stock-badge ${product.inStock ? 'in-stock' : 'out-stock'}">
@@ -478,7 +853,7 @@
                 const tbody = document.getElementById('enquiriesTable');
 
                 if (enquiries.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">No enquiries yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-2);">No enquiries yet</td></tr>';
                     return;
                 }
 
@@ -488,17 +863,17 @@
                         <tr>
                             <td>${date.toLocaleDateString()}</td>
                             <td>
-                                <div>${enq.name}</div>
-                                <div style="font-size: 0.85rem; color: var(--text-dim);">${enq.email}</div>
+                                <div style="font-weight: 600; color: var(--text-0);">${enq.name}</div>
+                                <div style="font-size: 0.78rem; color: var(--text-2);">${enq.email}</div>
                             </td>
                             <td>${enq.productName}</td>
                             <td>
                                 <div style="font-weight: 700; color: var(--gold);">£${enq.totalPrice?.toFixed(2) || '0.00'}</div>
-                                <div style="font-size: 0.85rem; color: var(--text-dim);">${enq.quantity || 1}x units</div>
+                                <div style="font-size: 0.78rem; color: var(--text-2);">${enq.quantity || 1}x units</div>
                             </td>
                             <td><span class="status-badge status-${enq.status || 'pending'}">${enq.status || 'pending'}</span></td>
                             <td>
-                                <select class="btn btn-secondary" style="padding: 0.5rem; font-size: 0.85rem;" onchange="updateEnquiryStatus('${enq.id}', this.value)">
+                                <select class="btn btn-secondary" style="padding: 0.4rem 0.6rem; font-size: 0.78rem;" onchange="updateEnquiryStatus('${enq.id}', this.value)">
                                     <option value="">Update Status</option>
                                     <option value="pending">Pending</option>
                                     <option value="confirmed">Confirmed</option>
@@ -518,7 +893,7 @@
         window.switchTab = (tab) => {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
+
             event.target.classList.add('active');
             document.getElementById(`${tab}-tab`).classList.add('active');
         };

@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Arcane Store | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
   <script src="https://js.stripe.com/v3/"></script>
 
   <style>
@@ -33,7 +37,7 @@
 
     .back-btn {
       position: fixed;
-      top: 1.5rem;
+      top: calc(1.5rem + env(safe-area-inset-top, 0px));
       left: 1.5rem;
       z-index: 40;
       padding: 0.4rem 0.9rem;
@@ -782,22 +786,8 @@
   </div>
 
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-  import { getFirestore, collection, getDocs, getDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-    projectId: "arcane-archives-3b0f5",
-    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-    messagingSenderId: "264237235055",
-    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  import { protectPage, db, ADMIN_UIDS } from './auth-guard.js';
+  import { collection, getDocs, getDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
   // Keep your existing key (swap to live when ready)
   const stripe = Stripe('pk_test_51QgVCBKfPz4F9rWfbEXAXXvZHv9Nnzfh2gCcZfL04dFnYwvBBCpeCx40xzSNqBV1iR7n1b47U4PGz4c30RxkwF1W00TmjEgb7Q');
@@ -1022,31 +1012,21 @@
   window.cartRemove = (key) => removeItem(key);
 
   // AUTH + PRODUCTS
-  onAuthStateChanged(auth, async (user) => {
-    if (!user){
+  // Use centralized auth protection with modern locked overlay
+  protectPage({
+    requirePayment: true,
+    allowAdmin: true,
+    onSuccess: async (user, userData) => {
+      currentUser = user;
+      isAdmin = userData.isAdmin || ADMIN_UIDS.includes(user.uid);
+
+      await loadAffiliateBalance();
+      renderCartBadge();
+      await loadProducts();
+    },
+    onFailure: () => {
       location.href = 'login.html';
-      return;
     }
-
-    currentUser = user;
-
-    // paid gate (kept)
-    const userDoc = await getDoc(doc(db, 'Users', user.uid));
-    const userData = userDoc.data() || {};
-    const isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
-
-    const adminEmails = ['leogray15@gmail.com'];
-    isAdmin = adminEmails.includes(user.email);
-
-    if (!isPaid && !isAdmin){
-      alert('⚠️ This page is for premium members only.');
-      location.href = 'dashboard.html';
-      return;
-    }
-
-    await loadAffiliateBalance();
-    renderCartBadge();
-    await loadProducts();
   });
 
   async function loadAffiliateBalance(){

@@ -2,615 +2,813 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Admin Panel | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #02010a;
-      --purple: #9333ea;
-      --purple-dark: #7e22ce;
-      --purple-light: #a78bfa;
-      --gold: #fbbf24;
-      --text-light: #e5e5e5;
-      --text-dim: #a3a3a3;
+      --bg-0: #09090b;
+      --bg-1: #0f0f12;
+      --bg-2: #16161a;
+      --bg-3: #1e1e24;
+      --bg-glass: rgba(22, 22, 26, 0.7);
+      --accent: #8b5cf6;
+      --accent-dark: #7c3aed;
+      --accent-light: #a78bfa;
+      --accent-glow: rgba(139, 92, 246, 0.15);
+      --accent-glow-strong: rgba(139, 92, 246, 0.35);
       --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.15);
       --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.15);
+      --gold: #fbbf24;
+      --gold-glow: rgba(251, 191, 36, 0.15);
+      --text-0: #fafafa;
+      --text-1: #a1a1aa;
+      --text-2: #71717a;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { height: 100%; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-      color: var(--text-light);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-0);
+      color: var(--text-0);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .header {
-      max-width: 1400px;
-      margin: 2rem auto 1rem;
-      padding: 0 1.5rem;
+    /* Dot grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(139, 92, 246, 0.08), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ========== TOP BAR ========== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: env(safe-area-inset-top, 0px) 0 0 0;
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.875rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .logo {
+    .topbar-brand {
       display: flex;
       align-items: center;
-      gap: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      font-size: 0.9rem;
+      gap: 0.625rem;
     }
 
-    .back-btn {
-      padding: 0.6rem 1.2rem;
+    .topbar-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+
+    .topbar-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-0);
+      letter-spacing: -0.01em;
+    }
+
+    .topbar-badge {
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      background: var(--accent-glow);
+      padding: 0.125rem 0.5rem;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-dim);
+      margin-left: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .topbar-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-2);
+      color: var(--text-1);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
     }
 
-    .back-btn:hover {
-      color: var(--purple-light);
-      border-color: var(--purple);
+    .topbar-back:hover {
+      border-color: var(--accent);
+      color: var(--text-0);
+      background: var(--accent-glow);
     }
 
-    .main {
-      max-width: 1400px;
+    /* ========== LAYOUT ========== */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 0 1.5rem 4rem;
+      padding: 2rem 1.5rem 4rem;
     }
 
-    .admin-card {
-      background: radial-gradient(circle at top, rgba(147, 51, 234, 0.12), rgba(15, 23, 42, 0.98));
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      border-radius: 24px;
-      padding: 2.5rem;
-      box-shadow: 0 30px 120px rgba(15, 23, 42, 0.85);
+    .page-header {
       margin-bottom: 2rem;
     }
 
-    .admin-header {
-      margin-bottom: 2rem;
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.375rem;
     }
 
-    .admin-header h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, var(--gold), var(--purple-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .page-subtitle {
+      color: var(--text-2);
+      font-size: 0.9375rem;
     }
 
-    .admin-header p {
-      color: var(--text-dim);
+    /* ========== TOAST MESSAGES ========== */
+    .message {
+      padding: 0.875rem 1.25rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.5rem;
+      text-align: center;
+      display: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      animation: slideDown 0.3s ease;
     }
 
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-message {
+      background: var(--green-glow);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: var(--green);
+    }
+
+    .error-message {
+      background: var(--red-glow);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: var(--red);
+    }
+
+    /* ========== TABS ========== */
     .tabs {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.25rem;
       margin-bottom: 2rem;
-      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.25rem;
     }
 
     .tab {
-      padding: 1rem 2rem;
+      flex: 1;
+      padding: 0.75rem 1.25rem;
       background: transparent;
       border: none;
-      color: var(--text-dim);
+      color: var(--text-2);
       font-weight: 600;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      font-size: 0.95rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      font-size: 0.8125rem;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
     }
 
     .tab:hover {
-      color: var(--text-light);
+      color: var(--text-0);
+      background: var(--bg-2);
     }
 
     .tab.active {
-      color: var(--purple-light);
-      border-bottom-color: var(--purple);
+      color: var(--text-0);
+      background: var(--bg-3);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
-    .tab-content {
-      display: none;
+    .tab-content { display: none; animation: fadeIn 0.25s ease; }
+    .tab-content.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .tab-content.active {
-      display: block;
-    }
-
-    .form-section {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      border-radius: 18px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .form-section h2 {
-      font-size: 1.3rem;
+    /* ========== GLASS CARD ========== */
+    .card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
       margin-bottom: 1.5rem;
-      color: var(--purple-light);
+      position: relative;
+      overflow: hidden;
     }
 
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-0);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-title .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+
+    .card-title .icon.purple { background: var(--accent-glow); }
+    .card-title .icon.green { background: var(--green-glow); }
+    .card-title .icon.gold { background: var(--gold-glow); }
+
+    /* ========== FORMS ========== */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.375rem;
     }
 
     .form-group label {
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-light);
+      color: var(--text-1);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .form-group input,
     .form-group select,
     .form-group textarea {
-      padding: 0.8rem;
-      border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(10, 10, 10, 0.8);
-      color: var(--text-light);
-      font-size: 0.95rem;
-      font-family: inherit;
+      padding: 0.75rem 0.875rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-1);
+      color: var(--text-0);
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s ease;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-2);
     }
 
     .form-group textarea {
       resize: vertical;
-      min-height: 100px;
+      min-height: 88px;
     }
 
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: var(--purple);
-      box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: var(--bg-0);
     }
 
+    .form-group small {
+      font-size: 0.75rem;
+      color: var(--text-2);
+    }
+
+    /* ========== BUTTONS ========== */
     .btn-group {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       margin-top: 1.5rem;
     }
 
     .btn {
-      padding: 0.8rem 2rem;
-      border-radius: 10px;
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius-sm);
       border: none;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.95rem;
+      transition: all 0.15s ease;
+      font-size: 0.8125rem;
+      font-family: 'Inter', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      background: var(--accent);
       color: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
     }
 
     .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+      background: var(--accent-dark);
+      box-shadow: 0 4px 16px var(--accent-glow-strong);
+      transform: translateY(-1px);
     }
 
     .btn-primary:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
     .btn-secondary {
-      background: transparent;
-      color: var(--text-dim);
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: var(--bg-2);
+      color: var(--text-1);
+      border: 1px solid var(--border);
     }
 
     .btn-secondary:hover {
-      color: var(--text-light);
-      border-color: rgba(148, 163, 184, 0.7);
+      color: var(--text-0);
+      border-color: var(--border-hover);
+      background: var(--bg-3);
     }
 
     .btn-danger {
-      background: var(--red);
-      color: white;
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     .btn-danger:hover {
-      background: #dc2626;
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
     }
 
     .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
     }
 
+    /* ========== ITEM LIST ========== */
     .items-list {
       margin-top: 2rem;
     }
 
-    .item-card {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      border-radius: 12px;
-      padding: 1.2rem;
+    .items-list-title {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text-1);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .items-list-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .item-card {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.625rem;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 1rem;
       align-items: center;
+      transition: all 0.15s ease;
+    }
+
+    .item-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-2);
     }
 
     .item-info h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.3rem;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .item-header h3 {
+      font-size: 0.9375rem;
+      font-weight: 700;
     }
 
     .item-details {
-      font-size: 0.9rem;
-      color: var(--text-dim);
-      margin-top: 0.3rem;
+      font-size: 0.8125rem;
+      color: var(--text-1);
+      line-height: 1.7;
+    }
+
+    .item-details p {
+      margin-bottom: 0.125rem;
     }
 
     .item-actions {
       display: flex;
-      gap: 0.7rem;
+      gap: 0.5rem;
     }
 
-    .message {
-      padding: 1rem;
-      border-radius: 12px;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      display: none;
-    }
-
-    .success-message {
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: var(--green);
-    }
-
-    .error-message {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: var(--red);
-    }
-
+    /* ========== TAGS ========== */
     .tag {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
+      display: inline-flex;
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.02em;
     }
 
     .tag-purple {
-      background: rgba(147, 51, 234, 0.2);
-      border: 1px solid var(--purple);
-      color: var(--purple-light);
+      background: var(--accent-glow);
+      color: var(--accent-light);
     }
 
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
+      .page { padding: 1.25rem 1rem 3rem; }
 
-      .item-card {
-        grid-template-columns: 1fr;
-      }
+      .topbar-inner { padding: 0.75rem 1rem; }
 
-      .btn-group {
-        flex-direction: column;
-      }
+      .topbar-badge { display: none; }
+
+      .page-title { font-size: 1.375rem; }
 
       .tabs {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
       }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab { flex: 0 0 auto; font-size: 0.75rem; padding: 0.625rem 1rem; }
 
-      .tab {
-        white-space: nowrap;
-      }
+      .form-grid { grid-template-columns: 1fr; }
+
+      .card { padding: 1.25rem; border-radius: var(--radius-lg); }
+
+      .item-card { grid-template-columns: 1fr; gap: 0.75rem; }
+      .item-actions { justify-content: flex-end; }
+
+      .btn-group { flex-direction: column; }
+      .btn-group .btn { justify-content: center; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar-title { font-size: 0.8125rem; }
+      .page-title { font-size: 1.25rem; }
+      .card { padding: 1rem; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">
-      <span>🔐 ADMIN PANEL</span>
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="topbar-icon">📈</div>
+        <span class="topbar-title">Trades & Alerts</span>
+        <span class="topbar-badge">Admin</span>
+      </div>
+      <a href="dashboard.html" class="topbar-back">← Dashboard</a>
     </div>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
   </div>
 
-  <div class="main">
-    <div class="admin-card">
-      <div class="admin-header">
-        <h1>🛠 Admin Control Center</h1>
-        <p>Manage stock picks and trade alerts</p>
+  <div class="page">
+    <div class="page-header">
+      <h1 class="page-title">Trades & Alerts</h1>
+      <p class="page-subtitle">Manage stock picks, trade alerts & trade history</p>
+    </div>
+
+    <div id="successMessage" class="message success-message"></div>
+    <div id="errorMessage" class="message error-message"></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="stocks">Stock Picks</button>
+      <button class="tab" data-tab="alerts">Trade Alerts</button>
+      <button class="tab" data-tab="history">Manual History</button>
+    </div>
+
+    <!-- STOCK PICKS TAB -->
+    <div id="stocks-content" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon purple">📊</span>
+          <span id="stockFormTitle">Add New Stock</span>
+        </div>
+        <form id="stockForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ticker Symbol *</label>
+              <input type="text" id="ticker" placeholder="AAPL" required />
+            </div>
+            <div class="form-group">
+              <label>Company Name *</label>
+              <input type="text" id="companyName" placeholder="Apple Inc." required />
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="category" required>
+                <option value="">Select category</option>
+                <option value="core">Core Holdings</option>
+                <option value="tactical">Tactical / High Conviction</option>
+                <option value="watchlist">Watchlist</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Risk Level *</label>
+              <select id="riskLevel" required>
+                <option value="">Select risk level</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sector *</label>
+              <input type="text" id="sector" placeholder="Technology" required />
+            </div>
+            <div class="form-group">
+              <label>Region</label>
+              <input type="text" id="region" placeholder="USA" />
+            </div>
+            <div class="form-group">
+              <label>Entry Low</label>
+              <input type="number" step="0.01" id="entryLow" placeholder="150.00" />
+            </div>
+            <div class="form-group">
+              <label>Entry High</label>
+              <input type="number" step="0.01" id="entryHigh" placeholder="160.00" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label>Investment Thesis *</label>
+            <textarea id="thesis" placeholder="Why this stock? What's the core driver?" required></textarea>
+          </div>
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary" id="submitStockBtn">Add Stock</button>
+            <button type="button" class="btn btn-secondary" id="cancelStockBtn">Cancel</button>
+          </div>
+        </form>
       </div>
 
-      <div id="successMessage" class="message success-message"></div>
-      <div id="errorMessage" class="message error-message"></div>
+      <div class="items-list">
+        <div class="items-list-title">Current Stock Picks</div>
+        <div id="stocksList"></div>
+      </div>
+    </div>
 
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab active" data-tab="stocks">📊 Stock Picks</button>
-        <button class="tab" data-tab="alerts">📈 Trade Alerts</button>
-        <button class="tab" data-tab="history">📝 Manual Trade History</button>
+    <!-- TRADE ALERTS TAB -->
+    <div id="alerts-content" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon green">📡</span>
+          <span id="alertFormTitle">Post New Trade Alert</span>
+        </div>
+        <form id="alertForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Pair *</label>
+              <select id="pairInput" required>
+                <option value="XAUUSD">XAUUSD (Gold)</option>
+                <option value="XAGUSD">XAGUSD (Silver)</option>
+                <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                <option value="US30">US30 (Dow Jones)</option>
+                <option value="SPX500">SPX500 (S&P 500)</option>
+                <option value="EURUSD">EURUSD</option>
+                <option value="GBPUSD">GBPUSD</option>
+                <option value="USDJPY">USDJPY</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Direction *</label>
+              <select id="directionSelect" required>
+                <option value="Buy">Buy</option>
+                <option value="Sell">Sell</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Entry *</label>
+              <input type="text" id="entryInput" placeholder="2650.00" required />
+            </div>
+            <div class="form-group">
+              <label>Stop Loss *</label>
+              <input type="text" id="slInput" placeholder="2640.00" required />
+            </div>
+            <div class="form-group">
+              <label>TP1</label>
+              <input type="text" id="tp1Input" placeholder="2660.00" />
+            </div>
+            <div class="form-group">
+              <label>TP2</label>
+              <input type="text" id="tp2Input" placeholder="2670.00" />
+            </div>
+            <div class="form-group">
+              <label>TP3</label>
+              <input type="text" id="tp3Input" placeholder="2680.00" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label>Analysis / Notes</label>
+            <textarea id="notesInput" placeholder="Setup details, confluence, etc."></textarea>
+          </div>
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary" id="postAlertBtn">Post Alert</button>
+            <button type="button" class="btn btn-secondary" id="cancelAlertBtn">Cancel</button>
+          </div>
+        </form>
       </div>
 
-      <!-- STOCK PICKS TAB -->
-      <div id="stocks-content" class="tab-content active">
-        <div class="form-section">
-          <h2 id="stockFormTitle">Add New Stock</h2>
-          <form id="stockForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Ticker Symbol *</label>
-                <input type="text" id="ticker" placeholder="AAPL" required />
-              </div>
+      <div class="items-list">
+        <div class="items-list-title">Active Alerts</div>
+        <div id="alertsList"></div>
+      </div>
+    </div>
 
-              <div class="form-group">
-                <label>Company Name *</label>
-                <input type="text" id="companyName" placeholder="Apple Inc." required />
-              </div>
-
-              <div class="form-group">
-                <label>Category *</label>
-                <select id="category" required>
-                  <option value="">Select category</option>
-                  <option value="core">Core Holdings</option>
-                  <option value="tactical">Tactical / High Conviction</option>
-                  <option value="watchlist">Watchlist</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Risk Level *</label>
-                <select id="riskLevel" required>
-                  <option value="">Select risk level</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Sector *</label>
-                <input type="text" id="sector" placeholder="Technology" required />
-              </div>
-
-              <div class="form-group">
-                <label>Region</label>
-                <input type="text" id="region" placeholder="USA" />
-              </div>
-
-              <div class="form-group">
-                <label>Entry Low</label>
-                <input type="number" step="0.01" id="entryLow" placeholder="150.00" />
-              </div>
-
-              <div class="form-group">
-                <label>Entry High</label>
-                <input type="number" step="0.01" id="entryHigh" placeholder="160.00" />
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Investment Thesis *</label>
-              <textarea id="thesis" placeholder="Why this stock? What's the core driver?" required></textarea>
-            </div>
-
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" id="submitStockBtn">
-                ➕ Add Stock
-              </button>
-              <button type="button" class="btn btn-secondary" id="cancelStockBtn">
-                Cancel
-              </button>
-            </div>
-          </form>
+    <!-- MANUAL TRADE HISTORY TAB -->
+    <div id="history-content" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span class="icon gold">📝</span>
+          Add Manual Trade to History
         </div>
-
-        <div class="items-list">
-          <h2 style="color: var(--gold); margin-bottom: 1rem;">Current Stock Picks</h2>
-          <div id="stocksList"></div>
-        </div>
+        <p style="color: var(--text-2); margin-bottom: 1.25rem; font-size: 0.8125rem;">
+          Use this to add trades you forgot to record. They'll appear in the Performance Overview.
+        </p>
+        <form id="manualTradeForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date Closed *</label>
+              <input type="datetime-local" id="manualClosedAt" required />
+            </div>
+            <div class="form-group">
+              <label>Pair *</label>
+              <select id="manualPair" required>
+                <option value="XAUUSD">XAUUSD (Gold)</option>
+                <option value="XAGUSD">XAGUSD (Silver)</option>
+                <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                <option value="ETHUSD">ETHUSD (Ethereum)</option>
+                <option value="US30">US30 (Dow Jones)</option>
+                <option value="NAS100">NAS100 (Nasdaq)</option>
+                <option value="SPX500">SPX500 (S&P 500)</option>
+                <option value="EURUSD">EURUSD</option>
+                <option value="GBPUSD">GBPUSD</option>
+                <option value="USDJPY">USDJPY</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Direction *</label>
+              <select id="manualDirection" required>
+                <option value="Buy">Buy</option>
+                <option value="Sell">Sell</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Entry Price *</label>
+              <input type="number" step="0.01" id="manualEntry" placeholder="2650.00" required />
+            </div>
+            <div class="form-group">
+              <label>Exit Price *</label>
+              <input type="number" step="0.01" id="manualExit" placeholder="2660.00" required />
+            </div>
+            <div class="form-group">
+              <label>Result *</label>
+              <select id="manualResult" required>
+                <option value="win">WIN</option>
+                <option value="loss">LOSS</option>
+                <option value="be">BREAK EVEN</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Pips/Points *</label>
+              <input type="number" step="0.1" id="manualPips" placeholder="50.0" required />
+              <small>Enter positive for wins, negative for losses</small>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label>Notes (Optional)</label>
+            <textarea id="manualNotes" placeholder="Why did you take this trade? What happened?" rows="3"></textarea>
+          </div>
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary" id="submitManualTradeBtn">Add Trade to History</button>
+            <button type="button" class="btn btn-secondary" id="clearManualTradeBtn">Clear Form</button>
+          </div>
+        </form>
       </div>
 
-      <!-- TRADE ALERTS TAB -->
-      <div id="alerts-content" class="tab-content">
-        <div class="form-section">
-          <h2 id="alertFormTitle">Post New Trade Alert</h2>
-          <form id="alertForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Pair *</label>
-                <select id="pairInput" required>
-                  <option value="XAUUSD">XAUUSD (Gold)</option>
-                  <option value="XAGUSD">XAGUSD (Silver)</option>
-                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-                  <option value="US30">US30 (Dow Jones)</option>
-                  <option value="SPX500">SPX500 (S&P 500)</option>
-                  <option value="EURUSD">EURUSD</option>
-                  <option value="GBPUSD">GBPUSD</option>
-                  <option value="USDJPY">USDJPY</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Direction *</label>
-                <select id="directionSelect" required>
-                  <option value="Buy">Buy</option>
-                  <option value="Sell">Sell</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Entry *</label>
-                <input type="text" id="entryInput" placeholder="2650.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>Stop Loss *</label>
-                <input type="text" id="slInput" placeholder="2640.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>TP1</label>
-                <input type="text" id="tp1Input" placeholder="2660.00" />
-              </div>
-
-              <div class="form-group">
-                <label>TP2</label>
-                <input type="text" id="tp2Input" placeholder="2670.00" />
-              </div>
-
-              <div class="form-group">
-                <label>TP3</label>
-                <input type="text" id="tp3Input" placeholder="2680.00" />
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Analysis / Notes</label>
-              <textarea id="notesInput" placeholder="Setup details, confluence, etc."></textarea>
-            </div>
-
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" id="postAlertBtn">
-                📡 Post Alert
-              </button>
-              <button type="button" class="btn btn-secondary" id="cancelAlertBtn">
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="items-list">
-          <h2 style="color: var(--gold); margin-bottom: 1rem;">Active Alerts</h2>
-          <div id="alertsList"></div>
-        </div>
+      <div class="items-list">
+        <div class="items-list-title">Recent Manual Entries</div>
+        <p style="color: var(--text-2); font-size: 0.8125rem; margin-bottom: 1rem;">
+          These are trades you manually added. They appear in your alerts page Performance Overview.
+        </p>
+        <div id="manualTradesList"></div>
       </div>
-
-      <!-- MANUAL TRADE HISTORY TAB -->
-      <div id="history-content" class="tab-content">
-        <div class="form-section">
-          <h2>📝 Add Manual Trade to History</h2>
-          <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">
-            Use this to add trades you forgot to record. They'll appear in the Performance Overview.
-          </p>
-          
-          <form id="manualTradeForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Date Closed *</label>
-                <input type="datetime-local" id="manualClosedAt" required />
-              </div>
-
-              <div class="form-group">
-                <label>Pair *</label>
-                <select id="manualPair" required>
-                  <option value="XAUUSD">XAUUSD (Gold)</option>
-                  <option value="XAGUSD">XAGUSD (Silver)</option>
-                  <option value="BTCUSD">BTCUSD (Bitcoin)</option>
-                  <option value="ETHUSD">ETHUSD (Ethereum)</option>
-                  <option value="US30">US30 (Dow Jones)</option>
-                  <option value="NAS100">NAS100 (Nasdaq)</option>
-                  <option value="SPX500">SPX500 (S&P 500)</option>
-                  <option value="EURUSD">EURUSD</option>
-                  <option value="GBPUSD">GBPUSD</option>
-                  <option value="USDJPY">USDJPY</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Direction *</label>
-                <select id="manualDirection" required>
-                  <option value="Buy">Buy</option>
-                  <option value="Sell">Sell</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Entry Price *</label>
-                <input type="number" step="0.01" id="manualEntry" placeholder="2650.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>Exit Price *</label>
-                <input type="number" step="0.01" id="manualExit" placeholder="2660.00" required />
-              </div>
-
-              <div class="form-group">
-                <label>Result *</label>
-                <select id="manualResult" required>
-                  <option value="win">WIN</option>
-                  <option value="loss">LOSS</option>
-                  <option value="be">BREAK EVEN</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Pips/Points *</label>
-                <input type="number" step="0.1" id="manualPips" placeholder="50.0" required />
-                <small style="color: var(--text-dim); font-size: 0.8rem;">Enter positive for wins, negative for losses</small>
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label>Notes (Optional)</label>
-              <textarea id="manualNotes" placeholder="Why did you take this trade? What happened?" rows="3"></textarea>
-            </div>
-
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" id="submitManualTradeBtn">
-                ➕ Add Trade to History
-              </button>
-              <button type="button" class="btn btn-secondary" id="clearManualTradeBtn">
-                Clear Form
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="items-list">
-          <h2 style="color: var(--gold); margin-bottom: 1rem;">Recent Manual Entries</h2>
-          <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
-            These are trades you manually added. They appear in your alerts page Performance Overview.
-          </p>
-          <div id="manualTradesList"></div>
-        </div>
-      </div>
-
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { 
-      getFirestore, 
+    import {
+      getFirestore,
       collection,
       addDoc,
       getDocs,
@@ -642,14 +840,19 @@
     let editingStockId = null;
     let editingAlertId = null;
 
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const tabName = tab.dataset.tab;
-        
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
         tab.classList.add('active');
         document.getElementById(`${tabName}-content`).classList.add('active');
       });
@@ -659,9 +862,7 @@
       successMessage.textContent = message;
       successMessage.style.display = 'block';
       errorMessage.style.display = 'none';
-      setTimeout(() => {
-        successMessage.style.display = 'none';
-      }, 3000);
+      setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
     }
 
     function showError(message) {
@@ -670,37 +871,26 @@
       successMessage.style.display = 'none';
     }
 
-    // Check admin access
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
+      if (!user) { window.location.href = 'login.html'; return; }
       const ADMIN_EMAILS = ['leogray15@gmail.com', 'lorenzo.versari@icloud.com'];
-      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'gefruLBk5qMXDZGmWdSo6wPNo3E3'];
-
+      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
       if (!ADMIN_EMAILS.includes(user.email) && !ADMIN_UIDS.includes(user.uid)) {
         showError('Access denied. Admin only.');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 2000);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
         return;
       }
-
       loadStocks();
       loadAlerts();
     });
 
     // ========== STOCK PICKS ==========
-
     const stockForm = document.getElementById('stockForm');
     const submitStockBtn = document.getElementById('submitStockBtn');
     const cancelStockBtn = document.getElementById('cancelStockBtn');
 
     stockForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const stockData = {
         ticker: document.getElementById('ticker').value.toUpperCase(),
         companyName: document.getElementById('companyName').value,
@@ -714,27 +904,24 @@
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
-
       try {
         submitStockBtn.disabled = true;
         submitStockBtn.textContent = 'Saving...';
-
         if (editingStockId) {
           await updateDoc(doc(db, 'StockPicks', editingStockId), stockData);
-          showSuccess('✅ Stock updated successfully!');
+          showSuccess('Stock updated successfully');
         } else {
           await addDoc(collection(db, 'StockPicks'), stockData);
-          showSuccess('✅ Stock added successfully!');
+          showSuccess('Stock added successfully');
         }
-
         stockForm.reset();
         editingStockId = null;
-        submitStockBtn.textContent = '➕ Add Stock';
+        submitStockBtn.textContent = 'Add Stock';
         document.getElementById('stockFormTitle').textContent = 'Add New Stock';
         loadStocks();
       } catch (error) {
         console.error('Error saving stock:', error);
-        showError('❌ Failed to save stock: ' + error.message);
+        showError('Failed to save stock: ' + error.message);
       } finally {
         submitStockBtn.disabled = false;
       }
@@ -743,7 +930,7 @@
     cancelStockBtn.addEventListener('click', () => {
       stockForm.reset();
       editingStockId = null;
-      submitStockBtn.textContent = '➕ Add Stock';
+      submitStockBtn.textContent = 'Add Stock';
       document.getElementById('stockFormTitle').textContent = 'Add New Stock';
     });
 
@@ -751,34 +938,27 @@
       try {
         const q = query(collection(db, 'StockPicks'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
-        
         const stocksList = document.getElementById('stocksList');
-        
         if (snapshot.empty) {
-          stocksList.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No stocks added yet</p>';
+          stocksList.innerHTML = '<p style="color: var(--text-2); padding: 1.5rem; text-align: center; font-size: 0.875rem;">No stocks added yet</p>';
           return;
         }
-
         stocksList.innerHTML = snapshot.docs.map(docSnap => {
           const stock = { id: docSnap.id, ...docSnap.data() };
           return `
             <div class="item-card">
               <div class="item-info">
                 <h3>
-                  ${stock.companyName}
-                  <span class="tag tag-purple">${stock.ticker}</span>
+                  ${escapeHtml(stock.companyName)}
+                  <span class="tag tag-purple">${escapeHtml(stock.ticker)}</span>
                 </h3>
                 <div class="item-details">
-                  ${stock.sector} • ${stock.region || 'N/A'} • Risk: ${stock.riskLevel}
+                  ${escapeHtml(stock.sector)} · ${escapeHtml(stock.region) || 'N/A'} · Risk: ${escapeHtml(stock.riskLevel)}
                 </div>
               </div>
               <div class="item-actions">
-                <button class="btn btn-primary btn-sm" onclick="editStock('${stock.id}')">
-                  Edit
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteStock('${stock.id}', '${stock.ticker}')">
-                  Delete
-                </button>
+                <button class="btn btn-secondary btn-sm" onclick="editStock('${escapeHtml(stock.id)}')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStock('${escapeHtml(stock.id)}', '${escapeHtml(stock.ticker)}')">Delete</button>
               </div>
             </div>
           `;
@@ -793,10 +973,8 @@
       try {
         const docRef = doc(db, 'StockPicks', stockId);
         const docSnap = await getDoc(docRef);
-        
         if (docSnap.exists()) {
           const stock = docSnap.data();
-          
           document.getElementById('ticker').value = stock.ticker;
           document.getElementById('companyName').value = stock.companyName;
           document.getElementById('category').value = stock.category;
@@ -806,9 +984,8 @@
           document.getElementById('entryLow').value = stock.entryLow || '';
           document.getElementById('entryHigh').value = stock.entryHigh || '';
           document.getElementById('thesis').value = stock.thesis;
-          
           editingStockId = stockId;
-          submitStockBtn.textContent = '💾 Update Stock';
+          submitStockBtn.textContent = 'Update Stock';
           document.getElementById('stockFormTitle').textContent = 'Edit Stock';
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -820,10 +997,9 @@
 
     window.deleteStock = async (stockId, ticker) => {
       if (!confirm(`Delete ${ticker}?`)) return;
-
       try {
         await deleteDoc(doc(db, 'StockPicks', stockId));
-        showSuccess(`✅ ${ticker} deleted`);
+        showSuccess(`${ticker} deleted`);
         loadStocks();
       } catch (error) {
         console.error('Error deleting stock:', error);
@@ -832,14 +1008,12 @@
     };
 
     // ========== TRADE ALERTS ==========
-
     const alertForm = document.getElementById('alertForm');
     const postAlertBtn = document.getElementById('postAlertBtn');
     const cancelAlertBtn = document.getElementById('cancelAlertBtn');
 
     alertForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const alertData = {
         pair: document.getElementById('pairInput').value,
         direction: document.getElementById('directionSelect').value,
@@ -854,33 +1028,26 @@
         createdAt: serverTimestamp(),
         createdBy: auth.currentUser.uid,
         createdByEmail: auth.currentUser.email,
-        reactions: {
-          fire: [],
-          rocket: [],
-          eyes: []
-        }
+        reactions: { fire: [], rocket: [], eyes: [] }
       };
-
       try {
         postAlertBtn.disabled = true;
         postAlertBtn.textContent = 'Posting...';
-
         if (editingAlertId) {
           await updateDoc(doc(db, 'alerts_live', editingAlertId), alertData);
-          showSuccess('✅ Alert updated!');
+          showSuccess('Alert updated');
         } else {
           await addDoc(collection(db, 'alerts_live'), alertData);
-          showSuccess('✅ Alert posted!');
+          showSuccess('Alert posted');
         }
-
         alertForm.reset();
         editingAlertId = null;
-        postAlertBtn.textContent = '📡 Post Alert';
+        postAlertBtn.textContent = 'Post Alert';
         document.getElementById('alertFormTitle').textContent = 'Post New Trade Alert';
         loadAlerts();
       } catch (error) {
         console.error('Error saving alert:', error);
-        showError('❌ Failed to post alert: ' + error.message);
+        showError('Failed to post alert: ' + error.message);
       } finally {
         postAlertBtn.disabled = false;
       }
@@ -889,7 +1056,7 @@
     cancelAlertBtn.addEventListener('click', () => {
       alertForm.reset();
       editingAlertId = null;
-      postAlertBtn.textContent = '📡 Post Alert';
+      postAlertBtn.textContent = 'Post Alert';
       document.getElementById('alertFormTitle').textContent = 'Post New Trade Alert';
     });
 
@@ -897,34 +1064,27 @@
       try {
         const q = query(collection(db, 'alerts_live'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
-        
         const alertsList = document.getElementById('alertsList');
-        
         if (snapshot.empty) {
-          alertsList.innerHTML = '<p style="color: var(--text-dim); padding: 1rem;">No active alerts</p>';
+          alertsList.innerHTML = '<p style="color: var(--text-2); padding: 1.5rem; text-align: center; font-size: 0.875rem;">No active alerts</p>';
           return;
         }
-
         alertsList.innerHTML = snapshot.docs.map(docSnap => {
           const alert = { id: docSnap.id, ...docSnap.data() };
           return `
             <div class="item-card">
               <div class="item-info">
                 <h3>
-                  ${alert.pair} ${alert.direction}
-                  <span class="tag tag-purple">${alert.entry}</span>
+                  ${escapeHtml(alert.pair)} ${escapeHtml(alert.direction)}
+                  <span class="tag tag-purple">${escapeHtml(alert.entry)}</span>
                 </h3>
                 <div class="item-details">
-                  Entry: ${alert.entry} • SL: ${alert.sl} • TP1: ${alert.tp1 || '-'}
+                  Entry: ${escapeHtml(alert.entry)} · SL: ${escapeHtml(alert.sl)} · TP1: ${escapeHtml(alert.tp1) || '-'}
                 </div>
               </div>
               <div class="item-actions">
-                <button class="btn btn-primary btn-sm" onclick="editAlert('${alert.id}')">
-                  Edit
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteAlert('${alert.id}', '${alert.pair}')">
-                  Delete
-                </button>
+                <button class="btn btn-secondary btn-sm" onclick="editAlert('${escapeHtml(alert.id)}')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteAlert('${escapeHtml(alert.id)}', '${escapeHtml(alert.pair)}')">Delete</button>
               </div>
             </div>
           `;
@@ -939,10 +1099,8 @@
       try {
         const docRef = doc(db, 'alerts_live', alertId);
         const docSnap = await getDoc(docRef);
-        
         if (docSnap.exists()) {
           const alert = docSnap.data();
-          
           document.getElementById('pairInput').value = alert.pair;
           document.getElementById('directionSelect').value = alert.direction;
           document.getElementById('entryInput').value = alert.entry;
@@ -951,12 +1109,9 @@
           document.getElementById('tp2Input').value = alert.tp2 || '';
           document.getElementById('tp3Input').value = alert.tp3 || '';
           document.getElementById('notesInput').value = alert.notes || '';
-          
           editingAlertId = alertId;
-          postAlertBtn.textContent = '💾 Update Alert';
+          postAlertBtn.textContent = 'Update Alert';
           document.getElementById('alertFormTitle').textContent = 'Edit Trade Alert';
-          
-          // Switch to alerts tab
           document.querySelector('[data-tab="alerts"]').click();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -968,10 +1123,9 @@
 
     window.deleteAlert = async (alertId, pair) => {
       if (!confirm(`Delete ${pair} alert?`)) return;
-
       try {
         await deleteDoc(doc(db, 'alerts_live', alertId));
-        showSuccess(`✅ ${pair} alert deleted`);
+        showSuccess(`${pair} alert deleted`);
         loadAlerts();
       } catch (error) {
         console.error('Error deleting alert:', error);
@@ -979,20 +1133,15 @@
       }
     };
 
-    // ============================================================================
-    // MANUAL TRADE HISTORY FORM
-    // ============================================================================
-
+    // ========== MANUAL TRADE HISTORY ==========
     const manualTradeForm = document.getElementById('manualTradeForm');
     const clearManualTradeBtn = document.getElementById('clearManualTradeBtn');
 
     manualTradeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
       const submitBtn = document.getElementById('submitManualTradeBtn');
       submitBtn.disabled = true;
       submitBtn.textContent = 'Adding...';
-
       try {
         const closedAtInput = document.getElementById('manualClosedAt').value;
         const pair = document.getElementById('manualPair').value;
@@ -1002,123 +1151,87 @@
         const result = document.getElementById('manualResult').value;
         const pips = parseFloat(document.getElementById('manualPips').value);
         const notes = document.getElementById('manualNotes').value;
-
-        // Convert datetime-local to Firestore timestamp
         const closedAt = new Date(closedAtInput);
-
         const tradeData = {
-          pair,
-          direction,
-          entry,
-          exit,
-          result,
-          pips,
+          pair, direction, entry, exit, result, pips,
           notes: notes || null,
           closedAt: closedAt,
           createdBy: auth.currentUser.uid,
           createdByEmail: auth.currentUser.email,
-          manualEntry: true, // Flag to identify manual entries
+          manualEntry: true,
           createdAt: serverTimestamp()
         };
-
         await addDoc(collection(db, 'alerts_history'), tradeData);
-
-        showSuccess(`✅ Trade added to history! ${pair} ${direction} - ${result.toUpperCase()}`);
+        showSuccess(`Trade added: ${pair} ${direction} - ${result.toUpperCase()}`);
         manualTradeForm.reset();
         loadManualTrades();
-
       } catch (error) {
         console.error('Error adding manual trade:', error);
         showError('Failed to add trade: ' + error.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = '➕ Add Trade to History';
+        submitBtn.textContent = 'Add Trade to History';
       }
     });
 
-    clearManualTradeBtn.addEventListener('click', () => {
-      manualTradeForm.reset();
-    });
+    clearManualTradeBtn.addEventListener('click', () => { manualTradeForm.reset(); });
 
     async function loadManualTrades() {
       try {
-        const q = query(
-          collection(db, 'alerts_history')
-        );
-        
+        const q = query(collection(db, 'alerts_history'));
         const snapshot = await getDocs(q);
         const manualTradesDiv = document.getElementById('manualTradesList');
-
         if (snapshot.empty) {
-          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
+          manualTradesDiv.innerHTML = '<p style="color: var(--text-2); text-align: center; padding: 2rem; font-size: 0.875rem;">No manual trades added yet.</p>';
           return;
         }
-
-        // Collect and sort
         const trades = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
-          if (data.manualEntry === true) {
-            trades.push({ id: doc.id, ...data });
-          }
+          if (data.manualEntry === true) trades.push({ id: doc.id, ...data });
         });
-
-        // Sort by closedAt (newest first)
         trades.sort((a, b) => {
           const aTime = a.closedAt?.toMillis ? a.closedAt.toMillis() : new Date(a.closedAt).getTime();
           const bTime = b.closedAt?.toMillis ? b.closedAt.toMillis() : new Date(b.closedAt).getTime();
           return bTime - aTime;
         });
-
         if (trades.length === 0) {
-          manualTradesDiv.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">No manual trades added yet.</p>';
+          manualTradesDiv.innerHTML = '<p style="color: var(--text-2); text-align: center; padding: 2rem; font-size: 0.875rem;">No manual trades added yet.</p>';
           return;
         }
-
         manualTradesDiv.innerHTML = trades.map(trade => {
           const dateStr = trade.closedAt?.toDate ? trade.closedAt.toDate().toLocaleString() : new Date(trade.closedAt).toLocaleString();
           const resultColor = trade.result === 'win' ? 'var(--green)' : trade.result === 'loss' ? 'var(--red)' : 'var(--gold)';
           const pipsColor = trade.pips >= 0 ? 'var(--green)' : 'var(--red)';
-
           return `
-            <div class="item-card">
-              <div class="item-header">
-                <h3>${trade.pair} - ${trade.direction}</h3>
-                <button class="btn btn-danger btn-sm" onclick="deleteManualTrade('${trade.id}', '${trade.pair}')">
-                  🗑️ Delete
-                </button>
-              </div>
-              <div class="item-details">
-                <p><strong>Closed:</strong> ${dateStr}</p>
-                <p><strong>Entry:</strong> ${trade.entry}</p>
-                <p><strong>Exit:</strong> ${trade.exit}</p>
-                <p><strong>Result:</strong> <span style="color: ${resultColor}; font-weight: 600;">${trade.result.toUpperCase()}</span></p>
-                <p><strong>Pips:</strong> <span style="color: ${pipsColor}; font-weight: 600;">${trade.pips >= 0 ? '+' : ''}${trade.pips}</span></p>
-                ${trade.notes ? `<p><strong>Notes:</strong> ${trade.notes}</p>` : ''}
-                <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">
-                  <em>Manual entry by ${trade.createdByEmail}</em>
-                </p>
+            <div class="item-card" style="grid-template-columns: 1fr;">
+              <div>
+                <div class="item-header">
+                  <h3>${escapeHtml(trade.pair)} — ${escapeHtml(trade.direction)}</h3>
+                  <button class="btn btn-danger btn-sm" onclick="deleteManualTrade('${escapeHtml(trade.id)}', '${escapeHtml(trade.pair)}')">Delete</button>
+                </div>
+                <div class="item-details">
+                  <p><strong>Closed:</strong> ${escapeHtml(dateStr)}</p>
+                  <p><strong>Entry:</strong> ${escapeHtml(String(trade.entry))} → <strong>Exit:</strong> ${escapeHtml(String(trade.exit))}</p>
+                  <p><strong>Result:</strong> <span style="color: ${resultColor}; font-weight: 700;">${escapeHtml(trade.result).toUpperCase()}</span> · <strong>Pips:</strong> <span style="color: ${pipsColor}; font-weight: 700;">${trade.pips >= 0 ? '+' : ''}${escapeHtml(String(trade.pips))}</span></p>
+                  ${trade.notes ? `<p style="margin-top: 0.375rem;"><strong>Notes:</strong> ${escapeHtml(trade.notes)}</p>` : ''}
+                  <p style="color: var(--text-2); font-size: 0.75rem; margin-top: 0.5rem;"><em>Manual entry by ${escapeHtml(trade.createdByEmail)}</em></p>
+                </div>
               </div>
             </div>
           `;
         }).join('');
-
       } catch (error) {
         console.error('Error loading manual trades:', error);
-        document.getElementById('manualTradesList').innerHTML = `
-          <p style="color: var(--red); text-align: center; padding: 2rem;">
-            Error loading trades: ${error.message}
-          </p>
-        `;
+        document.getElementById('manualTradesList').innerHTML = `<p style="color: var(--red); text-align: center; padding: 2rem;">Error loading trades: ${error.message}</p>`;
       }
     }
 
     window.deleteManualTrade = async (tradeId, pair) => {
       if (!confirm(`Delete this ${pair} trade from history?`)) return;
-
       try {
         await deleteDoc(doc(db, 'alerts_history', tradeId));
-        showSuccess(`✅ Trade deleted from history`);
+        showSuccess('Trade deleted from history');
         loadManualTrades();
       } catch (error) {
         console.error('Error deleting trade:', error);
@@ -1126,9 +1239,7 @@
       }
     };
 
-    // Load manual trades on init
     loadManualTrades();
-
   </script>
 </body>
 </html>

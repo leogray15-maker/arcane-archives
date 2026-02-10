@@ -38,7 +38,15 @@ exports.handler = async (event) => {
 
     const body = event.body ? JSON.parse(event.body) : {};
     const { priceId, userId, userEmail, productName, productId, color } = body;
-    const orderId = `ord_${userId || 'guest'}_${Date.now()}`;
+
+    // Security: Input validation functions
+    const validateEmail = (email) => !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const validatePriceId = (id) => !id || /^price_[a-zA-Z0-9]+$/.test(id);
+    const validateUid = (uid) => !uid || /^[a-zA-Z0-9]{5,50}$/.test(uid);
+    const sanitizeString = (str, maxLen = 200) => {
+      if (!str) return '';
+      return String(str).slice(0, maxLen).replace(/[<>\"\']/g, '');
+    };
 
     if (!priceId) {
       return {
@@ -48,11 +56,42 @@ exports.handler = async (event) => {
       };
     }
 
+    if (!validatePriceId(priceId)) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Invalid price ID format" }),
+      };
+    }
+
+    if (userEmail && !validateEmail(userEmail)) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Invalid email format" }),
+      };
+    }
+
+    if (userId && !validateUid(userId)) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Invalid user ID format" }),
+      };
+    }
+
+    // Sanitize string inputs
+    const safeProductName = sanitizeString(productName, 100);
+    const safeProductId = sanitizeString(productId, 50);
+    const safeColor = sanitizeString(color, 30);
+
+    const orderId = `ord_${userId || 'guest'}_${Date.now()}`;
+
     const baseUrl =
       process.env.URL ||
       process.env.DEPLOY_PRIME_URL ||
       process.env.DEPLOY_URL ||
-      "https://thearcanearchives.netlify.app";
+      "https://arcanearchives.shop";
 
     console.log("🛍️ Creating store checkout for:", userEmail);
     console.log("📦 Product:", productName);
@@ -76,10 +115,10 @@ exports.handler = async (event) => {
       metadata: {
         source: "arcane_store",
         orderId: orderId,
-        productName: productName || "",
-        productId: productId || "",
+        productName: safeProductName,
+        productId: safeProductId,
         priceId: priceId || "",
-        color: color || "",
+        color: safeColor,
         firebaseUid: userId || "",
         email: userEmail || "",
       },

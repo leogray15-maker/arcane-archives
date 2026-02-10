@@ -61,7 +61,7 @@ exports.handler = async (event) => {
       process.env.URL ||
       process.env.DEPLOY_PRIME_URL ||
       process.env.DEPLOY_URL ||
-      "https://thearcanearchives.netlify.app";
+      "https://arcanearchives.shop";
 
     // Stripe metadata has size limits — keep it compact.
     // If you later want unlimited cart size, switch to a server-side cartId.

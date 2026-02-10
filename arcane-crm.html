@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Arcane CRM | Member Intelligence Platform</title>
+    <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1f1f23;
+            --bg-card-hover: #27272a;
+            --bg-elevated: #2d2d32;
+            --purple-primary: #8b5cf6;
+            --purple-dark: #7c3aed;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --gold-dark: #f59e0b;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+
+            --champion: #22c55e;
+            --active: #3b82f6;
+            --moderate: #f59e0b;
+            --at-risk: #f97316;
+            --dormant: #ef4444;
+            --churned: #71717a;
+
+            --sidebar-width: 280px;
+            --header-height: 72px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ========== GLASS EFFECTS ========== */
+        .glass {
+            background: rgba(31, 31, 35, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .glass-border {
+            border: 1px solid var(--border);
+        }
+
+        /* ========== MOBILE HEADER ========== */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(9, 9, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 200;
+            padding: 0 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-header-title {
+            font-size: 1.125rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mobile-menu-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--purple-primary);
+        }
+
+        .back-to-dashboard {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .back-to-dashboard:hover {
+            background: var(--bg-elevated);
+            border-color: var(--purple-primary);
+            color: var(--text);
+        }
+
+        /* ========== APP CONTAINER ========== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, rgba(31, 31, 35, 0.95), rgba(9, 9, 11, 0.98));
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+
+        .sidebar-logo-text {
+            font-size: 1.25rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-tagline {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-left: 3.25rem;
+        }
+
+        .sidebar-back {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-back:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--purple-primary);
+            color: var(--text);
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding: 0 0.75rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(251, 191, 36, 0.1));
+            color: var(--text);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: var(--purple-primary);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .nav-icon {
+            font-size: 1.125rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: white;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+        }
+
+        .sidebar-stats {
+            margin-top: auto;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(251, 191, 36, 0.05));
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .sidebar-stat {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-stat:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar-stat-label {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-stat-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text), var(--purple-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        /* ========== METRICS GRID ========== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--purple-primary), var(--gold));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, var(--purple-primary), var(--purple-dark));
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .metric-change {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple-primary), var(--purple-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-elevated);
+            border-color: var(--purple-primary);
+            color: var(--text);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+        }
+
+        /* ========== MEMBER CARDS ========== */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .member-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .member-card.champion { border-left: 3px solid var(--champion); }
+        .member-card.active { border-left: 3px solid var(--active); }
+        .member-card.moderate { border-left: 3px solid var(--moderate); }
+        .member-card.at-risk { border-left: 3px solid var(--at-risk); }
+        .member-card.dormant { border-left: 3px solid var(--dormant); }
+        .member-card.churned { border-left: 3px solid var(--churned); }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--purple-primary), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .member-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .member-name {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-email {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .member-stat {
+            text-align: center;
+        }
+
+        .member-stat-value {
+            font-size: 1.125rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.125rem;
+        }
+
+        .member-stat-label {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .engagement-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 0.75rem;
+        }
+
+        .engagement-badge.champion { background: rgba(34, 197, 94, 0.15); color: var(--champion); }
+        .engagement-badge.active { background: rgba(59, 130, 246, 0.15); color: var(--active); }
+        .engagement-badge.moderate { background: rgba(245, 158, 11, 0.15); color: var(--moderate); }
+        .engagement-badge.at-risk { background: rgba(249, 115, 22, 0.15); color: var(--at-risk); }
+        .engagement-badge.dormant { background: rgba(239, 68, 68, 0.15); color: var(--dormant); }
+        .engagement-badge.churned { background: rgba(113, 113, 122, 0.15); color: var(--churned); }
+
+        /* ========== VIEWS ========== */
+        .view-container {
+            display: none;
+            animation: fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-container.active {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========== FILTER BAR ========== */
+        .filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 0.625rem 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .filter-chip:hover {
+            background: var(--bg-elevated);
+            border-color: var(--purple-primary);
+            color: var(--text);
+        }
+
+        .filter-chip.active {
+            background: var(--purple-primary);
+            border-color: var(--purple-primary);
+            color: white;
+        }
+
+        /* ========== SEARCH ========== */
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.25rem 1rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.125rem;
+            color: var(--text-muted);
+        }
+
+        /* ========== MODAL ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        /* ========== CHARTS ========== */
+        .chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+
+        canvas {
+            max-height: 280px;
+        }
+
+        /* ========== RETENTION CENTER ========== */
+        .retention-card {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(239, 68, 68, 0.08));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .retention-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .retention-member {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .retention-risk {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            font-size: 0.8125rem;
+            font-weight: 700;
+        }
+
+        .retention-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .retention-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ========== TABLE ========== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table tr {
+            transition: background 0.2s;
+        }
+
+        .data-table tr:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        /* ========== LOADING ========== */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--purple-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== NOTIFICATION ========== */
+        .notification {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-color: var(--success);
+        }
+
+        .notification.error {
+            border-color: var(--danger);
+        }
+
+        /* ========== AFFILIATE SECTION ========== */
+        .affiliate-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(59, 130, 246, 0.08));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .affiliate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .affiliate-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .affiliate-earnings {
+            font-size: 1.5rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--success);
+        }
+
+        .referrals-list {
+            margin-top: 1rem;
+        }
+
+        .referral-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .referral-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .referral-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .referral-status.active { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .referral-status.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        /* ========== MOBILE OVERLAY ========== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1024px) {
+            .mobile-header {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 150;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-top: calc(var(--header-height) + 1.5rem);
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .members-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            /* Table responsive */
+            .data-table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .data-table th,
+            .data-table td {
+                white-space: nowrap;
+                padding: 0.625rem 0.75rem;
+                font-size: 0.8125rem;
+            }
+
+            /* Chart container responsive */
+            .chart-container {
+                padding: 1rem;
+            }
+
+            canvas {
+                max-height: 220px;
+            }
+
+            /* Retention card responsive */
+            .retention-card,
+            .affiliate-card {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            :root {
+                --header-height: 64px;
+            }
+
+            .main-content {
+                padding: 0.875rem;
+                padding-top: calc(var(--header-height) + 0.875rem);
+            }
+
+            .page-header {
+                margin-bottom: 1.25rem;
+            }
+
+            .page-title {
+                font-size: 1.25rem;
+                line-height: 1.3;
+            }
+
+            .page-subtitle {
+                font-size: 0.875rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.625rem;
+            }
+
+            .metric-card {
+                padding: 0.875rem;
+                border-radius: 12px;
+            }
+
+            .metric-header {
+                margin-bottom: 0.5rem;
+            }
+
+            .metric-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+                border-radius: 10px;
+            }
+
+            .metric-label {
+                font-size: 0.6875rem;
+            }
+
+            .metric-value {
+                font-size: 1.375rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .metric-change {
+                font-size: 0.6875rem;
+            }
+
+            /* Filter bar - horizontal scroll */
+            .filter-bar {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 0.625rem;
+                margin-bottom: 1rem;
+                margin-left: -0.875rem;
+                margin-right: -0.875rem;
+                padding-left: 0.875rem;
+                padding-right: 0.875rem;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .filter-bar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .filter-chip {
+                flex-shrink: 0;
+                padding: 0.5rem 0.875rem;
+                font-size: 0.75rem;
+            }
+
+            /* Header actions - stacked */
+            .header-actions {
+                flex-direction: row;
+                gap: 0.5rem;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+                padding: 0.625rem 0.75rem;
+                font-size: 0.8125rem;
+                justify-content: center;
+            }
+
+            /* Member cards - optimized for mobile */
+            .members-grid {
+                gap: 0.625rem;
+            }
+
+            .member-card {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+
+            .member-header {
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .member-avatar {
+                width: 42px;
+                height: 42px;
+                border-radius: 10px;
+                font-size: 1.125rem;
+            }
+
+            .member-name {
+                font-size: 0.875rem;
+            }
+
+            .member-email {
+                font-size: 0.75rem;
+            }
+
+            .member-stats {
+                gap: 0.5rem;
+                padding-top: 0.75rem;
+                margin-top: 0.75rem;
+            }
+
+            .member-stat-value {
+                font-size: 1rem;
+            }
+
+            .member-stat-label {
+                font-size: 0.625rem;
+            }
+
+            .engagement-badge {
+                padding: 0.25rem 0.625rem;
+                font-size: 0.6875rem;
+                margin-top: 0.5rem;
+            }
+
+            /* Search - full width touch-friendly */
+            .search-container {
+                margin-bottom: 1rem;
+            }
+
+            .search-input {
+                padding: 0.875rem 1rem 0.875rem 2.75rem;
+                font-size: 1rem;
+                border-radius: 10px;
+            }
+
+            .search-icon {
+                left: 0.875rem;
+            }
+
+            /* Modal - bottom sheet style */
+            .modal-overlay {
+                padding: 0;
+                align-items: flex-end;
+            }
+
+            .modal {
+                padding: 1.25rem;
+                padding-top: 2rem;
+                border-radius: 20px 20px 0 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                max-height: 90vh;
+                animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            @keyframes modalSlideUp {
+                from {
+                    transform: translateY(100%);
+                }
+                to {
+                    transform: translateY(0);
+                }
+            }
+
+            .modal::before {
+                content: '';
+                position: absolute;
+                top: 0.75rem;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 40px;
+                height: 4px;
+                background: var(--border);
+                border-radius: 2px;
+            }
+
+            .modal-close {
+                top: 0.75rem;
+                right: 0.75rem;
+                width: 32px;
+                height: 32px;
+            }
+
+            /* Modal content responsive */
+            .modal .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .modal .metric-card {
+                padding: 0.75rem;
+            }
+
+            .modal .metric-label {
+                font-size: 0.625rem;
+            }
+
+            .modal .metric-value {
+                font-size: 1rem;
+            }
+
+            /* Notification - full width at bottom */
+            .notification {
+                left: 0.75rem;
+                right: 0.75rem;
+                bottom: 0.75rem;
+                padding: 0.875rem 1rem;
+                font-size: 0.875rem;
+                border-radius: 10px;
+            }
+
+            /* Table responsive - horizontal scroll */
+            .chart-container {
+                padding: 0.875rem;
+                border-radius: 12px;
+                margin-bottom: 1rem;
+            }
+
+            .chart-title {
+                font-size: 0.875rem;
+                margin-bottom: 1rem;
+            }
+
+            canvas {
+                max-height: 180px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.5rem 0.625rem;
+                font-size: 0.75rem;
+            }
+
+            .data-table .engagement-badge {
+                padding: 0.125rem 0.5rem;
+                font-size: 0.625rem;
+            }
+
+            /* Retention cards */
+            .retention-card {
+                padding: 0.875rem;
+                border-radius: 12px;
+                margin-bottom: 0.75rem;
+            }
+
+            .retention-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .retention-member {
+                font-size: 0.9375rem;
+            }
+
+            .retention-risk {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.625rem;
+            }
+
+            .retention-info {
+                font-size: 0.8125rem;
+                line-height: 1.7;
+            }
+
+            .retention-actions {
+                margin-top: 0.75rem;
+            }
+
+            .retention-actions .btn {
+                flex: 1;
+            }
+
+            /* Affiliate cards */
+            .affiliate-card {
+                padding: 0.875rem;
+                border-radius: 12px;
+                margin-bottom: 0.75rem;
+            }
+
+            .affiliate-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+
+            .affiliate-name {
+                font-size: 1rem;
+            }
+
+            .affiliate-earnings {
+                font-size: 1.25rem;
+            }
+
+            /* Revenue metrics - 2x2 grid on mobile */
+            #revenueView .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            /* Sidebar - when open */
+            .sidebar {
+                width: 85%;
+                max-width: 300px;
+            }
+
+            .sidebar-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .sidebar-logo img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .sidebar-logo-text {
+                font-size: 1.125rem;
+            }
+
+            .sidebar-tagline {
+                font-size: 0.6875rem;
+                margin-left: 3rem;
+            }
+
+            .sidebar-back {
+                padding: 0.625rem 0.875rem;
+                font-size: 0.8125rem;
+                margin-bottom: 1rem;
+            }
+
+            .nav-item {
+                padding: 0.875rem;
+                font-size: 0.875rem;
+            }
+
+            .nav-icon {
+                font-size: 1.125rem;
+            }
+
+            .sidebar-stats {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+
+            .sidebar-stat-value {
+                font-size: 1.25rem;
+            }
+
+            /* Mobile header */
+            .mobile-header {
+                height: var(--header-height);
+                padding: 0 0.75rem;
+            }
+
+            .mobile-header-title {
+                font-size: 1rem;
+            }
+
+            .mobile-menu-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                font-size: 1.125rem;
+            }
+
+            .back-to-dashboard {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8125rem;
+                border-radius: 8px;
+            }
+
+            /* Loading state */
+            .loading {
+                padding: 2rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            .loading-spinner {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 375px) {
+            .main-content {
+                padding: 0.75rem;
+                padding-top: calc(var(--header-height) + 0.75rem);
+            }
+
+            .metrics-grid {
+                gap: 0.5rem;
+            }
+
+            .metric-card {
+                padding: 0.75rem;
+            }
+
+            .metric-value {
+                font-size: 1.25rem;
+            }
+
+            .member-card {
+                padding: 0.875rem;
+            }
+
+            .member-avatar {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+
+            .modal .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Touch optimization for interactive elements */
+        @media (hover: none) and (pointer: coarse) {
+            .member-card:active {
+                transform: scale(0.98);
+            }
+
+            .nav-item:active {
+                transform: translateX(2px);
+                background: rgba(139, 92, 246, 0.15);
+            }
+
+            .filter-chip:active {
+                transform: scale(0.95);
+            }
+
+            .btn:active {
+                transform: scale(0.97);
+            }
+        }
+
+        /* Safe area insets for notched devices */
+        @supports (padding: max(0px)) {
+            .mobile-header {
+                padding-left: max(0.75rem, env(safe-area-inset-left));
+                padding-right: max(0.75rem, env(safe-area-inset-right));
+            }
+
+            .main-content {
+                padding-left: max(0.875rem, env(safe-area-inset-left));
+                padding-right: max(0.875rem, env(safe-area-inset-right));
+            }
+
+            .notification {
+                bottom: max(0.75rem, env(safe-area-inset-bottom));
+                left: max(0.75rem, env(safe-area-inset-left));
+                right: max(0.75rem, env(safe-area-inset-right));
+            }
+
+            .modal {
+                padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+            }
+        }
+
+        /* Landscape mode adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .modal {
+                max-height: 100vh;
+                border-radius: 12px;
+                position: relative;
+                margin: auto;
+                max-width: 500px;
+            }
+
+            .modal-overlay {
+                align-items: center;
+                padding: 1rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
+        <div class="mobile-header-title">Arcane CRM</div>
+        <a href="dashboard.html" class="back-to-dashboard" aria-label="Back to dashboard">←</a>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="ArcaneA.png" alt="Arcane">
+                    <span class="sidebar-logo-text">ARCANE CRM</span>
+                </div>
+                <div class="sidebar-tagline">Member Intelligence</div>
+            </div>
+
+            <a href="dashboard.html" class="sidebar-back">
+                <span>←</span> Back to Dashboard
+            </a>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                <div class="nav-item active" onclick="switchView('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="switchView('members')">
+                    <span class="nav-icon">👥</span>
+                    <span>All Members</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Engagement</div>
+                <div class="nav-item" onclick="switchView('engagement')">
+                    <span class="nav-icon">⚡</span>
+                    <span>Engagement</span>
+                </div>
+                <div class="nav-item" onclick="switchView('retention')">
+                    <span class="nav-icon">🎯</span>
+                    <span>Retention</span>
+                    <span class="nav-badge" id="atRiskBadge">0</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Analytics</div>
+                <div class="nav-item" onclick="switchView('revenue')">
+                    <span class="nav-icon">💰</span>
+                    <span>Revenue</span>
+                </div>
+                <div class="nav-item" onclick="switchView('affiliates')">
+                    <span class="nav-icon">🤝</span>
+                    <span>Affiliates</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Quick Links</div>
+                <div class="nav-item" onclick="window.location.href='admin-panel.html'">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Admin Panel</span>
+                </div>
+                <div class="nav-item" onclick="window.location.href='affiliate-admin.html'">
+                    <span class="nav-icon">💸</span>
+                    <span>Payouts</span>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Monthly Revenue</div>
+                    <div class="sidebar-stat-value" id="sidebarMRR">£0</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Active Members</div>
+                    <div class="sidebar-stat-value" id="sidebarActive">0</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Avg Score</div>
+                    <div class="sidebar-stat-value" id="sidebarScore">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard View -->
+            <div class="view-container active" id="dashboardView">
+                <div class="page-header">
+                    <h1 class="page-title">Member Intelligence</h1>
+                    <p class="page-subtitle">Real-time insights into your Arcane Archives community</p>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="syncFromFirebase()">
+                            <span>🔄</span> Sync Data
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportToCSV()">
+                            <span>📥</span> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">👥</div>
+                        </div>
+                        <div class="metric-label">Total Members</div>
+                        <div class="metric-value" id="totalMembers">0</div>
+                        <div class="metric-change positive" id="memberGrowth">Loading...</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">⚡</div>
+                        </div>
+                        <div class="metric-label">Active Members</div>
+                        <div class="metric-value" id="activeMembers">0</div>
+                        <div class="metric-change positive" id="activeRate">0% active</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">💰</div>
+                        </div>
+                        <div class="metric-label">Monthly Revenue</div>
+                        <div class="metric-value" id="mrrValue">£0</div>
+                        <div class="metric-change positive">£128/member</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">📈</div>
+                        </div>
+                        <div class="metric-label">Avg Engagement</div>
+                        <div class="metric-value" id="avgEngagement">0</div>
+                        <div class="metric-change positive">/100 score</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">⚠️</div>
+                        </div>
+                        <div class="metric-label">At Risk</div>
+                        <div class="metric-value" id="atRiskCount">0</div>
+                        <div class="metric-change negative" id="atRiskPercent">0%</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">🌟</div>
+                        </div>
+                        <div class="metric-label">Champions</div>
+                        <div class="metric-value" id="championsCount">0</div>
+                        <div class="metric-change positive" id="championsPercent">0%</div>
+                    </div>
+                </div>
+
+                <div class="page-header">
+                    <h2 class="page-title" style="font-size: 1.25rem;">Recent Members</h2>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-chip active" onclick="filterMembers('all')">All</div>
+                    <div class="filter-chip" onclick="filterMembers('champion')">🌟 Champions</div>
+                    <div class="filter-chip" onclick="filterMembers('active')">⚡ Active</div>
+                    <div class="filter-chip" onclick="filterMembers('moderate')">📊 Moderate</div>
+                    <div class="filter-chip" onclick="filterMembers('at-risk')">⚠️ At Risk</div>
+                    <div class="filter-chip" onclick="filterMembers('dormant')">💤 Dormant</div>
+                    <div class="filter-chip" onclick="filterMembers('churned')">❌ Churned</div>
+                </div>
+
+                <div class="members-grid" id="membersGrid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        Loading members...
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Members View -->
+            <div class="view-container" id="membersView">
+                <div class="page-header">
+                    <h1 class="page-title">All Members</h1>
+                    <p class="page-subtitle">Complete member database</p>
+                </div>
+
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search members..." id="memberSearch" onkeyup="searchMembers()">
+                </div>
+
+                <div class="members-grid" id="allMembersGrid"></div>
+            </div>
+
+            <!-- Engagement View -->
+            <div class="view-container" id="engagementView">
+                <div class="page-header">
+                    <h1 class="page-title">Engagement Tracker</h1>
+                    <p class="page-subtitle">Member activity and trends</p>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">📊 Engagement Trend (Last 30 Days)</div>
+                    <canvas id="engagementChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">⚡ Top Engaged Members</div>
+                    <table class="data-table" id="topEngagedTable">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Member</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Retention View -->
+            <div class="view-container" id="retentionView">
+                <div class="page-header">
+                    <h1 class="page-title">Retention Center</h1>
+                    <p class="page-subtitle">At-risk member management</p>
+                </div>
+
+                <div id="retentionList"></div>
+            </div>
+
+            <!-- Revenue View -->
+            <div class="view-container" id="revenueView">
+                <div class="page-header">
+                    <h1 class="page-title">Revenue Analytics</h1>
+                    <p class="page-subtitle">MRR, ARR, and financial insights</p>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Monthly Recurring Revenue</div>
+                        <div class="metric-value" id="revMRR">£0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Annual Recurring Revenue</div>
+                        <div class="metric-value" id="revARR">£0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Churn Rate</div>
+                        <div class="metric-value" id="revChurn">0%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avg Lifetime Value</div>
+                        <div class="metric-value" id="revLTV">£0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">💰 MRR Growth Trend</div>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Affiliates View -->
+            <div class="view-container" id="affiliatesView">
+                <div class="page-header">
+                    <h1 class="page-title">Affiliate Hub</h1>
+                    <p class="page-subtitle">Referral tracking and commissions</p>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Affiliates</div>
+                        <div class="metric-value" id="affTotal">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Active Referrals</div>
+                        <div class="metric-value" id="affActive">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Paid</div>
+                        <div class="metric-value" id="affCommissions">£0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Pending</div>
+                        <div class="metric-value" id="affPending">£0</div>
+                    </div>
+                </div>
+
+                <div id="affiliatesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Detail Modal -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="memberModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+            authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+            projectId: "arcane-archives-3b0f5",
+            storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+            messagingSenderId: "264237235055",
+            appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+        };
+
+        // Admin check
+        const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
+
+        let db = null;
+        let auth = null;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            console.log('🔥 Firebase initialized');
+        } catch (error) {
+            console.error('❌ Firebase init error:', error);
+        }
+
+        // Auth check - redirect non-admins
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!ADMIN_UIDS.includes(user.uid)) {
+                alert('🔒 Admin access required');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+        });
+
+        // App State
+        let appState = {
+            members: [],
+            affiliates: [],
+            currentMember: null,
+            activeFilter: 'all',
+            activeView: 'dashboard',
+            loading: false
+        };
+
+        const SUBSCRIPTION_PRICE = 128;
+        const COMMISSION_AMOUNT = 25;
+
+        // Security: HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Security: Mask email for privacy (show first 2 chars + domain)
+        function maskEmail(email) {
+            if (!email || !email.includes('@')) return email || '';
+            const [local, domain] = email.split('@');
+            const masked = local.substring(0, 2) + '***';
+            return `${masked}@${domain}`;
+        }
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+
+            // Prevent body scroll when sidebar is open
+            if (sidebar.classList.contains('open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close sidebar on swipe left
+        let sidebarTouchStartX = 0;
+        document.getElementById('sidebar').addEventListener('touchstart', (e) => {
+            sidebarTouchStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        document.getElementById('sidebar').addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            if (sidebarTouchStartX - touchEndX > 50) {
+                // Swiped left - close sidebar
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }, { passive: true });
+
+        // Calculate Engagement Score
+        function calculateEngagementScore(member) {
+            let score = 0;
+
+            if (member.lastLoginDate) {
+                const lastLogin = member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate);
+                const daysSince = Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24));
+
+                if (daysSince < 1) score += 30;
+                else if (daysSince < 7) score += 25;
+                else if (daysSince < 14) score += 20;
+                else if (daysSince < 30) score += 15;
+                else if (daysSince < 60) score += 5;
+            }
+
+            if (member.isPaid && member.subscriptionStatus === 'active') score += 30;
+            if (member.referralCount) score += Math.min(20, member.referralCount * 5);
+
+            if (member.joinedAt) {
+                const joined = member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt);
+                const daysSinceJoin = Math.floor((Date.now() - joined) / (1000 * 60 * 60 * 24));
+                if (daysSinceJoin >= 30) score += 20;
+                else if (daysSinceJoin >= 14) score += 10;
+                else if (daysSinceJoin >= 7) score += 5;
+            }
+
+            return Math.min(100, Math.round(score));
+        }
+
+        // Get Engagement Status
+        function getEngagementStatus(member) {
+            const score = member.engagementScore || 0;
+
+            if (member.subscriptionStatus === 'cancelled' || member.subscriptionStatus === 'canceled' || !member.isPaid) {
+                return 'churned';
+            }
+
+            let daysSinceLogin = 999;
+            if (member.lastLoginDate) {
+                const lastLogin = member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate);
+                daysSinceLogin = Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24));
+            }
+
+            let accountAge = 0;
+            if (member.joinedAt) {
+                const joined = member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt);
+                accountAge = Math.floor((Date.now() - joined) / (1000 * 60 * 60 * 24));
+            }
+
+            if (accountAge <= 7) return 'active';
+            if (score >= 80 && daysSinceLogin < 7) return 'champion';
+            if (daysSinceLogin < 7 && member.isPaid) return 'active';
+            if (daysSinceLogin < 30 && member.isPaid) return 'moderate';
+            if (daysSinceLogin >= 30 && daysSinceLogin < 60 && member.isPaid) return 'at-risk';
+            if (daysSinceLogin >= 60) return 'dormant';
+            if (score >= 60) return 'active';
+            if (score >= 40) return 'moderate';
+            if (score >= 20) return 'at-risk';
+            return 'dormant';
+        }
+
+        // Sync from Firebase
+        async function syncFromFirebase() {
+            if (!db) {
+                showNotification('Firebase not initialized', 'error');
+                return;
+            }
+
+            showNotification('Syncing from Firebase...');
+            appState.loading = true;
+
+            try {
+                const usersSnapshot = await db.collection('Users').get();
+                const affiliatesSnapshot = await db.collection('Affiliates').get();
+
+                const referralCounts = {};
+                affiliatesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    referralCounts[doc.id] = {
+                        totalReferrals: data.totalReferrals || 0,
+                        activeReferrals: data.activeReferrals || 0,
+                        balance: data.availableBalance || data.balance || 0
+                    };
+                });
+
+                appState.affiliates = affiliatesSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                appState.members = usersSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const referrals = referralCounts[doc.id] || {};
+
+                    const member = {
+                        id: doc.id,
+                        name: data.Username || data.Email?.split('@')[0] || 'Unknown',
+                        email: data.Email || '',
+                        referralCode: data.referralCode || '',
+                        subscriptionStatus: data.subscriptionStatus || 'none',
+                        isPaid: data.isPaid || false,
+                        joinedAt: data.joinedAt,
+                        lastLoginDate: data.lastLoginDate,
+                        referredBy: data.referredBy || null,
+                        referralCount: referrals.totalReferrals || 0,
+                        activeReferrals: referrals.activeReferrals || 0,
+                        stripeCustomerId: data.stripeCustomerId || null
+                    };
+
+                    member.engagementScore = calculateEngagementScore(member);
+                    member.status = getEngagementStatus(member);
+
+                    return member;
+                });
+
+                renderDashboard();
+                renderAllViews();
+                showNotification(`✅ Synced ${appState.members.length} members`, 'success');
+
+            } catch (error) {
+                console.error('❌ Sync error:', error);
+                showNotification('Sync failed: ' + error.message, 'error');
+            }
+
+            appState.loading = false;
+        }
+
+        // Render Dashboard
+        function renderDashboard() {
+            const total = appState.members.length;
+            const active = appState.members.filter(m => m.status === 'active' || m.status === 'champion').length;
+            const atRisk = appState.members.filter(m => m.status === 'at-risk' || m.status === 'dormant').length;
+            const champions = appState.members.filter(m => m.status === 'champion').length;
+            const paidMembers = appState.members.filter(m => m.isPaid).length;
+            const avgEngagement = total > 0 ? Math.round(appState.members.reduce((sum, m) => sum + m.engagementScore, 0) / total) : 0;
+            const mrr = paidMembers * SUBSCRIPTION_PRICE;
+
+            document.getElementById('totalMembers').textContent = total;
+            document.getElementById('activeMembers').textContent = active;
+            document.getElementById('mrrValue').textContent = '£' + mrr.toLocaleString();
+            document.getElementById('avgEngagement').textContent = avgEngagement;
+            document.getElementById('atRiskCount').textContent = atRisk;
+            document.getElementById('championsCount').textContent = champions;
+
+            document.getElementById('memberGrowth').textContent = `${paidMembers} paying`;
+            document.getElementById('activeRate').textContent = total > 0 ? `${Math.round((active/total)*100)}% active` : '0%';
+            document.getElementById('atRiskPercent').textContent = total > 0 ? `${Math.round((atRisk/total)*100)}%` : '0%';
+            document.getElementById('championsPercent').textContent = total > 0 ? `${Math.round((champions/total)*100)}%` : '0%';
+
+            document.getElementById('sidebarMRR').textContent = '£' + (mrr/1000).toFixed(1) + 'k';
+            document.getElementById('sidebarActive').textContent = active;
+            document.getElementById('sidebarScore').textContent = avgEngagement;
+            document.getElementById('atRiskBadge').textContent = atRisk;
+
+            renderMemberCards('membersGrid');
+        }
+
+        // Render Member Cards
+        function renderMemberCards(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            let filtered = appState.members;
+            if (appState.activeFilter !== 'all') {
+                filtered = appState.members.filter(m => m.status === appState.activeFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="loading">No members found</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.slice(0, 50).map(member => {
+                const lastLogin = member.lastLoginDate ?
+                    (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
+                const daysSince = lastLogin ? Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24)) : 999;
+
+                return `
+                    <div class="member-card ${member.status}" onclick="showMemberDetail('${member.id}')">
+                        <div class="member-header">
+                            <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
+                            <div class="member-info">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-email">${escapeHtml(maskEmail(member.email))}</div>
+                            </div>
+                        </div>
+                        <div class="member-stats">
+                            <div class="member-stat">
+                                <div class="member-stat-value">${member.engagementScore}</div>
+                                <div class="member-stat-label">Score</div>
+                            </div>
+                            <div class="member-stat">
+                                <div class="member-stat-value">${member.referralCount}</div>
+                                <div class="member-stat-label">Referrals</div>
+                            </div>
+                            <div class="member-stat">
+                                <div class="member-stat-value">${daysSince < 999 ? daysSince + 'd' : '—'}</div>
+                                <div class="member-stat-label">Last Login</div>
+                            </div>
+                        </div>
+                        <div class="engagement-badge ${member.status}">
+                            ${getStatusBadge(member.status)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'champion': '🌟 Champion',
+                'active': '⚡ Active',
+                'moderate': '📊 Moderate',
+                'at-risk': '⚠️ At Risk',
+                'dormant': '💤 Dormant',
+                'churned': '❌ Churned'
+            };
+            return badges[status] || '📊 Moderate';
+        }
+
+        // Show Member Detail
+        function showMemberDetail(memberId) {
+            const member = appState.members.find(m => m.id === memberId);
+            if (!member) return;
+
+            const lastLogin = member.lastLoginDate ?
+                (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
+            const joined = member.joinedAt ?
+                (member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt)) : null;
+
+            document.getElementById('memberModalContent').innerHTML = `
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 72px; height: 72px; border-radius: 16px; background: linear-gradient(135deg, var(--purple-primary), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: white; margin: 0 auto 1rem;">${member.name.charAt(0).toUpperCase()}</div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.375rem;">${escapeHtml(member.name)}</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">${escapeHtml(member.email)}</p>
+                    <div class="engagement-badge ${member.status}" style="margin-top: 0.75rem;">
+                        ${getStatusBadge(member.status)}
+                    </div>
+                </div>
+
+                <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+                    <div class="metric-card">
+                        <div class="metric-label">Score</div>
+                        <div class="metric-value">${member.engagementScore}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Subscription</div>
+                        <div class="metric-value" style="font-size: 1.25rem;">${member.isPaid ? '✅ Active' : '❌ None'}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Referrals</div>
+                        <div class="metric-value">${member.referralCount}</div>
+                    </div>
+                </div>
+
+                <div style="padding: 1rem; background: var(--bg-card); border-radius: 12px; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.8;">
+                    <strong>Joined:</strong> ${joined ? joined.toLocaleDateString() : 'Unknown'}<br>
+                    <strong>Last Login:</strong> ${lastLogin ? lastLogin.toLocaleDateString() : 'Never'}<br>
+                    <strong>Referral Code:</strong> ${member.referralCode || 'None'}<br>
+                    <strong>Referred By:</strong> ${member.referredBy || 'Direct signup'}
+                </div>
+            `;
+
+            document.getElementById('memberModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('memberModal').classList.remove('active');
+        }
+
+        // Filter Members
+        function filterMembers(status) {
+            appState.activeFilter = status;
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            event.target.classList.add('active');
+            renderMemberCards('membersGrid');
+        }
+
+        // Search Members
+        function searchMembers() {
+            const searchTerm = document.getElementById('memberSearch').value.toLowerCase();
+            const container = document.getElementById('allMembersGrid');
+
+            const filtered = appState.members.filter(m =>
+                m.name.toLowerCase().includes(searchTerm) ||
+                m.email.toLowerCase().includes(searchTerm) ||
+                m.status.toLowerCase().includes(searchTerm)
+            );
+
+            container.innerHTML = filtered.map(member => {
+                const lastLogin = member.lastLoginDate ?
+                    (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
+                const daysSince = lastLogin ? Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24)) : 999;
+
+                return `
+                    <div class="member-card ${member.status}" onclick="showMemberDetail('${member.id}')">
+                        <div class="member-header">
+                            <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
+                            <div class="member-info">
+                                <div class="member-name">${member.name}</div>
+                                <div class="member-email">${escapeHtml(maskEmail(member.email))}</div>
+                            </div>
+                        </div>
+                        <div class="member-stats">
+                            <div class="member-stat">
+                                <div class="member-stat-value">${member.engagementScore}</div>
+                                <div class="member-stat-label">Score</div>
+                            </div>
+                            <div class="member-stat">
+                                <div class="member-stat-value">${member.referralCount}</div>
+                                <div class="member-stat-label">Referrals</div>
+                            </div>
+                            <div class="member-stat">
+                                <div class="member-stat-value">${daysSince < 999 ? daysSince + 'd' : '—'}</div>
+                                <div class="member-stat-label">Last Login</div>
+                            </div>
+                        </div>
+                        <div class="engagement-badge ${member.status}">
+                            ${getStatusBadge(member.status)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Switch View
+        function switchView(view) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+
+            document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+            document.getElementById(view + 'View').classList.add('active');
+
+            appState.activeView = view;
+
+            // Close mobile sidebar
+            if (window.innerWidth <= 1024) {
+                toggleSidebar();
+            }
+
+            if (view === 'members') {
+                document.getElementById('allMembersGrid').innerHTML = '';
+                renderMemberCards('allMembersGrid');
+            } else if (view === 'engagement') {
+                renderEngagementView();
+            } else if (view === 'retention') {
+                renderRetentionView();
+            } else if (view === 'revenue') {
+                renderRevenueView();
+            } else if (view === 'affiliates') {
+                renderAffiliatesView();
+            }
+        }
+
+        function renderAllViews() {
+            renderMemberCards('allMembersGrid');
+        }
+
+        // Render views (simplified versions)
+        function renderEngagementView() {
+            const ctx = document.getElementById('engagementChart');
+            if (ctx && typeof Chart !== 'undefined') {
+                if (ctx.chart) ctx.chart.destroy();
+                ctx.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['30d ago', '25d', '20d', '15d', '10d', '5d', 'Today'],
+                        datasets: [{
+                            label: 'Active Members',
+                            data: [45, 52, 48, 61, 58, 67, appState.members.filter(m => m.status === 'active' || m.status === 'champion').length],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            const topEngaged = [...appState.members].sort((a, b) => b.engagementScore - a.engagementScore).slice(0, 10);
+            const tableBody = document.querySelector('#topEngagedTable tbody');
+            if (tableBody) {
+                tableBody.innerHTML = topEngaged.map((m, i) => {
+                    const lastLogin = m.lastLoginDate ?
+                        (m.lastLoginDate.toDate ? m.lastLoginDate.toDate() : new Date(m.lastLoginDate)).toLocaleDateString() : 'Never';
+                    return `
+                        <tr onclick="showMemberDetail('${m.id}')" style="cursor: pointer;">
+                            <td>#${i + 1}</td>
+                            <td>${m.name}</td>
+                            <td><strong>${m.engagementScore}</strong></td>
+                            <td><span class="engagement-badge ${m.status}">${getStatusBadge(m.status)}</span></td>
+                            <td>${lastLogin}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderRetentionView() {
+            const atRisk = appState.members.filter(m => m.status === 'at-risk' || m.status === 'dormant');
+            const container = document.getElementById('retentionList');
+
+            if (atRisk.length === 0) {
+                container.innerHTML = '<div class="loading">🎉 No at-risk members!</div>';
+                return;
+            }
+
+            container.innerHTML = atRisk.map(member => {
+                const lastLogin = member.lastLoginDate ?
+                    (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
+                const daysSince = lastLogin ? Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24)) : 999;
+
+                return `
+                    <div class="retention-card">
+                        <div class="retention-header">
+                            <div class="retention-member">${escapeHtml(member.name)}</div>
+                            <div class="retention-risk">${member.status === 'dormant' ? '🔴 Dormant' : '⚠️ At Risk'}</div>
+                        </div>
+                        <div class="retention-info">
+                            <strong>Last Login:</strong> ${lastLogin ? lastLogin.toLocaleDateString() : 'Never'} (${daysSince} days ago)<br>
+                            <strong>Email:</strong> ${escapeHtml(member.email)}<br>
+                            <strong>Score:</strong> ${member.engagementScore}/100
+                        </div>
+                        <div class="retention-actions">
+                            <button class="btn btn-sm btn-primary" onclick="showMemberDetail('${escapeHtml(member.id)}')">View Profile</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRevenueView() {
+            const paidMembers = appState.members.filter(m => m.isPaid).length;
+            const mrr = paidMembers * SUBSCRIPTION_PRICE;
+            const arr = mrr * 12;
+            const churnedCount = appState.members.filter(m => m.status === 'churned').length;
+            const churnRate = appState.members.length > 0 ? ((churnedCount / appState.members.length) * 100).toFixed(1) : 0;
+
+            document.getElementById('revMRR').textContent = '£' + mrr.toLocaleString();
+            document.getElementById('revARR').textContent = '£' + arr.toLocaleString();
+            document.getElementById('revChurn').textContent = churnRate + '%';
+            document.getElementById('revLTV').textContent = '£' + (SUBSCRIPTION_PRICE * 12).toLocaleString();
+
+            const ctx = document.getElementById('revenueChart');
+            if (ctx && typeof Chart !== 'undefined') {
+                if (ctx.chart) ctx.chart.destroy();
+                ctx.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'MRR (£)',
+                            data: [15360, 16640, 17920, 18560, 19200, mrr],
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+
+        function renderAffiliatesView() {
+            const totalAff = appState.affiliates.length;
+            const totalActive = appState.affiliates.reduce((sum, a) => sum + (a.activeReferrals || 0), 0);
+            const totalEarned = appState.affiliates.reduce((sum, a) => sum + (a.totalEarned || a.totalEarnings || 0), 0);
+            const totalPending = appState.affiliates.reduce((sum, a) => sum + (a.availableBalance || a.balance || 0), 0);
+
+            document.getElementById('affTotal').textContent = totalAff;
+            document.getElementById('affActive').textContent = totalActive;
+            document.getElementById('affCommissions').textContent = '£' + totalEarned.toLocaleString();
+            document.getElementById('affPending').textContent = '£' + totalPending.toLocaleString();
+
+            const container = document.getElementById('affiliatesList');
+
+            if (appState.affiliates.length === 0) {
+                container.innerHTML = '<div class="loading">No affiliates found</div>';
+                return;
+            }
+
+            container.innerHTML = appState.affiliates.map(aff => {
+                const member = appState.members.find(m => m.id === aff.userId);
+                const name = member ? member.name : aff.userId;
+                const referrals = aff.referralsList || [];
+
+                return `
+                    <div class="affiliate-card">
+                        <div class="affiliate-header">
+                            <div class="affiliate-name">${name}</div>
+                            <div class="affiliate-earnings">£${(aff.availableBalance || aff.balance || 0).toFixed(2)}</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem;">
+                            <div>
+                                <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Total</div>
+                                <div style="font-size: 1.25rem; font-weight: 800;">${aff.totalReferrals || 0}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Active</div>
+                                <div style="font-size: 1.25rem; font-weight: 800;">${aff.activeReferrals || 0}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Earned</div>
+                                <div style="font-size: 1.25rem; font-weight: 800;">£${(aff.totalEarned || aff.totalEarnings || 0).toFixed(0)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (appState.members.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+
+            const headers = ['Name', 'Email', 'Status', 'Score', 'Subscription', 'Referrals'];
+            const rows = appState.members.map(m => [
+                m.name,
+                m.email,
+                m.status,
+                m.engagementScore,
+                m.isPaid ? 'Active' : 'None',
+                m.referralCount
+            ]);
+
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `arcane-members-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+
+            showNotification('✅ Exported ' + appState.members.length + ' members', 'success');
+        }
+
+        // Show Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type + ' show';
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🔥 Arcane CRM initialized');
+            syncFromFirebase();
+        });
+
+        // Mobile: Handle touch events for better UX
+        let touchStartY = 0;
+        let isPulling = false;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (window.scrollY === 0 && e.touches[0].clientY > touchStartY + 60 && !appState.loading) {
+                isPulling = true;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            if (isPulling && !appState.loading) {
+                syncFromFirebase();
+            }
+            isPulling = false;
+        }, { passive: true });
+
+        // Prevent zoom on double tap for iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Close modal on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('memberModal').addEventListener('click', (e) => {
+            if (e.target.id === 'memberModal') closeModal();
+        });
+    </script>
+</body>
+</html>
