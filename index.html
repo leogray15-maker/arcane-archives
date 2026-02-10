@@ -586,6 +586,116 @@
             margin-top: 1rem;
         }
 
+        /* ========== SCREENSHOT GALLERY ========== */
+        .proof-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .proof-item {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .proof-item:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .proof-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .proof-empty {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        /* Lightbox overlay */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            cursor: pointer;
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+        }
+
+        .lightbox-overlay.active {
+            display: flex;
+        }
+
+        .lightbox-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 12px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lightbox-prev { left: 1.5rem; }
+        .lightbox-next { right: 1.5rem; }
+
         /* ========== PRICING ========== */
         .pricing-container {
             max-width: 550px;
@@ -930,7 +1040,8 @@
             }
 
             .feature-grid,
-            .testimonials-grid {
+            .testimonials-grid,
+            .proof-gallery {
                 grid-template-columns: 1fr;
             }
 
@@ -1200,6 +1311,29 @@
         </div>
     </section>
 
+    <!-- SCREENSHOT PROOF GALLERY -->
+    <section class="section fade-in-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Screenshots</span>
+                <h2 class="section-title">What Members Are Saying</h2>
+                <p class="section-subtitle">Real messages from real members — unfiltered proof</p>
+            </div>
+
+            <div class="proof-gallery" id="proofGallery">
+                <div class="proof-empty">Loading screenshots...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay">
+        <button class="lightbox-close" id="lightboxClose">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&lsaquo;</button>
+        <img id="lightboxImage" src="" alt="Screenshot">
+        <button class="lightbox-nav lightbox-next" id="lightboxNext">&rsaquo;</button>
+    </div>
+
     <!-- PRICING -->
     <section class="section fade-in-section" id="pricing">
         <div class="container">
@@ -1386,6 +1520,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -1399,6 +1534,77 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ========== SOCIAL PROOF GALLERY ==========
+    let proofImages = [];
+    let lightboxIndex = 0;
+
+    async function loadProofGallery() {
+        const gallery = document.getElementById('proofGallery');
+        try {
+            const q = query(collection(db, 'SocialProof'), orderBy('createdAt', 'desc'));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                gallery.innerHTML = '';
+                return;
+            }
+
+            proofImages = [];
+            gallery.innerHTML = '';
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                proofImages.push({ id: docSnap.id, ...data });
+            });
+
+            proofImages.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'proof-item';
+                div.innerHTML = `<img src="${item.imageUrl}" alt="${item.caption || 'Member screenshot'}" loading="lazy">`;
+                div.addEventListener('click', () => openLightbox(index));
+                gallery.appendChild(div);
+            });
+        } catch (err) {
+            console.error('Error loading social proof:', err);
+            gallery.innerHTML = '';
+        }
+    }
+
+    function openLightbox(index) {
+        lightboxIndex = index;
+        const overlay = document.getElementById('lightboxOverlay');
+        const img = document.getElementById('lightboxImage');
+        img.src = proofImages[index].imageUrl;
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightboxOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function navigateLightbox(dir) {
+        lightboxIndex = (lightboxIndex + dir + proofImages.length) % proofImages.length;
+        document.getElementById('lightboxImage').src = proofImages[lightboxIndex].imageUrl;
+    }
+
+    document.getElementById('lightboxOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLightbox();
+    });
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('lightboxPrev').addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(-1); });
+    document.getElementById('lightboxNext').addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(1); });
+    document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('lightboxOverlay').classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') navigateLightbox(-1);
+        if (e.key === 'ArrowRight') navigateLightbox(1);
+    });
+
+    loadProofGallery();
 
     const stripe = Stripe(
         "pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW"
