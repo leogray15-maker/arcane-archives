@@ -1364,26 +1364,43 @@
             progressContainer.style.display = 'none';
           },
           async () => {
-            // Upload complete - get download URL
-            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            try {
+              // Upload complete - get download URL
+              console.log('✅ Storage upload complete, getting download URL...');
+              const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              console.log('✅ Download URL:', downloadUrl);
 
-            // Save metadata to Firestore
-            await addDoc(collection(db, 'SocialProof'), {
-              imageUrl: downloadUrl,
-              storagePath: filePath,
-              caption: caption || '',
-              createdAt: serverTimestamp(),
-              uploadedBy: auth.currentUser.email
-            });
+              // Save metadata to Firestore
+              console.log('📝 Saving to Firestore SocialProof collection...');
+              console.log('👤 Current user:', auth.currentUser?.uid, auth.currentUser?.email);
 
-            showSuccess('Screenshot uploaded successfully!');
-            proofUploadForm.reset();
-            proofPreview.style.display = 'none';
-            progressContainer.style.display = 'none';
-            progressBar.style.width = '0%';
-            proofUploadBtn.disabled = false;
-            proofUploadBtn.textContent = 'Upload Screenshot';
-            loadProofImages();
+              const docData = {
+                imageUrl: downloadUrl,
+                storagePath: filePath,
+                caption: caption || '',
+                createdAt: serverTimestamp(),
+                uploadedBy: auth.currentUser ? auth.currentUser.email : 'unknown'
+              };
+              console.log('📦 Doc data:', JSON.stringify(docData, null, 2));
+
+              const docRef = await addDoc(collection(db, 'SocialProof'), docData);
+              console.log('✅ Firestore doc created:', docRef.id);
+
+              showSuccess('Screenshot uploaded successfully!');
+              proofUploadForm.reset();
+              proofPreview.style.display = 'none';
+              progressContainer.style.display = 'none';
+              progressBar.style.width = '0%';
+              proofUploadBtn.disabled = false;
+              proofUploadBtn.textContent = 'Upload Screenshot';
+              loadProofImages();
+            } catch (firestoreErr) {
+              console.error('❌ Firestore save error:', firestoreErr.code, firestoreErr.message);
+              showError('Image uploaded but failed to save: ' + firestoreErr.message);
+              proofUploadBtn.disabled = false;
+              proofUploadBtn.textContent = 'Upload Screenshot';
+              progressContainer.style.display = 'none';
+            }
           }
         );
       } catch (error) {
@@ -1397,8 +1414,11 @@
     async function loadProofImages() {
       const list = document.getElementById('proofImagesList');
       try {
+        console.log('📷 Loading social proof images...');
+        console.log('👤 Auth state:', auth.currentUser?.uid, auth.currentUser?.email);
         const q = query(collection(db, 'SocialProof'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
+        console.log('✅ Loaded', snapshot.size, 'images');
 
         if (snapshot.empty) {
           list.innerHTML = '<p style="color: var(--text-2); text-align: center; padding: 2rem; font-size: 0.875rem; grid-column: 1 / -1;">No screenshots uploaded yet</p>';
