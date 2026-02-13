@@ -1,16 +1,13 @@
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-const { defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
-const sgMail = require("@sendgrid/mail");
 
 admin.initializeApp();
-
-// Define the SendGrid API key as a Cloud Functions parameter
-const sendgridApiKey = defineString("SENDGRID_API_KEY");
+const db = admin.firestore();
 
 /**
  * Triggered when a new document is created in the Waitlist collection.
- * Sends a branded welcome email via SendGrid.
+ * Writes to the "mail" collection which the Firebase Trigger Email extension watches.
+ * The extension handles SMTP delivery automatically.
  */
 exports.onWaitlistSignup = onDocumentCreated("Waitlist/{docId}", async (event) => {
   const snapshot = event.data;
@@ -30,40 +27,29 @@ exports.onWaitlistSignup = onDocumentCreated("Waitlist/{docId}", async (event) =
 
   const firstName = name || "there";
 
-  console.log(`📧 Sending waitlist welcome email to: ${email} (${firstName})`);
-
-  // Initialize SendGrid
-  sgMail.setApiKey(sendgridApiKey.value());
-
-  const htmlContent = buildWelcomeEmail(firstName);
-
-  const msg = {
-    to: email,
-    from: {
-      email: "leo@arcanearchives.shop",
-      name: "Leo Gray | The Arcane Archives",
-    },
-    subject: `You're in, ${firstName}. Here's what's coming.`,
-    html: htmlContent,
-    text: buildPlainTextEmail(firstName),
-  };
+  console.log(`📧 Queuing waitlist welcome email to: ${email} (${firstName})`);
 
   try {
-    await sgMail.send(msg);
-    console.log(`✅ Welcome email sent to ${email}`);
+    // Write to the "mail" collection — Firebase Trigger Email extension picks this up
+    await db.collection("mail").add({
+      to: email,
+      message: {
+        subject: `You're in, ${firstName}. Here's what's coming.`,
+        html: buildWelcomeEmail(firstName),
+        text: buildPlainTextEmail(firstName),
+      },
+    });
 
-    // Mark the doc as email sent
+    console.log(`✅ Email queued for ${email}`);
+
+    // Mark the waitlist doc as email sent
     await snapshot.ref.update({
       emailSent: true,
       emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   } catch (error) {
-    console.error("❌ SendGrid error:", error.message);
-    if (error.response) {
-      console.error("SendGrid response body:", error.response.body);
-    }
+    console.error("❌ Error queuing email:", error.message);
 
-    // Mark the failure
     await snapshot.ref.update({
       emailSent: false,
       emailError: error.message,
@@ -75,8 +61,7 @@ exports.onWaitlistSignup = onDocumentCreated("Waitlist/{docId}", async (event) =
  * Build the HTML welcome email
  */
 function buildWelcomeEmail(firstName) {
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
