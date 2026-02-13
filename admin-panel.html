@@ -869,6 +869,7 @@
       getStorage,
       ref as storageRef,
       uploadBytesResumable,
+      uploadBytes,
       getDownloadURL,
       deleteObject
     } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
@@ -1348,61 +1349,52 @@
         const filePath = `social-proof/${timestamp}_${safeName}`;
         const fileRef = storageRef(storage, filePath);
 
-        const uploadTask = uploadBytesResumable(fileRef, file);
+        // Try simple upload first (avoids resumable protocol 412 issues)
+        progressBar.style.width = '50%';
+        progressText.textContent = 'Uploading...';
 
-        uploadTask.on('state_changed',
-          (snapshot) => {
-            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-            progressBar.style.width = progress + '%';
-            progressText.textContent = `Uploading... ${progress}%`;
-          },
-          (error) => {
-            console.error('Upload error:', error);
-            showError('Upload failed: ' + error.message);
-            proofUploadBtn.disabled = false;
-            proofUploadBtn.textContent = 'Upload Screenshot';
-            progressContainer.style.display = 'none';
-          },
-          async () => {
-            try {
-              // Upload complete - get download URL
-              console.log('✅ Storage upload complete, getting download URL...');
-              const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-              console.log('✅ Download URL:', downloadUrl);
+        try {
+          console.log('📤 Starting upload to:', filePath);
+          const snapshot = await uploadBytes(fileRef, file);
+          console.log('✅ Storage upload complete, getting download URL...');
+          progressBar.style.width = '75%';
 
-              // Save metadata to Firestore
-              console.log('📝 Saving to Firestore SocialProof collection...');
-              console.log('👤 Current user:', auth.currentUser?.uid, auth.currentUser?.email);
+          const downloadUrl = await getDownloadURL(snapshot.ref);
+          console.log('✅ Download URL:', downloadUrl);
+          progressBar.style.width = '90%';
 
-              const docData = {
-                imageUrl: downloadUrl,
-                storagePath: filePath,
-                caption: caption || '',
-                createdAt: serverTimestamp(),
-                uploadedBy: auth.currentUser ? auth.currentUser.email : 'unknown'
-              };
-              console.log('📦 Doc data:', JSON.stringify(docData, null, 2));
+          // Save metadata to Firestore
+          console.log('📝 Saving to Firestore SocialProof collection...');
+          console.log('👤 Current user:', auth.currentUser?.uid, auth.currentUser?.email);
 
-              const docRef = await addDoc(collection(db, 'SocialProof'), docData);
-              console.log('✅ Firestore doc created:', docRef.id);
+          const docData = {
+            imageUrl: downloadUrl,
+            storagePath: filePath,
+            caption: caption || '',
+            createdAt: serverTimestamp(),
+            uploadedBy: auth.currentUser ? auth.currentUser.email : 'unknown'
+          };
+          console.log('📦 Doc data:', JSON.stringify(docData, null, 2));
 
-              showSuccess('Screenshot uploaded successfully!');
-              proofUploadForm.reset();
-              proofPreview.style.display = 'none';
-              progressContainer.style.display = 'none';
-              progressBar.style.width = '0%';
-              proofUploadBtn.disabled = false;
-              proofUploadBtn.textContent = 'Upload Screenshot';
-              loadProofImages();
-            } catch (firestoreErr) {
-              console.error('❌ Firestore save error:', firestoreErr.code, firestoreErr.message);
-              showError('Image uploaded but failed to save: ' + firestoreErr.message);
-              proofUploadBtn.disabled = false;
-              proofUploadBtn.textContent = 'Upload Screenshot';
-              progressContainer.style.display = 'none';
-            }
-          }
-        );
+          const docRef = await addDoc(collection(db, 'SocialProof'), docData);
+          console.log('✅ Firestore doc created:', docRef.id);
+
+          progressBar.style.width = '100%';
+          showSuccess('Screenshot uploaded successfully!');
+          proofUploadForm.reset();
+          proofPreview.style.display = 'none';
+          progressContainer.style.display = 'none';
+          progressBar.style.width = '0%';
+          proofUploadBtn.disabled = false;
+          proofUploadBtn.textContent = 'Upload Screenshot';
+          loadProofImages();
+        } catch (uploadErr) {
+          console.error('❌ Upload/save error:', uploadErr.code, uploadErr.message, uploadErr);
+          showError('Upload failed: ' + uploadErr.message);
+          proofUploadBtn.disabled = false;
+          proofUploadBtn.textContent = 'Upload Screenshot';
+          progressContainer.style.display = 'none';
+        }
       } catch (error) {
         console.error('Error uploading proof:', error);
         showError('Failed to upload: ' + error.message);
