@@ -369,6 +369,10 @@
         .chart-container { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:2rem; }
         .chart-title { font-size:0.875rem; font-weight:700; margin-bottom:1rem; }
 
+        /* ========== CHART GRIDS ========== */
+        .dashboard-charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; }
+        .revenue-charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem; }
+
         /* ========== TOAST ========== */
         .toast-container { position:fixed; bottom:2rem; right:2rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; }
         .toast {
@@ -381,17 +385,102 @@
         .toast.info { background:var(--info); color:white; }
         @keyframes toastIn { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
 
-        /* ========== RESPONSIVE ========== */
-        @media (max-width:768px) {
+        /* ========== SIDEBAR OVERLAY ========== */
+        .sidebar-overlay {
+            display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+            z-index:99; opacity:0; transition:opacity 0.3s;
+        }
+        .sidebar-overlay.active { opacity:1; }
+
+        /* ========== RESPONSIVE — 1024px ========== */
+        @media (max-width:1024px) {
             .mobile-header { display:flex; }
-            .sidebar { transform:translateX(-100%); }
+            .sidebar { transform:translateX(-100%); z-index:150; width:85%; max-width:320px; }
             .sidebar.open { transform:translateX(0); }
-            .main-content { margin-left:0; padding:1.25rem; padding-top:calc(var(--header-height) + 1.25rem); }
-            .form-grid { grid-template-columns:1fr; }
+            .sidebar-overlay { display:block; }
+            .main-content { margin-left:0; padding:1.5rem; padding-top:calc(var(--header-height) + 1.5rem); }
+            .metrics-grid { grid-template-columns:repeat(2,1fr); }
             .kanban-board { flex-direction:column; }
             .kanban-column { min-width:100%; max-width:100%; }
-            .metrics-grid { grid-template-columns:repeat(2,1fr); }
+            .form-grid { grid-template-columns:1fr; }
             .inbox-ratings { grid-template-columns:1fr; }
+            /* Stacked charts on tablet */
+            #view-dashboard > .main-content > div[style] { grid-template-columns:1fr !important; }
+            #view-revenue > .page-header ~ div[style] { grid-template-columns:1fr !important; }
+            /* Table horizontal scroll */
+            .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+            .data-table { min-width:600px; }
+            /* Stack chart grids */
+            .dashboard-charts-grid { grid-template-columns:1fr; }
+            .revenue-charts-grid { grid-template-columns:1fr; }
+        }
+
+        /* ========== RESPONSIVE — 640px ========== */
+        @media (max-width:640px) {
+            :root { --header-height:64px; }
+            .mobile-header { padding:0 0.75rem; height:64px; }
+            .mobile-header-title { font-size:1rem; }
+            .mobile-menu-btn { width:40px; height:40px; border-radius:10px; font-size:1.125rem; }
+            .main-content { padding:1rem; padding-top:calc(64px + 1rem); }
+            .page-title { font-size:1.375rem; }
+            .page-subtitle { font-size:0.875rem; }
+            .header-actions { flex-direction:column; }
+            .header-actions .btn { width:100%; justify-content:center; }
+            .metrics-grid { grid-template-columns:1fr 1fr; gap:0.75rem; }
+            .metric-card { padding:1rem; }
+            .metric-value { font-size:1.5rem; }
+            .metric-icon { width:36px; height:36px; font-size:1rem; border-radius:10px; }
+            .filter-bar { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; padding-bottom:0.25rem; }
+            .filter-bar::-webkit-scrollbar { display:none; }
+            .filter-chip { white-space:nowrap; flex-shrink:0; }
+            .search-input { font-size:1rem; padding:0.875rem 1rem 0.875rem 2.75rem; }
+            .kanban-card { padding:0.875rem; }
+            .inbox-card { padding:1rem; }
+            .inbox-meta { gap:0.5rem; }
+            .modal { max-width:100%; margin:1rem; border-radius:16px; }
+            .modal-overlay { padding:0.5rem; }
+            .modal-header { padding:1rem 1.25rem; }
+            .modal-body { padding:1.25rem; }
+            .btn { padding:0.875rem 1.25rem; font-size:0.875rem; }
+            .btn-sm { padding:0.625rem 1rem; }
+            .followup-card { flex-direction:column; align-items:flex-start; gap:0.5rem; }
+            .csv-dropzone { padding:2rem 1rem; }
+            .csv-mapping { grid-template-columns:1fr; gap:0.5rem; }
+            .csv-mapping-arrow { display:none; }
+            .chart-container { padding:1rem; }
+            /* Revenue grid single column on small phones */
+            .revenue-grid { grid-template-columns:1fr 1fr; gap:0.75rem; }
+        }
+
+        /* ========== RESPONSIVE — 375px ========== */
+        @media (max-width:375px) {
+            .main-content { padding:0.75rem; padding-top:calc(64px + 0.75rem); }
+            .metrics-grid { gap:0.5rem; }
+            .metric-card { padding:0.75rem; }
+            .metric-value { font-size:1.25rem; }
+            .metric-label { font-size:0.625rem; }
+            .page-title { font-size:1.25rem; }
+            .sidebar { width:90%; }
+        }
+
+        /* ========== SAFE AREA INSETS ========== */
+        @supports (padding: max(0px)) {
+            .mobile-header {
+                padding-left: max(0.75rem, env(safe-area-inset-left));
+                padding-right: max(0.75rem, env(safe-area-inset-right));
+            }
+            .main-content {
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+            }
+            .sidebar {
+                padding-left: max(1.5rem, env(safe-area-inset-left));
+            }
+            .toast-container {
+                bottom: max(2rem, env(safe-area-inset-bottom));
+                right: max(1rem, env(safe-area-inset-right));
+            }
         }
     </style>
 </head>
@@ -402,6 +491,9 @@
     <span class="mobile-header-title">Consulting CRM</span>
     <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
 </div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <!-- App Container -->
 <div class="app-container">
@@ -479,7 +571,7 @@
                 </div>
             </div>
             <div class="metrics-grid" id="dashMetrics"></div>
-            <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
+            <div class="dashboard-charts-grid">
                 <div class="chart-container">
                     <div class="chart-title">Pipeline Funnel</div>
                     <canvas id="funnelChart" height="200"></canvas>
@@ -599,7 +691,7 @@
                 <p class="page-subtitle">Payment tracking and revenue analytics</p>
             </div>
             <div class="revenue-grid" id="revenueMetrics"></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+            <div class="revenue-charts-grid">
                 <div class="chart-container">
                     <div class="chart-title">Won vs Lost Deals</div>
                     <canvas id="wonLostChart" height="200"></canvas>
@@ -850,8 +942,32 @@ function showToast(msg, type = 'success') {
 }
 
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+    if (sidebar.classList.contains('open')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
 }
+
+// Touch swipe to close sidebar
+let sidebarTouchStartX = 0;
+document.getElementById('sidebar').addEventListener('touchstart', (e) => {
+    sidebarTouchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('sidebar').addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    if (sidebarTouchStartX - touchEndX > 50) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}, { passive: true });
 
 // ==================== VIEW SWITCHING ====================
 function switchView(view) {
@@ -862,6 +978,8 @@ function switchView(view) {
     document.querySelectorAll('.nav-item')[viewMap[view]]?.classList.add('active');
     renderCurrentView(view);
     document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 function renderCurrentView(view) {

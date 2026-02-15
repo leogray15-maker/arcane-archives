@@ -2346,17 +2346,26 @@
 
         // Switch View
         function switchView(view) {
+            // Map view names to nav-item index for reliable active state
+            const viewNavMap = { dashboard:0, members:1, engagement:2, retention:3, revenue:4, affiliates:5 };
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
+            const navItems = document.querySelectorAll('.nav-section .nav-item');
+            if (viewNavMap[view] !== undefined && navItems[viewNavMap[view]]) {
+                navItems[viewNavMap[view]].classList.add('active');
+            }
 
             document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
             document.getElementById(view + 'View').classList.add('active');
 
             appState.activeView = view;
 
-            // Close mobile sidebar
+            // Close mobile sidebar (explicitly close, don't toggle)
             if (window.innerWidth <= 1024) {
-                toggleSidebar();
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
             }
 
             if (view === 'members') {
