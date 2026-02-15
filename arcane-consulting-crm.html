@@ -270,7 +270,7 @@
         .qual-badge.not_qualified { background:rgba(113,113,122,0.15); color:var(--text-muted); }
 
         /* ========== KANBAN ========== */
-        .kanban-board { display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem; min-height:70vh; }
+        .kanban-board { display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem; -webkit-overflow-scrolling:touch; }
         .kanban-board::-webkit-scrollbar { height:6px; }
         .kanban-board::-webkit-scrollbar-track { background:var(--bg-secondary); border-radius:3px; }
         .kanban-board::-webkit-scrollbar-thumb { background:var(--purple-primary); border-radius:3px; }
@@ -368,8 +368,10 @@
 
         /* ========== REVENUE ========== */
         .revenue-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:2rem; }
-        .chart-container { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:2rem; }
+        .chart-container { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:2rem; position:relative; }
         .chart-title { font-size:0.875rem; font-weight:700; margin-bottom:1rem; }
+        .chart-wrap { position:relative; width:100%; height:220px; }
+        .chart-wrap canvas { position:absolute; top:0; left:0; width:100% !important; height:100% !important; }
 
         /* ========== CHART GRIDS ========== */
         .dashboard-charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; }
@@ -403,8 +405,8 @@
             .sidebar-overlay { display:block; }
             .main-content { margin-left:0; padding:1.5rem; padding-top:calc(var(--header-height) + 1.5rem); }
             .metrics-grid { grid-template-columns:repeat(2,1fr); }
-            .kanban-board { flex-direction:column; }
-            .kanban-column { min-width:100%; max-width:100%; }
+            .kanban-board { flex-direction:row; overflow-x:auto; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; padding-bottom:0.5rem; }
+            .kanban-column { min-width:85vw; max-width:85vw; scroll-snap-align:start; flex-shrink:0; }
             .form-grid { grid-template-columns:1fr; }
             .inbox-ratings { grid-template-columns:1fr; }
             /* Stacked charts on tablet */
@@ -437,6 +439,7 @@
             .filter-bar::-webkit-scrollbar { display:none; }
             .filter-chip { white-space:nowrap; flex-shrink:0; }
             .search-input { font-size:1rem; padding:0.875rem 1rem 0.875rem 2.75rem; }
+            .kanban-column { min-width:80vw; max-width:80vw; }
             .kanban-card { padding:0.875rem; }
             .inbox-card { padding:1rem; }
             .inbox-meta { gap:0.5rem; }
@@ -451,6 +454,7 @@
             .csv-mapping { grid-template-columns:1fr; gap:0.5rem; }
             .csv-mapping-arrow { display:none; }
             .chart-container { padding:1rem; }
+            .chart-wrap { height:180px; }
             /* Revenue grid single column on small phones */
             .revenue-grid { grid-template-columns:1fr 1fr; gap:0.75rem; }
         }
@@ -464,6 +468,23 @@
             .metric-label { font-size:0.625rem; }
             .page-title { font-size:1.25rem; }
             .sidebar { width:90%; }
+        }
+
+        /* ========== TOUCH OPTIMIZATION ========== */
+        @media (hover: none) and (pointer: coarse) {
+            .kanban-card:active { transform:scale(0.98); }
+            .nav-item:active { transform:translateX(2px); }
+            .btn:active { transform:scale(0.97); }
+            .metric-card:active { transform:scale(0.98); }
+            .inbox-card:active { transform:scale(0.99); }
+            .kanban-board { scroll-snap-type:x mandatory; }
+            .kanban-column { scroll-snap-align:start; }
+            /* Larger touch targets */
+            .btn { min-height:44px; }
+            .filter-chip { min-height:40px; padding:0.5rem 1rem; }
+            .nav-item { min-height:48px; }
+            /* Prevent text selection during drag */
+            .kanban-card { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
         }
 
         /* ========== SAFE AREA INSETS ========== */
@@ -586,12 +607,12 @@
             <div class="dashboard-charts-grid">
                 <div class="chart-container">
                     <div class="chart-title">Pipeline Funnel</div>
-                    <canvas id="funnelChart" height="200"></canvas>
+                    <div class="chart-wrap"><canvas id="funnelChart"></canvas></div>
                 </div>
                 <div>
                     <div class="chart-container">
                         <div class="chart-title">Revenue (Monthly)</div>
-                        <canvas id="revenueChart" height="160"></canvas>
+                        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
                     </div>
                     <div id="dashOverdueFollowups"></div>
                 </div>
@@ -706,11 +727,11 @@
             <div class="revenue-charts-grid">
                 <div class="chart-container">
                     <div class="chart-title">Won vs Lost Deals</div>
-                    <canvas id="wonLostChart" height="200"></canvas>
+                    <div class="chart-wrap"><canvas id="wonLostChart"></canvas></div>
                 </div>
                 <div class="chart-container">
                     <div class="chart-title">Revenue by Stage</div>
-                    <canvas id="stageRevenueChart" height="200"></canvas>
+                    <div class="chart-wrap"><canvas id="stageRevenueChart"></canvas></div>
                 </div>
             </div>
             <div class="page-header" style="margin-top:2rem;">
