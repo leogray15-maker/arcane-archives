@@ -1,0 +1,109 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ============================================================
+    // HELPER FUNCTIONS
+    // ============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        request.auth.uid == 'U4PvQ0dilBco97hgXp3Awl45JX92' ||
+        request.auth.uid == 'liMx3vjGGrgAta12IlKclq3Xwvr2'
+      );
+    }
+
+    function isImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isUnder5MB() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    function isUnder10MB() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // ============================================================
+    // SOCIAL PROOF — Admin uploads screenshots for landing page
+    // ============================================================
+
+    match /social-proof/{fileName} {
+      // Public read (displayed on landing pages)
+      allow read: if true;
+      // Admin-only write, must be an image under 5MB
+      allow write: if isAdmin() && isImageType() && isUnder5MB();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // CONSULTING ATTACHMENTS — Admin uploads files per lead
+    // ============================================================
+
+    match /consulting_attachments/{leadId}/{fileName} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && isUnder10MB();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // USER AVATARS — Users upload their own profile photos
+    // ============================================================
+
+    match /avatars/{userId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId
+                   && isImageType() && isUnder5MB();
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ============================================================
+    // COURSE / MODULE CONTENT — Admin uploads educational content
+    // ============================================================
+
+    match /courses/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write, delete: if isAdmin();
+    }
+
+    match /modules/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // PRODUCT IMAGES — Admin uploads store product images
+    // ============================================================
+
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImageType() && isUnder5MB();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // COMMUNITY UPLOADS — Paid members can upload to community
+    // ============================================================
+
+    match /community/{userId}/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId
+                   && isImageType() && isUnder5MB();
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ============================================================
+    // DEFAULT DENY — Block everything not explicitly allowed
+    // ============================================================
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

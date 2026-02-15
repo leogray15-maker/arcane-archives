@@ -75,9 +75,9 @@
 
         /* ========== GLASS EFFECTS ========== */
         .glass {
-            background: rgba(31, 31, 35, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(31, 31, 35, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         .glass-border {
@@ -521,10 +521,12 @@
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 1.25rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            will-change: transform;
+            contain: layout style;
         }
 
         .member-card:hover {
@@ -1669,6 +1671,10 @@
 
             <div class="nav-section">
                 <div class="nav-section-title">Quick Links</div>
+                <div class="nav-item" onclick="window.location.href='arcane-consulting-crm.html'">
+                    <span class="nav-icon">🏆</span>
+                    <span>Consulting CRM</span>
+                </div>
                 <div class="nav-item" onclick="window.location.href='admin-panel.html'">
                     <span class="nav-icon">⚙️</span>
                     <span>Admin Panel</span>
@@ -1773,13 +1779,13 @@
                 </div>
 
                 <div class="filter-bar">
-                    <div class="filter-chip active" onclick="filterMembers('all')">All</div>
-                    <div class="filter-chip" onclick="filterMembers('champion')">🌟 Champions</div>
-                    <div class="filter-chip" onclick="filterMembers('active')">⚡ Active</div>
-                    <div class="filter-chip" onclick="filterMembers('moderate')">📊 Moderate</div>
-                    <div class="filter-chip" onclick="filterMembers('at-risk')">⚠️ At Risk</div>
-                    <div class="filter-chip" onclick="filterMembers('dormant')">💤 Dormant</div>
-                    <div class="filter-chip" onclick="filterMembers('churned')">❌ Churned</div>
+                    <div class="filter-chip active" onclick="filterMembers('all',this)">All</div>
+                    <div class="filter-chip" onclick="filterMembers('champion',this)">🌟 Champions</div>
+                    <div class="filter-chip" onclick="filterMembers('active',this)">⚡ Active</div>
+                    <div class="filter-chip" onclick="filterMembers('moderate',this)">📊 Moderate</div>
+                    <div class="filter-chip" onclick="filterMembers('at-risk',this)">⚠️ At Risk</div>
+                    <div class="filter-chip" onclick="filterMembers('dormant',this)">💤 Dormant</div>
+                    <div class="filter-chip" onclick="filterMembers('churned',this)">❌ Churned</div>
                 </div>
 
                 <div class="members-grid" id="membersGrid">
@@ -2091,8 +2097,10 @@
             appState.loading = true;
 
             try {
-                const usersSnapshot = await db.collection('Users').get();
-                const affiliatesSnapshot = await db.collection('Affiliates').get();
+                const [usersSnapshot, affiliatesSnapshot] = await Promise.all([
+                    db.collection('Users').get(),
+                    db.collection('Affiliates').get()
+                ]);
 
                 const referralCounts = {};
                 affiliatesSnapshot.forEach(doc => {
@@ -2130,12 +2138,14 @@
 
                     member.engagementScore = calculateEngagementScore(member);
                     member.status = getEngagementStatus(member);
+                    // Pre-compute search indices for O(1) filtering
+                    member._searchName = member.name.toLowerCase();
+                    member._searchEmail = member.email.toLowerCase();
 
                     return member;
                 });
 
                 renderDashboard();
-                renderAllViews();
                 showNotification(`✅ Synced ${appState.members.length} members`, 'success');
 
             } catch (error) {
@@ -2176,55 +2186,41 @@
             renderMemberCards('membersGrid');
         }
 
-        // Render Member Cards
+        // Shared card HTML builder (single source of truth)
+        function _memberCardHTML(member) {
+            const lastLogin = member.lastLoginDate ?
+                (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
+            const daysSince = lastLogin ? Math.floor((Date.now() - lastLogin) / 86400000) : 999;
+            return `<div class="member-card ${member.status}" onclick="showMemberDetail('${member.id}')">
+                <div class="member-header">
+                    <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
+                    <div class="member-info">
+                        <div class="member-name">${member.name}</div>
+                        <div class="member-email">${escapeHtml(maskEmail(member.email))}</div>
+                    </div>
+                </div>
+                <div class="member-stats">
+                    <div class="member-stat"><div class="member-stat-value">${member.engagementScore}</div><div class="member-stat-label">Score</div></div>
+                    <div class="member-stat"><div class="member-stat-value">${member.referralCount}</div><div class="member-stat-label">Referrals</div></div>
+                    <div class="member-stat"><div class="member-stat-value">${daysSince < 999 ? daysSince + 'd' : '—'}</div><div class="member-stat-label">Last Login</div></div>
+                </div>
+                <div class="engagement-badge ${member.status}">${getStatusBadge(member.status)}</div>
+            </div>`;
+        }
+
+        // Render Member Cards with pagination
         function renderMemberCards(containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
-
             let filtered = appState.members;
             if (appState.activeFilter !== 'all') {
-                filtered = appState.members.filter(m => m.status === appState.activeFilter);
+                filtered = filtered.filter(m => m.status === appState.activeFilter);
             }
-
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="loading">No members found</div>';
                 return;
             }
-
-            container.innerHTML = filtered.slice(0, 50).map(member => {
-                const lastLogin = member.lastLoginDate ?
-                    (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
-                const daysSince = lastLogin ? Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24)) : 999;
-
-                return `
-                    <div class="member-card ${member.status}" onclick="showMemberDetail('${member.id}')">
-                        <div class="member-header">
-                            <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
-                            <div class="member-info">
-                                <div class="member-name">${member.name}</div>
-                                <div class="member-email">${escapeHtml(maskEmail(member.email))}</div>
-                            </div>
-                        </div>
-                        <div class="member-stats">
-                            <div class="member-stat">
-                                <div class="member-stat-value">${member.engagementScore}</div>
-                                <div class="member-stat-label">Score</div>
-                            </div>
-                            <div class="member-stat">
-                                <div class="member-stat-value">${member.referralCount}</div>
-                                <div class="member-stat-label">Referrals</div>
-                            </div>
-                            <div class="member-stat">
-                                <div class="member-stat-value">${daysSince < 999 ? daysSince + 'd' : '—'}</div>
-                                <div class="member-stat-label">Last Login</div>
-                            </div>
-                        </div>
-                        <div class="engagement-badge ${member.status}">
-                            ${getStatusBadge(member.status)}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = filtered.slice(0, 50).map(m => _memberCardHTML(m)).join('');
         }
 
         function getStatusBadge(status) {
@@ -2290,58 +2286,28 @@
         }
 
         // Filter Members
-        function filterMembers(status) {
+        function filterMembers(status, el) {
             appState.activeFilter = status;
-            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('#dashboardView .filter-chip').forEach(chip => chip.classList.remove('active'));
+            if (el) el.classList.add('active');
             renderMemberCards('membersGrid');
         }
 
-        // Search Members
+        // Debounced Search Members
+        let _searchTimeout;
         function searchMembers() {
+            clearTimeout(_searchTimeout);
+            _searchTimeout = setTimeout(_doSearch, 250);
+        }
+        function _doSearch() {
             const searchTerm = document.getElementById('memberSearch').value.toLowerCase();
             const container = document.getElementById('allMembersGrid');
-
             const filtered = appState.members.filter(m =>
-                m.name.toLowerCase().includes(searchTerm) ||
-                m.email.toLowerCase().includes(searchTerm) ||
-                m.status.toLowerCase().includes(searchTerm)
+                m._searchName.includes(searchTerm) ||
+                m._searchEmail.includes(searchTerm) ||
+                m.status.includes(searchTerm)
             );
-
-            container.innerHTML = filtered.map(member => {
-                const lastLogin = member.lastLoginDate ?
-                    (member.lastLoginDate.toDate ? member.lastLoginDate.toDate() : new Date(member.lastLoginDate)) : null;
-                const daysSince = lastLogin ? Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24)) : 999;
-
-                return `
-                    <div class="member-card ${member.status}" onclick="showMemberDetail('${member.id}')">
-                        <div class="member-header">
-                            <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
-                            <div class="member-info">
-                                <div class="member-name">${member.name}</div>
-                                <div class="member-email">${escapeHtml(maskEmail(member.email))}</div>
-                            </div>
-                        </div>
-                        <div class="member-stats">
-                            <div class="member-stat">
-                                <div class="member-stat-value">${member.engagementScore}</div>
-                                <div class="member-stat-label">Score</div>
-                            </div>
-                            <div class="member-stat">
-                                <div class="member-stat-value">${member.referralCount}</div>
-                                <div class="member-stat-label">Referrals</div>
-                            </div>
-                            <div class="member-stat">
-                                <div class="member-stat-value">${daysSince < 999 ? daysSince + 'd' : '—'}</div>
-                                <div class="member-stat-label">Last Login</div>
-                            </div>
-                        </div>
-                        <div class="engagement-badge ${member.status}">
-                            ${getStatusBadge(member.status)}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = filtered.slice(0, 50).map(m => _memberCardHTML(m)).join('');
         }
 
         // Switch View
@@ -2386,30 +2352,35 @@
             renderMemberCards('allMembersGrid');
         }
 
-        // Render views (simplified versions)
+        // Render views
+        let _engagementChart = null;
+        let _revenueChart = null;
         function renderEngagementView() {
             const ctx = document.getElementById('engagementChart');
             if (ctx && typeof Chart !== 'undefined') {
-                if (ctx.chart) ctx.chart.destroy();
-                ctx.chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['30d ago', '25d', '20d', '15d', '10d', '5d', 'Today'],
-                        datasets: [{
-                            label: 'Active Members',
-                            data: [45, 52, 48, 61, 58, 67, appState.members.filter(m => m.status === 'active' || m.status === 'champion').length],
-                            borderColor: '#8b5cf6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
+                const activeCount = appState.members.filter(m => m.status === 'active' || m.status === 'champion').length;
+                const chartData = [45, 52, 48, 61, 58, 67, activeCount];
+                if (_engagementChart) {
+                    _engagementChart.data.datasets[0].data = chartData;
+                    _engagementChart.update('none');
+                } else {
+                    _engagementChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['30d ago', '25d', '20d', '15d', '10d', '5d', 'Today'],
+                            datasets: [{
+                                label: 'Active Members', data: chartData,
+                                borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                tension: 0.4, fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true, animation: { duration: 300 },
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
+                }
             }
 
             const topEngaged = [...appState.members].sort((a, b) => b.engagementScore - a.engagementScore).slice(0, 10);
@@ -2478,26 +2449,28 @@
 
             const ctx = document.getElementById('revenueChart');
             if (ctx && typeof Chart !== 'undefined') {
-                if (ctx.chart) ctx.chart.destroy();
-                ctx.chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'MRR (£)',
-                            data: [15360, 16640, 17920, 18560, 19200, mrr],
-                            borderColor: '#fbbf24',
-                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
+                const chartData = [15360, 16640, 17920, 18560, 19200, mrr];
+                if (!_revenueChart) {
+                    _revenueChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'MRR (£)', data: chartData,
+                                borderColor: '#fbbf24', backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                                tension: 0.4, fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true, animation: { duration: 300 },
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true } }
+                        }
+                    });
+                } else {
+                    _revenueChart.data.datasets[0].data = chartData;
+                    _revenueChart.update('none');
+                }
             }
         }
 
@@ -2519,8 +2492,10 @@
                 return;
             }
 
+            // O(1) member lookup via Map
+            const memberMap = new Map(appState.members.map(m => [m.id, m]));
             container.innerHTML = appState.affiliates.map(aff => {
-                const member = appState.members.find(m => m.id === aff.userId);
+                const member = memberMap.get(aff.userId);
                 const name = member ? member.name : aff.userId;
                 const referrals = aff.referralsList || [];
 
@@ -2591,18 +2566,24 @@
             syncFromFirebase();
         });
 
-        // Mobile: Handle touch events for better UX
+        // Mobile: Pull-to-refresh (throttled)
         let touchStartY = 0;
         let isPulling = false;
+        let _touchThrottle = false;
 
         document.addEventListener('touchstart', (e) => {
             touchStartY = e.touches[0].clientY;
         }, { passive: true });
 
         document.addEventListener('touchmove', (e) => {
-            if (window.scrollY === 0 && e.touches[0].clientY > touchStartY + 60 && !appState.loading) {
-                isPulling = true;
-            }
+            if (_touchThrottle) return;
+            _touchThrottle = true;
+            requestAnimationFrame(() => {
+                if (window.scrollY === 0 && e.touches[0].clientY > touchStartY + 60 && !appState.loading) {
+                    isPulling = true;
+                }
+                _touchThrottle = false;
+            });
         }, { passive: true });
 
         document.addEventListener('touchend', () => {

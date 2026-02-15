@@ -1,0 +1,417 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // HELPER FUNCTIONS
+    // ============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        uid() == 'U4PvQ0dilBco97hgXp3Awl45JX92' ||
+        uid() == 'liMx3vjGGrgAta12IlKclq3Xwvr2'
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && uid() == userId;
+    }
+
+    function isPaidUser() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/Users/$(uid())) &&
+        (get(/databases/$(database)/documents/Users/$(uid())).data.isPaid == true ||
+         get(/databases/$(database)/documents/Users/$(uid())).data.subscriptionStatus == 'active');
+    }
+
+    // Validate a field is a string within length bounds
+    function isValidString(field, minLen, maxLen) {
+      return field is string && field.size() >= minLen && field.size() <= maxLen;
+    }
+
+    // Check a field hasn't changed (for update protection)
+    function unchanged(field) {
+      return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
+    }
+
+    // ============================================================
+    // SYSTEM / SETTINGS
+    // ============================================================
+
+    // Global settings — public read (for feature flags, etc.), admin write
+    match /Settings/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Mail queue — Cloud Functions only (no client access)
+    match /mail/{docId} {
+      allow read, write: if false;
+    }
+
+    // ============================================================
+    // USER MANAGEMENT
+    // ============================================================
+
+    // User profiles — users read own doc, admin reads all, safe-field self-update
+    match /Users/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create: if isOwner(userId) || isAdmin();
+      allow update: if isAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'displayName', 'photoURL', 'username', 'bio', 'updatedAt',
+          'referralCode', 'referredBy', 'phone', 'address', 'dob'
+        ]) &&
+        // Prevent privilege escalation
+        unchanged('isPaid') &&
+        unchanged('subscriptionStatus') &&
+        unchanged('stripeCustomerId') &&
+        unchanged('role')
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Public user profiles (display names, avatars for leaderboard etc.)
+    match /PublicUsers/{userId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Entitlements — admin managed, users read own
+    match /Entitlements/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create, update, delete: if isAdmin();
+    }
+
+    // User streaks — users own their streak data
+    match /userStreaks/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'currentStreak', 'longestStreak', 'lastLoginDate', 'totalDaysActive', 'updatedAt'
+        ]);
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // AFFILIATE SYSTEM
+    // ============================================================
+
+    match /Affiliates/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /PendingCommissions/{docId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /BalanceTransactions/{transactionId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /WithdrawalRequests/{requestId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == uid() &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount > 0 &&
+        request.resource.data.keys().hasOnly([
+          'userId', 'amount', 'method', 'details', 'status', 'createdAt'
+        ]);
+      allow update, delete: if isAdmin();
+    }
+
+    match /CommissionHistory/{commissionId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.affiliateId == uid());
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /TradeRebates/{rebateId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // PAID CONTENT (Subscription required)
+    // ============================================================
+
+    match /StockPicks/{id} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /Alerts/{id} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /TradeSignals/{id} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /alerts_live/{id} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /alerts_history/{id} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /TradeHistory/{id} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /arcaneInsights/{postId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /LiveCalls/{callId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // COURSES & PROGRESS
+    // ============================================================
+
+    match /Courses/{courseId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+
+      match /Modules/{moduleId} {
+        allow read: if isAdmin() || isPaidUser();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    match /Modules/{moduleId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /UserProgress/{progressId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == uid() &&
+        request.resource.data.keys().hasOnly([
+          'userId', 'courseId', 'moduleId', 'completed', 'completedAt',
+          'progress', 'lastAccessed', 'notes'
+        ]);
+      allow update: if isSignedIn() && resource.data.userId == uid() &&
+        unchanged('userId') && unchanged('courseId');
+      allow delete: if isAdmin();
+    }
+
+    match /Progress/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create, update: if isOwner(userId);
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // COMMUNITY & SOCIAL
+    // ============================================================
+
+    match /activity/{activityId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == uid() &&
+        isValidString(request.resource.data.userId, 1, 128);
+      allow update, delete: if isAdmin();
+    }
+
+    match /community/{postId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create: if isPaidUser() &&
+        request.resource.data.userId == uid() &&
+        isValidString(request.resource.data.userId, 1, 128);
+      allow update: if isAdmin() || (isPaidUser() && resource.data.userId == uid() &&
+        unchanged('userId'));
+      allow delete: if isAdmin() || (isPaidUser() && resource.data.userId == uid());
+    }
+
+    match /wins/{winId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Public leaderboard — anyone can read, admin manages
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Social proof screenshots — public read (shown on landing page), admin manages
+    match /SocialProof/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() &&
+        request.resource.data.keys().hasOnly([
+          'imageUrl', 'storagePath', 'caption', 'createdAt', 'uploadedBy'
+        ]);
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // E-COMMERCE / STORE
+    // ============================================================
+
+    match /Products/{productId} {
+      allow read: if isAdmin() || isPaidUser();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /Orders/{orderId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == uid();
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // BULLION
+    // ============================================================
+
+    match /BullionProducts/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /BullionEnquiries/{enquiryId} {
+      allow create: if true &&
+        request.resource.data.keys().hasAll(['name', 'email', 'phone', 'productId']) &&
+        isValidString(request.resource.data.name, 1, 200) &&
+        isValidString(request.resource.data.email, 3, 254) &&
+        request.resource.data.keys().hasOnly([
+          'name', 'email', 'phone', 'productId', 'productName',
+          'quantity', 'message', 'createdAt'
+        ]);
+      allow read: if isAdmin() || (isSignedIn() && resource.data.email == request.auth.token.email);
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // APPLICATIONS (Public submission forms)
+    // ============================================================
+
+    // Inner Circle applications — public submit, admin review
+    match /InnerCircleApplications/{docId} {
+      allow read: if isAdmin();
+      allow create: if true &&
+        request.resource.data.keys().hasAll(['name', 'email']) &&
+        isValidString(request.resource.data.name, 1, 200) &&
+        isValidString(request.resource.data.email, 3, 254) &&
+        request.resource.data.keys().size() <= 20;
+      allow update, delete: if isAdmin();
+    }
+
+    // Consulting applications — public submit from landing page, admin reviews in CRM
+    match /consulting_applications/{docId} {
+      allow read: if isAdmin();
+      allow create: if true &&
+        request.resource.data.keys().hasAll(['name', 'email', 'phone', 'business']) &&
+        isValidString(request.resource.data.name, 1, 200) &&
+        isValidString(request.resource.data.email, 3, 254) &&
+        isValidString(request.resource.data.phone, 3, 30) &&
+        isValidString(request.resource.data.business, 1, 500) &&
+        request.resource.data.keys().hasOnly([
+          'name', 'email', 'phone', 'business', 'revenue',
+          'business_rating', 'mind_rating', 'life_rating',
+          'biggest_issue', 'attempts', 'investment_ready',
+          'timestamp', 'source', 'qualification_score', 'qualification_status'
+        ]);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // WAITLIST
+    // ============================================================
+
+    match /Waitlist/{docId} {
+      allow read: if isAdmin();
+      allow create: if true &&
+        request.resource.data.keys().hasAll(['name', 'email']) &&
+        isValidString(request.resource.data.name, 1, 100) &&
+        isValidString(request.resource.data.email, 3, 200) &&
+        request.resource.data.keys().hasOnly([
+          'name', 'email', 'telegram', 'createdAt', 'source'
+        ]);
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // CRM — MEMBER CRM (Admin managed)
+    // ============================================================
+
+    match /CRM_Contacts/{contactId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update: if isAdmin() || (isSignedIn() && resource.data.userId == uid() &&
+        unchanged('userId'));
+      allow delete: if isAdmin();
+    }
+
+    match /CRM_Activities/{activityId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == uid());
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update, delete: if isAdmin();
+    }
+
+    match /CRM_Stats/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create, update: if isAdmin() || isOwner(userId);
+      allow delete: if isAdmin();
+    }
+
+    match /CRM_Templates/{templateId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /CRM_Settings/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow create, update: if isAdmin() || isOwner(userId);
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // CONSULTING CRM (Admin only)
+    // ============================================================
+
+    // Consulting leads — admin-only pipeline management
+    match /consulting_leads/{leadId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // Consulting payments — admin-only revenue tracking
+    match /consulting_payments/{paymentId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // DEFAULT DENY — Catch-all blocks everything else
+    // ============================================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
