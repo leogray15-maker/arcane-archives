@@ -62,9 +62,9 @@ service cloud.firestore {
     // USER MANAGEMENT
     // ============================================================
 
-    // User profiles — users read own doc, admin reads all, safe-field self-update
+    // User profiles — any signed-in user can read (needed for referral lookups, leaderboard etc.)
     match /Users/{userId} {
-      allow read: if isAdmin() || isOwner(userId);
+      allow read: if isSignedIn();
       allow create: if isOwner(userId) || isAdmin();
       allow update: if isAdmin() || (
         isOwner(userId) &&

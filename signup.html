@@ -490,6 +490,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
+        let isSigningUp = false; // Prevents onAuthStateChanged redirect during signup
 
         // ─── Affiliate Click Tracking ───
         (async function trackAffiliateClick() {
@@ -690,6 +691,7 @@
             signupBtn.disabled = true;
             signupBtn.textContent = 'Creating account...';
             errorMessage.classList.remove('show');
+            isSigningUp = true;
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -697,6 +699,7 @@
                 await createUserProfile(userCredential.user, displayName);
                 window.location.href = 'dashboard.html';
             } catch (error) {
+                isSigningUp = false;
                 console.error('Signup error:', error);
                 let message = 'Failed to create account. Please try again.';
                 
@@ -723,12 +726,14 @@
             googleBtn.disabled = true;
             googleBtn.textContent = 'Connecting...';
             errorMessage.classList.remove('show');
+            isSigningUp = true;
 
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 await createUserProfile(result.user, result.user.displayName);
                 window.location.href = 'dashboard.html';
             } catch (error) {
+                isSigningUp = false;
                 console.error('Google signup error:', error);
                 errorMessage.textContent = 'Failed to sign up with Google. Please try again.';
                 errorMessage.classList.add('show');
@@ -746,9 +751,9 @@
             }
         });
 
-        // Check if already logged in
+        // Check if already logged in (skip redirect if signup is in progress)
         auth.onAuthStateChanged((user) => {
-            if (user) {
+            if (user && !isSigningUp) {
                 window.location.href = 'dashboard.html';
             }
         });
