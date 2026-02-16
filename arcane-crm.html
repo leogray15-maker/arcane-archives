@@ -2110,37 +2110,62 @@
                     db.collection('Affiliates').get()
                 ]);
 
+                // Build referral counts from Users collection (derives affiliates dynamically)
                 const referralCounts = {};
-                affiliatesSnapshot.forEach(doc => {
+                const activeReferralCounts = {};
+                usersSnapshot.forEach(doc => {
                     const data = doc.data();
-                    referralCounts[doc.id] = {
-                        totalReferrals: data.totalReferrals || 0,
-                        activeReferrals: data.activeReferrals || 0,
-                        balance: data.availableBalance || data.balance || 0
-                    };
+                    if (data.referredBy) {
+                        referralCounts[data.referredBy] = (referralCounts[data.referredBy] || 0) + 1;
+                        if (data.isPaid || data.subscriptionStatus === 'active') {
+                            activeReferralCounts[data.referredBy] = (activeReferralCounts[data.referredBy] || 0) + 1;
+                        }
+                    }
                 });
 
-                appState.affiliates = affiliatesSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                // Build balance lookup from Affiliates collection (for earnings/withdrawal data)
+                const affiliateBalances = {};
+                affiliatesSnapshot.forEach(doc => {
+                    affiliateBalances[doc.id] = doc.data();
+                });
+
+                // Derive affiliates: users who have a referralCode AND at least one referral
+                appState.affiliates = [];
+                usersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.referralCode && referralCounts[data.referralCode]) {
+                        const balanceData = affiliateBalances[doc.id] || {};
+                        const activeCount = activeReferralCounts[data.referralCode] || 0;
+                        appState.affiliates.push({
+                            id: doc.id,
+                            userId: doc.id,
+                            name: data.Username || data.Email?.split('@')[0] || 'Unknown',
+                            referralCode: data.referralCode,
+                            totalReferrals: referralCounts[data.referralCode] || 0,
+                            activeReferrals: activeCount,
+                            totalEarnings: balanceData.totalEarnings || (activeCount * 25),
+                            totalEarned: balanceData.totalEarnings || (activeCount * 25),
+                            availableBalance: balanceData.availableBalance || 0
+                        });
+                    }
+                });
 
                 appState.members = usersSnapshot.docs.map(doc => {
                     const data = doc.data();
-                    const referrals = referralCounts[doc.id] || {};
+                    const refCode = data.referralCode || '';
 
                     const member = {
                         id: doc.id,
                         name: data.Username || data.Email?.split('@')[0] || 'Unknown',
                         email: data.Email || '',
-                        referralCode: data.referralCode || '',
+                        referralCode: refCode,
                         subscriptionStatus: data.subscriptionStatus || 'none',
                         isPaid: data.isPaid || false,
                         joinedAt: data.joinedAt,
                         lastLoginDate: data.lastLoginDate,
                         referredBy: data.referredBy || null,
-                        referralCount: referrals.totalReferrals || 0,
-                        activeReferrals: referrals.activeReferrals || 0,
+                        referralCount: referralCounts[refCode] || 0,
+                        activeReferrals: activeReferralCounts[refCode] || 0,
                         stripeCustomerId: data.stripeCustomerId || null
                     };
 
@@ -2504,7 +2529,7 @@
             const memberMap = new Map(appState.members.map(m => [m.id, m]));
             container.innerHTML = appState.affiliates.map(aff => {
                 const member = memberMap.get(aff.userId);
-                const name = member ? member.name : aff.userId;
+                const name = aff.name || (member ? member.name : aff.userId);
                 const referrals = aff.referralsList || [];
 
                 return `
