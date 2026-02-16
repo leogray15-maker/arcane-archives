@@ -2,10 +2,14 @@
 // User profile initialization with referral tracking
 
 import { db } from './auth-guard.js';
-import { 
-    doc, 
-    setDoc, 
+import {
+    doc,
+    setDoc,
     getDoc,
+    getDocs,
+    collection,
+    query,
+    where,
     serverTimestamp,
     updateDoc,
     increment
@@ -35,19 +39,18 @@ export async function ensureUserProfile(user) {
     // Generate default referral code (first 8 chars of UID)
     const defaultReferralCode = user.uid.slice(0, 8).toUpperCase();
 
-    // Check for referral code in session storage
+    // Check for referral code in localStorage (set by referral capture script)
     let referredBy = null;
     let referredAt = null;
-    
+
     try {
-        const storedReferralCode = sessionStorage.getItem('referralCode');
+        const storedReferralCode = localStorage.getItem('arcane_ref');
         if (storedReferralCode) {
             referredBy = storedReferralCode.toUpperCase();
             referredAt = serverTimestamp();
-            sessionStorage.removeItem('referralCode');
         }
     } catch (e) {
-        console.warn('Could not read referral code from session:', e);
+        console.warn('Could not read referral code from localStorage:', e);
     }
 
     const newUserData = {
@@ -65,11 +68,17 @@ export async function ensureUserProfile(user) {
     if (referredBy) {
         newUserData.referredBy = referredBy;
         newUserData.referredAt = referredAt;
+        newUserData.referralLanding = localStorage.getItem('arcane_ref_landing') || '/';
+        newUserData.referralSource = {
+            utm_source: localStorage.getItem('arcane_utm_source') || null,
+            utm_medium: localStorage.getItem('arcane_utm_medium') || null,
+            utm_campaign: localStorage.getItem('arcane_utm_campaign') || null
+        };
     }
 
     await setDoc(userRef, newUserData);
-    console.log("🔥 New user profile created:", username);
-    
+    console.log("New user profile created:", username);
+
     // If user was referred, update referrer's stats
     if (referredBy) {
         try {
@@ -77,6 +86,14 @@ export async function ensureUserProfile(user) {
         } catch (error) {
             console.error('Error updating referrer stats:', error);
         }
+
+        // Clean up localStorage referral data
+        localStorage.removeItem('arcane_ref');
+        localStorage.removeItem('arcane_ref_ts');
+        localStorage.removeItem('arcane_ref_landing');
+        localStorage.removeItem('arcane_utm_source');
+        localStorage.removeItem('arcane_utm_medium');
+        localStorage.removeItem('arcane_utm_campaign');
     }
 }
 

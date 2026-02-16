@@ -110,7 +110,30 @@ service cloud.firestore {
 
     match /Affiliates/{userId} {
       allow read: if isAdmin() || isOwner(userId);
-      allow create, update, delete: if isAdmin();
+      // Admin: full access. Signup referral attribution: create new or increment totalReferrals
+      allow create: if isAdmin() || (isSignedIn() &&
+        request.resource.data.keys().hasOnly([
+          'userId', 'referralCode', 'availableBalance', 'pendingBalance',
+          'totalEarnings', 'totalWithdrawn', 'activeReferrals', 'totalReferrals',
+          'createdAt', 'lastUpdated'
+        ]));
+      allow update: if isAdmin() || (isSignedIn() &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'totalReferrals', 'lastUpdated'
+        ]));
+      allow delete: if isAdmin();
+    }
+
+    // Affiliate click tracking — public write (anyone clicking a link), admin read
+    match /AffiliateClicks/{clickId} {
+      allow read: if isAdmin();
+      allow create: if true &&
+        request.resource.data.keys().hasOnly([
+          'referralCode', 'timestamp', 'landingPage', 'userAgent', 'sessionId'
+        ]) &&
+        isValidString(request.resource.data.referralCode, 1, 20) &&
+        isValidString(request.resource.data.landingPage, 1, 500);
+      allow update, delete: if isAdmin();
     }
 
     match /PendingCommissions/{docId} {
