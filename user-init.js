@@ -132,7 +132,7 @@ async function updateReferrerStats(referralCode) {
             referralCode: referralCode,
             availableBalance: 0,
             pendingBalance: 0,
-            totalEarnings: 0,
+            totalEarned: 0,
             totalWithdrawn: 0,
             activeReferrals: 0,
             totalReferrals: 1,

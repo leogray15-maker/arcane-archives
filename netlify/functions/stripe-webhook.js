@@ -113,8 +113,7 @@ async function processAffiliateCommission(email) {
         // Update existing referral to active
         currentList[existingIndex].status = 'active';
         await affiliateRef.update({
-          balance: admin.firestore.FieldValue.increment(commission),
-          availableBalance: admin.firestore.FieldValue.increment(commission),
+          pendingBalance: admin.firestore.FieldValue.increment(commission),
           totalEarned: admin.firestore.FieldValue.increment(commission),
           activeReferrals: admin.firestore.FieldValue.increment(1),
           referralsList: currentList,
@@ -123,8 +122,7 @@ async function processAffiliateCommission(email) {
       } else {
         // Add new referral
         await affiliateRef.update({
-          balance: admin.firestore.FieldValue.increment(commission),
-          availableBalance: admin.firestore.FieldValue.increment(commission),
+          pendingBalance: admin.firestore.FieldValue.increment(commission),
           totalEarned: admin.firestore.FieldValue.increment(commission),
           activeReferrals: admin.firestore.FieldValue.increment(1),
           referralsList: admin.firestore.FieldValue.arrayUnion(referralEntry),
@@ -147,9 +145,8 @@ async function processAffiliateCommission(email) {
       await affiliateRef.set({
         userId: referrerId,
         referralCode: referralCode,
-        balance: commission,
-        availableBalance: commission,
-        pendingBalance: 0,
+        availableBalance: 0,
+        pendingBalance: commission,
         totalEarned: commission,
         totalWithdrawn: 0,
         activeReferrals: 1,
@@ -158,7 +155,7 @@ async function processAffiliateCommission(email) {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
       });
-      console.log("✅ Created new affiliate with balance: £" + commission);
+      console.log("✅ Created new affiliate with pending: £" + commission);
 
       await db.collection("BalanceTransactions").add({
         userId: referrerId,

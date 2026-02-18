@@ -717,20 +717,13 @@
         </div>
 
         <div class="summary-card gold-border">
-          <h4 style="color: var(--gold);">Credit Earnings to Accounts</h4>
+          <h4 style="color: var(--gold);">Release Earnings to Affiliates</h4>
           <p style="color: var(--text-2); font-size: 0.825rem; margin-bottom: 0.85rem; line-height: 1.5;">
-            This will add earnings to each user's Pending Balance with a 7-day hold. After 7 days, you'll need to manually clear them to Available Balance.
+            Stripe automatically holds each commission in <strong style="color:var(--gold);">Pending</strong> when a referral pays. Click below to release all pending earnings to <strong style="color:var(--green);">Available</strong> so affiliates can withdraw. Run this once a month.
           </p>
-          <button id="creditAllBtn" class="btn-primary" style="padding: 0.65rem 1.25rem; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--gold), #d97706); color: #000; border: none; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
-            Credit All to Pending Balance (7-day hold)
-          </button>
-        </div>
-
-        <div id="pendingTransactions" style="display: none;" class="summary-card green-border">
-          <h4 style="color: var(--green);">Pending Clearances</h4>
-          <p style="color: var(--text-2); font-size: 0.825rem; margin-bottom: 0.85rem; line-height: 1.5;" id="pendingInfo"></p>
-          <button id="clearPendingBtn" class="btn-primary" style="padding: 0.65rem 1.25rem; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--green), #16a34a); color: white; border: none; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
-            Clear All Pending to Available (Send Emails)
+          <div id="releaseSummary" style="display:none; background:var(--bg-3); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:0.85rem; font-size:0.82rem; color:var(--text-1);"></div>
+          <button id="releaseAllBtn" class="btn-primary" style="padding: 0.65rem 1.25rem; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--green), #16a34a); color: white; border: none; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
+            🚀 Release All Pending → Available
           </button>
         </div>
 
@@ -1548,261 +1541,109 @@
       showSuccess('✅ CSV exported successfully!');
     });
 
-    // Credit All Earnings to Pending Balance
-    document.getElementById('creditAllBtn').addEventListener('click', async () => {
-      if (!window.currentEarningsData || window.currentEarningsData.length === 0) {
-        showError('⚠️ Please calculate earnings first!');
-        return;
-      }
-
-      const totalAmount = window.currentEarningsData.reduce((sum, a) => sum + a.monthlyEarnings, 0);
-      const clearanceDate = new Date();
-      clearanceDate.setDate(clearanceDate.getDate() + 7);
-
-      const confirm = window.confirm(
-        `Credit earnings to ${window.currentEarningsData.length} affiliates?\n\n` +
-        `Total: £${totalAmount}\n` +
-        `Hold Period: 7 days\n` +
-        `Available: ${clearanceDate.toLocaleDateString()}\n\n` +
-        `This will add earnings to Pending Balance.`
-      );
-
-      if (!confirm) return;
-
-      const btn = document.getElementById('creditAllBtn');
-      btn.disabled = true;
-      btn.textContent = '⏳ Processing...';
+    // ── Release All Pending → Available ──
+    // Stripe auto-holds commissions in pendingBalance when payments come in.
+    // Admin runs this once a month to release everything to availableBalance
+    // so affiliates can withdraw.
+    document.getElementById('releaseAllBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('releaseAllBtn');
 
       try {
-        const batch = writeBatch(db);
-        const currentMonth = new Date().toISOString().slice(0, 7); // "2026-01"
-        let successCount = 0;
-        let skippedCount = 0;
+        // Fetch all affiliates with a pending balance > 0
+        const affiliatesSnap = await getDocs(collection(db, 'Affiliates'));
+        const usersSnap = await getDocs(collection(db, 'Users'));
+        const usersMap = {};
+        usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
 
-        for (const affiliate of window.currentEarningsData) {
-          // Get current affiliate balance
-          const affiliateRef = doc(db, 'Affiliates', affiliate.userId);
-          const affiliateSnap = await getDoc(affiliateRef);
-
-          // Check if already credited this month (prevent duplicate credits)
-          if (affiliateSnap.exists()) {
-            const lastCreditedMonth = affiliateSnap.data().lastCreditedMonth;
-            if (lastCreditedMonth === currentMonth) {
-              console.log(`Skipping ${affiliate.username} - already credited for ${currentMonth}`);
-              skippedCount++;
-              continue; // Skip this user
-            }
+        const toRelease = [];
+        affiliatesSnap.forEach(d => {
+          const data = d.data();
+          const pending = data.pendingBalance || 0;
+          if (pending > 0) {
+            toRelease.push({ id: d.id, data, pending });
           }
+        });
 
-          const currentPending = affiliateSnap.exists() ? (affiliateSnap.data().pendingBalance || 0) : 0;
-          const newPending = currentPending + affiliate.monthlyEarnings;
-
-          // Update Affiliates doc
-          if (affiliateSnap.exists()) {
-            batch.update(affiliateRef, {
-              pendingBalance: newPending,
-              lastCredited: serverTimestamp(),
-              lastCreditedMonth: currentMonth
-            });
-          } else {
-            batch.set(affiliateRef, {
-              userId: affiliate.userId,
-              referralCode: affiliate.referralCode,
-              pendingBalance: affiliate.monthlyEarnings,
-              availableBalance: 0,
-              totalEarned: 0,
-              totalReferrals: affiliate.activeReferrals,
-              activeReferrals: affiliate.activeReferrals,
-              lastCredited: serverTimestamp(),
-              lastCreditedMonth: currentMonth
-            });
-          }
-
-          // Create pending transaction record
-          const transactionRef = doc(collection(db, 'PendingCommissions'));
-          batch.set(transactionRef, {
-            userId: affiliate.userId,
-            username: affiliate.username,
-            email: affiliate.email,
-            amount: affiliate.monthlyEarnings,
-            activeReferrals: affiliate.activeReferrals,
-            month: currentMonth,
-            creditedAt: serverTimestamp(),
-            clearanceDate: clearanceDate.toISOString(),
-            status: 'pending',
-            processedBy: currentUser.uid
-          });
-
-          successCount++;
-        }
-
-        await batch.commit();
-
-        const message = skippedCount > 0
-          ? `✅ Successfully credited ${successCount} affiliates!\n⚠️ Skipped ${skippedCount} (already credited this month)\n\nTotal: £${totalAmount}\nClears: ${clearanceDate.toLocaleDateString()}`
-          : `✅ Successfully credited ${successCount} affiliates!\n\nTotal: £${totalAmount}\nClears: ${clearanceDate.toLocaleDateString()}`;
-
-        showSuccess(message);
-
-        btn.textContent = '✅ Credited!';
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.textContent = '💸 Credit All to Pending Balance (7-day hold)';
-        }, 3000);
-
-        // Show pending clearances section
-        checkPendingClearances();
-
-      } catch (error) {
-        console.error('Error crediting earnings:', error);
-        showError('Failed to credit earnings: ' + error.message);
-        btn.disabled = false;
-        btn.textContent = '💸 Credit All to Pending Balance (7-day hold)';
-      }
-    });
-
-    // Check for pending clearances
-    async function checkPendingClearances() {
-      try {
-        const now = new Date().toISOString();
-        const pendingQuery = query(
-          collection(db, 'PendingCommissions'),
-          where('status', '==', 'pending'),
-          where('clearanceDate', '<=', now)
-        );
-
-        const pendingSnapshot = await getDocs(pendingQuery);
-
-        if (!pendingSnapshot.empty) {
-          const totalAmount = pendingSnapshot.docs.reduce((sum, doc) => sum + doc.data().amount, 0);
-          document.getElementById('pendingInfo').textContent =
-            `${pendingSnapshot.size} affiliates (£${totalAmount}) ready to clear`;
-          document.getElementById('pendingTransactions').style.display = 'block';
-        }
-      } catch (error) {
-        console.error('Error checking pending:', error);
-      }
-    }
-
-    // Clear Pending to Available
-    document.getElementById('clearPendingBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('clearPendingBtn');
-
-      const confirmClear = window.confirm(
-        'Clear all pending commissions to Available Balance?\n\n' +
-        'This will:\n' +
-        '• Move funds from Pending to Available\n' +
-        '• Send email notifications to users\n' +
-        '• Allow users to withdraw\n\n' +
-        'Continue?'
-      );
-
-      if (!confirmClear) return;
-
-      btn.disabled = true;
-      btn.textContent = '⏳ Processing...';
-
-      try {
-        const now = new Date().toISOString();
-        const pendingQuery = query(
-          collection(db, 'PendingCommissions'),
-          where('status', '==', 'pending'),
-          where('clearanceDate', '<=', now)
-        );
-
-        const pendingSnapshot = await getDocs(pendingQuery);
-
-        if (pendingSnapshot.empty) {
-          showError('No pending commissions ready to clear');
-          btn.disabled = false;
-          btn.textContent = '✅ Clear All Pending to Available (Send Emails)';
+        if (toRelease.length === 0) {
+          showError('ℹ️ No pending balances to release. All affiliates are up to date!');
           return;
         }
 
+        const totalRelease = toRelease.reduce((s, x) => s + x.pending, 0);
+        const names = toRelease.map(x => {
+          const u = usersMap[x.id] || {};
+          return `${u.Username || 'Unknown'}: £${x.pending.toFixed(2)}`;
+        }).join('\n');
+
+        const confirmed = window.confirm(
+          `Release pending earnings to ${toRelease.length} affiliate${toRelease.length > 1 ? 's' : ''}?\n\n` +
+          `${names}\n\n` +
+          `Total: £${totalRelease.toFixed(2)}\n\n` +
+          `Pending → Available. They can then request withdrawal.`
+        );
+
+        if (!confirmed) return;
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Releasing...';
+
+        const currentMonth = new Date().toISOString().slice(0, 7);
         const batch = writeBatch(db);
-        let successCount = 0;
-        const emailList = [];
 
-        for (const pendingDoc of pendingSnapshot.docs) {
-          const data = pendingDoc.data();
+        for (const item of toRelease) {
+          const affRef = doc(db, 'Affiliates', item.id);
+          const currentData = item.data;
+          const newAvailable = (currentData.availableBalance || 0) + item.pending;
 
-          // Update Affiliates doc: Move from pending to available
-          const affiliateRef = doc(db, 'Affiliates', data.userId);
-          const affiliateSnap = await getDoc(affiliateRef);
-
-          if (affiliateSnap.exists()) {
-            const current = affiliateSnap.data();
-            const newPending = (current.pendingBalance || 0) - data.amount;
-            const newAvailable = (current.availableBalance || 0) + data.amount;
-            const newTotalEarned = (current.totalEarned || 0) + data.amount;
-
-            batch.update(affiliateRef, {
-              pendingBalance: Math.max(0, newPending),
-              availableBalance: newAvailable,
-              totalEarned: newTotalEarned,
-              lastCleared: serverTimestamp()
-            });
-          }
-
-          // Update pending commission status
-          batch.update(pendingDoc.ref, {
-            status: 'cleared',
-            clearedAt: serverTimestamp(),
-            clearedBy: currentUser.uid
+          batch.update(affRef, {
+            availableBalance: newAvailable,
+            pendingBalance: 0,
+            lastReleased: serverTimestamp(),
+            lastReleasedMonth: currentMonth
           });
 
-          // Create balance transaction record
-          const transactionRef = doc(collection(db, 'BalanceTransactions'));
-          batch.set(transactionRef, {
-            userId: data.userId,
-            type: 'commission_cleared',
-            amount: data.amount,
-            description: `Monthly commission for ${data.month} (${data.activeReferrals} active referrals)`,
+          // Audit trail
+          const txRef = doc(collection(db, 'BalanceTransactions'));
+          batch.set(txRef, {
+            userId: item.id,
+            type: 'monthly_release',
+            amount: item.pending,
+            description: `Monthly release for ${currentMonth} — £${item.pending.toFixed(2)} moved to available`,
+            balanceBefore: currentData.availableBalance || 0,
+            balanceAfter: newAvailable,
             createdAt: serverTimestamp(),
             processedBy: currentUser.uid
           });
-
-          emailList.push({
-            email: data.email,
-            username: data.username,
-            amount: data.amount,
-            month: data.month
-          });
-
-          successCount++;
         }
 
         await batch.commit();
 
-        // Log emails to send (you'll need to set up email service)
-        console.log('📧 Send emails to:', emailList);
+        // Show summary
+        const summaryEl = document.getElementById('releaseSummary');
+        summaryEl.innerHTML = `
+          <strong style="color:var(--green);">✅ Released ${toRelease.length} affiliate${toRelease.length > 1 ? 's' : ''} — £${totalRelease.toFixed(2)} moved to Available</strong><br/>
+          <span style="color:var(--text-2);font-size:0.78rem;">${new Date().toLocaleString('en-GB')} · ${currentMonth}</span>
+        `;
+        summaryEl.style.display = 'block';
 
-        showSuccess(
-          `✅ Successfully cleared ${successCount} commissions!\n\n` +
-          `Emails to send:\n${emailList.map(e => `${e.username}: £${e.amount}`).join('\n')}\n\n` +
-          `(Email notifications logged in console)`
-        );
+        showSuccess(`🚀 Done! £${totalRelease.toFixed(2)} released to ${toRelease.length} affiliate${toRelease.length > 1 ? 's' : ''}. They can now withdraw.`);
 
-        btn.textContent = '✅ Cleared!';
-        document.getElementById('pendingTransactions').style.display = 'none';
-
+        btn.textContent = '✅ Released!';
         setTimeout(() => {
           btn.disabled = false;
-          btn.textContent = '✅ Clear All Pending to Available (Send Emails)';
+          btn.textContent = '🚀 Release All Pending → Available';
         }, 3000);
 
         await loadStats();
+        await loadAffiliates();
 
       } catch (error) {
-        console.error('Error clearing pending:', error);
-        showError('Failed to clear pending: ' + error.message);
+        console.error('Error releasing earnings:', error);
+        showError('❌ Failed to release: ' + error.message);
         btn.disabled = false;
-        btn.textContent = '✅ Clear All Pending to Available (Send Emails)';
+        btn.textContent = '🚀 Release All Pending → Available';
       }
     });
-
-    // Check pending on page load
-    setTimeout(checkPendingClearances, 1000);
 
     // ── Sync & Repair Tool ──
     document.getElementById('syncRepairBtn').addEventListener('click', async () => {
@@ -1900,20 +1741,21 @@
             });
             logLine(`    → Updated existing Affiliates doc (preserved balances)`);
           } else {
-            // Create fresh doc if missing
+            // Create fresh doc if missing — put earned amount into pendingBalance
+            // (admin must release it to availableBalance via the Release button)
             batch2.set(affRef, {
               userId: owner.id,
               referralCode: code,
               activeReferrals,
               totalReferrals,
-              availableBalance: expectedTotalEarned,
-              pendingBalance: 0,
+              availableBalance: 0,
+              pendingBalance: expectedTotalEarned,
               totalEarned: expectedTotalEarned,
               totalWithdrawn: 0,
               createdAt: serverTimestamp(),
               lastSynced: serverTimestamp()
             });
-            logLine(`    → Created NEW Affiliates doc with £${expectedTotalEarned} available`);
+            logLine(`    → Created NEW Affiliates doc with £${expectedTotalEarned} in pending (use Release button to make available)`);
           }
           rebuilt++;
         }
