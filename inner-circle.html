@@ -488,6 +488,30 @@
 </head>
 
 <body>
+<script>
+// Referral & UTM capture — runs before anything else
+(function(){
+    var p=new URLSearchParams(location.search),r=p.get('ref');
+    if(r){
+        r=r.toUpperCase();
+        localStorage.setItem('arcane_ref',r);
+        localStorage.setItem('arcane_ref_ts',Date.now().toString());
+        localStorage.setItem('arcane_ref_landing',location.pathname);
+        sessionStorage.setItem('arcane_ref_session',r);
+    } else {
+        var sr=sessionStorage.getItem('arcane_ref_session');
+        if(sr&&!localStorage.getItem('arcane_ref')){
+            localStorage.setItem('arcane_ref',sr);
+            localStorage.setItem('arcane_ref_ts',Date.now().toString());
+            localStorage.setItem('arcane_ref_landing',location.pathname);
+        }
+    }
+    var s=p.get('utm_source'),m=p.get('utm_medium'),c=p.get('utm_campaign');
+    if(s)localStorage.setItem('arcane_utm_source',s);
+    if(m)localStorage.setItem('arcane_utm_medium',m);
+    if(c)localStorage.setItem('arcane_utm_campaign',c);
+})();
+</script>
   <div class="container">
     <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
 

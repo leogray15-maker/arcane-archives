@@ -560,6 +560,39 @@
         font-size: 0.75rem;
       }
     }
+
+    .status-approved {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--accent-light);
+    }
+
+    .pay-ref-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      background: rgba(34,197,94,0.1);
+      color: var(--green);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      display: inline-block;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .filter-active {
+      background: var(--accent) !important;
+      color: white !important;
+      border-color: var(--accent) !important;
+    }
+
+    #payRefModal, #markPaidModal {
+      display: none;
+    }
+    #payRefModal.open, #markPaidModal.open {
+      display: flex !important;
+    }
   </style>
 </head>
 <body>
@@ -621,11 +654,13 @@
             <tr>
               <th>User</th>
               <th>Email</th>
-              <th>Referral Code</th>
-              <th>Referrals</th>
+              <th>Code</th>
+              <th>Total Refs</th>
               <th>Active</th>
               <th>Total Earned</th>
-              <th>Balance</th>
+              <th>Available</th>
+              <th>Pending</th>
+              <th>Withdrawn</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -706,13 +741,41 @@
       </div>
     </div>
 
+    <!-- Payout Queue — pending items needing action -->
+    <div class="card" id="payoutQueueCard" style="display:none;">
+      <h2 class="section-title">⚡ Payout Queue</h2>
+      <p class="section-subtitle" style="margin-bottom:1rem;">Approved withdrawals waiting for you to physically send money. Mark as Paid once sent.</p>
+      <div class="table-wrap">
+        <table id="payoutQueueTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th style="min-width:260px;">Send To</th>
+              <th>Approved</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="payoutQueueBody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Withdrawal Requests -->
     <div class="card">
       <h2 class="section-title">Withdrawal Requests</h2>
+      <div style="margin-bottom:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button id="filterAll" class="btn btn-primary" onclick="filterWithdrawals('all')" style="font-size:0.78rem;">All</button>
+        <button id="filterPending" class="btn btn-secondary" onclick="filterWithdrawals('pending')" style="font-size:0.78rem;">⏳ Pending</button>
+        <button id="filterApproved" class="btn btn-secondary" onclick="filterWithdrawals('approved')" style="font-size:0.78rem;">✅ Approved</button>
+        <button id="filterCompleted" class="btn btn-secondary" onclick="filterWithdrawals('completed')" style="font-size:0.78rem;">💚 Completed</button>
+        <button id="filterRejected" class="btn btn-secondary" onclick="filterWithdrawals('rejected')" style="font-size:0.78rem;">❌ Rejected</button>
+      </div>
       <div id="loadingWithdrawals" class="loading">Loading withdrawal requests...</div>
       <div id="emptyWithdrawals" class="empty-state" style="display: none;">
         <div class="empty-state-icon">💸</div>
-        <p>No pending withdrawal requests</p>
+        <p>No withdrawal requests</p>
       </div>
       <div class="table-wrap">
         <table id="withdrawalsTable" style="display: none;">
@@ -722,13 +785,42 @@
               <th>User</th>
               <th>Amount</th>
               <th>Method</th>
-              <th style="min-width: 250px;">Payment Details</th>
+              <th style="min-width: 260px;">Payment Details</th>
               <th>Status</th>
+              <th>Ref / Note</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="withdrawalsTableBody"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Pay Reference Modal -->
+    <div id="payRefModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center;">
+      <div style="background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:2rem; max-width:480px; width:90%; position:relative;">
+        <h3 style="margin-bottom:0.5rem;">✅ Approve Withdrawal</h3>
+        <p id="payRefModalDesc" style="color:var(--text-2); font-size:0.85rem; margin-bottom:1.25rem; line-height:1.5;"></p>
+        <label style="display:block; font-size:0.8rem; color:var(--text-2); margin-bottom:0.4rem;">Payment Reference / Note (optional)</label>
+        <input id="payRefInput" type="text" placeholder="e.g. Bank ref: 123456 / TX hash: 0xabc..." style="width:100%; background:var(--bg-3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-0); padding:0.65rem 0.85rem; font-size:0.875rem; margin-bottom:1.25rem; font-family:'Inter',sans-serif;" />
+        <div style="display:flex; gap:0.75rem;">
+          <button id="payRefConfirmBtn" class="btn btn-success" style="flex:1;">✅ Approve & Record</button>
+          <button onclick="closePayRefModal()" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mark Paid Modal -->
+    <div id="markPaidModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center;">
+      <div style="background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:2rem; max-width:480px; width:90%; position:relative;">
+        <h3 style="margin-bottom:0.5rem;">💚 Mark as Paid</h3>
+        <p id="markPaidModalDesc" style="color:var(--text-2); font-size:0.85rem; margin-bottom:1.25rem; line-height:1.5;"></p>
+        <label style="display:block; font-size:0.8rem; color:var(--text-2); margin-bottom:0.4rem;">Payment Reference (required — bank ref or TX hash)</label>
+        <input id="markPaidRefInput" type="text" placeholder="e.g. BACS ref: AA123456 / TX: 0xabc123..." style="width:100%; background:var(--bg-3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-0); padding:0.65rem 0.85rem; font-size:0.875rem; margin-bottom:1.25rem; font-family:'Inter',sans-serif;" />
+        <div style="display:flex; gap:0.75rem;">
+          <button id="markPaidConfirmBtn" class="btn btn-success" style="flex:1;">💚 Confirm Payment Sent</button>
+          <button onclick="closeMarkPaidModal()" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -815,58 +907,38 @@
 
     async function loadStats() {
       try {
-        const usersSnapshot = await getDocs(collection(db, 'Users'));
-        const withdrawalsSnapshot = await getDocs(
-          query(collection(db, 'WithdrawalRequests'), where('status', '==', 'pending'))
-        );
-        const completedWithdrawalsSnapshot = await getDocs(
-          query(collection(db, 'WithdrawalRequests'), where('status', '==', 'completed'))
-        );
+        const [affiliatesSnap, withdrawalsSnap] = await Promise.all([
+          getDocs(collection(db, 'Affiliates')),
+          getDocs(collection(db, 'WithdrawalRequests'))
+        ]);
 
         let totalAffiliatesCount = 0;
         let activeReferralsCount = 0;
         let totalCommissionsAmount = 0;
+        let totalAvailableBalance = 0;
         let pendingWithdrawalsAmount = 0;
+        let approvedWithdrawalsAmount = 0;
         let totalPaidOutAmount = 0;
 
-        // Count affiliates (users with referral codes who have referrals)
-        const referralCodes = new Set();
-        const referralCounts = {};
-
-        usersSnapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.referredBy) {
-            referralCounts[data.referredBy] = (referralCounts[data.referredBy] || 0) + 1;
-            if (data.isPaid || data.subscriptionStatus === 'active') {
-              activeReferralsCount++;
-            }
-          }
-          if (data.referralCode) {
-            referralCodes.add(data.referralCode);
-          }
+        affiliatesSnap.forEach(d => {
+          const data = d.data();
+          totalAffiliatesCount++;
+          activeReferralsCount += data.activeReferrals || 0;
+          totalCommissionsAmount += data.totalEarned || 0;
+          totalAvailableBalance += data.availableBalance || 0;
         });
 
-        // Count how many have actual referrals
-        totalAffiliatesCount = Object.keys(referralCounts).length;
-
-        // Calculate commissions (£25 per active referral)
-        totalCommissionsAmount = activeReferralsCount * 25;
-
-        withdrawalsSnapshot.forEach(doc => {
-          const data = doc.data();
-          pendingWithdrawalsAmount += (data.amount || 0);
-        });
-
-        // Calculate total paid out (completed withdrawals)
-        completedWithdrawalsSnapshot.forEach(doc => {
-          const data = doc.data();
-          totalPaidOutAmount += (data.amount || 0);
+        withdrawalsSnap.forEach(d => {
+          const data = d.data();
+          if (data.status === 'pending') pendingWithdrawalsAmount += data.amount || 0;
+          if (data.status === 'approved') approvedWithdrawalsAmount += data.amount || 0;
+          if (data.status === 'completed') totalPaidOutAmount += data.amount || 0;
         });
 
         document.getElementById('totalAffiliates').textContent = totalAffiliatesCount;
         document.getElementById('activeReferrals').textContent = activeReferralsCount;
         document.getElementById('totalCommissions').textContent = `£${totalCommissionsAmount.toFixed(2)}`;
-        document.getElementById('pendingWithdrawals').textContent = `£${pendingWithdrawalsAmount.toFixed(2)}`;
+        document.getElementById('pendingWithdrawals').textContent = `£${(pendingWithdrawalsAmount + approvedWithdrawalsAmount).toFixed(2)}`;
         document.getElementById('totalPaidOut').textContent = `£${totalPaidOutAmount.toFixed(2)}`;
 
       } catch (error) {
@@ -881,46 +953,43 @@
       const tbody = document.getElementById('affiliatesTableBody');
 
       try {
-        const usersSnapshot = await getDocs(collection(db, 'Users'));
+        // Pull real balances from Affiliates collection
+        const [affiliatesSnap, usersSnap] = await Promise.all([
+          getDocs(collection(db, 'Affiliates')),
+          getDocs(collection(db, 'Users'))
+        ]);
 
-        // Build referral counts
-        const referralCounts = {};
-        const activeReferralCounts = {};
-
-        usersSnapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.referredBy) {
-            referralCounts[data.referredBy] = (referralCounts[data.referredBy] || 0) + 1;
-            if (data.isPaid || data.subscriptionStatus === 'active') {
-              activeReferralCounts[data.referredBy] = (activeReferralCounts[data.referredBy] || 0) + 1;
-            }
-          }
-        });
+        // Build a user lookup map
+        const usersMap = {};
+        usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
 
         loadingEl.style.display = 'none';
 
-        // Only show users who have referrals
-        const affiliates = [];
-        usersSnapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.referralCode && referralCounts[data.referralCode]) {
-            affiliates.push({
-              userId: doc.id,
-              username: data.Username || 'Unknown',
-              email: data.Email || '-',
-              referralCode: data.referralCode,
-              totalReferrals: referralCounts[data.referralCode] || 0,
-              activeReferrals: activeReferralCounts[data.referralCode] || 0,
-              totalEarned: (activeReferralCounts[data.referralCode] || 0) * 25,
-              balance: (activeReferralCounts[data.referralCode] || 0) * 25
-            });
-          }
-        });
-
-        if (affiliates.length === 0) {
+        if (affiliatesSnap.empty) {
           emptyEl.style.display = 'block';
           return;
         }
+
+        const affiliates = [];
+        affiliatesSnap.forEach(d => {
+          const aff = d.data();
+          const user = usersMap[d.id] || {};
+          affiliates.push({
+            userId: d.id,
+            username: user.Username || aff.username || 'Unknown',
+            email: user.Email || aff.email || '-',
+            referralCode: aff.referralCode || user.referralCode || '-',
+            totalReferrals: aff.totalReferrals || 0,
+            activeReferrals: aff.activeReferrals || 0,
+            totalEarned: aff.totalEarned || 0,
+            availableBalance: aff.availableBalance || 0,
+            pendingBalance: aff.pendingBalance || 0,
+            totalWithdrawn: aff.totalWithdrawn || 0
+          });
+        });
+
+        // Sort by totalEarned desc
+        affiliates.sort((a,b) => b.totalEarned - a.totalEarned);
 
         tableEl.style.display = 'table';
         tbody.innerHTML = '';
@@ -928,13 +997,15 @@
         affiliates.forEach(affiliate => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${affiliate.username}</td>
-            <td>${affiliate.email}</td>
-            <td><strong style="color: var(--accent-light);">${affiliate.referralCode}</strong></td>
-            <td>${affiliate.totalReferrals}</td>
-            <td>${affiliate.activeReferrals}</td>
-            <td><strong style="color: var(--green);">£${affiliate.totalEarned.toFixed(2)}</strong></td>
-            <td><strong style="color: var(--gold);">£${affiliate.balance.toFixed(2)}</strong></td>
+            <td><strong style="color:var(--text-0);">${escapeHtml(affiliate.username)}</strong></td>
+            <td style="color:var(--text-2); font-size:0.8rem;">${escapeHtml(affiliate.email)}</td>
+            <td><code>${affiliate.referralCode}</code></td>
+            <td style="text-align:center;">${affiliate.totalReferrals}</td>
+            <td style="text-align:center;"><strong style="color:var(--green);">${affiliate.activeReferrals}</strong></td>
+            <td><strong style="color:var(--green);">£${affiliate.totalEarned.toFixed(2)}</strong></td>
+            <td><strong style="color:var(--gold);">£${affiliate.availableBalance.toFixed(2)}</strong></td>
+            <td style="color:var(--text-2);">£${affiliate.pendingBalance.toFixed(2)}</td>
+            <td style="color:var(--text-2);">£${affiliate.totalWithdrawn.toFixed(2)}</td>
             <td>
               <span class="status-badge ${affiliate.activeReferrals > 0 ? 'status-active' : 'status-inactive'}">
                 ${affiliate.activeReferrals > 0 ? 'Active' : 'Inactive'}
@@ -950,205 +1021,319 @@
       }
     }
 
-    async function loadWithdrawals() {
-      const loadingEl = document.getElementById('loadingWithdrawals');
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    let allWithdrawals = [];
+    let currentFilter = 'all';
+
+    window.filterWithdrawals = function(filter) {
+      currentFilter = filter;
+      ['filterAll','filterPending','filterApproved','filterCompleted','filterRejected'].forEach(id => {
+        document.getElementById(id)?.classList.remove('filter-active');
+      });
+      const btnMap = { all:'filterAll', pending:'filterPending', approved:'filterApproved', completed:'filterCompleted', rejected:'filterRejected' };
+      document.getElementById(btnMap[filter])?.classList.add('filter-active');
+      renderWithdrawals(filter === 'all' ? allWithdrawals : allWithdrawals.filter(w => w.status === filter));
+    };
+
+    function formatPaymentDetails(w) {
+      if (w.method === 'bank') {
+        const name = w.accountName || w.bankDetails?.accountName || '-';
+        const sort = w.sortCode || w.bankDetails?.sortCode || '-';
+        const acct = w.accountNumber || w.bankDetails?.accountNumber || '-';
+        const bank = w.bankName || w.bankDetails?.bankName || '';
+        return `<div style="font-size:0.78rem;line-height:1.6;">
+          <strong style="color:var(--text-0);">🏦 Bank Transfer</strong><br/>
+          <span style="color:var(--text-2);">Name:</span> <strong>${escapeHtml(name)}</strong><br/>
+          ${bank ? `<span style="color:var(--text-2);">Bank:</span> ${escapeHtml(bank)}<br/>` : ''}
+          <span style="color:var(--text-2);">Sort:</span> <code style="font-size:0.72rem;">${escapeHtml(sort)}</code>&nbsp;&nbsp;
+          <span style="color:var(--text-2);">Acc:</span> <code style="font-size:0.72rem;">${escapeHtml(acct)}</code>
+        </div>`;
+      } else if (w.method === 'crypto') {
+        const type = w.cryptoType || 'CRYPTO';
+        const net = w.network || '';
+        const addr = w.walletAddress || w.cryptoWallet || '-';
+        return `<div style="font-size:0.78rem;line-height:1.6;">
+          <strong style="color:var(--text-0);">₿ ${escapeHtml(type)}</strong> ${net ? `<span style="color:var(--text-2);font-size:0.72rem;">${escapeHtml(net)}</span>` : ''}<br/>
+          <code style="font-size:0.68rem;word-break:break-all;color:var(--accent-light);">${escapeHtml(addr)}</code>
+        </div>`;
+      }
+      return w.details ? escapeHtml(w.details) : '-';
+    }
+
+    function renderWithdrawals(withdrawals) {
       const emptyEl = document.getElementById('emptyWithdrawals');
       const tableEl = document.getElementById('withdrawalsTable');
       const tbody = document.getElementById('withdrawalsTableBody');
 
-      try {
-        const withdrawalsSnapshot = await getDocs(collection(db, 'WithdrawalRequests'));
+      if (withdrawals.length === 0) {
+        emptyEl.style.display = 'block';
+        tableEl.style.display = 'none';
+        return;
+      }
+      emptyEl.style.display = 'none';
+      tableEl.style.display = 'table';
+      tbody.innerHTML = '';
 
-        const usersSnapshot = await getDocs(collection(db, 'Users'));
+      withdrawals.forEach(w => {
+        const date = w.createdAt?.toDate ? w.createdAt.toDate().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '-';
+        const statusClass = {pending:'status-pending', approved:'status-approved', completed:'status-active', rejected:'status-inactive'}[w.status] || 'status-inactive';
+        const statusLabel = {pending:'⏳ Pending', approved:'✅ Approved', completed:'💚 Paid', rejected:'❌ Rejected'}[w.status] || w.status;
+        const payRef = w.paymentRef ? `<span class="pay-ref-tag" title="${escapeHtml(w.paymentRef)}">${escapeHtml(w.paymentRef)}</span>` : (w.adminNote ? `<span style="font-size:0.75rem;color:var(--text-2);">${escapeHtml(w.adminNote)}</span>` : '<span style="color:var(--text-2);font-size:0.78rem;">—</span>');
+
+        let actions = '<span style="color:var(--text-2);font-size:0.78rem;">—</span>';
+        if (w.status === 'pending') {
+          actions = `
+            <button class="btn btn-success" style="margin-bottom:0.35rem;" onclick="openPayRefModal('${w.id}','${w.userId}',${w.amount})">✅ Approve</button>
+            <button class="btn btn-danger" onclick="window.rejectWithdrawal('${w.id}')">❌ Reject</button>
+          `;
+        } else if (w.status === 'approved') {
+          actions = `<button class="btn btn-primary" onclick="openMarkPaidModal('${w.id}')">💚 Mark Paid</button>`;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-size:0.78rem;color:var(--text-2);white-space:nowrap;">${date}</td>
+          <td><strong style="color:var(--text-0);">${escapeHtml(w._username || 'Unknown')}</strong><br/><small style="color:var(--text-2);">${escapeHtml(w._email || '')}</small></td>
+          <td><strong style="color:var(--gold);font-size:1rem;">£${w.amount.toFixed(2)}</strong></td>
+          <td>${w.method === 'bank' ? '🏦 Bank' : w.method === 'crypto' ? '₿ Crypto' : '-'}</td>
+          <td style="max-width:280px;">${formatPaymentDetails(w)}</td>
+          <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+          <td>${payRef}</td>
+          <td style="white-space:nowrap;">${actions}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function loadWithdrawals() {
+      const loadingEl = document.getElementById('loadingWithdrawals');
+
+      try {
+        const [withdrawalsSnap, usersSnap] = await Promise.all([
+          getDocs(query(collection(db, 'WithdrawalRequests'), orderBy('createdAt', 'desc'))),
+          getDocs(collection(db, 'Users'))
+        ]);
+
         const usersMap = {};
-        usersSnapshot.forEach(doc => {
-          usersMap[doc.id] = doc.data();
-        });
+        usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
 
         loadingEl.style.display = 'none';
 
-        if (withdrawalsSnapshot.empty) {
-          emptyEl.style.display = 'block';
-          return;
-        }
-
-        tableEl.style.display = 'table';
-        tbody.innerHTML = '';
-
-        // Sort by date descending
-        const withdrawals = [];
-        withdrawalsSnapshot.forEach(doc => {
-          withdrawals.push({ id: doc.id, ...doc.data() });
-        });
-        withdrawals.sort((a, b) => {
-          const aTime = a.createdAt?.seconds || 0;
-          const bTime = b.createdAt?.seconds || 0;
-          return bTime - aTime;
+        allWithdrawals = [];
+        withdrawalsSnap.forEach(d => {
+          const w = { id: d.id, ...d.data() };
+          const user = usersMap[w.userId] || {};
+          w._username = user.Username || 'Unknown';
+          w._email = user.Email || '';
+          allWithdrawals.push(w);
         });
 
-        withdrawals.forEach(withdrawal => {
-          const user = usersMap[withdrawal.userId] || {};
+        // Build payout queue — approved items not yet marked paid
+        buildPayoutQueue(allWithdrawals);
 
-          const date = withdrawal.createdAt?.toDate ?
-            withdrawal.createdAt.toDate().toLocaleDateString() : '-';
-
-          const statusClass = withdrawal.status === 'pending' ? 'status-pending' :
-                             withdrawal.status === 'completed' ? 'status-active' :
-                             'status-inactive';
-
-          // Format payment details
-          let paymentDetails = '-';
-          if (withdrawal.method === 'bank' && withdrawal.bankDetails) {
-            const bank = withdrawal.bankDetails;
-            paymentDetails = `
-              <div style="font-size: 0.8rem; line-height: 1.5;">
-                <strong>Bank Transfer</strong><br/>
-                <span style="color: var(--text-2);">Name:</span> ${bank.accountName || '-'}<br/>
-                <span style="color: var(--text-2);">Sort:</span> ${bank.sortCode || '-'}<br/>
-                <span style="color: var(--text-2);">Account:</span> ${bank.accountNumber || '-'}
-              </div>
-            `;
-          } else if (withdrawal.method === 'crypto' && withdrawal.cryptoWallet) {
-            paymentDetails = `
-              <div style="font-size: 0.8rem; line-height: 1.5;">
-                <strong>Crypto</strong><br/>
-                <span style="color: var(--text-2);">Wallet:</span><br/>
-                <code style="font-size: 0.7rem; word-break: break-all;">${withdrawal.cryptoWallet}</code>
-              </div>
-            `;
-          } else if (withdrawal.details) {
-            paymentDetails = withdrawal.details;
-          }
-
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${date}</td>
-            <td><strong>${user.Username || 'Unknown'}</strong><br/><small style="color: var(--text-2);">${user.Email || ''}</small></td>
-            <td><strong style="color: var(--gold);">£${withdrawal.amount.toFixed(2)}</strong></td>
-            <td>${withdrawal.method === 'bank' ? '🏦 Bank' : withdrawal.method === 'crypto' ? '₿ Crypto' : '-'}</td>
-            <td style="max-width: 300px;">${paymentDetails}</td>
-            <td>
-              <span class="status-badge ${statusClass}">
-                ${withdrawal.status || 'pending'}
-              </span>
-            </td>
-            <td>
-              ${withdrawal.status === 'pending' ? `
-                <button class="btn btn-success" onclick="window.approveWithdrawal('${withdrawal.id}', '${withdrawal.userId}', ${withdrawal.amount})">
-                  ✅ Approve
-                </button>
-                <button class="btn btn-danger" onclick="window.rejectWithdrawal('${withdrawal.id}')">
-                  ❌ Reject
-                </button>
-              ` : '-'}
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
+        filterWithdrawals(currentFilter);
 
       } catch (error) {
         console.error('Error loading withdrawals:', error);
-        loadingEl.innerHTML = `<p style="color: var(--red);">Error loading withdrawals: ${error.message}</p>`;
+        loadingEl.innerHTML = `<p style="color: var(--red);">Error: ${error.message}</p>`;
       }
     }
 
-    window.approveWithdrawal = async (withdrawalId, userId, amount) => {
+    function buildPayoutQueue(withdrawals) {
+      const queueCard = document.getElementById('payoutQueueCard');
+      const queueBody = document.getElementById('payoutQueueBody');
+      const approved = withdrawals.filter(w => w.status === 'approved');
+
+      if (approved.length === 0) {
+        queueCard.style.display = 'none';
+        return;
+      }
+      queueCard.style.display = 'block';
+      queueBody.innerHTML = '';
+
+      approved.forEach(w => {
+        const approvedDate = w.approvedAt?.toDate ? w.approvedAt.toDate().toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) : '-';
+        const row = document.createElement('tr');
+        row.style.background = 'rgba(139,92,246,0.04)';
+        row.innerHTML = `
+          <td><strong style="color:var(--text-0);">${escapeHtml(w._username)}</strong><br/><small style="color:var(--text-2);">${escapeHtml(w._email)}</small></td>
+          <td><strong style="color:var(--gold);font-size:1.1rem;">£${w.amount.toFixed(2)}</strong></td>
+          <td>${w.method === 'bank' ? '🏦 Bank' : '₿ Crypto'}</td>
+          <td style="max-width:260px;">${formatPaymentDetails(w)}</td>
+          <td style="font-size:0.78rem;color:var(--text-2);">${approvedDate}</td>
+          <td><button class="btn btn-primary" onclick="openMarkPaidModal('${w.id}')">💚 Mark as Paid</button></td>
+        `;
+        queueBody.appendChild(row);
+      });
+    }
+
+    // ── Pay Ref Modal (Approve step) ──
+    let _pendingApproval = null;
+    window.openPayRefModal = function(withdrawalId, userId, amount) {
+      _pendingApproval = { withdrawalId, userId, amount };
+      document.getElementById('payRefModalDesc').innerHTML =
+        `Approving <strong style="color:var(--gold);">£${parseFloat(amount).toFixed(2)}</strong> withdrawal.<br/>
+        The balance will be <strong>deducted now</strong>. You'll mark it as physically sent separately.`;
+      document.getElementById('payRefInput').value = '';
+      document.getElementById('payRefModal').classList.add('open');
+    };
+    window.closePayRefModal = function() {
+      document.getElementById('payRefModal').classList.remove('open');
+      _pendingApproval = null;
+    };
+    document.getElementById('payRefConfirmBtn').addEventListener('click', async () => {
+      if (!_pendingApproval) return;
+      const { withdrawalId, userId, amount } = _pendingApproval;
+      const adminNote = document.getElementById('payRefInput').value.trim();
+      closePayRefModal();
+      await approveWithdrawalAction(withdrawalId, userId, amount, adminNote);
+    });
+
+    async function approveWithdrawalAction(withdrawalId, userId, amount, adminNote) {
       try {
-        // First, check current balance
         const affiliateRef = doc(db, 'Affiliates', userId);
         const affiliateSnap = await getDoc(affiliateRef);
 
         if (!affiliateSnap.exists()) {
-          showError('❌ User affiliate account not found');
+          showError('❌ Affiliate account not found. The Affiliates collection may need to be re-created (next payment will auto-create it).');
           return;
         }
 
         const currentBalance = affiliateSnap.data().availableBalance || 0;
-
-        // Check if sufficient balance
         if (currentBalance < amount) {
-          showError(`❌ Cannot approve! User only has £${currentBalance.toFixed(2)} but requesting £${amount.toFixed(2)}`);
+          showError(`❌ Insufficient balance! User has £${currentBalance.toFixed(2)}, requesting £${parseFloat(amount).toFixed(2)}`);
           return;
         }
 
-        // Confirm with admin
-        if (!confirm(
-          `Approve withdrawal of £${amount.toFixed(2)}?\n\n` +
-          `Current Balance: £${currentBalance.toFixed(2)}\n` +
-          `After Withdrawal: £${(currentBalance - amount).toFixed(2)}\n\n` +
-          `This will:\n` +
-          `• Mark withdrawal as completed\n` +
-          `• Deduct £${amount.toFixed(2)} from available balance\n` +
-          `• Create transaction record`
-        )) return;
-
-        // Use transaction for atomic operation (prevents race conditions)
         await runTransaction(db, async (transaction) => {
-          // Re-check balance in transaction
           const freshDoc = await transaction.get(affiliateRef);
           const freshBalance = freshDoc.data().availableBalance || 0;
-
-          if (freshBalance < amount) {
-            throw new Error(`Insufficient balance: £${freshBalance} < £${amount}`);
-          }
+          if (freshBalance < amount) throw new Error(`Balance dropped to £${freshBalance}`);
 
           const withdrawalRef = doc(db, 'WithdrawalRequests', withdrawalId);
-          const transactionRef = doc(collection(db, 'BalanceTransactions'));
+          const txRef = doc(collection(db, 'BalanceTransactions'));
 
-          // Update affiliate balance
           transaction.update(affiliateRef, {
             availableBalance: freshBalance - amount,
             totalWithdrawn: (freshDoc.data().totalWithdrawn || 0) + amount,
             lastWithdrawal: serverTimestamp()
           });
 
-          // Mark withdrawal as completed
           transaction.update(withdrawalRef, {
-            status: 'completed',
-            completedAt: serverTimestamp(),
-            processedBy: currentUser.uid
+            status: 'approved',
+            approvedAt: serverTimestamp(),
+            processedBy: currentUser.uid,
+            adminNote: adminNote || null
           });
 
-          // Create transaction record
-          transaction.set(transactionRef, {
-            userId: userId,
-            type: 'withdrawal',
+          transaction.set(txRef, {
+            userId,
+            type: 'withdrawal_approved',
             amount: -amount,
-            description: `Withdrawal processed - £${amount.toFixed(2)}`,
+            description: `Withdrawal approved — £${parseFloat(amount).toFixed(2)}`,
             balanceBefore: freshBalance,
             balanceAfter: freshBalance - amount,
+            adminNote: adminNote || null,
             createdAt: serverTimestamp(),
             processedBy: currentUser.uid
           });
         });
 
-        showSuccess(`✅ Withdrawal approved! £${amount.toFixed(2)} deducted from balance.`);
+        showSuccess(`✅ Approved! £${parseFloat(amount).toFixed(2)} deducted from balance. Now physically send the money and mark as Paid.`);
         await loadWithdrawals();
         await loadStats();
         await loadAffiliates();
 
       } catch (error) {
         console.error('Error approving withdrawal:', error);
-        showError('❌ Failed to approve withdrawal: ' + error.message);
+        showError('❌ Failed to approve: ' + error.message);
       }
+    }
+
+    // ── Mark Paid Modal (after money is physically sent) ──
+    let _pendingMarkPaid = null;
+    window.openMarkPaidModal = function(withdrawalId) {
+      _pendingMarkPaid = { withdrawalId };
+      const w = allWithdrawals.find(x => x.id === withdrawalId);
+      document.getElementById('markPaidModalDesc').innerHTML =
+        w ? `Mark <strong style="color:var(--gold);">£${w.amount.toFixed(2)}</strong> to <strong>${escapeHtml(w._username)}</strong> as physically sent.<br/>Enter your payment reference so there's a full audit trail.` : 'Confirm payment was sent.';
+      document.getElementById('markPaidRefInput').value = '';
+      document.getElementById('markPaidModal').classList.add('open');
     };
+    window.closeMarkPaidModal = function() {
+      document.getElementById('markPaidModal').classList.remove('open');
+      _pendingMarkPaid = null;
+    };
+    document.getElementById('markPaidConfirmBtn').addEventListener('click', async () => {
+      if (!_pendingMarkPaid) return;
+      const ref = document.getElementById('markPaidRefInput').value.trim();
+      if (!ref) {
+        document.getElementById('markPaidRefInput').style.border = '1px solid var(--red)';
+        document.getElementById('markPaidRefInput').placeholder = '⚠️ Payment reference is required!';
+        return;
+      }
+      const { withdrawalId } = _pendingMarkPaid;
+      closeMarkPaidModal();
+      await markWithdrawalPaid(withdrawalId, ref);
+    });
+
+    async function markWithdrawalPaid(withdrawalId, paymentRef) {
+      try {
+        const withdrawalRef = doc(db, 'WithdrawalRequests', withdrawalId);
+        await updateDoc(withdrawalRef, {
+          status: 'completed',
+          completedAt: serverTimestamp(),
+          paymentRef: paymentRef,
+          markedPaidBy: currentUser.uid
+        });
+
+        // Also log the completion in BalanceTransactions
+        const w = allWithdrawals.find(x => x.id === withdrawalId);
+        if (w) {
+          await addDoc(collection(db, 'BalanceTransactions'), {
+            userId: w.userId,
+            type: 'withdrawal_completed',
+            amount: -w.amount,
+            description: `Payment sent — ref: ${paymentRef}`,
+            paymentRef: paymentRef,
+            createdAt: serverTimestamp(),
+            processedBy: currentUser.uid
+          });
+        }
+
+        showSuccess(`💚 Marked as Paid! Ref: ${paymentRef}`);
+        await loadWithdrawals();
+        await loadStats();
+
+      } catch (error) {
+        console.error('Error marking paid:', error);
+        showError('❌ Failed: ' + error.message);
+      }
+    }
 
     window.rejectWithdrawal = async (withdrawalId) => {
-      if (!confirm('Reject this withdrawal request?')) return;
+      if (!confirm('Reject this withdrawal request? The user will be notified to resubmit.')) return;
 
       try {
         await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
           status: 'rejected',
-          rejectedAt: new Date()
+          rejectedAt: serverTimestamp(),
+          rejectedBy: currentUser.uid
         });
 
-        showSuccess('❌ Withdrawal rejected');
+        showSuccess('Withdrawal rejected.');
         await loadWithdrawals();
         await loadStats();
 
       } catch (error) {
         console.error('Error rejecting withdrawal:', error);
-        showError('Failed to reject withdrawal: ' + error.message);
+        showError('Failed to reject: ' + error.message);
       }
     };
 

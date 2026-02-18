@@ -380,7 +380,27 @@
 <body>
 <script>
 // Referral & UTM capture — runs before anything else
-(function(){var p=new URLSearchParams(location.search),r=p.get('ref');if(r){var e=localStorage.getItem('arcane_ref'),t=localStorage.getItem('arcane_ref_ts');if(!e||!t||(Date.now()-Number(t))>2592e6){localStorage.setItem('arcane_ref',r.toUpperCase());localStorage.setItem('arcane_ref_ts',Date.now().toString());localStorage.setItem('arcane_ref_landing',location.pathname)}}var s=p.get('utm_source'),m=p.get('utm_medium'),c=p.get('utm_campaign');if(s)localStorage.setItem('arcane_utm_source',s);if(m)localStorage.setItem('arcane_utm_medium',m);if(c)localStorage.setItem('arcane_utm_campaign',c)})();
+(function(){
+    var p=new URLSearchParams(location.search),r=p.get('ref');
+    if(r){
+        r=r.toUpperCase();
+        localStorage.setItem('arcane_ref',r);
+        localStorage.setItem('arcane_ref_ts',Date.now().toString());
+        localStorage.setItem('arcane_ref_landing',location.pathname);
+        sessionStorage.setItem('arcane_ref_session',r);
+    } else {
+        var sr=sessionStorage.getItem('arcane_ref_session');
+        if(sr&&!localStorage.getItem('arcane_ref')){
+            localStorage.setItem('arcane_ref',sr);
+            localStorage.setItem('arcane_ref_ts',Date.now().toString());
+            localStorage.setItem('arcane_ref_landing',location.pathname);
+        }
+    }
+    var s=p.get('utm_source'),m=p.get('utm_medium'),c=p.get('utm_campaign');
+    if(s)localStorage.setItem('arcane_utm_source',s);
+    if(m)localStorage.setItem('arcane_utm_medium',m);
+    if(c)localStorage.setItem('arcane_utm_campaign',c);
+})();
 </script>
     <a href="index.html" class="back-link">← Back to Home</a>
 
@@ -569,13 +589,15 @@
                     console.error('Error updating referrer stats:', err);
                 }
 
-                // Clean up localStorage referral data
+                // Clean up referral data from storage after attribution
                 localStorage.removeItem('arcane_ref');
                 localStorage.removeItem('arcane_ref_ts');
                 localStorage.removeItem('arcane_ref_landing');
                 localStorage.removeItem('arcane_utm_source');
                 localStorage.removeItem('arcane_utm_medium');
                 localStorage.removeItem('arcane_utm_campaign');
+                sessionStorage.removeItem('arcane_ref_session');
+                sessionStorage.removeItem('arcane_click_sid');
             }
         }
 

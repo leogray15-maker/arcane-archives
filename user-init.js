@@ -87,13 +87,15 @@ export async function ensureUserProfile(user) {
             console.error('Error updating referrer stats:', error);
         }
 
-        // Clean up localStorage referral data
+        // Clean up referral data from storage after attribution
         localStorage.removeItem('arcane_ref');
         localStorage.removeItem('arcane_ref_ts');
         localStorage.removeItem('arcane_ref_landing');
         localStorage.removeItem('arcane_utm_source');
         localStorage.removeItem('arcane_utm_medium');
         localStorage.removeItem('arcane_utm_campaign');
+        sessionStorage.removeItem('arcane_ref_session');
+        sessionStorage.removeItem('arcane_click_sid');
     }
 }
 

@@ -640,6 +640,16 @@
             color: var(--gold);
         }
 
+        .status-badge.completed {
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--green);
+        }
+
+        .status-badge.rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
         .status-badge::before {
             content: '';
             width: 6px;
@@ -1582,19 +1592,47 @@
         document.getElementById('shareTelegram').href = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join The Arcane Archives!')}`;
     }
 
-    // Copy referral link
+    // Copy referral link — with mobile-safe clipboard fallback
+    function copyToClipboard(text, btn, successLabel, originalLabel) {
+        const doSuccess = () => {
+            btn.innerHTML = `<span>✅</span><span>${successLabel}</span>`;
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = `<span>📋</span><span>${originalLabel}</span>`;
+                btn.classList.remove('copied');
+            }, 2000);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(doSuccess).catch(() => {
+                // Fallback for older/mobile browsers
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                ta.setSelectionRange(0, 99999);
+                try { document.execCommand('copy'); doSuccess(); } catch(e) {}
+                document.body.removeChild(ta);
+            });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, 99999);
+            try { document.execCommand('copy'); doSuccess(); } catch(e) {}
+            document.body.removeChild(ta);
+        }
+    }
+
     document.getElementById('copyArcaneBtn').addEventListener('click', () => {
         const input = document.getElementById('arcaneRefLink');
-        input.select();
-        navigator.clipboard.writeText(input.value);
-
-        const btn = document.getElementById('copyArcaneBtn');
-        btn.innerHTML = '<span>✅</span><span>Copied!</span>';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.innerHTML = '<span>📋</span><span>Copy Link</span>';
-            btn.classList.remove('copied');
-        }, 2000);
+        copyToClipboard(input.value, document.getElementById('copyArcaneBtn'), 'Copied!', 'Copy Link');
     });
 
     async function loadReferralStats(referralCode) {
@@ -1746,16 +1784,7 @@
 
             document.getElementById('copyVantageBtn').addEventListener('click', () => {
                 const input = document.getElementById('vantageLinkDisplay');
-                input.select();
-                navigator.clipboard.writeText(input.value);
-
-                const btn = document.getElementById('copyVantageBtn');
-                btn.innerHTML = '<span>✅</span><span>Copied!</span>';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.innerHTML = '<span>📋</span><span>Copy</span>';
-                    btn.classList.remove('copied');
-                }, 2000);
+                copyToClipboard(input.value, document.getElementById('copyVantageBtn'), 'Copied!', 'Copy');
             });
         }
     }
@@ -1815,12 +1844,30 @@
             tbody.innerHTML = '';
 
             withdrawals.forEach((data) => {
+                const statusLabel = {
+                    pending: '⏳ Pending',
+                    approved: '✅ Approved',
+                    completed: '💚 Paid',
+                    rejected: '❌ Rejected'
+                }[data.status] || capitalizeFirst(data.status);
+
+                const statusCss = {
+                    pending: 'pending',
+                    approved: 'pending',
+                    completed: 'completed',
+                    rejected: 'rejected'
+                }[data.status] || data.status;
+
+                const refNote = data.paymentRef
+                    ? `<br/><small style="color:#22c55e;font-size:0.7rem;">Ref: ${escapeHtml(data.paymentRef)}</small>`
+                    : '';
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${formatDate(data.createdAt)}</td>
                     <td class="value-cell">£${data.amount.toFixed(2)}</td>
-                    <td>${escapeHtml(data.method.toUpperCase())}</td>
-                    <td><span class="status-badge ${data.status}">${capitalizeFirst(data.status)}</span></td>
+                    <td>${data.method === 'bank' ? '🏦 Bank' : '₿ Crypto'}</td>
+                    <td><span class="status-badge ${statusCss}">${statusLabel}</span>${refNote}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1829,72 +1876,113 @@
         }
     }
 
+    // Shared withdrawal guard — checks balance + no duplicate pending request
+    async function canSubmitWithdrawal(amount) {
+        // 1. Check available balance
+        const affiliateDoc = await getDoc(doc(db, 'Affiliates', currentUser.uid));
+        const available = affiliateDoc.exists() ? (affiliateDoc.data().availableBalance || 0) : 0;
+        if (amount > available) {
+            alert(`❌ Insufficient balance.\n\nYou have £${available.toFixed(2)} available but requested £${amount.toFixed(2)}.\n\nNote: pending earnings must clear first before they can be withdrawn.`);
+            return false;
+        }
+        // 2. Check for existing pending/approved request
+        const existingQ = query(
+            collection(db, 'WithdrawalRequests'),
+            where('userId', '==', currentUser.uid),
+            where('status', 'in', ['pending', 'approved'])
+        );
+        const existingSnap = await getDocs(existingQ);
+        if (!existingSnap.empty) {
+            alert('⏳ You already have a withdrawal request being processed.\n\nPlease wait for it to be completed before submitting a new one.');
+            return false;
+        }
+        return true;
+    }
+
     // Bank form submission
     document.getElementById('bankForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-
+        const btn = e.target.querySelector('button[type="submit"]') || e.target.querySelector('button');
         const amount = parseFloat(document.getElementById('bankAmount').value);
 
-        if (amount < 50) {
+        if (isNaN(amount) || amount < 50) {
             alert('Minimum withdrawal is £50');
             return;
         }
 
-        const withdrawalData = {
-            userId: currentUser.uid,
-            amount: amount,
-            method: 'bank',
-            accountName: document.getElementById('accountName').value,
-            bankName: document.getElementById('bankName').value,
-            accountNumber: document.getElementById('accountNumber').value,
-            sortCode: document.getElementById('sortCode').value,
-            status: 'pending',
-            createdAt: serverTimestamp()
-        };
+        if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
 
         try {
-            const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
-            await setDoc(withdrawalRef, withdrawalData);
+            if (!(await canSubmitWithdrawal(amount))) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Request Withdrawal'; }
+                return;
+            }
 
-            alert('✅ Withdrawal request submitted!');
+            const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
+            await setDoc(withdrawalRef, {
+                userId: currentUser.uid,
+                amount: amount,
+                method: 'bank',
+                accountName: document.getElementById('accountName').value.trim(),
+                bankName: document.getElementById('bankName').value.trim(),
+                accountNumber: document.getElementById('accountNumber').value.trim(),
+                sortCode: document.getElementById('sortCode').value.trim(),
+                status: 'pending',
+                createdAt: serverTimestamp()
+            });
+
+            alert('✅ Withdrawal request submitted! We\'ll process it within 24-48 hours.');
             document.getElementById('bankForm').reset();
             loadWithdrawalHistory();
+            loadAffiliateEarnings();
         } catch (error) {
-            alert('❌ Failed. Please try again.');
+            console.error('Withdrawal error:', error);
+            alert('❌ Failed to submit. Please try again.');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Request Withdrawal'; }
         }
     });
 
     // Crypto form submission
     document.getElementById('cryptoForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-
+        const btn = e.target.querySelector('button[type="submit"]') || e.target.querySelector('button');
         const amount = parseFloat(document.getElementById('cryptoAmount').value);
 
-        if (amount < 50) {
+        if (isNaN(amount) || amount < 50) {
             alert('Minimum withdrawal is £50');
             return;
         }
 
-        const withdrawalData = {
-            userId: currentUser.uid,
-            amount: amount,
-            method: 'crypto',
-            cryptoType: document.getElementById('cryptoType').value,
-            walletAddress: document.getElementById('walletAddress').value,
-            network: document.getElementById('cryptoNetwork').value,
-            status: 'pending',
-            createdAt: serverTimestamp()
-        };
+        if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
 
         try {
-            const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
-            await setDoc(withdrawalRef, withdrawalData);
+            if (!(await canSubmitWithdrawal(amount))) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Request Withdrawal'; }
+                return;
+            }
 
-            alert('✅ Withdrawal request submitted!');
+            const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
+            await setDoc(withdrawalRef, {
+                userId: currentUser.uid,
+                amount: amount,
+                method: 'crypto',
+                cryptoType: document.getElementById('cryptoType').value,
+                walletAddress: document.getElementById('walletAddress').value.trim(),
+                network: document.getElementById('cryptoNetwork').value,
+                status: 'pending',
+                createdAt: serverTimestamp()
+            });
+
+            alert('✅ Withdrawal request submitted! We\'ll process it within 24-48 hours.');
             document.getElementById('cryptoForm').reset();
             loadWithdrawalHistory();
+            loadAffiliateEarnings();
         } catch (error) {
-            alert('❌ Failed. Please try again.');
+            console.error('Withdrawal error:', error);
+            alert('❌ Failed to submit. Please try again.');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Request Withdrawal'; }
         }
     });
 
