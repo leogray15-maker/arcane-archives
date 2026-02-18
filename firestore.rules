@@ -70,7 +70,8 @@ service cloud.firestore {
         isOwner(userId) &&
         request.resource.data.diff(resource.data).changedKeys().hasOnly([
           'displayName', 'photoURL', 'username', 'bio', 'updatedAt',
-          'referralCode', 'referredBy', 'phone', 'address', 'dob'
+          'referralCode', 'referredBy', 'phone', 'address', 'dob',
+          'paymentPreferences'
         ]) &&
         // Prevent privilege escalation
         unchanged('isPaid') &&
@@ -152,7 +153,11 @@ service cloud.firestore {
         request.resource.data.amount is number &&
         request.resource.data.amount > 0 &&
         request.resource.data.keys().hasOnly([
-          'userId', 'amount', 'method', 'details', 'status', 'createdAt'
+          'userId', 'email', 'amount', 'method', 'status', 'createdAt',
+          // Bank transfer fields
+          'accountName', 'bankName', 'accountNumber', 'sortCode',
+          // Crypto fields
+          'cryptoType', 'walletAddress', 'network'
         ]);
       allow update, delete: if isAdmin();
     }

@@ -374,6 +374,47 @@
             margin-bottom: 2rem;
         }
 
+        /* 5-column affiliate metrics on desktop */
+        .aff-metrics-grid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        /* Affiliate card inner grid */
+        .aff-card-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .aff-stat-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
+        }
+
+        .aff-stat-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .aff-card-footer {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 0.875rem;
+            padding-top: 0.875rem;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .aff-footer-item strong {
+            font-weight: 700;
+        }
+
         .metric-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -1064,6 +1105,11 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            /* Affiliate 5-col → 3-col on tablet */
+            .aff-metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
             .members-grid {
                 grid-template-columns: 1fr;
             }
@@ -1398,6 +1444,11 @@
                 flex: 1;
             }
 
+            /* Affiliate metrics — 2 col on small screens */
+            .aff-metrics-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
             /* Affiliate cards */
             .affiliate-card {
                 padding: 0.875rem;
@@ -1408,7 +1459,7 @@
             .affiliate-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.25rem;
+                gap: 0.5rem;
             }
 
             .affiliate-name {
@@ -1417,6 +1468,22 @@
 
             .affiliate-earnings {
                 font-size: 1.25rem;
+            }
+
+            /* Affiliate card stats 4-col → 2-col on mobile */
+            .aff-card-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.625rem;
+            }
+
+            .aff-stat-value {
+                font-size: 1.1rem;
+            }
+
+            /* Footer wraps naturally — just tighten gap */
+            .aff-card-footer {
+                gap: 0.75rem;
+                font-size: 0.75rem;
             }
 
             /* Revenue metrics - 2x2 grid on mobile */
@@ -1897,7 +1964,7 @@
                     <p class="page-subtitle">Referral tracking and commissions</p>
                 </div>
 
-                <div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr);">
+                <div class="metrics-grid aff-metrics-grid">
                     <div class="metric-card">
                         <div class="metric-label">Total Affiliates</div>
                         <div class="metric-value" id="affTotal">0</div>
@@ -2590,34 +2657,34 @@
                             </div>
                         </div>
 
-                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-top:1rem;">
+                        <div class="aff-card-stats">
                             <div>
-                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Total Refs</div>
-                                <div style="font-size:1.25rem;font-weight:800;">${aff.totalReferrals || 0}</div>
+                                <div class="aff-stat-label">Total Refs</div>
+                                <div class="aff-stat-value">${aff.totalReferrals || 0}</div>
                             </div>
                             <div>
-                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Active (${convRate}%)</div>
-                                <div style="font-size:1.25rem;font-weight:800;color:#22c55e;">${aff.activeReferrals || 0}</div>
+                                <div class="aff-stat-label">Active (${convRate}%)</div>
+                                <div class="aff-stat-value" style="color:#22c55e;">${aff.activeReferrals || 0}</div>
                             </div>
                             <div>
-                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Total Earned</div>
-                                <div style="font-size:1.25rem;font-weight:800;">£${earned}</div>
+                                <div class="aff-stat-label">Total Earned</div>
+                                <div class="aff-stat-value">£${earned}</div>
                             </div>
                             <div>
-                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Available</div>
-                                <div style="font-size:1.25rem;font-weight:800;${availStyle}">£${available}</div>
+                                <div class="aff-stat-label">Available</div>
+                                <div class="aff-stat-value" style="${availStyle}">£${available}</div>
                             </div>
                         </div>
 
-                        <div style="display:flex;gap:1.5rem;margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid var(--border-color);flex-wrap:wrap;">
-                            <div style="font-size:0.8rem;color:var(--text-muted);">
+                        <div class="aff-card-footer">
+                            <div class="aff-footer-item">
                                 ⏳ Pending: <strong style="color:#fbbf24;">£${pending}</strong>
                             </div>
-                            <div style="font-size:0.8rem;color:var(--text-muted);">
+                            <div class="aff-footer-item">
                                 💸 Withdrawn: <strong style="color:var(--text-secondary);">£${withdrawn}</strong>
                             </div>
-                            <div style="font-size:0.8rem;color:var(--text-muted);">
-                                📈 Monthly rate: <strong>£${((aff.activeReferrals || 0) * 25).toFixed(0)}/mo</strong>
+                            <div class="aff-footer-item">
+                                📈 Monthly: <strong>£${((aff.activeReferrals || 0) * 25).toFixed(0)}/mo</strong>
                             </div>
                         </div>
                     </div>

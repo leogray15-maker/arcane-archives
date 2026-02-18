@@ -136,7 +136,7 @@
         .sidebar-stat-value { font-size:1.5rem; font-weight:900; font-family:'JetBrains Mono',monospace; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 
         /* ========== MAIN ========== */
-        .main-content { margin-left:var(--sidebar-width); flex:1; padding:2rem; min-height:100vh; }
+        .main-content { margin-left:var(--sidebar-width); flex:1; padding:2rem; min-height:100vh; overflow-x: hidden; }
         .page-header { margin-bottom:2rem; }
         .page-title { font-size:2rem; font-weight:900; letter-spacing:-0.02em; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--text),var(--purple-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .page-subtitle { font-size:1rem; color:var(--text-secondary); font-weight:500; }
@@ -272,10 +272,23 @@
         .qual-badge.not_qualified { background:rgba(113,113,122,0.15); color:var(--text-muted); }
 
         /* ========== KANBAN ========== */
-        .kanban-board { display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem; -webkit-overflow-scrolling:touch; }
-        .kanban-board::-webkit-scrollbar { height:6px; }
-        .kanban-board::-webkit-scrollbar-track { background:var(--bg-secondary); border-radius:3px; }
-        .kanban-board::-webkit-scrollbar-thumb { background:var(--purple-primary); border-radius:3px; }
+        /* The kanban view wrapper must not clip horizontal scroll */
+        #view-kanban {
+            overflow-x: auto;
+        }
+        .kanban-board {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1.25rem;
+            -webkit-overflow-scrolling: touch;
+            /* Ensure board can always grow wider than viewport */
+            min-width: min-content;
+        }
+        .kanban-board::-webkit-scrollbar { height: 8px; }
+        .kanban-board::-webkit-scrollbar-track { background:var(--bg-secondary); border-radius:4px; }
+        .kanban-board::-webkit-scrollbar-thumb { background:var(--purple-primary); border-radius:4px; }
+        .kanban-board::-webkit-scrollbar-thumb:hover { background:var(--purple-dark); }
         .kanban-column {
             min-width:280px; max-width:280px; flex-shrink:0;
             background:var(--bg-secondary); border:1px solid var(--border);
@@ -1018,6 +1031,12 @@ function switchView(view) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').classList.remove('active');
     document.body.style.overflow = '';
+
+    // Kanban needs overflow-x visible on main-content so the board can scroll
+    const main = document.querySelector('.main-content');
+    if (main) {
+        main.style.overflowX = view === 'kanban' ? 'visible' : 'hidden';
+    }
 }
 
 function renderCurrentView(view) {
