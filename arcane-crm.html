@@ -1897,7 +1897,7 @@
                     <p class="page-subtitle">Referral tracking and commissions</p>
                 </div>
 
-                <div class="metrics-grid">
+                <div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr);">
                     <div class="metric-card">
                         <div class="metric-label">Total Affiliates</div>
                         <div class="metric-value" id="affTotal">0</div>
@@ -1907,12 +1907,16 @@
                         <div class="metric-value" id="affActive">0</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-label">Total Paid</div>
+                        <div class="metric-label">Total Earned</div>
                         <div class="metric-value" id="affCommissions">£0</div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Pending</div>
-                        <div class="metric-value" id="affPending">£0</div>
+                    <div class="metric-card" style="border-color:rgba(251,191,36,0.25);">
+                        <div class="metric-label" style="color:#fbbf24;">⏳ Pending</div>
+                        <div class="metric-value" id="affPending" style="color:#fbbf24;">£0</div>
+                    </div>
+                    <div class="metric-card" style="border-color:rgba(34,197,94,0.25);">
+                        <div class="metric-label" style="color:#22c55e;">✅ Available</div>
+                        <div class="metric-value" id="affAvailable" style="color:#22c55e;">£0</div>
                     </div>
                 </div>
 
@@ -2105,9 +2109,10 @@
             appState.loading = true;
 
             try {
-                const [usersSnapshot, affiliatesSnapshot] = await Promise.all([
+                const [usersSnapshot, affiliatesSnapshot, withdrawalsSnapshot] = await Promise.all([
                     db.collection('Users').get(),
-                    db.collection('Affiliates').get()
+                    db.collection('Affiliates').get(),
+                    db.collection('WithdrawalRequests').where('status', 'in', ['pending', 'approved']).get()
                 ]);
 
                 // Build referral counts from Users collection (derives affiliates dynamically)
@@ -2123,10 +2128,23 @@
                     }
                 });
 
-                // Build balance lookup from Affiliates collection (for earnings/withdrawal data)
+                // Build balance lookup from Affiliates collection
                 const affiliateBalances = {};
                 affiliatesSnapshot.forEach(doc => {
                     affiliateBalances[doc.id] = doc.data();
+                });
+
+                // Build withdrawal status map: userId → latest active request
+                const withdrawalStatusMap = {};
+                withdrawalsSnapshot.forEach(wDoc => {
+                    const wd = wDoc.data();
+                    if (wd.userId) {
+                        // If multiple, prefer 'approved' over 'pending'
+                        const existing = withdrawalStatusMap[wd.userId];
+                        if (!existing || wd.status === 'approved') {
+                            withdrawalStatusMap[wd.userId] = { status: wd.status, amount: wd.amount, id: wDoc.id };
+                        }
+                    }
                 });
 
                 // Derive affiliates: users who have a referralCode AND at least one referral
@@ -2140,12 +2158,15 @@
                             id: doc.id,
                             userId: doc.id,
                             name: data.Username || data.Email?.split('@')[0] || 'Unknown',
+                            email: data.Email || '',
                             referralCode: data.referralCode,
                             totalReferrals: referralCounts[data.referralCode] || 0,
                             activeReferrals: activeCount,
-                            totalEarnings: balanceData.totalEarnings || (activeCount * 25),
-                            totalEarned: balanceData.totalEarnings || (activeCount * 25),
-                            availableBalance: balanceData.availableBalance || 0
+                            totalEarned: balanceData.totalEarned || balanceData.totalEarnings || (activeCount * 25),
+                            availableBalance: balanceData.availableBalance || 0,
+                            pendingBalance: balanceData.pendingBalance || 0,
+                            totalWithdrawn: balanceData.totalWithdrawn || 0,
+                            withdrawalStatus: withdrawalStatusMap[doc.id] || null
                         });
                     }
                 });
@@ -2508,15 +2529,17 @@
         }
 
         function renderAffiliatesView() {
-            const totalAff = appState.affiliates.length;
-            const totalActive = appState.affiliates.reduce((sum, a) => sum + (a.activeReferrals || 0), 0);
-            const totalEarned = appState.affiliates.reduce((sum, a) => sum + (a.totalEarned || a.totalEarnings || 0), 0);
-            const totalPending = appState.affiliates.reduce((sum, a) => sum + (a.availableBalance || a.balance || 0), 0);
+            const totalAff      = appState.affiliates.length;
+            const totalActive   = appState.affiliates.reduce((sum, a) => sum + (a.activeReferrals  || 0), 0);
+            const totalEarned   = appState.affiliates.reduce((sum, a) => sum + (a.totalEarned      || 0), 0);
+            const totalPending  = appState.affiliates.reduce((sum, a) => sum + (a.pendingBalance   || 0), 0);
+            const totalAvail    = appState.affiliates.reduce((sum, a) => sum + (a.availableBalance || 0), 0);
 
-            document.getElementById('affTotal').textContent = totalAff;
-            document.getElementById('affActive').textContent = totalActive;
+            document.getElementById('affTotal').textContent       = totalAff;
+            document.getElementById('affActive').textContent      = totalActive;
             document.getElementById('affCommissions').textContent = '£' + totalEarned.toLocaleString();
-            document.getElementById('affPending').textContent = '£' + totalPending.toLocaleString();
+            document.getElementById('affPending').textContent     = '£' + totalPending.toLocaleString();
+            document.getElementById('affAvailable').textContent   = '£' + totalAvail.toLocaleString();
 
             const container = document.getElementById('affiliatesList');
 
@@ -2525,31 +2548,76 @@
                 return;
             }
 
-            // O(1) member lookup via Map
-            const memberMap = new Map(appState.members.map(m => [m.id, m]));
-            container.innerHTML = appState.affiliates.map(aff => {
-                const member = memberMap.get(aff.userId);
-                const name = aff.name || (member ? member.name : aff.userId);
-                const referrals = aff.referralsList || [];
+            // Sort by totalEarned desc
+            const sorted = [...appState.affiliates].sort((a, b) => (b.totalEarned || 0) - (a.totalEarned || 0));
+
+            container.innerHTML = sorted.map(aff => {
+                const name          = escapeHtml(aff.name || aff.userId);
+                const available     = (aff.availableBalance || 0).toFixed(2);
+                const pending       = (aff.pendingBalance   || 0).toFixed(2);
+                const earned        = (aff.totalEarned      || 0).toFixed(2);
+                const withdrawn     = (aff.totalWithdrawn   || 0).toFixed(2);
+                const convRate      = aff.totalReferrals > 0
+                    ? Math.round((aff.activeReferrals / aff.totalReferrals) * 100)
+                    : 0;
+
+                // Withdrawal status badge
+                let wdBadge = '';
+                if (aff.withdrawalStatus) {
+                    if (aff.withdrawalStatus.status === 'approved') {
+                        wdBadge = `<span style="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;font-size:0.7rem;font-weight:700;padding:0.25rem 0.6rem;border-radius:6px;">✅ Approved — awaiting payment £${(aff.withdrawalStatus.amount || 0).toFixed(2)}</span>`;
+                    } else {
+                        wdBadge = `<span style="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;font-size:0.7rem;font-weight:700;padding:0.25rem 0.6rem;border-radius:6px;">⏳ Withdrawal pending £${(aff.withdrawalStatus.amount || 0).toFixed(2)}</span>`;
+                    }
+                }
+
+                // Available balance colour
+                const availStyle = parseFloat(available) > 0
+                    ? 'color:#22c55e;'
+                    : 'color:var(--text-muted);';
 
                 return `
                     <div class="affiliate-card">
-                        <div class="affiliate-header">
-                            <div class="affiliate-name">${name}</div>
-                            <div class="affiliate-earnings">£${(aff.availableBalance || aff.balance || 0).toFixed(2)}</div>
+                        <div class="affiliate-header" style="flex-wrap:wrap;gap:0.5rem;">
+                            <div>
+                                <div class="affiliate-name">${name}</div>
+                                <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.2rem;">${escapeHtml(aff.email || '')}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+                                ${wdBadge}
+                                <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:var(--purple-primary);padding:0.25rem 0.65rem;border-radius:6px;font-weight:700;">${escapeHtml(aff.referralCode || '')}</span>
+                                <a href="affiliate-admin.html" style="font-size:0.72rem;color:var(--text-muted);text-decoration:none;border:1px solid var(--border-color);padding:0.25rem 0.6rem;border-radius:6px;transition:all 0.2s;" onmouseover="this.style.color='var(--purple-primary)'" onmouseout="this.style.color='var(--text-muted)'">Payouts →</a>
+                            </div>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem;">
+
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-top:1rem;">
                             <div>
-                                <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Total</div>
-                                <div style="font-size: 1.25rem; font-weight: 800;">${aff.totalReferrals || 0}</div>
+                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Total Refs</div>
+                                <div style="font-size:1.25rem;font-weight:800;">${aff.totalReferrals || 0}</div>
                             </div>
                             <div>
-                                <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Active</div>
-                                <div style="font-size: 1.25rem; font-weight: 800;">${aff.activeReferrals || 0}</div>
+                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Active (${convRate}%)</div>
+                                <div style="font-size:1.25rem;font-weight:800;color:#22c55e;">${aff.activeReferrals || 0}</div>
                             </div>
                             <div>
-                                <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Earned</div>
-                                <div style="font-size: 1.25rem; font-weight: 800;">£${(aff.totalEarned || aff.totalEarnings || 0).toFixed(0)}</div>
+                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Total Earned</div>
+                                <div style="font-size:1.25rem;font-weight:800;">£${earned}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.2rem;">Available</div>
+                                <div style="font-size:1.25rem;font-weight:800;${availStyle}">£${available}</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:1.5rem;margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid var(--border-color);flex-wrap:wrap;">
+                            <div style="font-size:0.8rem;color:var(--text-muted);">
+                                ⏳ Pending: <strong style="color:#fbbf24;">£${pending}</strong>
+                            </div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);">
+                                💸 Withdrawn: <strong style="color:var(--text-secondary);">£${withdrawn}</strong>
+                            </div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);">
+                                📈 Monthly rate: <strong>£${((aff.activeReferrals || 0) * 25).toFixed(0)}/mo</strong>
                             </div>
                         </div>
                     </div>

@@ -1337,6 +1337,15 @@
 
     <!-- Tab: Earnings -->
     <div id="earnings" class="tab-content">
+        <!-- Referral code quick-view -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <span style="font-size:0.75rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Your Referral Code</span>
+                <code id="earningsRefCode" style="font-family:'JetBrains Mono',monospace;font-size:0.875rem;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);padding:0.3rem 0.75rem;border-radius:8px;color:var(--purple-light);font-weight:700;letter-spacing:0.05em;">—</code>
+            </div>
+            <button id="copyCodeFromEarnings" style="font-size:0.75rem;font-weight:600;color:var(--text-muted);background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:0.375rem 0.75rem;cursor:pointer;transition:all 0.2s;">📋 Copy link</button>
+        </div>
+
         <div class="balance-grid">
             <div class="balance-card highlight">
                 <div class="balance-label">✅ Available to Withdraw</div>
@@ -1536,12 +1545,14 @@
         where,
         limit,
         setDoc,
+        updateDoc,
         serverTimestamp,
         getDocs
     } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
     let currentUser = null;
     let referralLink = '';
+    let currentReferralCode = '';
 
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1587,17 +1598,22 @@
 
         currentUser = user;
 
-        const referralCode = userData?.referralCode || user.uid.slice(0, 8).toUpperCase();
-        referralLink = `https://arcanearchives.shop/?ref=${referralCode}`;
+        currentReferralCode = userData?.referralCode || user.uid.slice(0, 8).toUpperCase();
+        referralLink = `https://arcanearchives.shop/?ref=${currentReferralCode}`;
 
         document.getElementById('arcaneRefLink').value = referralLink;
 
         // Setup share buttons
         setupShareButtons();
 
-        await loadReferralStats(referralCode);
+        // Wire up the earnings-tab copy button
+        document.getElementById('copyCodeFromEarnings').addEventListener('click', () => {
+            copyToClipboard(referralLink, document.getElementById('copyCodeFromEarnings'), 'Copied!', '📋 Copy link');
+        });
+
+        await loadReferralStats(currentReferralCode);
         await loadVantageSection(userData || {});
-        loadReferredMembers(referralCode);
+        loadReferredMembers(currentReferralCode);
     });
 
     function setupShareButtons() {
@@ -1807,17 +1823,71 @@
 
     async function loadAffiliateEarnings() {
         try {
-            const affiliateDoc = await getDoc(doc(db, 'Affiliates', currentUser.uid));
+            // Show referral code chip
+            const codeEl = document.getElementById('earningsRefCode');
+            if (codeEl && currentReferralCode) codeEl.textContent = currentReferralCode;
 
-            if (affiliateDoc.exists()) {
-                const data = affiliateDoc.data();
-                document.getElementById('availableBalance').textContent = `£${(data.availableBalance || 0).toFixed(2)}`;
-                document.getElementById('pendingBalance').textContent = `£${(data.pendingBalance || 0).toFixed(2)}`;
-                document.getElementById('totalEarned').textContent = `£${(data.totalEarned || data.totalEarnings || 0).toFixed(2)}`;
-                document.getElementById('totalWithdrawn').textContent = `£${(data.totalWithdrawn || 0).toFixed(2)}`;
+            const [affiliateDoc, userDoc] = await Promise.all([
+                getDoc(doc(db, 'Affiliates', currentUser.uid)),
+                getDoc(doc(db, 'Users', currentUser.uid))
+            ]);
+
+            const available = affiliateDoc.exists() ? (affiliateDoc.data().availableBalance || 0) : 0;
+            const pending   = affiliateDoc.exists() ? (affiliateDoc.data().pendingBalance || 0) : 0;
+            const earned    = affiliateDoc.exists() ? (affiliateDoc.data().totalEarned || affiliateDoc.data().totalEarnings || 0) : 0;
+            const withdrawn = affiliateDoc.exists() ? (affiliateDoc.data().totalWithdrawn || 0) : 0;
+
+            document.getElementById('availableBalance').textContent = `£${available.toFixed(2)}`;
+            document.getElementById('pendingBalance').textContent   = `£${pending.toFixed(2)}`;
+            document.getElementById('totalEarned').textContent      = `£${earned.toFixed(2)}`;
+            document.getElementById('totalWithdrawn').textContent   = `£${withdrawn.toFixed(2)}`;
+
+            // Pre-fill withdrawal amount inputs with available balance (if > 0)
+            if (available > 0) {
+                const bankAmtEl   = document.getElementById('bankAmount');
+                const cryptoAmtEl = document.getElementById('cryptoAmount');
+                if (bankAmtEl   && !bankAmtEl.value)   bankAmtEl.value   = available.toFixed(2);
+                if (cryptoAmtEl && !cryptoAmtEl.value) cryptoAmtEl.value = available.toFixed(2);
             }
+
+            // Load & pre-fill saved payment preferences
+            if (userDoc.exists()) {
+                loadSavedPaymentPreferences(userDoc.data().paymentPreferences || null);
+            }
+
         } catch (error) {
             console.error('Error loading affiliate earnings:', error);
+        }
+    }
+
+    function loadSavedPaymentPreferences(prefs) {
+        if (!prefs) return;
+        const { method, bank, crypto } = prefs;
+
+        if (method === 'bank' && bank) {
+            // Auto-select bank tab
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            document.querySelector('.payment-method[data-method="bank"]')?.classList.add('selected');
+            document.querySelectorAll('.payment-details').forEach(d => d.classList.remove('active'));
+            document.getElementById('bankDetails')?.classList.add('active');
+
+            // Pre-fill fields
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            set('accountName',   bank.accountName);
+            set('bankName',      bank.bankName);
+            set('accountNumber', bank.accountNumber);
+            set('sortCode',      bank.sortCode);
+        } else if (method === 'crypto' && crypto) {
+            // Auto-select crypto tab
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            document.querySelector('.payment-method[data-method="crypto"]')?.classList.add('selected');
+            document.querySelectorAll('.payment-details').forEach(d => d.classList.remove('active'));
+            document.getElementById('cryptoDetails')?.classList.add('active');
+
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            set('cryptoType',    crypto.cryptoType);
+            set('cryptoNetwork', crypto.network);
+            set('walletAddress', crypto.walletAddress);
         }
     }
 
@@ -1934,17 +2004,31 @@
                 return;
             }
 
+            const accountName   = document.getElementById('accountName').value.trim();
+            const bankName      = document.getElementById('bankName').value.trim();
+            const accountNumber = document.getElementById('accountNumber').value.trim();
+            const sortCode      = document.getElementById('sortCode').value.trim();
+
             const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
             await setDoc(withdrawalRef, {
                 userId: currentUser.uid,
+                email: currentUser.email,
                 amount: amount,
                 method: 'bank',
-                accountName: document.getElementById('accountName').value.trim(),
-                bankName: document.getElementById('bankName').value.trim(),
-                accountNumber: document.getElementById('accountNumber').value.trim(),
-                sortCode: document.getElementById('sortCode').value.trim(),
+                accountName,
+                bankName,
+                accountNumber,
+                sortCode,
                 status: 'pending',
                 createdAt: serverTimestamp()
+            });
+
+            // Save payment preferences so form pre-fills next time
+            await updateDoc(doc(db, 'Users', currentUser.uid), {
+                paymentPreferences: {
+                    method: 'bank',
+                    bank: { accountName, bankName, accountNumber, sortCode }
+                }
             });
 
             alert('✅ Withdrawal request submitted! We\'ll process it within 24-48 hours.');
@@ -1978,16 +2062,29 @@
                 return;
             }
 
+            const cryptoType    = document.getElementById('cryptoType').value;
+            const walletAddress = document.getElementById('walletAddress').value.trim();
+            const network       = document.getElementById('cryptoNetwork').value;
+
             const withdrawalRef = doc(collection(db, 'WithdrawalRequests'));
             await setDoc(withdrawalRef, {
                 userId: currentUser.uid,
+                email: currentUser.email,
                 amount: amount,
                 method: 'crypto',
-                cryptoType: document.getElementById('cryptoType').value,
-                walletAddress: document.getElementById('walletAddress').value.trim(),
-                network: document.getElementById('cryptoNetwork').value,
+                cryptoType,
+                walletAddress,
+                network,
                 status: 'pending',
                 createdAt: serverTimestamp()
+            });
+
+            // Save payment preferences so form pre-fills next time
+            await updateDoc(doc(db, 'Users', currentUser.uid), {
+                paymentPreferences: {
+                    method: 'crypto',
+                    crypto: { cryptoType, walletAddress, network }
+                }
             });
 
             alert('✅ Withdrawal request submitted! We\'ll process it within 24-48 hours.');

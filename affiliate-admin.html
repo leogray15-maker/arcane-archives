@@ -1091,7 +1091,11 @@
         const date = w.createdAt?.toDate ? w.createdAt.toDate().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '-';
         const statusClass = {pending:'status-pending', approved:'status-approved', completed:'status-active', rejected:'status-inactive'}[w.status] || 'status-inactive';
         const statusLabel = {pending:'⏳ Pending', approved:'✅ Approved', completed:'💚 Paid', rejected:'❌ Rejected'}[w.status] || w.status;
-        const payRef = w.paymentRef ? `<span class="pay-ref-tag" title="${escapeHtml(w.paymentRef)}">${escapeHtml(w.paymentRef)}</span>` : (w.adminNote ? `<span style="font-size:0.75rem;color:var(--text-2);">${escapeHtml(w.adminNote)}</span>` : '<span style="color:var(--text-2);font-size:0.78rem;">—</span>');
+        const payRef = w.paymentRef
+          ? `<span class="pay-ref-tag" title="${escapeHtml(w.paymentRef)}">${escapeHtml(w.paymentRef)}</span>`
+          : w.rejectionReason
+            ? `<span style="font-size:0.73rem;color:var(--red);line-height:1.4;">❌ ${escapeHtml(w.rejectionReason)}</span>`
+            : (w.adminNote ? `<span style="font-size:0.75rem;color:var(--text-2);">${escapeHtml(w.adminNote)}</span>` : '<span style="color:var(--text-2);font-size:0.78rem;">—</span>');
 
         let actions = '<span style="color:var(--text-2);font-size:0.78rem;">—</span>';
         if (w.status === 'pending') {
@@ -1325,18 +1329,72 @@
     }
 
     window.rejectWithdrawal = async (withdrawalId) => {
-      if (!confirm('Reject this withdrawal request? The user will be notified to resubmit.')) return;
+      const w = allWithdrawals.find(x => x.id === withdrawalId);
+      if (!w) { showError('Withdrawal not found in local state — please refresh.'); return; }
+
+      const reason = window.prompt(
+        `Reject withdrawal of £${w.amount.toFixed(2)} for ${w._username || 'user'}?\n\nEnter a reason (optional — shown to admin for records):`,
+        ''
+      );
+      if (reason === null) return; // User clicked Cancel
 
       try {
-        await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
-          status: 'rejected',
-          rejectedAt: serverTimestamp(),
-          rejectedBy: currentUser.uid
-        });
+        if (w.status === 'approved') {
+          // Balance was already deducted on approve — restore it atomically
+          await runTransaction(db, async (transaction) => {
+            const affRef = doc(db, 'Affiliates', w.userId);
+            const affDoc = await transaction.get(affRef);
 
-        showSuccess('Withdrawal rejected.');
+            if (affDoc.exists()) {
+              const currentAvail    = affDoc.data().availableBalance || 0;
+              const currentWithdrawn = affDoc.data().totalWithdrawn || 0;
+
+              transaction.update(affRef, {
+                availableBalance: currentAvail + w.amount,
+                totalWithdrawn: Math.max(0, currentWithdrawn - w.amount),
+                lastUpdated: serverTimestamp()
+              });
+
+              // Audit entry
+              const txRef = doc(collection(db, 'BalanceTransactions'));
+              transaction.set(txRef, {
+                userId: w.userId,
+                type: 'withdrawal_rejected_restored',
+                amount: w.amount,
+                description: `Balance restored — withdrawal rejected after approval`,
+                balanceBefore: currentAvail,
+                balanceAfter: currentAvail + w.amount,
+                rejectionReason: reason || null,
+                createdAt: serverTimestamp(),
+                processedBy: currentUser.uid
+              });
+            }
+
+            transaction.update(doc(db, 'WithdrawalRequests', withdrawalId), {
+              status: 'rejected',
+              rejectedAt: serverTimestamp(),
+              rejectedBy: currentUser.uid,
+              rejectionReason: reason || null,
+              adminNote: reason ? reason : 'Rejected after approval — balance restored'
+            });
+          });
+          showSuccess(`✅ Rejected & balance of £${w.amount.toFixed(2)} restored to ${w._username}.`);
+
+        } else {
+          // Pending — balance not yet deducted, just flip status
+          await updateDoc(doc(db, 'WithdrawalRequests', withdrawalId), {
+            status: 'rejected',
+            rejectedAt: serverTimestamp(),
+            rejectedBy: currentUser.uid,
+            rejectionReason: reason || null,
+            adminNote: reason || null
+          });
+          showSuccess(`Withdrawal rejected.`);
+        }
+
         await loadWithdrawals();
         await loadStats();
+        await loadAffiliates();
 
       } catch (error) {
         console.error('Error rejecting withdrawal:', error);
