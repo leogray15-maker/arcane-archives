@@ -669,6 +669,18 @@
       </div>
     </div>
 
+    <!-- Data Integrity Repair Tool -->
+    <div class="card" style="border-color: rgba(251,191,36,0.2);">
+      <h2 class="section-title">🔧 Data Integrity &amp; Repair</h2>
+      <p class="section-subtitle" style="margin-bottom:1rem;">
+        Run this if referral counts look wrong. It scans all Users, normalises referral code casing, and rebuilds Affiliates docs from live data — fixing any mismatches caused by testing or webhook failures.
+      </p>
+      <button id="syncRepairBtn" style="padding:0.65rem 1.25rem; border-radius:var(--radius-sm); background:linear-gradient(135deg,#f59e0b,#d97706); color:#000; border:none; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.85rem;">
+        🔧 Scan &amp; Repair Referral Data
+      </button>
+      <div id="syncRepairLog" style="display:none; margin-top:1.25rem; background:var(--bg-3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:1rem; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--text-1); max-height:300px; overflow-y:auto; white-space:pre-wrap;"></div>
+    </div>
+
     <!-- Monthly Earnings Calculator -->
     <div class="card">
       <h2 class="section-title">Monthly Earnings Calculator</h2>
@@ -728,11 +740,13 @@
               <tr>
                 <th>User</th>
                 <th>Email</th>
-                <th>Referral Code</th>
-                <th>Active Referrals</th>
+                <th>Code</th>
+                <th>Total Refs</th>
+                <th>Active (Paid)</th>
                 <th>Monthly Earnings</th>
+                <th>Balance</th>
                 <th>Payment Method</th>
-                <th>Already Paid</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody id="monthlyEarningsBody"></tbody>
@@ -1351,46 +1365,88 @@
         let totalActiveRefs = 0;
         let totalPayout = 0;
 
-        // For each user, count their active referrals
+        // Build a map of ALL users keyed by uid for fast lookups
+        const allUsersMap = {};
+        usersSnapshot.forEach(d => { allUsersMap[d.id] = { id: d.id, ...d.data() }; });
+
+        // Build a referral lookup: normalise referredBy to UPPERCASE so case mismatches don't matter
+        // referralsByCode[CODE] = array of user data objects referred by that code
+        const referralsByCode = {};
+        usersSnapshot.forEach(d => {
+          const data = d.data();
+          if (data.referredBy) {
+            const code = data.referredBy.toUpperCase().trim();
+            if (!referralsByCode[code]) referralsByCode[code] = [];
+            referralsByCode[code].push(data);
+          }
+        });
+
+        // For each user who has a referralCode, count their active referrals
+        const seenCodes = new Set(); // prevent duplicate processing
         for (const userDoc of usersSnapshot.docs) {
           const userData = userDoc.data();
-          const referralCode = userData.referralCode;
+          const referralCode = (userData.referralCode || '').toUpperCase().trim();
 
-          if (!referralCode) continue;
+          if (!referralCode || seenCodes.has(referralCode)) continue;
+          seenCodes.add(referralCode);
 
-          // Query users who were referred by this code
-          const referralsQuery = query(
-            collection(db, 'Users'),
-            where('referredBy', '==', referralCode)
-          );
-          const referralsSnapshot = await getDocs(referralsQuery);
+          // Get all users referred by this code (case-insensitive via our map)
+          const referredUsers = referralsByCode[referralCode] || [];
 
-          // Count active (paid) referrals
+          // Count active (paid) referrals — check ALL possible paid states
           let activeCount = 0;
-          referralsSnapshot.forEach((refDoc) => {
-            const refData = refDoc.data();
-            if (refData.isPaid === true || refData.subscriptionStatus === 'active') {
+          let totalCount = referredUsers.length;
+          referredUsers.forEach((refData) => {
+            if (
+              refData.isPaid === true ||
+              refData.subscriptionStatus === 'active' ||
+              refData.subscriptionStatus === 'Active'
+            ) {
               activeCount++;
             }
           });
 
-          // Only include if they have active referrals
-          if (activeCount > 0) {
+          // Only include if they have referrals at all
+          if (totalCount > 0) {
             const monthlyEarnings = activeCount * 25;
             totalActiveRefs += activeCount;
             totalPayout += monthlyEarnings;
+
+            // Get latest withdrawal method from WithdrawalRequests
+            const affiliateDoc = await getDoc(doc(db, 'Affiliates', userDoc.id));
+            const affiliateData = affiliateDoc.exists() ? affiliateDoc.data() : {};
 
             affiliateEarnings.push({
               userId: userDoc.id,
               username: userData.Username || userData.Email?.split('@')[0] || 'Unknown',
               email: userData.Email || 'No email',
               referralCode: referralCode,
+              totalReferrals: totalCount,
               activeReferrals: activeCount,
               monthlyEarnings: monthlyEarnings,
+              availableBalance: affiliateData.availableBalance || 0,
               paymentMethod: userData.paymentPreferences?.method || 'Not set',
               bankDetails: userData.paymentPreferences?.bankDetails || null,
               cryptoWallet: userData.paymentPreferences?.cryptoWallet || null
             });
+
+            // ── Auto-sync the Affiliates doc with the live active count ──
+            // This keeps Affiliates.activeReferrals accurate even if webhook missed events
+            if (affiliateDoc.exists()) {
+              const storedActive = affiliateData.activeReferrals || 0;
+              if (storedActive !== activeCount) {
+                try {
+                  await updateDoc(doc(db, 'Affiliates', userDoc.id), {
+                    activeReferrals: activeCount,
+                    totalReferrals: totalCount,
+                    lastSynced: serverTimestamp()
+                  });
+                  console.log(`✅ Synced ${userData.Username}: activeReferrals ${storedActive} → ${activeCount}`);
+                } catch (e) {
+                  console.warn('Could not sync affiliate doc:', e.message);
+                }
+              }
+            }
           }
         }
 
@@ -1431,15 +1487,17 @@
         const alreadyPaid = affiliate.monthlyEarnings === 0 ? '✅' : '⏳ Pending';
 
         row.innerHTML = `
-          <td><strong>${affiliate.username}</strong></td>
-          <td>${affiliate.email}</td>
+          <td><strong>${escapeHtml(affiliate.username)}</strong></td>
+          <td style="font-size:0.8rem;color:var(--text-2);">${escapeHtml(affiliate.email)}</td>
           <td><code style="background: var(--accent-glow); padding: 0.2rem 0.45rem; border-radius: 4px;">${affiliate.referralCode}</code></td>
-          <td style="text-align: center;"><strong>${affiliate.activeReferrals}</strong></td>
+          <td style="text-align: center;">${affiliate.totalReferrals || affiliate.activeReferrals}</td>
+          <td style="text-align: center;"><strong style="color:var(--green);">${affiliate.activeReferrals}</strong></td>
           <td><strong style="color: var(--gold);">£${affiliate.monthlyEarnings}</strong></td>
+          <td style="font-size:0.8rem;color:var(--text-2);">£${(affiliate.availableBalance || 0).toFixed(2)}</td>
           <td>
-            ${affiliate.paymentMethod === 'bank' ? '🏦 Bank Transfer' :
+            ${affiliate.paymentMethod === 'bank' ? '🏦 Bank' :
               affiliate.paymentMethod === 'crypto' ? '₿ Crypto' :
-              '⚠️ Not Set'}
+              '<span style="color:var(--gold);">⚠️ Not Set</span>'}
           </td>
           <td>${alreadyPaid}</td>
         `;
@@ -1745,6 +1803,144 @@
 
     // Check pending on page load
     setTimeout(checkPendingClearances, 1000);
+
+    // ── Sync & Repair Tool ──
+    document.getElementById('syncRepairBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('syncRepairBtn');
+      const log = document.getElementById('syncRepairLog');
+      btn.disabled = true;
+      btn.textContent = '⏳ Scanning...';
+      log.style.display = 'block';
+      log.textContent = '🔍 Starting scan...\n';
+
+      const logLine = (msg) => { log.textContent += msg + '\n'; log.scrollTop = log.scrollHeight; };
+
+      try {
+        const usersSnap = await getDocs(collection(db, 'Users'));
+        logLine(`📊 Found ${usersSnap.size} users in database`);
+
+        // Step 1: Fix referredBy casing on all users (normalise to UPPERCASE)
+        let fixedCasing = 0;
+        const batch1 = writeBatch(db);
+        for (const d of usersSnap.docs) {
+          const data = d.data();
+          if (data.referredBy && data.referredBy !== data.referredBy.toUpperCase()) {
+            logLine(`  ✏️ Fixing casing for user ${data.Username || d.id}: "${data.referredBy}" → "${data.referredBy.toUpperCase()}"`);
+            batch1.update(d.ref, { referredBy: data.referredBy.toUpperCase().trim() });
+            fixedCasing++;
+          }
+          // Also fix referralCode casing
+          if (data.referralCode && data.referralCode !== data.referralCode.toUpperCase()) {
+            logLine(`  ✏️ Fixing referralCode for ${data.Username || d.id}: "${data.referralCode}" → "${data.referralCode.toUpperCase()}"`);
+            batch1.update(d.ref, { referralCode: data.referralCode.toUpperCase().trim() });
+            fixedCasing++;
+          }
+        }
+        if (fixedCasing > 0) {
+          await batch1.commit();
+          logLine(`✅ Fixed ${fixedCasing} casing issues`);
+        } else {
+          logLine('✅ All referral codes already uppercase — no casing fixes needed');
+        }
+
+        // Step 2: Re-fetch users with corrected data
+        const freshSnap = await getDocs(collection(db, 'Users'));
+
+        // Build referralsByCode map (case-normalised)
+        const referralsByCode = {};
+        const usersByCode = {}; // referralCode → owner user doc
+        freshSnap.forEach(d => {
+          const data = d.data();
+          if (data.referralCode) {
+            usersByCode[data.referralCode.toUpperCase()] = { id: d.id, ...data };
+          }
+          if (data.referredBy) {
+            const code = data.referredBy.toUpperCase().trim();
+            if (!referralsByCode[code]) referralsByCode[code] = [];
+            referralsByCode[code].push({ id: d.id, ...data });
+          }
+        });
+
+        logLine(`\n📦 Found ${Object.keys(referralsByCode).length} unique referral codes with referred users`);
+
+        // Step 3: For each affiliate code, rebuild the Affiliates doc
+        let rebuilt = 0;
+        let skipped = 0;
+        const batch2 = writeBatch(db);
+
+        for (const [code, referredUsers] of Object.entries(referralsByCode)) {
+          const owner = usersByCode[code];
+          if (!owner) {
+            logLine(`  ⚠️ Code ${code} — no owner found in Users collection (orphan referrals)`);
+            skipped++;
+            continue;
+          }
+
+          const totalReferrals = referredUsers.length;
+          const activeReferrals = referredUsers.filter(u =>
+            u.isPaid === true || u.subscriptionStatus === 'active' || u.subscriptionStatus === 'Active'
+          ).length;
+
+          // Get existing Affiliates doc to preserve balances
+          const affRef = doc(db, 'Affiliates', owner.id);
+          const affSnap = await getDoc(affRef);
+          const existing = affSnap.exists() ? affSnap.data() : {};
+
+          const expectedTotalEarned = activeReferrals * 25;
+
+          logLine(`  👤 ${owner.Username || owner.id} (${code}): ${totalReferrals} referred, ${activeReferrals} active → should earn £${expectedTotalEarned}`);
+
+          if (affSnap.exists()) {
+            // Update counts — preserve financial balances (don't overwrite real money fields)
+            batch2.update(affRef, {
+              activeReferrals,
+              totalReferrals,
+              referralCode: code,
+              lastSynced: serverTimestamp()
+            });
+            logLine(`    → Updated existing Affiliates doc (preserved balances)`);
+          } else {
+            // Create fresh doc if missing
+            batch2.set(affRef, {
+              userId: owner.id,
+              referralCode: code,
+              activeReferrals,
+              totalReferrals,
+              availableBalance: expectedTotalEarned,
+              pendingBalance: 0,
+              totalEarned: expectedTotalEarned,
+              totalWithdrawn: 0,
+              createdAt: serverTimestamp(),
+              lastSynced: serverTimestamp()
+            });
+            logLine(`    → Created NEW Affiliates doc with £${expectedTotalEarned} available`);
+          }
+          rebuilt++;
+        }
+
+        if (rebuilt > 0) {
+          await batch2.commit();
+          logLine(`\n✅ Rebuilt/updated ${rebuilt} Affiliates docs`);
+        }
+
+        logLine('\n🎉 Repair complete! Refreshing data...');
+        btn.textContent = '✅ Done!';
+
+        await loadStats();
+        await loadAffiliates();
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = '🔧 Scan & Repair Referral Data';
+        }, 3000);
+
+      } catch (err) {
+        logLine(`\n❌ Error: ${err.message}`);
+        console.error('Repair error:', err);
+        btn.disabled = false;
+        btn.textContent = '🔧 Scan & Repair Referral Data';
+      }
+    });
   </script>
 </body>
 </html>

@@ -46,7 +46,7 @@ export async function ensureUserProfile(user) {
     try {
         const storedReferralCode = localStorage.getItem('arcane_ref');
         if (storedReferralCode) {
-            referredBy = storedReferralCode.toUpperCase();
+            referredBy = storedReferralCode.toUpperCase().trim();
             referredAt = serverTimestamp();
         }
     } catch (e) {
