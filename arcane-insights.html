@@ -9,15 +9,37 @@
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#030303">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-dark: #02010a;
-            --purple: #9333ea;
-            --purple-dark: #7e22ce;
+            --bg-primary: #030303;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #0f0f0f;
+            --bg-elevated: #161616;
+            --bg-hover: #1a1a1a;
+
+            --purple: #8b5cf6;
             --purple-light: #a78bfa;
+            --purple-dark: #7c3aed;
+            --purple-glow: rgba(139, 92, 246, 0.4);
+
             --gold: #fbbf24;
-            --text-light: #e5e5e5;
-            --text-dim: #a3a3a3;
+            --gold-light: #fcd34d;
+
+            --green: #22c55e;
+            --red: #ef4444;
+
+            --text: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
         }
 
         * {
@@ -26,429 +48,664 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: radial-gradient(circle at top, #111827 0, #02010a 45%, #000 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
             line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
         }
 
-        /* Back Button - Consistent with your other pages */
-        .back-btn {
+        /* ========== BACKGROUND ========== */
+        .bg-gradient {
             position: fixed;
-            top: calc(1.5rem + env(safe-area-inset-top, 0px));
-            left: 1.5rem;
-            z-index: 40;
-            padding: 0.6rem 1.2rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            backdrop-filter: blur(12px);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.15), transparent),
+                radial-gradient(ellipse 50% 30% at 90% 10%, rgba(139, 92, 246, 0.08), transparent),
+                radial-gradient(ellipse 50% 30% at 10% 90%, rgba(251, 191, 36, 0.05), transparent),
+                var(--bg-primary);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .back-btn:hover {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--purple-light);
-            border-color: var(--purple);
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
         }
 
-        .container {
+        /* ========== NAV ========== */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding-top: env(safe-area-inset-top, 0px);
+            background: rgba(3, 3, 3, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
             max-width: 900px;
             margin: 0 auto;
-            padding-top: 80px;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Header Section */
-        .header {
+        .nav-logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-light), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .nav-logo img {
+            width: 28px;
+            height: 28px;
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-back:hover {
+            border-color: var(--purple);
+            color: var(--purple-light);
+            background: rgba(139, 92, 246, 0.08);
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        main {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: calc(80px + env(safe-area-inset-top, 0px) + 2.5rem) 2rem 4rem;
+        }
+
+        /* ========== PAGE HEADER ========== */
+        .page-header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 3rem;
         }
 
-        .logo-badge {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            display: block;
+        .page-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--purple-light);
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 999px;
+            padding: 0.35rem 0.9rem;
+            margin-bottom: 1.25rem;
         }
 
         .page-title {
             font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--purple-light), var(--gold));
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #fff 0%, var(--text-secondary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 15px;
-            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
         }
 
         .page-subtitle {
-            color: var(--text-dim);
-            font-size: 1.1rem;
-            max-width: 600px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 520px;
             margin: 0 auto;
             line-height: 1.7;
         }
 
-        /* Streak Card */
+        /* ========== STREAK CARD ========== */
         .streak-card {
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.16), rgba(15, 23, 42, 0.98));
-            border: 1px solid rgba(148, 163, 184, 0.5);
-            border-radius: 24px;
-            padding: 40px;
-            margin-bottom: 50px;
-            text-align: center;
-            box-shadow: 0 30px 120px rgba(147, 51, 234, 0.2);
             position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            margin-bottom: 2rem;
             overflow: hidden;
+            text-align: center;
         }
 
         .streak-card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--purple), transparent);
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
+        .streak-card::after {
+            content: '';
+            position: absolute;
+            top: -60px; left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+            pointer-events: none;
         }
 
-        .streak-content {
+        .streak-inner {
             position: relative;
             z-index: 1;
         }
 
-        .fire-emoji {
-            font-size: 64px;
-            margin-bottom: 15px;
+        .streak-emoji {
+            font-size: 56px;
+            line-height: 1;
+            margin-bottom: 0.75rem;
             display: inline-block;
-            animation: flicker 2s ease-in-out infinite;
+            animation: floatEmoji 3s ease-in-out infinite;
         }
 
-        @keyframes flicker {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-6px) scale(1.05); }
         }
 
         .streak-number {
-            font-size: 80px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(4rem, 12vw, 6rem);
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1;
-            margin-bottom: 10px;
-            text-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+            margin-bottom: 0.25rem;
         }
 
         .streak-label {
-            font-size: 20px;
-            color: var(--text-dim);
-            margin-bottom: 30px;
-            font-weight: 500;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
         }
 
+        /* Streak mini bar */
+        .streak-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .streak-stat {
+            text-align: center;
+        }
+
+        .streak-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            display: block;
+        }
+
+        .streak-stat-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .streak-divider {
+            width: 1px;
+            height: 36px;
+            background: var(--border);
+            align-self: center;
+        }
+
+        /* Check-in button */
         .check-in-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             background: linear-gradient(135deg, var(--purple), var(--purple-dark));
             border: none;
-            color: white;
-            padding: 18px 50px;
+            color: #fff;
+            padding: 0.9rem 2.5rem;
             border-radius: 12px;
-            font-size: 17px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+            letter-spacing: 0.02em;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+            width: 100%;
+            max-width: 320px;
+            justify-content: center;
         }
 
         .check-in-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
         }
 
         .check-in-btn:active:not(:disabled) {
-            transform: translateY(-1px);
+            transform: translateY(0);
         }
 
         .check-in-btn:disabled {
-            background: linear-gradient(135deg, #374151, #1f2937);
-            color: #6b7280;
+            background: var(--bg-elevated);
+            color: var(--text-muted);
             cursor: not-allowed;
-            transform: none;
+            box-shadow: none;
+            border: 1px solid var(--border);
+        }
+
+        .check-in-btn.claimed {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--green);
             box-shadow: none;
         }
 
         .check-in-time {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #6b7280;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
-        /* Milestone Badges */
+        /* Milestone badge */
         .milestone-container {
-            margin-top: 25px;
+            margin-top: 1.25rem;
         }
 
         .milestone-badge {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid var(--gold);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
             color: var(--gold);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            display: inline-block;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            padding: 0.45rem 1rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
             font-weight: 700;
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
-        }
-
-        /* Rewards Preview */
-        .rewards-preview {
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px dashed rgba(251, 191, 36, 0.4);
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 30px;
-            text-align: left;
-        }
-
-        .rewards-preview h4 {
-            color: var(--gold);
-            font-size: 15px;
-            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.08em;
+            animation: goldPulse 2.5s ease-in-out infinite;
         }
 
-        .rewards-preview ul {
-            list-style: none;
-            font-size: 14px;
-            color: var(--text-dim);
+        @keyframes goldPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+            50% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.3); }
         }
 
-        .rewards-preview li {
-            padding: 8px 0;
-            padding-left: 25px;
-            position: relative;
+        /* ========== REWARDS GRID ========== */
+        .rewards-section {
+            margin-bottom: 2rem;
         }
 
-        .rewards-preview li:before {
-            content: "🎁";
-            position: absolute;
-            left: 0;
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
         }
 
-        /* Post Card */
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .reward-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            transition: border-color 0.2s;
+        }
+
+        .reward-item:hover {
+            border-color: var(--border-hover);
+        }
+
+        .reward-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .reward-days {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.2rem;
+        }
+
+        .reward-text {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* ========== POST CARD ========== */
         .post-card {
-            background: radial-gradient(circle at top, rgba(147, 51, 234, 0.08), rgba(15, 23, 42, 0.98));
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            border-radius: 24px;
-            padding: 45px;
-            margin-bottom: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
         }
 
         .post-date {
-            font-size: 13px;
-            color: var(--purple-light);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 25px;
+            font-size: 0.72rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--purple-light);
+            margin-bottom: 1.25rem;
         }
 
         .post-title {
-            font-size: 32px;
+            font-size: clamp(1.4rem, 4vw, 2rem);
             font-weight: 800;
-            margin-bottom: 30px;
-            color: #fff;
-            line-height: 1.3;
-            background: linear-gradient(135deg, #fff, var(--text-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
         }
 
         .post-content {
-            font-size: 18px;
+            font-size: 1rem;
             line-height: 1.85;
-            color: #d1d5db;
-            margin-bottom: 30px;
+            color: var(--text-secondary);
         }
 
         .post-content p {
-            margin-bottom: 25px;
+            margin-bottom: 1.25rem;
         }
 
         .post-content p:last-child {
             margin-bottom: 0;
         }
 
-        /* The Lesson Box */
+        /* Lesson box */
         .post-lesson {
-            background: rgba(251, 191, 36, 0.1);
-            border-left: 4px solid var(--gold);
-            padding: 25px;
-            border-radius: 12px;
-            margin-top: 35px;
+            background: rgba(251, 191, 36, 0.06);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            border-left: 3px solid var(--gold);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin-top: 2rem;
         }
 
         .lesson-label {
-            font-size: 13px;
-            color: var(--gold);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
+            font-size: 0.7rem;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--gold);
+            margin-bottom: 0.6rem;
         }
 
         .lesson-text {
-            font-size: 17px;
-            color: #fff;
+            font-size: 0.95rem;
+            color: var(--text);
             font-style: italic;
             line-height: 1.7;
             font-weight: 500;
         }
 
-        /* Loading State */
-        .loading {
+        /* ========== EMPTY / LOADING STATES ========== */
+        .state-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4rem 2rem;
             text-align: center;
-            padding: 80px 20px;
-            color: #6b7280;
+            margin-bottom: 2rem;
         }
 
         .spinner {
-            border: 4px solid rgba(147, 51, 234, 0.2);
-            border-top: 4px solid var(--purple);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.15);
+            border-top-color: var(--purple);
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 25px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.25rem;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding-top: 100px;
+        .state-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .state-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* ========== FADE IN ========== */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        .fade-up:nth-child(1) { animation-delay: 0.05s; }
+        .fade-up:nth-child(2) { animation-delay: 0.15s; }
+        .fade-up:nth-child(3) { animation-delay: 0.25s; }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 640px) {
+            main {
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
             }
 
-            .back-btn {
-                position: static;
-                display: inline-block;
-                margin-bottom: 30px;
-            }
-
-            .page-title {
-                font-size: 2rem;
+            .nav-container {
+                padding: 0.9rem 1.25rem;
             }
 
             .streak-card {
-                padding: 30px 20px;
+                padding: 2rem 1.25rem;
             }
 
-            .streak-number {
-                font-size: 60px;
-            }
-
-            .fire-emoji {
-                font-size: 48px;
-            }
-
-            .check-in-btn {
-                width: 100%;
-                padding: 16px 30px;
+            .rewards-grid {
+                grid-template-columns: 1fr;
             }
 
             .post-card {
-                padding: 30px 25px;
+                padding: 1.75rem 1.25rem;
             }
 
-            .post-title {
-                font-size: 24px;
-            }
-
-            .post-content {
-                font-size: 16px;
+            .streak-meta {
+                gap: 1.25rem;
             }
         }
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="back-btn">← Dashboard</a>
 
-    <div class="container">
-        <div class="header">
-            <img src="ArcaneA.png" alt="The Arcane Archives" class="logo-badge">
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="ArcaneA.png" alt="Arcane Archives">
+                The Arcane Archives
+            </a>
+            <a href="dashboard.html" class="nav-back">← Dashboard</a>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main>
+
+        <!-- Header -->
+        <div class="page-header fade-up">
+            <div class="page-eyebrow">📡 Daily Transmission</div>
             <h1 class="page-title">Arcane Insights</h1>
-            <p class="page-subtitle">Daily transmissions of forbidden knowledge. Check in every day to maintain your streak and unlock exclusive rewards.</p>
+            <p class="page-subtitle">Every day you return, your streak grows. Miss a day and it resets. Stay consistent — the rewards compound.</p>
         </div>
 
-        <!-- Streak Tracker -->
-        <div class="streak-card">
-            <div class="streak-content">
-                <div class="fire-emoji" id="fireEmoji">🔥</div>
+        <!-- Streak Card -->
+        <div class="streak-card fade-up">
+            <div class="streak-inner">
+                <div class="streak-emoji" id="fireEmoji">✨</div>
                 <div class="streak-number" id="streakNumber">0</div>
                 <div class="streak-label">Day Streak</div>
+
+                <div class="streak-meta">
+                    <div class="streak-stat">
+                        <span class="streak-stat-value" id="longestStreakVal">0</span>
+                        <span class="streak-stat-label">Best Streak</span>
+                    </div>
+                    <div class="streak-divider"></div>
+                    <div class="streak-stat">
+                        <span class="streak-stat-value" id="totalCheckInsVal">0</span>
+                        <span class="streak-stat-label">Total Check-ins</span>
+                    </div>
+                    <div class="streak-divider"></div>
+                    <div class="streak-stat">
+                        <span class="streak-stat-value" id="nextMilestoneVal">7</span>
+                        <span class="streak-stat-label">Next Milestone</span>
+                    </div>
+                </div>
+
                 <button class="check-in-btn" id="checkInBtn">Claim Today's Insight</button>
                 <div class="check-in-time" id="checkInTime"></div>
                 <div class="milestone-container" id="milestoneContainer"></div>
+            </div>
+        </div>
 
-                <!-- Rewards Preview -->
-                <div class="rewards-preview">
-                    <h4>🏆 Upcoming Streak Rewards</h4>
-                    <ul>
-                        <li><strong>30 Days:</strong> Exclusive trading playbook</li>
-                        <li><strong>90 Days:</strong> 1-on-1 strategy call with Leo</li>
-                        <li><strong>180 Days:</strong> Lifetime access to premium signals</li>
-                        <li><strong>365 Days:</strong> Mystery reward + public recognition</li>
-                    </ul>
+        <!-- Rewards -->
+        <div class="rewards-section fade-up">
+            <div class="section-label">🏆 Streak Rewards</div>
+            <div class="rewards-grid">
+                <div class="reward-item">
+                    <div class="reward-icon">📖</div>
+                    <div>
+                        <div class="reward-days">30 Days</div>
+                        <div class="reward-text">Exclusive trading playbook</div>
+                    </div>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">📞</div>
+                    <div>
+                        <div class="reward-days">90 Days</div>
+                        <div class="reward-text">1-on-1 strategy call with Leo</div>
+                    </div>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">⚡</div>
+                    <div>
+                        <div class="reward-days">180 Days</div>
+                        <div class="reward-text">Lifetime premium signals access</div>
+                    </div>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">👑</div>
+                    <div>
+                        <div class="reward-days">365 Days</div>
+                        <div class="reward-text">Mystery reward + public recognition</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Today's Insight -->
+        <!-- Today's Post -->
         <div id="postContainer">
-            <div class="loading">
+            <div class="state-card">
                 <div class="spinner"></div>
-                <p>Loading today's transmission...</p>
+                <div class="state-title">Loading today's transmission...</div>
             </div>
         </div>
-    </div>
 
-    <!-- Firebase with Enhanced Auth Guard -->
+    </main>
+
+    <!-- Firebase -->
     <script type="module">
         import { protectPage, db } from './auth-guard.js';
-        import { doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        import { doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
         let currentUser = null;
 
-        // Use centralized auth protection with modern locked overlay
         protectPage({
             requirePayment: true,
             allowAdmin: true,
@@ -462,74 +719,69 @@
             }
         });
 
-        // Get today's date string (YYYY-MM-DD)
         function getTodayDateString() {
-            const today = new Date();
-            return today.toISOString().split('T')[0];
+            return new Date().toISOString().split('T')[0];
         }
 
-        // Load user's streak data
+        // ---- STREAK ----
         async function loadUserStreak() {
             try {
                 const userStreakRef = doc(db, 'userStreaks', currentUser.uid);
                 const streakDoc = await getDoc(userStreakRef);
-
                 if (streakDoc.exists()) {
                     const data = streakDoc.data();
                     updateStreakDisplay(data);
                     checkIfCanCheckIn(data);
                 } else {
-                    updateStreakDisplay({ currentStreak: 0 });
+                    updateStreakDisplay({ currentStreak: 0, longestStreak: 0, totalCheckIns: 0 });
                 }
             } catch (error) {
                 console.error('Error loading streak:', error);
             }
         }
 
-        // Update streak display
-        function updateStreakDisplay(data) {
-            const streakNumber = document.getElementById('streakNumber');
-            const fireEmoji = document.getElementById('fireEmoji');
-            const milestoneContainer = document.getElementById('milestoneContainer');
-            
-            const streak = data.currentStreak || 0;
-            streakNumber.textContent = streak;
-
-            // Dynamic emoji based on streak level
-            if (streak >= 365) {
-                fireEmoji.textContent = '👑';
-            } else if (streak >= 180) {
-                fireEmoji.textContent = '💎';
-            } else if (streak >= 90) {
-                fireEmoji.textContent = '⚡';
-            } else if (streak >= 30) {
-                fireEmoji.textContent = '🏆';
-            } else if (streak >= 7) {
-                fireEmoji.textContent = '🔥';
-            } else {
-                fireEmoji.textContent = '✨';
-            }
-
-            // Show milestone badges
-            let milestoneHTML = '';
-            if (streak === 7) {
-                milestoneHTML = '<div class="milestone-badge">7 Day Warrior 💪</div>';
-            } else if (streak === 30) {
-                milestoneHTML = '<div class="milestone-badge">30 Day Titan 🏆</div>';
-            } else if (streak === 90) {
-                milestoneHTML = '<div class="milestone-badge">90 Day Legend ⚡</div>';
-            } else if (streak === 180) {
-                milestoneHTML = '<div class="milestone-badge">Half-Year Dominance 💎</div>';
-            } else if (streak === 365) {
-                milestoneHTML = '<div class="milestone-badge">365 Day God Mode 👑</div>';
-            } else if (streak > 0 && streak % 7 === 0) {
-                milestoneHTML = `<div class="milestone-badge">Week ${streak / 7} Complete 🔥</div>`;
-            }
-
-            milestoneContainer.innerHTML = milestoneHTML;
+        function getNextMilestone(streak) {
+            const milestones = [7, 30, 90, 180, 365];
+            return milestones.find(m => m > streak) || '—';
         }
 
-        // Check if user can check in today
+        function updateStreakDisplay(data) {
+            const streak = data.currentStreak || 0;
+            const longest = data.longestStreak || 0;
+            const total = data.totalCheckIns || 0;
+
+            document.getElementById('streakNumber').textContent = streak;
+            document.getElementById('longestStreakVal').textContent = longest;
+            document.getElementById('totalCheckInsVal').textContent = total;
+            document.getElementById('nextMilestoneVal').textContent = getNextMilestone(streak);
+
+            // Dynamic emoji
+            const fireEmoji = document.getElementById('fireEmoji');
+            if (streak >= 365) fireEmoji.textContent = '👑';
+            else if (streak >= 180) fireEmoji.textContent = '💎';
+            else if (streak >= 90) fireEmoji.textContent = '⚡';
+            else if (streak >= 30) fireEmoji.textContent = '🏆';
+            else if (streak >= 7) fireEmoji.textContent = '🔥';
+            else fireEmoji.textContent = '✨';
+
+            // Milestone badge
+            const milestoneMap = {
+                7: '7 Day Warrior 💪',
+                30: '30 Day Titan 🏆',
+                90: '90 Day Legend ⚡',
+                180: 'Half-Year Dominance 💎',
+                365: '365 Day God Mode 👑'
+            };
+            const milestoneContainer = document.getElementById('milestoneContainer');
+            if (milestoneMap[streak]) {
+                milestoneContainer.innerHTML = `<div class="milestone-badge">${milestoneMap[streak]}</div>`;
+            } else if (streak > 0 && streak % 7 === 0) {
+                milestoneContainer.innerHTML = `<div class="milestone-badge">Week ${streak / 7} Complete 🔥</div>`;
+            } else {
+                milestoneContainer.innerHTML = '';
+            }
+        }
+
         function checkIfCanCheckIn(data) {
             const checkInBtn = document.getElementById('checkInBtn');
             const checkInTime = document.getElementById('checkInTime');
@@ -537,23 +789,22 @@
 
             if (data.lastCheckIn === today) {
                 checkInBtn.disabled = true;
-                checkInBtn.textContent = '✓ Claimed';
-                
+                checkInBtn.classList.add('claimed');
+                checkInBtn.textContent = '✓ Claimed Today';
                 if (data.lastCheckInTime) {
                     const time = new Date(data.lastCheckInTime.seconds * 1000);
                     checkInTime.textContent = `Claimed at ${time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
                 }
             } else {
                 checkInBtn.disabled = false;
+                checkInBtn.classList.remove('claimed');
                 checkInBtn.textContent = 'Claim Today\'s Insight';
                 checkInTime.textContent = '';
             }
         }
 
-        // Handle check-in
         document.getElementById('checkInBtn').addEventListener('click', async () => {
             if (!currentUser) return;
-
             const checkInBtn = document.getElementById('checkInBtn');
             checkInBtn.disabled = true;
             checkInBtn.textContent = 'Claiming...';
@@ -565,59 +816,56 @@
 
                 let newStreak = 1;
                 let longestStreak = 1;
+                let totalCheckIns = 1;
 
                 if (streakDoc.exists()) {
                     const data = streakDoc.data();
                     const lastCheckIn = data.lastCheckIn;
-                    
-                    // Check if last check-in was yesterday
+
+                    if (lastCheckIn === today) {
+                        checkInBtn.classList.add('claimed');
+                        checkInBtn.textContent = '✓ Claimed Today';
+                        return;
+                    }
+
                     const yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
                     const yesterdayString = yesterday.toISOString().split('T')[0];
 
-                    if (lastCheckIn === yesterdayString) {
-                        // Continue streak
-                        newStreak = (data.currentStreak || 0) + 1;
-                    } else if (lastCheckIn === today) {
-                        // Already checked in today
-                        checkInBtn.textContent = '✓ Claimed';
-                        return;
-                    } else {
-                        // Streak broken, reset to 1
-                        newStreak = 1;
-                    }
+                    newStreak = lastCheckIn === yesterdayString
+                        ? (data.currentStreak || 0) + 1
+                        : 1;
 
                     longestStreak = Math.max(newStreak, data.longestStreak || 0);
+                    totalCheckIns = (data.totalCheckIns || 0) + 1;
                 }
 
-                // Update streak in database
                 await setDoc(userStreakRef, {
                     currentStreak: newStreak,
-                    longestStreak: longestStreak,
+                    longestStreak,
+                    totalCheckIns,
                     lastCheckIn: today,
                     lastCheckInTime: serverTimestamp(),
                     userId: currentUser.uid,
                     userEmail: currentUser.email
                 }, { merge: true });
 
-                // Update display
-                updateStreakDisplay({ currentStreak: newStreak, longestStreak: longestStreak });
-                checkIfCanCheckIn({ lastCheckIn: today, lastCheckInTime: new Date() });
+                updateStreakDisplay({ currentStreak: newStreak, longestStreak, totalCheckIns });
+                checkIfCanCheckIn({ lastCheckIn: today, lastCheckInTime: { seconds: Date.now() / 1000 } });
 
-                // Show celebration for milestones
                 if ([7, 30, 90, 180, 365].includes(newStreak)) {
-                    showCelebration(newStreak);
+                    showMilestoneCelebration(newStreak);
                 }
 
             } catch (error) {
                 console.error('Error checking in:', error);
                 checkInBtn.disabled = false;
+                checkInBtn.classList.remove('claimed');
                 checkInBtn.textContent = 'Claim Today\'s Insight';
-                alert('Error claiming insight. Please try again.');
             }
         });
 
-        // Load today's post
+        // ---- POST ----
         async function loadTodaysPost() {
             const postContainer = document.getElementById('postContainer');
             const today = getTodayDateString();
@@ -628,14 +876,14 @@
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    const postData = querySnapshot.docs[0].data();
-                    displayPost(postData);
+                    displayPost(querySnapshot.docs[0].data());
                 } else {
                     postContainer.innerHTML = `
                         <div class="post-card">
-                            <div class="post-title">No transmission today</div>
+                            <div class="post-date">No transmission today</div>
+                            <div class="post-title">The archives are silent.</div>
                             <div class="post-content">
-                                <p>The archives are silent today. Return tomorrow for new forbidden knowledge.</p>
+                                <p>Return tomorrow for new forbidden knowledge. The streak is yours to protect.</p>
                             </div>
                         </div>
                     `;
@@ -643,31 +891,24 @@
             } catch (error) {
                 console.error('Error loading post:', error);
                 postContainer.innerHTML = `
-                    <div class="post-card">
-                        <div class="post-title">Error loading transmission</div>
-                        <div class="post-content">
-                            <p>The archives are temporarily inaccessible. Please refresh or try again later.</p>
-                        </div>
+                    <div class="state-card">
+                        <div class="state-title">Could not load transmission</div>
+                        <div class="state-text">The archives are temporarily inaccessible. Refresh to try again.</div>
                     </div>
                 `;
             }
         }
 
-        // Display post
         function displayPost(post) {
             const postContainer = document.getElementById('postContainer');
-            
             const date = new Date(post.date);
-            const dateString = date.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            const dateString = date.toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
 
             postContainer.innerHTML = `
                 <div class="post-card">
-                    <div class="post-date">${dateString}${post.dayNumber ? ` · Day ${post.dayNumber}` : ''}</div>
+                    <div class="post-date">${dateString}${post.dayNumber ? ` &middot; Day ${post.dayNumber}` : ''}</div>
                     <div class="post-title">${post.title}</div>
                     <div class="post-content">
                         ${post.content.split('\n\n').map(p => `<p>${p}</p>`).join('')}
@@ -682,22 +923,14 @@
             `;
         }
 
-        // Celebration animation (basic implementation)
-        function showCelebration(streak) {
-            // Could add confetti library or more elaborate animation
-            console.log(`🎉 Milestone achieved: ${streak} day streak!`);
-            
-            // Visual feedback
-            const milestoneContainer = document.getElementById('milestoneContainer');
-            if (milestoneContainer) {
-                setTimeout(() => {
-                    milestoneContainer.style.animation = 'none';
-                    setTimeout(() => {
-                        milestoneContainer.style.animation = '';
-                    }, 10);
-                }, 100);
+        function showMilestoneCelebration(streak) {
+            const badge = document.getElementById('milestoneContainer');
+            if (badge) {
+                badge.style.transform = 'scale(1.15)';
+                setTimeout(() => badge.style.transform = '', 400);
             }
         }
     </script>
+
 </body>
 </html>
