@@ -81,13 +81,8 @@
     }
     .nav-btn:hover { border-color:var(--purple); color:var(--purple-light); }
 
-    .ticker-strip {
-      position:fixed; top:calc(48px + env(safe-area-inset-top,0px));
-      left:0; right:0; z-index:999; height:40px;
-      background:rgba(5,5,10,.99); border-bottom:1px solid rgba(100,116,139,.06); overflow:hidden;
-    }
     .sess-bar {
-      position:fixed; top:calc(88px + env(safe-area-inset-top,0px));
+      position:fixed; top:calc(48px + env(safe-area-inset-top,0px));
       left:0; right:0; z-index:998; height:34px;
       background:rgba(5,5,10,.99); border-bottom:1px solid rgba(100,116,139,.05);
       display:flex; align-items:center; gap:.25rem; padding:0 1rem;
@@ -107,7 +102,7 @@
     .sess-chip.open .sess-dot { animation:pulseLive 1.4s infinite; }
 
     .sec-tabs {
-      position:fixed; top:calc(122px + env(safe-area-inset-top,0px));
+      position:fixed; top:calc(82px + env(safe-area-inset-top,0px));
       left:0; right:0; z-index:997; height:44px;
       background:rgba(5,5,10,.99); border-bottom:1px solid rgba(100,116,139,.09);
       display:flex; align-items:center; gap:.25rem; padding:0 1rem;
@@ -129,8 +124,8 @@
     .utc-clock{ font-size:.6875rem; font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--text-dim); white-space:nowrap; }
 
     /* ── MAIN ── */
-    main { padding-top:calc(166px + env(safe-area-inset-top,0px)); padding-bottom:4rem; }
-    .page-section { padding:1.5rem 1rem 0; scroll-margin-top:calc(166px + env(safe-area-inset-top,0px)); }
+    main { padding-top:calc(126px + env(safe-area-inset-top,0px)); padding-bottom:4rem; }
+    .page-section { padding:1.5rem 1rem 0; scroll-margin-top:calc(126px + env(safe-area-inset-top,0px)); }
 
     /* SECTION HEADER */
     .s-hdr { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.75rem; border-bottom:1px solid var(--border); }
@@ -351,35 +346,31 @@
       .nav-live{ display:none; }
       .nav-btn{ font-size:.65rem; padding:.3rem .6rem; white-space:nowrap; }
 
-      .ticker-strip{
-        top:calc(44px + env(safe-area-inset-top,0px));
-        height:36px;
-      }
-
-      /* Session bar hidden on mobile — sessions visible in panel */
+      /* Session bar hidden on mobile — sessions visible in panel below */
       .sess-bar{ display:none; }
 
-      /* Section tabs — moved up, icons only */
+      /* Section tabs — sit directly below nav, icon-only */
+      /* nav=44px, tabs=40px → total 84px */
       .sec-tabs{
-        top:calc(80px + env(safe-area-inset-top,0px));
-        height:38px;
+        top:calc(44px + env(safe-area-inset-top,0px));
+        height:40px;
         padding:0 .375rem;
-        gap:.1rem;
+        gap:.125rem;
       }
       .tab-text{ display:none; }
-      .tab-btn{ padding:.3rem .55rem; gap:0; }
-      .tab-icon{ font-size:.875rem; }
+      .tab-btn{ padding:.35rem .6rem; gap:0; }
+      .tab-icon{ font-size:.9rem; }
       .tabs-right,.tabs-div{ display:none; }
 
-      /* Main offset — 44+36+38 = 118px */
+      /* Main offset — 44px nav + 40px tabs = 84px */
       main{
-        padding-top:calc(118px + env(safe-area-inset-top,0px));
+        padding-top:calc(84px + env(safe-area-inset-top,0px));
         padding-bottom:calc(2.5rem + env(safe-area-inset-bottom,0px));
       }
       .page-section{
         padding-left:.625rem;
         padding-right:.625rem;
-        scroll-margin-top:calc(118px + env(safe-area-inset-top,0px));
+        scroll-margin-top:calc(84px + env(safe-area-inset-top,0px));
       }
 
       /* ── Hero stats: horizontal swipe strip ────────── */
@@ -408,13 +399,17 @@
       .geo-toolbar{ padding:.375rem .5rem; gap:.25rem; }
       .geo-tlabel{ display:none; }
       .geo-stat-val{ font-size:1.125rem; }
-      /* Ensure sidebar event badges never clip */
-      .geo-event{ padding:.45rem .625rem; }
-      .geo-evname{ font-size:.675rem; gap:.375rem; }
+      /* Geo sidebar — prevent badge clipping at right edge */
+      .geo-side{ overflow:visible; }
+      .geo-side-inner{
+        padding:.5rem .75rem .5rem .5rem;  /* extra right breathing room */
+        overflow-y:auto;
+        overflow-x:hidden;                 /* stops horizontal bleed */
+      }
+      .geo-event{ padding:.45rem .5rem .45rem .5rem; }
+      .geo-evname{ font-size:.675rem; gap:.375rem; flex-wrap:nowrap; }
       .sev-badge{ flex-shrink:0; white-space:nowrap; }
       .geo-evdesc{ font-size:.6rem; }
-      /* Sidebar inner — tighter padding on mobile for more list items */
-      .geo-side-inner{ padding:.625rem; }
 
       /* ── Macro risk grid ────────────────────────────── */
       #riskPanel{ grid-template-columns:1fr 1fr !important; gap:.375rem !important; }
@@ -464,39 +459,6 @@
     <a href="alerts.html" class="nav-btn">← Trading Floor</a>
   </div>
 </nav>
-
-<!-- TICKER -->
-<div class="ticker-strip">
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-    {"symbols":[
-      {"proName":"OANDA:SPX500USD","title":"S&P 500"},
-      {"proName":"OANDA:NAS100USD","title":"Nasdaq"},
-      {"proName":"OANDA:US30USD","title":"Dow 30"},
-      {"proName":"TVC:RUT","title":"Russell 2K"},
-      {"proName":"BINANCE:BNBUSDT","title":"BNB"},
-      {"proName":"BINANCE:XRPUSDT","title":"XRP"},
-      {"proName":"FX:USDCHF","title":"USD/CHF"},
-      {"proName":"OANDA:XAUUSD","title":"Gold"},
-      {"proName":"OANDA:XAGUSD","title":"Silver"},
-      {"proName":"TVC:USOIL","title":"WTI"},
-      {"proName":"TVC:UKOIL","title":"Brent"},
-      {"proName":"OANDA:NATGASUSD","title":"Nat Gas"},
-      {"proName":"BINANCE:BTCUSDT","title":"BTC"},
-      {"proName":"BINANCE:ETHUSDT","title":"ETH"},
-      {"proName":"BINANCE:SOLUSDT","title":"SOL"},
-      {"proName":"FX:EURUSD","title":"EUR/USD"},
-      {"proName":"FX:GBPUSD","title":"GBP/USD"},
-      {"proName":"FX:USDJPY","title":"USD/JPY"},
-      {"proName":"INDEX:FTSE","title":"FTSE"},
-      {"proName":"INDEX:DEU40","title":"DAX"},
-      {"proName":"INDEX:NI225","title":"Nikkei"},
-      {"proName":"INDEX:HSI","title":"Hang Seng"}
-    ],"showSymbolLogo":true,"isTransparent":true,"displayMode":"compact","colorTheme":"dark","locale":"en"}
-    </script>
-  </div>
-</div>
 
 <!-- SESSION BAR -->
 <div class="sess-bar" id="sessBar"></div>
