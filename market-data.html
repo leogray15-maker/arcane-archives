@@ -5,587 +5,1197 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Market Data Hub | The Arcane Archives</title>
+  <title>Arcane Intelligence Terminal | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png" />
   <link rel="apple-touch-icon" href="ArcaneA.png">
   <link rel="manifest" href="manifest.json">
   <style>
+    /* ═══════════════════════════════════════════════════
+       DESIGN SYSTEM
+    ═══════════════════════════════════════════════════ */
     :root {
-      --bg-dark: #0a0a0a;
-      --bg-elevated: #121212;
-      --bg-card: #1a1a1a;
-      --purple: #9333ea;
-      --purple-dark: #7e22ce;
+      --bg:           #05050a;
+      --bg-panel:     #0a0a12;
+      --bg-card:      #0f0f18;
+      --border:       rgba(100, 116, 139, 0.11);
+      --gold:         #f59e0b;
+      --purple:       #9333ea;
       --purple-light: #a78bfa;
-      --gold: #fbbf24;
-      --green: #10b981;
-      --red: #ef4444;
-      --text: #f5f5f5;
-      --text-dim: #a1a1a1;
-      --border: rgba(148, 163, 184, 0.2);
+      --green:        #10b981;
+      --red:          #ef4444;
+      --amber:        #f59e0b;
+      --live:         #00ff88;
+      --text:         #e2e8f0;
+      --text-dim:     #64748b;
+      --text-muted:   #273444;
+      --mono:         'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
     }
-    
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-    }
-    
-    body {
-      background: var(--bg-dark);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Inter', sans-serif;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    
-    /* Navigation */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: rgba(10, 10, 10, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding-top: env(safe-area-inset-top, 0px);
-    }
-    
-    .nav-container {
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-    
-    .logo {
-      font-size: 1.125rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--gold), var(--purple-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .nav-btn {
-      padding: 0.625rem 1.25rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 600;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    
-    .nav-btn:hover {
-      background: rgba(147, 51, 234, 0.1);
-      color: var(--purple-light);
-      border-color: var(--purple);
-      transform: translateY(-1px);
-    }
-    
-    /* Container */
-    .container {
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: calc(6rem + env(safe-area-inset-top, 0px)) 2rem 3rem;
-    }
-    
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-    
-    .header-badge {
-      display: inline-block;
-      padding: 0.375rem 1rem;
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(147, 51, 234, 0.1));
-      border: 1px solid var(--gold);
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--gold);
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    
-    .header h1 {
-      font-size: clamp(2rem, 5vw, 4rem);
-      font-weight: 900;
-      background: linear-gradient(135deg, white, var(--gold), var(--purple-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 1rem;
-      line-height: 1.1;
-    }
-    
-    .header p {
-      color: var(--text-dim);
-      font-size: 1.125rem;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    
-    /* Widgets Grid */
-    .widgets-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-    }
-    
-    .widget-card {
-      background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .widget-card:hover {
-      border-color: var(--gold);
-      box-shadow: 0 20px 50px rgba(251, 191, 36, 0.15);
-    }
-    
-    .widget-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .widget-title {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .widget-badge {
-      padding: 0.375rem 0.875rem;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid var(--green);
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--green);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-    }
-    
-    .widget-badge::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.5;
-      }
-    }
-    
-    .widget-subtitle {
-      font-size: 0.875rem;
-      color: var(--text-dim);
-      margin-top: 0.5rem;
-    }
-    
-    .tradingview-widget-container {
-      width: 100% !important;
-      min-height: 600px !important;
-      height: 600px !important;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    
-    .tradingview-widget-container__widget {
-      width: 100% !important;
-      height: 100% !important;
-    }
-    
-    .calendar-widget {
-      min-height: 700px !important;
-      height: 700px !important;
-    }
-    
-    /* Feature Tag */
-    .feature-tag {
-      display: inline-block;
-      padding: 0.25rem 0.625rem;
-      background: rgba(147, 51, 234, 0.1);
-      border: 1px solid var(--purple);
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--purple-light);
-      margin-left: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .nav-container {
-        padding: 1rem 1.5rem;
-      }
 
-      .container {
-        padding: calc(6rem + env(safe-area-inset-top, 0px)) 1.5rem 2rem;
-      }
-      
-      .widget-card {
-        padding: 1.5rem;
-      }
-      
-      .tradingview-widget-container {
-        min-height: 500px !important;
-        height: 500px !important;
-      }
-      
-      .calendar-widget {
-        min-height: 600px !important;
-        height: 600px !important;
-      }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    
-    @media (max-width: 640px) {
-      .nav-btn {
-        font-size: 0.8rem;
-        padding: 0.5rem 1rem;
-      }
-      
-      .logo {
-        font-size: 1rem;
-      }
-      
-      .header h1 {
-        font-size: 2rem;
-      }
-      
-      .widget-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-      }
-      
-      .widget-title {
-        font-size: 1.5rem;
-      }
-      
-      .tradingview-widget-container {
-        min-height: 450px !important;
-        height: 450px !important;
-      }
-      
-      .calendar-widget {
-        min-height: 550px !important;
-        height: 550px !important;
-      }
+
+    /* ═══════════════════════════════════════════════════
+       FIXED LAYER STACK
+       nav       48px + safe-area
+       ticker    40px
+       sess-bar  34px
+       sec-tabs  44px
+       ─────────────────────────────
+       total     166px + safe-area
+    ═══════════════════════════════════════════════════ */
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      height: calc(48px + env(safe-area-inset-top, 0px));
+      background: rgba(5, 5, 10, 0.97);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      height: 100%;
+      padding: env(safe-area-inset-top, 0px) 1.5rem 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+
+    .nav-logo {
+      font-size: 0.8125rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--gold) 20%, var(--purple-light) 80%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; text-decoration: none;
+      letter-spacing: 0.07em; text-transform: uppercase; flex-shrink: 0;
+    }
+
+    .nav-live {
+      display: flex; align-items: center; gap: 0.35rem;
+      font-size: 0.625rem; font-weight: 700; color: var(--live);
+      text-transform: uppercase; letter-spacing: 0.14em;
+      padding: 0.25rem 0.625rem;
+      border: 1px solid rgba(0,255,136,0.2); border-radius: 4px;
+      background: rgba(0,255,136,0.05);
+    }
+
+    .live-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--live);
+      animation: pulse-live 1.4s infinite;
+    }
+
+    @keyframes pulse-live {
+      0%, 100% { opacity:1; box-shadow: 0 0 5px var(--live); }
+      50%       { opacity:0.4; box-shadow: none; }
+    }
+
+    .nav-btn {
+      padding: 0.375rem 0.875rem; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--bg-card); color: var(--text-dim);
+      text-decoration: none; font-size: 0.75rem; font-weight: 600;
+      transition: all 0.18s; white-space: nowrap;
+    }
+    .nav-btn:hover { border-color: var(--purple); color: var(--purple-light); }
+
+    .ticker-strip {
+      position: fixed; top: calc(48px + env(safe-area-inset-top, 0px));
+      left: 0; right: 0; z-index: 999; height: 40px;
+      background: rgba(5,5,10,0.99);
+      border-bottom: 1px solid rgba(100,116,139,0.06); overflow: hidden;
+    }
+
+    .sess-bar {
+      position: fixed; top: calc(88px + env(safe-area-inset-top, 0px));
+      left: 0; right: 0; z-index: 998; height: 34px;
+      background: rgba(5,5,10,0.99);
+      border-bottom: 1px solid rgba(100,116,139,0.05);
+      display: flex; align-items: center; gap: 0.25rem;
+      padding: 0 1rem; overflow-x: auto; scrollbar-width: none;
+    }
+    .sess-bar::-webkit-scrollbar { display: none; }
+
+    .sess-chip {
+      display: flex; align-items: center; gap: 0.3rem;
+      padding: 0.175rem 0.575rem; border-radius: 4px; border: 1px solid transparent;
+      font-size: 0.625rem; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+      font-variant-numeric: tabular-nums; font-family: var(--mono); letter-spacing: 0.03em;
+    }
+    .sess-chip.open   { background:rgba(16,185,129,0.07); border-color:rgba(16,185,129,0.22); color:var(--green); }
+    .sess-chip.pre    { background:rgba(245,158,11,0.07); border-color:rgba(245,158,11,0.22); color:var(--amber); }
+    .sess-chip.closed { background:rgba(100,116,139,0.04); border-color:rgba(100,116,139,0.07); color:var(--text-muted); }
+    .sess-dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .sess-chip.open .sess-dot { animation: pulse-live 1.4s infinite; }
+
+    .sec-tabs {
+      position: fixed; top: calc(122px + env(safe-area-inset-top, 0px));
+      left: 0; right: 0; z-index: 997; height: 44px;
+      background: rgba(5,5,10,0.99);
+      border-bottom: 1px solid rgba(100,116,139,0.09);
+      display: flex; align-items: center; gap: 0.25rem;
+      padding: 0 1rem; overflow-x: auto; scrollbar-width: none;
+    }
+    .sec-tabs::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      display: flex; align-items: center; gap: 0.35rem;
+      padding: 0.35rem 0.875rem; border: 1px solid transparent; border-radius: 6px;
+      background: transparent; color: var(--text-dim);
+      font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: all 0.18s; font-family: inherit;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .tab-btn.active {
+      background: rgba(147,51,234,0.1);
+      border-color: rgba(147,51,234,0.28); color: var(--purple-light);
+    }
+    .tab-icon { font-size: 0.8rem; }
+
+    .tabs-div { width:1px; height:18px; background:var(--border); flex-shrink:0; margin:0 0.125rem; }
+    .tabs-right { margin-left:auto; display:flex; align-items:center; gap:0.5rem; flex-shrink:0; }
+    .utc-clock {
+      font-size: 0.6875rem; font-family: var(--mono);
+      font-variant-numeric: tabular-nums; color: var(--text-dim); white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MAIN
+    ═══════════════════════════════════════════════════ */
+    main {
+      padding-top: calc(166px + env(safe-area-inset-top, 0px));
+      padding-bottom: 4rem;
+    }
+
+    .page-section {
+      padding: 1.5rem 1rem 0;
+      scroll-margin-top: calc(166px + env(safe-area-inset-top, 0px));
+    }
+
+    /* SECTION HEADER */
+    .s-hdr {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .s-hdr-icon { font-size: 1rem; }
+    .s-hdr-text { flex: 1; }
+    .s-hdr-title {
+      font-size: 0.875rem; font-weight: 800; color: var(--text);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .s-hdr-sub {
+      font-size: 0.6rem; color: var(--text-dim); margin-top: 0.1rem;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .s-hdr-badges { display:flex; align-items:center; gap:0.375rem; }
+
+    .badge {
+      font-size: 0.575rem; font-weight: 700; padding: 0.175rem 0.45rem;
+      border-radius: 3px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+    }
+    .b-live { background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.22); color:var(--live); }
+    .b-ai   { background:rgba(147,51,234,0.08); border:1px solid rgba(147,51,234,0.22); color:var(--purple-light); }
+    .b-hi   { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.22); color:var(--gold); }
+    .b-live::before { content:'● '; font-size:0.45rem; }
+
+    /* GRIDS */
+    .g2   { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+    .g3   { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem; }
+    .g5   { display:grid; grid-template-columns:repeat(5,1fr); gap:0.625rem; }
+    .g-com{ display:grid; grid-template-columns:repeat(3,1fr); gap:0.625rem; }
+    .mb   { margin-bottom: 0.75rem; }
+
+    /* HERO CARDS */
+    .hero-card {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.875rem 1rem 0.5rem;
+      position: relative; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .hero-card::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg,transparent 60%,rgba(147,51,234,0.04));
+      pointer-events:none;
+    }
+    .hero-card:hover { border-color:rgba(147,51,234,0.35); box-shadow:0 0 24px rgba(147,51,234,0.07); }
+    .hero-label {
+      font-size:0.6rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.12em; color:var(--text-dim); margin-bottom:0.25rem;
+    }
+
+    /* PANEL */
+    .panel { background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .panel-hdr {
+      padding:0.75rem 1rem; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      background:rgba(255,255,255,0.01);
+    }
+    .p-title {
+      font-size:0.7rem; font-weight:700; color:var(--text);
+      text-transform:uppercase; letter-spacing:0.07em;
+      display:flex; align-items:center; gap:0.4rem;
+    }
+    .p-sub { font-size:0.575rem; color:var(--text-dim); margin-top:0.1rem; text-transform:uppercase; letter-spacing:0.05em; }
+    .panel-body { padding:0.875rem; }
+
+    /* SESSIONS LIST */
+    .sess-list { display:flex; flex-direction:column; gap:0.375rem; }
+    .sess-row {
+      display:grid; grid-template-columns:1.25rem 2.75rem 1fr auto;
+      align-items:center; gap:0.5rem; padding:0.4rem 0.6rem;
+      border-radius:6px; border:1px solid transparent; transition:all 0.2s;
+    }
+    .sess-row.open   { background:rgba(16,185,129,0.05); border-color:rgba(16,185,129,0.13); }
+    .sess-row.pre    { background:rgba(245,158,11,0.05); border-color:rgba(245,158,11,0.13); }
+    .sess-row.closed { background:rgba(100,116,139,0.02); border-color:rgba(100,116,139,0.05); opacity:0.5; }
+    .sr-flag { font-size:0.875rem; }
+    .sr-name { font-size:0.675rem; font-weight:700; font-family:var(--mono); }
+    .sr-city { font-size:0.575rem; color:var(--text-dim); }
+    .sr-time { font-size:0.6rem; color:var(--text-dim); font-family:var(--mono); font-variant-numeric:tabular-nums; }
+    .sr-status {
+      font-size:0.55rem; font-weight:700; padding:0.125rem 0.35rem;
+      border-radius:3px; text-transform:uppercase; letter-spacing:0.06em;
+    }
+    .st-open   { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.28); color:var(--green); }
+    .st-pre    { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.28); color:var(--amber); }
+    .st-closed { background:rgba(100,116,139,0.08); border:1px solid rgba(100,116,139,0.1); color:var(--text-dim); }
+
+    /* FEAR & GREED */
+    .fg-wrap { display:flex; flex-direction:column; align-items:center; }
+    .fg-gauge { position:relative; width:180px; height:100px; margin-bottom:0.375rem; }
+    .fg-gauge svg { width:180px; height:100px; }
+    .fg-score-pos {
+      position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); text-align:center;
+    }
+    .fg-num { font-size:2.125rem; font-weight:900; font-variant-numeric:tabular-nums; line-height:1; }
+    .fg-lbl {
+      font-size:0.65rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.1em; text-align:center; margin-bottom:0.875rem; margin-top:0.375rem;
+    }
+    .fg-bands { display:grid; grid-template-columns:repeat(5,1fr); gap:0.2rem; width:100%; }
+    .fg-band {
+      text-align:center; padding:0.25rem 0.1rem; border-radius:4px;
+      font-size:0.5rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+      border:1px solid transparent; line-height:1.3; transition:box-shadow 0.3s;
+    }
+    .fg-band.active { box-shadow:0 0 8px currentColor; }
+
+    /* CRYPTO PANEL */
+    .cg2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+    .c-metric { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:0.6rem; }
+    .cm-lbl { font-size:0.55rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-dim); margin-bottom:0.25rem; }
+    .cm-val { font-size:0.9375rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--text); line-height:1; }
+    .cm-chg { font-size:0.575rem; font-weight:600; margin-top:0.175rem; font-variant-numeric:tabular-nums; }
+    .dom-block { margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border); }
+    .dom-row { margin-bottom:0.425rem; }
+    .dom-lbl { display:flex; justify-content:space-between; font-size:0.575rem; color:var(--text-dim); margin-bottom:0.225rem; }
+    .dom-val { font-weight:700; }
+    .dom-track { height:5px; background:rgba(100,116,139,0.1); border-radius:3px; overflow:hidden; }
+    .dom-fill { height:100%; border-radius:3px; transition:width 1.2s ease; }
+
+    /* CURRENCY STRENGTH */
+    .cur-list { display:flex; flex-direction:column; gap:0.425rem; }
+    .cur-row  { display:grid; grid-template-columns:3.25rem 1fr 3rem; align-items:center; gap:0.5rem; }
+    .cur-code { font-size:0.675rem; font-weight:700; font-family:var(--mono); }
+    .bar-track { height:5px; background:rgba(100,116,139,0.1); border-radius:3px; overflow:hidden; }
+    .bar-fill  { height:100%; border-radius:3px; transition:width 0.9s ease; }
+    .cur-val   { font-size:0.6rem; font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; }
+
+    /* RISK MONITOR */
+    .risk-row {
+      display:grid; grid-template-columns:1fr auto; align-items:center;
+      gap:0.625rem; padding:0.5rem 0.625rem; border-radius:7px;
+      background:var(--bg-card); border:1px solid var(--border);
+    }
+    .r-lbl  { font-size:0.675rem; font-weight:700; color:var(--text); }
+    .r-desc { font-size:0.575rem; color:var(--text-dim); margin-top:0.1rem; }
+    .r-right{ display:flex; flex-direction:column; align-items:flex-end; gap:0.225rem; }
+    .r-lvl  { font-size:0.575rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+    .r-dots { display:flex; gap:3px; }
+    .r-dot  { width:7px; height:7px; border-radius:50%; }
+    .r-dot.on  { background:currentColor; }
+    .r-dot.off { background:rgba(100,116,139,0.14); }
+
+    /* TV WRAP */
+    .tv-wrap { background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .tv-hdr {
+      padding:0.75rem 1rem; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      background:rgba(255,255,255,0.01);
+    }
+    .tradingview-widget-container { width:100%; height:100%; }
+    .tradingview-widget-container__widget { width:100%; height:100%; }
+
+    /* UTILS */
+    .up   { color: var(--green); }
+    .down { color: var(--red);   }
+    .shimmer {
+      background:linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.02) 50%,var(--bg-card) 75%);
+      background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px;
+    }
+    @keyframes shimmer { 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
+    .panel-note { font-size:0.55rem; color:var(--text-muted); border-top:1px solid var(--border); padding-top:0.5rem; margin-top:0.625rem; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1280px) {
+      .g5, .g-com { grid-template-columns:repeat(3,1fr); }
+    }
+    @media (max-width: 1024px) {
+      .g3 { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .g5, .g3, .g2, .g-com { grid-template-columns:1fr 1fr; }
+      .page-section { padding-left:0.625rem; padding-right:0.625rem; }
+    }
+    @media (max-width: 480px) {
+      .g3, .g2 { grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav>
-    <div class="nav-container">
-      <a href="dashboard.html" class="logo">
-        📊 MARKET DATA HUB
-      </a>
-      <a href="global-intelligence.html" class="nav-btn" style="background:rgba(147,51,234,0.12);border-color:rgba(147,51,234,0.4);color:#a78bfa;">🌐 Global Intelligence</a>
-      <a href="alerts.html" class="nav-btn">← Back to Trading Floor</a>
-    </div>
-  </nav>
 
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <span class="header-badge">🌍 GLOBAL MARKETS</span>
-      <h1>Market Data Hub</h1>
-      <p>Economic calendar, market heatmaps, screeners, and real-time analytics across all asset classes</p>
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-inner">
+    <a href="dashboard.html" class="nav-logo">⬡ Arcane Archives</a>
+    <div class="nav-live"><div class="live-dot"></div>Intelligence Terminal</div>
+    <a href="alerts.html" class="nav-btn">← Trading Floor</a>
+  </div>
+</nav>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker-strip">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName":"OANDA:SPX500USD","title":"S&P 500"},
+        {"proName":"OANDA:NAS100USD","title":"Nasdaq"},
+        {"proName":"OANDA:US30USD","title":"Dow 30"},
+        {"proName":"TVC:RUT","title":"Russell 2K"},
+        {"proName":"CBOE:VIX","title":"VIX"},
+        {"proName":"TVC:DXY","title":"DXY"},
+        {"proName":"TVC:US10Y","title":"US 10Y"},
+        {"proName":"OANDA:XAUUSD","title":"Gold"},
+        {"proName":"OANDA:XAGUSD","title":"Silver"},
+        {"proName":"TVC:USOIL","title":"WTI"},
+        {"proName":"TVC:UKOIL","title":"Brent"},
+        {"proName":"NYMEX:NG1!","title":"Nat Gas"},
+        {"proName":"BINANCE:BTCUSDT","title":"BTC"},
+        {"proName":"BINANCE:ETHUSDT","title":"ETH"},
+        {"proName":"BINANCE:SOLUSDT","title":"SOL"},
+        {"proName":"FX:EURUSD","title":"EUR/USD"},
+        {"proName":"FX:GBPUSD","title":"GBP/USD"},
+        {"proName":"FX:USDJPY","title":"USD/JPY"},
+        {"proName":"INDEX:FTSE","title":"FTSE"},
+        {"proName":"INDEX:DEU40","title":"DAX"},
+        {"proName":"INDEX:NI225","title":"Nikkei"},
+        {"proName":"INDEX:HSI","title":"Hang Seng"}
+      ],
+      "showSymbolLogo": true, "isTransparent": true,
+      "displayMode": "compact", "colorTheme": "dark", "locale": "en"
+    }
+    </script>
+  </div>
+</div>
+
+<!-- ══ SESSION BAR ══ -->
+<div class="sess-bar" id="sessBar"></div>
+
+<!-- ══ SECTION TABS ══ -->
+<div class="sec-tabs">
+  <button class="tab-btn active" data-tab="overview"    onclick="jumpTo('overview')"><span class="tab-icon">⚡</span>Overview</button>
+  <button class="tab-btn"        data-tab="markets"     onclick="jumpTo('markets')"><span class="tab-icon">📈</span>Markets</button>
+  <button class="tab-btn"        data-tab="forex"       onclick="jumpTo('forex')"><span class="tab-icon">💱</span>Forex</button>
+  <button class="tab-btn"        data-tab="commodities" onclick="jumpTo('commodities')"><span class="tab-icon">🏅</span>Commodities</button>
+  <button class="tab-btn"        data-tab="crypto"      onclick="jumpTo('crypto')"><span class="tab-icon">₿</span>Crypto</button>
+  <button class="tab-btn"        data-tab="calendar"    onclick="jumpTo('calendar')"><span class="tab-icon">📅</span>Calendar</button>
+  <div class="tabs-div"></div>
+  <div class="tabs-right">
+    <div class="utc-clock" id="utcClock">--:--:-- UTC</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 · OVERVIEW
+  ══════════════════════════════════════════ -->
+  <section class="page-section" id="overview">
+
+    <div class="s-hdr">
+      <span class="s-hdr-icon">⚡</span>
+      <div class="s-hdr-text">
+        <div class="s-hdr-title">Command Center</div>
+        <div class="s-hdr-sub">Global snapshot · Live sessions · Sentiment · Crypto intelligence</div>
+      </div>
+      <div class="s-hdr-badges"><span class="badge b-live">Live</span></div>
     </div>
 
-    <!-- Widgets Grid -->
-    <div class="widgets-grid">
-      
-      <!-- Economic Calendar -->
-      <div class="widget-card">
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              📅 Economic Calendar
-              <span class="feature-tag">High Impact</span>
-            </div>
-            <div class="widget-subtitle">Major economic events and central bank announcements</div>
-          </div>
-          <span class="widget-badge">Live</span>
-        </div>
-        <div class="tradingview-widget-container calendar-widget">
+    <!-- Hero Stats -->
+    <div class="g5 mb">
+
+      <div class="hero-card">
+        <div class="hero-label">📈 S&P 500</div>
+        <div class="tradingview-widget-container" style="height:88px;min-height:unset;">
           <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-          {
-            "colorTheme": "dark",
-            "isTransparent": false,
-            "width": "100%",
-            "height": "100%",
-            "locale": "en",
-            "importanceFilter": "0,1",
-            "countryFilter": "us,eu,gb,jp,cn,au"
-          }
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"OANDA:SPX500USD","width":"100%","height":"88","isTransparent":true,"colorTheme":"dark","locale":"en"}
           </script>
         </div>
       </div>
 
-      <!-- Market Overview -->
-      <div class="widget-card">
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              🌐 Market Overview
-              <span class="feature-tag">Multi-Asset</span>
-            </div>
-            <div class="widget-subtitle">Global indices, commodities, forex, and crypto</div>
-          </div>
-          <span class="widget-badge">Live</span>
+      <div class="hero-card">
+        <div class="hero-label">💻 Nasdaq 100</div>
+        <div class="tradingview-widget-container" style="height:88px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"OANDA:NAS100USD","width":"100%","height":"88","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
         </div>
-        <div class="tradingview-widget-container">
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">💵 Dollar Index</div>
+        <div class="tradingview-widget-container" style="height:88px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"TVC:DXY","width":"100%","height":"88","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">🥇 Gold</div>
+        <div class="tradingview-widget-container" style="height:88px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"OANDA:XAUUSD","width":"100%","height":"88","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">📊 US 10Y Yield</div>
+        <div class="tradingview-widget-container" style="height:88px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"TVC:US10Y","width":"100%","height":"88","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sessions · Sentiment · Crypto -->
+    <div class="g3">
+
+      <div class="panel">
+        <div class="panel-hdr">
+          <div><div class="p-title">🌐 Market Sessions</div><div class="p-sub">Live exchange hours</div></div>
+          <span class="badge b-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="sess-list" id="sessPanel"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr">
+          <div><div class="p-title">🧠 Market Sentiment</div><div class="p-sub">Fear &amp; Greed · Alternative.me</div></div>
+          <span class="badge b-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="fg-wrap">
+            <div class="fg-gauge">
+              <svg viewBox="0 0 180 100">
+                <defs>
+                  <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stop-color="#ef4444"/>
+                    <stop offset="25%"  stop-color="#f97316"/>
+                    <stop offset="50%"  stop-color="#eab308"/>
+                    <stop offset="75%"  stop-color="#84cc16"/>
+                    <stop offset="100%" stop-color="#10b981"/>
+                  </linearGradient>
+                </defs>
+                <path d="M 14 90 A 76 76 0 0 1 166 90" fill="none" stroke="rgba(100,116,139,0.1)" stroke-width="13" stroke-linecap="round"/>
+                <path id="fgArc" d="M 14 90 A 76 76 0 0 1 166 90" fill="none" stroke="url(#arcGrad)" stroke-width="13" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239"/>
+                <text x="8"   y="100" fill="#ef4444" font-size="7.5" font-weight="700" font-family="sans-serif">FEAR</text>
+                <text x="143" y="100" fill="#10b981" font-size="7.5" font-weight="700" font-family="sans-serif">GREED</text>
+                <g id="fgNeedle" style="transform-origin:90px 90px;transform:rotate(-90deg);transition:transform 1.5s cubic-bezier(.34,1.56,.64,1);">
+                  <line x1="90" y1="90" x2="90" y2="23" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+                  <circle cx="90" cy="90" r="4.5" fill="white" opacity="0.9"/>
+                  <circle cx="90" cy="90" r="2" fill="#05050a"/>
+                </g>
+              </svg>
+              <div class="fg-score-pos">
+                <div class="fg-num" id="fgNum" style="color:#eab308">--</div>
+              </div>
+            </div>
+            <div class="fg-lbl" id="fgLbl" style="color:#eab308">Loading...</div>
+            <div class="fg-bands">
+              <div class="fg-band" id="fgb0" style="background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.22);color:#ef4444;">Extreme<br>Fear</div>
+              <div class="fg-band" id="fgb1" style="background:rgba(249,115,22,0.07);border-color:rgba(249,115,22,0.22);color:#f97316;">Fear</div>
+              <div class="fg-band" id="fgb2" style="background:rgba(234,179,8,0.07);border-color:rgba(234,179,8,0.22);color:#eab308;">Neutral</div>
+              <div class="fg-band" id="fgb3" style="background:rgba(132,204,22,0.07);border-color:rgba(132,204,22,0.22);color:#84cc16;">Greed</div>
+              <div class="fg-band" id="fgb4" style="background:rgba(16,185,129,0.07);border-color:rgba(16,185,129,0.22);color:#10b981;">Extreme<br>Greed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr">
+          <div><div class="p-title">₿ Crypto Intelligence</div><div class="p-sub">Global crypto market · CoinGecko</div></div>
+          <span class="badge b-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="cg2">
+            <div class="c-metric">
+              <div class="cm-lbl">BTC Price</div>
+              <div class="cm-val shimmer" id="btcP" style="min-height:1rem;width:80px;">&nbsp;</div>
+              <div class="cm-chg" id="btcC"></div>
+            </div>
+            <div class="c-metric">
+              <div class="cm-lbl">ETH Price</div>
+              <div class="cm-val shimmer" id="ethP" style="min-height:1rem;width:80px;">&nbsp;</div>
+              <div class="cm-chg" id="ethC"></div>
+            </div>
+            <div class="c-metric">
+              <div class="cm-lbl">Total Mkt Cap</div>
+              <div class="cm-val shimmer" id="mktC" style="min-height:1rem;width:60px;">&nbsp;</div>
+              <div class="cm-chg" id="mktCC"></div>
+            </div>
+            <div class="c-metric">
+              <div class="cm-lbl">24H Volume</div>
+              <div class="cm-val shimmer" id="vol" style="min-height:1rem;width:60px;">&nbsp;</div>
+              <div class="cm-chg" style="color:var(--text-dim)">Global crypto</div>
+            </div>
+          </div>
+          <div class="dom-block">
+            <div class="dom-row">
+              <div class="dom-lbl"><span>BTC Dominance</span><span class="dom-val" id="btcD" style="color:var(--gold)">--%</span></div>
+              <div class="dom-track"><div class="dom-fill" id="btcDB" style="width:0%;background:linear-gradient(90deg,#d97706,#f59e0b);"></div></div>
+            </div>
+            <div class="dom-row">
+              <div class="dom-lbl"><span>ETH Dominance</span><span class="dom-val" id="ethD" style="color:var(--purple-light)">--%</span></div>
+              <div class="dom-track"><div class="dom-fill" id="ethDB" style="width:0%;background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 · MARKETS
+  ══════════════════════════════════════════ -->
+  <section class="page-section" id="markets">
+
+    <div class="s-hdr">
+      <span class="s-hdr-icon">📈</span>
+      <div class="s-hdr-text">
+        <div class="s-hdr-title">Equities &amp; Indices</div>
+        <div class="s-hdr-sub">Advanced chart · Multi-asset overview · Sector heatmap</div>
+      </div>
+      <div class="s-hdr-badges"><span class="badge b-live">Live</span></div>
+    </div>
+
+    <!-- Advanced Chart -->
+    <div class="tv-wrap mb">
+      <div class="tv-hdr">
+        <div class="p-title">📊 Advanced Chart</div>
+        <span class="badge b-live">Live</span>
+      </div>
+      <div style="height:520px;">
+        <div class="tradingview-widget-container" style="height:100%;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+          {
+            "autosize": true,
+            "symbol": "OANDA:SPX500USD",
+            "interval": "D",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "gridColor": "rgba(100,116,139,0.06)",
+            "hide_top_toolbar": false,
+            "hide_legend": false,
+            "save_image": false,
+            "calendar": false,
+            "studies": ["STD;RSI@tv-basicstudies","Volume@tv-basicstudies"],
+            "support_host": "https://www.tradingview.com"
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+
+    <!-- Market Overview -->
+    <div class="tv-wrap mb">
+      <div class="tv-hdr">
+        <div class="p-title">🌐 Global Asset Classes</div>
+        <span class="badge b-live">Live</span>
+      </div>
+      <div style="height:560px;">
+        <div class="tradingview-widget-container" style="height:100%;">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
           {
-            "colorTheme": "dark",
-            "dateRange": "1D",
-            "showChart": true,
-            "locale": "en",
-            "width": "100%",
-            "height": "100%",
-            "largeChartUrl": "",
-            "isTransparent": false,
-            "showSymbolLogo": true,
-            "showFloatingTooltip": false,
-            "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
-            "plotLineColorFalling": "rgba(41, 98, 255, 1)",
-            "gridLineColor": "rgba(42, 46, 57, 0)",
-            "scaleFontColor": "rgba(134, 137, 147, 1)",
-            "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
-            "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
-            "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
-            "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
-            "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
-            "tabs": [
-              {
-                "title": "Indices",
-                "symbols": [
-                  {"s": "OANDA:SPX500USD", "d": "S&P 500"},
-                  {"s": "OANDA:NAS100USD", "d": "Nasdaq 100"},
-                  {"s": "OANDA:US30USD", "d": "Dow 30"},
-                  {"s": "INDEX:FTSE", "d": "FTSE 100"},
-                  {"s": "INDEX:DEU40", "d": "DAX"}
-                ],
-                "originalTitle": "Indices"
-              },
-              {
-                "title": "Commodities",
-                "symbols": [
-                  {"s": "OANDA:XAUUSD", "d": "Gold"},
-                  {"s": "OANDA:XAGUSD", "d": "Silver"},
-                  {"s": "TVC:USOIL", "d": "Crude Oil"},
-                  {"s": "OANDA:NATGASUSD", "d": "Natural Gas"},
-                  {"s": "OANDA:XCUUSD", "d": "Copper"}
-                ],
-                "originalTitle": "Commodities"
-              },
-              {
-                "title": "Forex",
-                "symbols": [
-                  {"s": "FX:EURUSD", "d": "EUR/USD"},
-                  {"s": "FX:GBPUSD", "d": "GBP/USD"},
-                  {"s": "FX:USDJPY", "d": "USD/JPY"},
-                  {"s": "FX:AUDUSD", "d": "AUD/USD"},
-                  {"s": "FX:USDCAD", "d": "USD/CAD"}
-                ],
-                "originalTitle": "Forex"
-              },
-              {
-                "title": "Crypto",
-                "symbols": [
-                  {"s": "BINANCE:BTCUSDT", "d": "Bitcoin"},
-                  {"s": "BINANCE:ETHUSDT", "d": "Ethereum"},
-                  {"s": "BINANCE:SOLUSDT", "d": "Solana"},
-                  {"s": "BINANCE:BNBUSDT", "d": "BNB"},
-                  {"s": "BINANCE:XRPUSDT", "d": "XRP"}
-                ],
-                "originalTitle": "Crypto"
-              }
+            "colorTheme":"dark","dateRange":"1D","showChart":true,"locale":"en",
+            "width":"100%","height":"100%","isTransparent":true,
+            "showSymbolLogo":true,"showFloatingTooltip":true,
+            "plotLineColorGrowing":"rgba(16,185,129,1)","plotLineColorFalling":"rgba(239,68,68,1)",
+            "gridLineColor":"rgba(42,46,57,0.2)","scaleFontColor":"rgba(100,116,139,1)",
+            "belowLineFillColorGrowing":"rgba(16,185,129,0.06)","belowLineFillColorFalling":"rgba(239,68,68,0.06)",
+            "belowLineFillColorGrowingBottom":"rgba(16,185,129,0)","belowLineFillColorFallingBottom":"rgba(239,68,68,0)",
+            "symbolActiveColor":"rgba(147,51,234,0.1)",
+            "tabs":[
+              {"title":"US Indices","symbols":[
+                {"s":"OANDA:SPX500USD","d":"S&P 500"},{"s":"OANDA:NAS100USD","d":"Nasdaq 100"},
+                {"s":"OANDA:US30USD","d":"Dow 30"},{"s":"TVC:RUT","d":"Russell 2000"},{"s":"CBOE:VIX","d":"VIX"}
+              ]},
+              {"title":"World Indices","symbols":[
+                {"s":"INDEX:FTSE","d":"FTSE 100"},{"s":"INDEX:DEU40","d":"DAX"},
+                {"s":"INDEX:NI225","d":"Nikkei 225"},{"s":"INDEX:HSI","d":"Hang Seng"},
+                {"s":"INDEX:CAC40","d":"CAC 40"},{"s":"INDEX:ASX200","d":"ASX 200"}
+              ]},
+              {"title":"Bonds","symbols":[
+                {"s":"TVC:US10Y","d":"US 10Y"},{"s":"TVC:US02Y","d":"US 2Y"},
+                {"s":"TVC:US30Y","d":"US 30Y"},{"s":"TVC:DE10Y","d":"Germany 10Y"},
+                {"s":"TVC:GB10Y","d":"UK 10Y"},{"s":"TVC:JP10Y","d":"Japan 10Y"}
+              ]},
+              {"title":"Commodities","symbols":[
+                {"s":"OANDA:XAUUSD","d":"Gold"},{"s":"OANDA:XAGUSD","d":"Silver"},
+                {"s":"TVC:USOIL","d":"WTI Crude"},{"s":"TVC:UKOIL","d":"Brent Crude"},
+                {"s":"NYMEX:NG1!","d":"Natural Gas"},{"s":"CBOT:ZC1!","d":"Corn"}
+              ]},
+              {"title":"Forex","symbols":[
+                {"s":"FX:EURUSD","d":"EUR/USD"},{"s":"FX:GBPUSD","d":"GBP/USD"},
+                {"s":"FX:USDJPY","d":"USD/JPY"},{"s":"TVC:DXY","d":"Dollar Index"},
+                {"s":"FX:AUDUSD","d":"AUD/USD"},{"s":"FX:USDCAD","d":"USD/CAD"}
+              ]},
+              {"title":"Crypto","symbols":[
+                {"s":"BINANCE:BTCUSDT","d":"Bitcoin"},{"s":"BINANCE:ETHUSDT","d":"Ethereum"},
+                {"s":"BINANCE:SOLUSDT","d":"Solana"},{"s":"BINANCE:BNBUSDT","d":"BNB"},
+                {"s":"BINANCE:XRPUSDT","d":"XRP"},{"s":"BINANCE:AVAXUSDT","d":"Avalanche"}
+              ]}
             ]
           }
           </script>
         </div>
       </div>
+    </div>
 
-      <!-- Forex Heatmap -->
-      <div class="widget-card">
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              🔥 Forex Heatmap
-              <span class="feature-tag">Currency Strength</span>
-            </div>
-            <div class="widget-subtitle">Real-time currency strength visualization</div>
-          </div>
-          <span class="widget-badge">Live</span>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
-          {
-            "width": "100%",
-            "height": "100%",
-            "currencies": [
-              "EUR",
-              "USD",
-              "JPY",
-              "GBP",
-              "CHF",
-              "AUD",
-              "CAD",
-              "NZD"
-            ],
-            "isTransparent": false,
-            "colorTheme": "dark",
-            "locale": "en"
-          }
-          </script>
-        </div>
+    <!-- S&P Heatmap -->
+    <div class="tv-wrap">
+      <div class="tv-hdr">
+        <div class="p-title">📊 S&amp;P 500 Sector Heatmap</div>
+        <span class="badge b-live">Live</span>
       </div>
-
-      <!-- Stock Market Heatmap -->
-      <div class="widget-card">
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              📈 Stock Market Heatmap
-              <span class="feature-tag">S&P 500</span>
-            </div>
-            <div class="widget-subtitle">Sector performance and market cap visualization</div>
-          </div>
-          <span class="widget-badge">Live</span>
-        </div>
-        <div class="tradingview-widget-container">
+      <div style="height:500px;">
+        <div class="tradingview-widget-container" style="height:100%;">
           <div class="tradingview-widget-container__widget"></div>
           <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
           {
-            "exchanges": [],
-            "dataSource": "SPX500",
-            "grouping": "sector",
-            "blockSize": "market_cap_basic",
-            "blockColor": "change",
-            "locale": "en",
-            "symbolUrl": "",
-            "colorTheme": "dark",
-            "hasTopBar": false,
-            "isDataSetEnabled": false,
-            "isZoomEnabled": true,
-            "hasSymbolTooltip": true,
-            "width": "100%",
-            "height": "100%"
+            "exchanges":[],"dataSource":"SPX500","grouping":"sector",
+            "blockSize":"market_cap_basic","blockColor":"change","locale":"en",
+            "colorTheme":"dark","hasTopBar":true,"isDataSetEnabled":true,
+            "isZoomEnabled":true,"hasSymbolTooltip":true,"isTransparent":true,
+            "width":"100%","height":"100%"
           }
           </script>
         </div>
       </div>
+    </div>
 
-      <!-- Crypto Screener -->
-      <div class="widget-card">
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              ₿ Crypto Screener
-              <span class="feature-tag">Top 100</span>
-            </div>
-            <div class="widget-subtitle">Top cryptocurrencies performance and metrics</div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 · FOREX
+  ══════════════════════════════════════════ -->
+  <section class="page-section" id="forex">
+
+    <div class="s-hdr">
+      <span class="s-hdr-icon">💱</span>
+      <div class="s-hdr-text">
+        <div class="s-hdr-title">Foreign Exchange</div>
+        <div class="s-hdr-sub">Heatmap · Cross rates matrix · Currency strength · Market news</div>
+      </div>
+      <div class="s-hdr-badges"><span class="badge b-live">Live</span></div>
+    </div>
+
+    <!-- Heatmap + News -->
+    <div class="g2 mb">
+
+      <div class="tv-wrap">
+        <div class="tv-hdr"><div class="p-title">🔥 Forex Heatmap</div><span class="badge b-live">Live</span></div>
+        <div style="height:420px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
+            {"width":"100%","height":"100%","currencies":["EUR","USD","JPY","GBP","CHF","AUD","CAD","NZD","CNY"],"isTransparent":true,"colorTheme":"dark","locale":"en"}
+            </script>
           </div>
-          <span class="widget-badge">Live</span>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
-          {
-            "width": "100%",
-            "height": "100%",
-            "defaultColumn": "overview",
-            "screener_type": "crypto_mkt",
-            "displayCurrency": "USD",
-            "colorTheme": "dark",
-            "locale": "en"
-          }
-          </script>
         </div>
       </div>
 
-      <!-- Forex Cross Rates -->
-      <div class="widget-card">
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              💱 Forex Cross Rates
-              <span class="feature-tag">8 Majors</span>
-            </div>
-            <div class="widget-subtitle">Major currency pairs live exchange rates</div>
+      <div class="tv-wrap">
+        <div class="tv-hdr"><div class="p-title">📰 Market Intelligence Feed</div><span class="badge b-live">Live</span></div>
+        <div style="height:420px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+            {"feedMode":"all_symbols","isTransparent":true,"displayMode":"regular","width":"100%","height":"100%","colorTheme":"dark","locale":"en"}
+            </script>
           </div>
-          <span class="widget-badge">Live</span>
-        </div>
-        <div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-cross-rates.js" async>
-          {
-            "width": "100%",
-            "height": "100%",
-            "currencies": [
-              "EUR",
-              "USD",
-              "JPY",
-              "GBP",
-              "CHF",
-              "AUD",
-              "CAD",
-              "NZD"
-            ],
-            "isTransparent": false,
-            "colorTheme": "dark",
-            "locale": "en"
-          }
-          </script>
         </div>
       </div>
 
     </div>
-  </div>
+
+    <!-- Cross Rates -->
+    <div class="tv-wrap mb">
+      <div class="tv-hdr"><div class="p-title">💱 Cross Rates Matrix</div><span class="badge b-live">Live</span></div>
+      <div style="height:440px;">
+        <div class="tradingview-widget-container" style="height:100%;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-cross-rates.js" async>
+          {"width":"100%","height":"100%","currencies":["EUR","USD","JPY","GBP","CHF","AUD","CAD","NZD"],"isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+    </div>
+
+    <!-- Currency Strength -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div><div class="p-title">📏 Currency Strength Index</div><div class="p-sub">Relative strength · See heatmap above for live cross rates</div></div>
+        <span class="badge b-hi">Indicative</span>
+      </div>
+      <div class="panel-body">
+        <div class="cur-list" id="curPanel"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 · COMMODITIES
+  ══════════════════════════════════════════ -->
+  <section class="page-section" id="commodities">
+
+    <div class="s-hdr">
+      <span class="s-hdr-icon">🏅</span>
+      <div class="s-hdr-text">
+        <div class="s-hdr-title">Commodities &amp; Macro</div>
+        <div class="s-hdr-sub">Key commodity markets · Macro risk indicators</div>
+      </div>
+      <div class="s-hdr-badges"><span class="badge b-live">Live</span></div>
+    </div>
+
+    <!-- Commodity mini charts -->
+    <div class="g-com mb">
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="p-title">🥇 Gold · XAU/USD</div><span class="badge b-live">Live</span></div>
+        <div style="height:120px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"OANDA:XAUUSD","width":"100%","height":"120","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="p-title">🛢️ WTI Crude Oil</div><span class="badge b-live">Live</span></div>
+        <div style="height:120px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"TVC:USOIL","width":"100%","height":"120","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="p-title">🥈 Silver · XAG/USD</div><span class="badge b-live">Live</span></div>
+        <div style="height:120px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"OANDA:XAGUSD","width":"100%","height":"120","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="p-title">🔥 Natural Gas</div><span class="badge b-live">Live</span></div>
+        <div style="height:120px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"NYMEX:NG1!","width":"100%","height":"120","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="p-title">🔴 Copper</div><span class="badge b-live">Live</span></div>
+        <div style="height:120px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"OANDA:XCUUSD","width":"100%","height":"120","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><div class="p-title">⛽ Brent Crude</div><span class="badge b-live">Live</span></div>
+        <div style="height:120px;">
+          <div class="tradingview-widget-container" style="height:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+            {"symbol":"TVC:UKOIL","width":"100%","height":"120","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false}
+            </script>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Macro Risk -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div><div class="p-title">⚡ Macro Risk Monitor</div><div class="p-sub">Qualitative assessment · Updated periodically</div></div>
+        <span class="badge b-ai">Intelligence</span>
+      </div>
+      <div class="panel-body">
+        <div id="riskPanel" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5 · CRYPTO
+  ══════════════════════════════════════════ -->
+  <section class="page-section" id="crypto">
+
+    <div class="s-hdr">
+      <span class="s-hdr-icon">₿</span>
+      <div class="s-hdr-text">
+        <div class="s-hdr-title">Digital Assets</div>
+        <div class="s-hdr-sub">Full crypto market screener · Top 100 assets</div>
+      </div>
+      <div class="s-hdr-badges"><span class="badge b-live">Live</span></div>
+    </div>
+
+    <div class="tv-wrap">
+      <div class="tv-hdr"><div class="p-title">₿ Crypto Market Screener</div><span class="badge b-live">Live</span></div>
+      <div style="height:600px;">
+        <div class="tradingview-widget-container" style="height:100%;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+          {"width":"100%","height":"100%","defaultColumn":"overview","screener_type":"crypto_mkt","displayCurrency":"USD","colorTheme":"dark","isTransparent":true,"locale":"en"}
+          </script>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 6 · CALENDAR
+  ══════════════════════════════════════════ -->
+  <section class="page-section" id="calendar">
+
+    <div class="s-hdr">
+      <span class="s-hdr-icon">📅</span>
+      <div class="s-hdr-text">
+        <div class="s-hdr-title">Economic Intelligence</div>
+        <div class="s-hdr-sub">High-impact events · Central bank decisions · G8 economies</div>
+      </div>
+      <div class="s-hdr-badges">
+        <span class="badge b-hi">High Impact</span>
+        <span class="badge b-live">Live</span>
+      </div>
+    </div>
+
+    <div class="tv-wrap">
+      <div class="tv-hdr"><div class="p-title">📅 Economic Calendar</div><span class="badge b-live">Live</span></div>
+      <div style="height:620px;">
+        <div class="tradingview-widget-container" style="height:100%;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+          {"colorTheme":"dark","isTransparent":true,"width":"100%","height":"100%","locale":"en","importanceFilter":"0,1","countryFilter":"us,eu,gb,jp,cn,au,ca,ch"}
+          </script>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════
+     INTELLIGENCE ENGINE
+══════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // ── MARKET SESSIONS ──
+  const SESSIONS = [
+    { name:'NYSE',  city:'New York',  flag:'🇺🇸', tz:'America/New_York',  open:[9,30],  close:[16,0],  pre:[4,0] },
+    { name:'LSE',   city:'London',    flag:'🇬🇧', tz:'Europe/London',     open:[8,0],   close:[16,30], pre:null  },
+    { name:'XETRA', city:'Frankfurt', flag:'🇩🇪', tz:'Europe/Berlin',     open:[9,0],   close:[17,30], pre:null  },
+    { name:'TSE',   city:'Tokyo',     flag:'🇯🇵', tz:'Asia/Tokyo',        open:[9,0],   close:[15,0],  pre:null  },
+    { name:'HKEX',  city:'Hong Kong', flag:'🇭🇰', tz:'Asia/Hong_Kong',    open:[9,30],  close:[16,0],  pre:null  },
+    { name:'SSE',   city:'Shanghai',  flag:'🇨🇳', tz:'Asia/Shanghai',     open:[9,30],  close:[15,0],  pre:null  },
+    { name:'ASX',   city:'Sydney',    flag:'🇦🇺', tz:'Australia/Sydney',  open:[10,0],  close:[16,0],  pre:null  },
+  ];
+
+  function localAt(tz) { return new Date(new Date().toLocaleString('en-US', { timeZone: tz })); }
+  function mins(h, m)  { return h * 60 + m; }
+
+  function getStatus(s) {
+    const t = localAt(s.tz);
+    const day = t.getDay();
+    const now = mins(t.getHours(), t.getMinutes());
+    if (day === 0 || day === 6) return 'closed';
+    const [oh, om] = s.open;
+    const [ch, cm] = s.close;
+    if (now >= mins(oh, om) && now < mins(ch, cm)) return 'open';
+    if (s.pre) {
+      const [ph, pm] = s.pre;
+      if (now >= mins(ph, pm) && now < mins(oh, om)) return 'pre';
+    }
+    return 'closed';
+  }
+
+  function fmtTime(tz) {
+    return localAt(tz).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+  }
+
+  function renderSessions() {
+    const panel = document.getElementById('sessPanel');
+    const bar   = document.getElementById('sessBar');
+    if (!panel || !bar) return;
+
+    panel.innerHTML = SESSIONS.map(s => {
+      const st  = getStatus(s);
+      const t   = fmtTime(s.tz);
+      const cls = st === 'open' ? 'st-open' : st === 'pre' ? 'st-pre' : 'st-closed';
+      const lbl = st === 'open' ? '● OPEN' : st === 'pre' ? '◐ PRE' : 'CLOSED';
+      return `
+        <div class="sess-row ${st}">
+          <span class="sr-flag">${s.flag}</span>
+          <span class="sr-name">${s.name}</span>
+          <div><div class="sr-city">${s.city}</div><div class="sr-time">${t}</div></div>
+          <span class="sr-status ${cls}">${lbl}</span>
+        </div>`;
+    }).join('');
+
+    bar.innerHTML = SESSIONS.map(s => {
+      const st = getStatus(s);
+      const t  = fmtTime(s.tz);
+      return `
+        <div class="sess-chip ${st}">
+          <div class="sess-dot"></div>
+          ${s.flag} ${s.name} <span style="opacity:.65">${t}</span>
+        </div>`;
+    }).join('');
+  }
+
+  // ── CLOCK ──
+  function tick() {
+    const now = new Date();
+    const el  = document.getElementById('utcClock');
+    if (el) el.textContent = now.toLocaleTimeString('en-US', { timeZone:'UTC', hour12:false }) + ' UTC';
+    renderSessions();
+  }
+
+  // ── SCROLLSPY ──
+  const SECTION_IDS = ['overview','markets','forex','commodities','crypto','calendar'];
+
+  window.addEventListener('scroll', function () {
+    let current = SECTION_IDS[0];
+    SECTION_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= 220) current = id;
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === current);
+    });
+  }, { passive: true });
+
+  window.jumpTo = function (id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // ── FEAR & GREED ──
+  async function fetchFG() {
+    try {
+      const r = await fetch('https://api.alternative.me/fng/?limit=1');
+      const d = await r.json();
+      const v = parseInt(d.data[0].value);
+      const label = d.data[0].value_classification;
+
+      const color = v <= 25 ? '#ef4444' : v <= 45 ? '#f97316' : v <= 55 ? '#eab308' : v <= 75 ? '#84cc16' : '#10b981';
+
+      const numEl = document.getElementById('fgNum');
+      const lblEl = document.getElementById('fgLbl');
+      if (numEl) { numEl.textContent = v; numEl.style.color = color; }
+      if (lblEl) { lblEl.textContent = label.toUpperCase(); lblEl.style.color = color; }
+
+      const needle = document.getElementById('fgNeedle');
+      if (needle) { needle.style.transform = `rotate(${(v / 100) * 180 - 90}deg)`; needle.style.transformOrigin = '90px 90px'; }
+
+      const arc = document.getElementById('fgArc');
+      if (arc) arc.style.strokeDashoffset = 239 - (v / 100) * 239;
+
+      ['fgb0','fgb1','fgb2','fgb3','fgb4'].forEach(id => {
+        const b = document.getElementById(id); if (b) b.classList.remove('active');
+      });
+      const idx = v <= 25 ? 0 : v <= 45 ? 1 : v <= 55 ? 2 : v <= 75 ? 3 : 4;
+      const ab = document.getElementById('fgb' + idx); if (ab) ab.classList.add('active');
+    } catch(e) {
+      const lblEl = document.getElementById('fgLbl');
+      if (lblEl) lblEl.textContent = 'DATA UNAVAILABLE';
+    }
+  }
+
+  // ── CRYPTO ──
+  function bigNum(n) {
+    if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+    if (n >= 1e9)  return '$' + (n/1e9).toFixed(2) + 'B';
+    if (n >= 1e6)  return '$' + (n/1e6).toFixed(1) + 'M';
+    return '$' + n.toLocaleString();
+  }
+
+  function setEl(id, val, cls) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('shimmer');
+    el.textContent = val;
+    if (cls) el.className = cls;
+  }
+
+  async function fetchCrypto() {
+    try {
+      const [gRes, pRes] = await Promise.all([
+        fetch('https://api.coingecko.com/api/v3/global'),
+        fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true')
+      ]);
+      const g = (await gRes.json()).data;
+      const p = await pRes.json();
+      const btc = p.bitcoin, eth = p.ethereum;
+
+      setEl('btcP', '$' + btc.usd.toLocaleString('en-US', {maximumFractionDigits:0}));
+      const bc = btc.usd_24h_change.toFixed(2);
+      setEl('btcC', (bc >= 0 ? '+' : '') + bc + '%', 'cm-chg ' + (bc >= 0 ? 'up' : 'down'));
+
+      setEl('ethP', '$' + eth.usd.toLocaleString('en-US', {maximumFractionDigits:0}));
+      const ec = eth.usd_24h_change.toFixed(2);
+      setEl('ethC', (ec >= 0 ? '+' : '') + ec + '%', 'cm-chg ' + (ec >= 0 ? 'up' : 'down'));
+
+      setEl('mktC', bigNum(g.total_market_cap.usd));
+      const mc = g.market_cap_change_percentage_24h_usd.toFixed(2);
+      setEl('mktCC', (mc >= 0 ? '+' : '') + mc + '% 24h', 'cm-chg ' + (mc >= 0 ? 'up' : 'down'));
+      setEl('vol', bigNum(g.total_volume.usd));
+
+      const bd = g.market_cap_percentage.btc.toFixed(1);
+      const ed = g.market_cap_percentage.eth.toFixed(1);
+      setEl('btcD', bd + '%');
+      setEl('ethD', ed + '%');
+      const bb = document.getElementById('btcDB'); if (bb) bb.style.width = bd + '%';
+      const eb = document.getElementById('ethDB'); if (eb) eb.style.width = ed + '%';
+    } catch(e) { /* silent */ }
+  }
+
+  // ── CURRENCY STRENGTH ──
+  const CURRENCIES = [
+    { code:'USD', flag:'🇺🇸', color:'#60a5fa', val:72 },
+    { code:'EUR', flag:'🇪🇺', color:'#818cf8', val:58 },
+    { code:'GBP', flag:'🇬🇧', color:'#a78bfa', val:52 },
+    { code:'JPY', flag:'🇯🇵', color:'#f472b6', val:42 },
+    { code:'CHF', flag:'🇨🇭', color:'#34d399', val:68 },
+    { code:'AUD', flag:'🇦🇺', color:'#fbbf24', val:45 },
+    { code:'CAD', flag:'🇨🇦', color:'#fb923c', val:48 },
+    { code:'NZD', flag:'🇳🇿', color:'#a3e635', val:40 },
+  ];
+
+  function renderCurrencies() {
+    const el = document.getElementById('curPanel');
+    if (!el) return;
+    const max = Math.max(...CURRENCIES.map(c => c.val));
+    el.innerHTML = CURRENCIES.map(c => {
+      const pct = (c.val / max * 100).toFixed(0);
+      const strong = c.val > 55;
+      return `
+        <div class="cur-row">
+          <div class="cur-code">${c.flag} ${c.code}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c.color};"></div></div>
+          <div class="cur-val ${strong ? 'up' : 'down'}">${strong ? '▲' : '▼'} ${c.val}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── MACRO RISK ──
+  const RISKS = [
+    { label:'Yield Curve',    desc:'2Y-10Y spread',        level:'ELEVATED', dots:3, color:'#f97316' },
+    { label:'Credit Spreads', desc:'HY vs IG bonds',        level:'MODERATE', dots:2, color:'#eab308' },
+    { label:'Geopolitical',   desc:'Global conflict index', level:'HIGH',     dots:4, color:'#ef4444' },
+    { label:'Inflation',      desc:'CPI trend momentum',    level:'MODERATE', dots:2, color:'#eab308' },
+    { label:'USD Liquidity',  desc:'Fed balance sheet',     level:'LOW',      dots:1, color:'#10b981' },
+    { label:'Volatility',     desc:'VIX regime',            level:'MODERATE', dots:2, color:'#eab308' },
+  ];
+
+  function renderRisk() {
+    const el = document.getElementById('riskPanel');
+    if (!el) return;
+    el.innerHTML = RISKS.map(r => `
+      <div class="risk-row">
+        <div><div class="r-lbl">${r.label}</div><div class="r-desc">${r.desc}</div></div>
+        <div class="r-right">
+          <span class="r-lvl" style="color:${r.color}">${r.level}</span>
+          <div class="r-dots">${[1,2,3,4,5].map(d => `<div class="r-dot ${d <= r.dots ? 'on' : 'off'}" style="${d <= r.dots ? 'background:'+r.color : ''}"></div>`).join('')}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── BOOT ──
+  function init() {
+    renderCurrencies();
+    renderRisk();
+    tick();
+    fetchFG();
+    fetchCrypto();
+    setInterval(tick, 1000);
+    setInterval(function () { fetchFG(); fetchCrypto(); }, 60000);
+  }
+
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', init)
+    : init();
+
+}());
+</script>
 </body>
 </html>
