@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Global Intelligence | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png" />
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #05050a;
+      --bg-panel: #0b0b12;
+      --bg-card: #101018;
+      --border: rgba(100, 116, 139, 0.12);
+      --border-hi: rgba(147, 51, 234, 0.35);
+      --gold: #f59e0b;
+      --purple: #9333ea;
+      --purple-light: #a78bfa;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --cyan: #06b6d4;
+      --live: #00ff88;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --text-muted: #2a3441;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      height: calc(48px + env(safe-area-inset-top, 0px));
+      background: rgba(5, 5, 10, 0.97);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .nav-inner {
+      width: 100%;
+      padding: 0 1.5rem 0.75rem;
+      padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      font-size: 0.8125rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--gold), var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 0.875rem; }
+
+    .nav-live {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--live);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      background: var(--live);
+      border-radius: 50%;
+      animation: blink 1.4s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--live); }
+      50% { opacity: 0.4; box-shadow: none; }
+    }
+
+    .nav-btn {
+      padding: 0.4rem 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .nav-btn:hover { border-color: var(--purple); color: var(--purple-light); }
+
+    /* ── TICKER STRIP ── */
+    .ticker-strip {
+      position: fixed;
+      top: calc(48px + env(safe-area-inset-top, 0px));
+      left: 0; right: 0;
+      z-index: 999;
+      height: 40px;
+      background: rgba(5, 5, 10, 0.98);
+      border-bottom: 1px solid rgba(100, 116, 139, 0.08);
+      overflow: hidden;
+    }
+
+    /* ── SESSION BAR ── */
+    .session-bar {
+      position: fixed;
+      top: calc(88px + env(safe-area-inset-top, 0px));
+      left: 0; right: 0;
+      z-index: 998;
+      height: 34px;
+      background: rgba(5, 5, 10, 0.98);
+      border-bottom: 1px solid rgba(100, 116, 139, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .session-bar::-webkit-scrollbar { display: none; }
+
+    .sess-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      font-size: 0.65rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.03em;
+    }
+    .sess-chip.open { background: rgba(16,185,129,0.07); border-color: rgba(16,185,129,0.25); color: var(--green); }
+    .sess-chip.pre  { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.25); color: var(--amber); }
+    .sess-chip.closed { background: rgba(100,116,139,0.04); border-color: rgba(100,116,139,0.08); color: var(--text-muted); }
+    .sess-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .sess-chip.open .sess-dot { animation: blink 1.4s infinite; }
+
+    /* ── MAIN ── */
+    main {
+      padding-top: calc(122px + env(safe-area-inset-top, 0px));
+      padding-bottom: 3rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+      padding-top: 0.75rem;
+    }
+
+    .page-title {
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 20%, var(--gold) 60%, var(--purple-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .page-sub {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 0.25rem;
+    }
+
+    .page-clock {
+      text-align: right;
+    }
+
+    .clock-utc {
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .clock-date {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      font-family: 'SF Mono', monospace;
+      margin-top: 0.125rem;
+    }
+
+    /* ── SECTION HEADER ── */
+    .sec-hdr {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 0.75rem;
+    }
+    .sec-label {
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .sec-line { flex: 1; height: 1px; background: var(--border); }
+    .sec-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .badge-live { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.25); color: var(--live); }
+    .badge-ai   { background: rgba(147,51,234,0.08); border: 1px solid rgba(147,51,234,0.25); color: var(--purple-light); }
+    .badge-hi   { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); color: var(--gold); }
+
+    /* ── SECTION WRAPPER ── */
+    .section { margin-bottom: 1rem; }
+
+    /* ── GRIDS ── */
+    .g3  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem; }
+    .g2  { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.875rem; }
+    .g5  { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.625rem; }
+
+    /* ── HERO STAT CARDS ── */
+    .hero-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.875rem 1rem 0.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 70%, rgba(147,51,234,0.04));
+      pointer-events: none;
+    }
+    .hero-card:hover { border-color: rgba(147,51,234,0.4); box-shadow: 0 0 20px rgba(147,51,234,0.08); }
+    .hero-label {
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 0.375rem;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-hdr {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .panel-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .panel-sub {
+      font-size: 0.625rem;
+      color: var(--text-dim);
+      margin-top: 0.125rem;
+    }
+
+    .panel-body { padding: 0.875rem; }
+
+    /* ── MARKET SESSIONS LIST ── */
+    .sess-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .sess-row {
+      display: grid;
+      grid-template-columns: 1.25rem 2.75rem 1fr auto;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .sess-row.open   { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.14); }
+    .sess-row.pre    { background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.14); }
+    .sess-row.closed { background: rgba(100,116,139,0.02); border-color: rgba(100,116,139,0.06); opacity: 0.55; }
+
+    .sess-flag { font-size: 0.875rem; }
+    .sess-name { font-size: 0.7rem; font-weight: 700; font-family: 'SF Mono', monospace; }
+    .sess-city { font-size: 0.6rem; color: var(--text-dim); }
+    .sess-time-local { font-size: 0.625rem; color: var(--text-dim); font-family: 'SF Mono', monospace; font-variant-numeric: tabular-nums; }
+
+    .sess-status {
+      font-size: 0.575rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .st-open   { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--green); }
+    .st-pre    { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--amber); }
+    .st-closed { background: rgba(100,116,139,0.08); border: 1px solid rgba(100,116,139,0.12); color: var(--text-dim); }
+
+    /* ── FEAR & GREED ── */
+    .fg-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.25rem 0 0.5rem;
+    }
+
+    .fg-gauge {
+      position: relative;
+      width: 180px;
+      height: 100px;
+      margin-bottom: 0.5rem;
+    }
+
+    .fg-gauge svg { width: 180px; height: 100px; }
+
+    .fg-score-wrap {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    .fg-score {
+      font-size: 2.25rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .fg-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+      margin-bottom: 0.875rem;
+    }
+
+    .fg-bands {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.2rem;
+      width: 100%;
+    }
+
+    .fg-band {
+      text-align: center;
+      padding: 0.3rem 0.125rem;
+      border-radius: 4px;
+      font-size: 0.55rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border: 1px solid transparent;
+      line-height: 1.2;
+      transition: all 0.3s;
+    }
+    .fg-band.active { box-shadow: 0 0 8px currentColor; }
+
+    /* ── CRYPTO PANEL ── */
+    .crypto-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+    .c-metric {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.625rem;
+    }
+    .c-metric-label {
+      font-size: 0.575rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+    }
+    .c-metric-val {
+      font-size: 1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      line-height: 1;
+    }
+    .c-metric-chg {
+      font-size: 0.6rem;
+      font-weight: 600;
+      margin-top: 0.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dom-section {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .dom-row { margin-bottom: 0.5rem; }
+    .dom-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.625rem;
+      color: var(--text-dim);
+      margin-bottom: 0.25rem;
+    }
+    .dom-val { font-weight: 700; }
+    .dom-track {
+      height: 5px;
+      background: rgba(100,116,139,0.12);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .dom-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1.2s ease;
+    }
+
+    /* ── CURRENCY STRENGTH ── */
+    .cur-list { display: flex; flex-direction: column; gap: 0.45rem; }
+
+    .cur-row {
+      display: grid;
+      grid-template-columns: 3.25rem 1fr 3rem;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cur-code {
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: 'SF Mono', monospace;
+    }
+    .bar-track {
+      height: 5px;
+      background: rgba(100,116,139,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+    .cur-val {
+      font-size: 0.625rem;
+      font-family: 'SF Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    /* ── COMMODITIES ── */
+    .com-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+    .com-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.625rem;
+      transition: all 0.2s;
+    }
+    .com-card:hover { border-color: rgba(245,158,11,0.3); }
+    .com-icon { font-size: 1rem; margin-bottom: 0.25rem; }
+    .com-name { font-size: 0.575rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 0.2rem; }
+    .com-price { font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .com-unit { font-size: 0.55rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+    /* ── RISK MONITOR ── */
+    .risk-list { display: flex; flex-direction: column; gap: 0.625rem; }
+
+    .risk-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.5rem 0.625rem;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .risk-label { font-size: 0.7rem; font-weight: 700; color: var(--text); }
+    .risk-desc { font-size: 0.6rem; color: var(--text-dim); margin-top: 0.1rem; }
+    .risk-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }
+    .risk-lvl { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .risk-dots { display: flex; gap: 3px; }
+    .risk-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .risk-dot.on { background: currentColor; }
+    .risk-dot.off { background: rgba(100,116,139,0.15); }
+
+    /* ── TV WRAPPER ── */
+    .tv-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .tv-hdr {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .tv-body { }
+
+    .tradingview-widget-container { width: 100%; height: 100%; }
+    .tradingview-widget-container__widget { width: 100%; height: 100%; }
+
+    /* ── SHIMMER ── */
+    .shimmer {
+      background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.025) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── UP / DOWN ── */
+    .up   { color: var(--green); }
+    .down { color: var(--red);   }
+
+    /* ── DIVIDER NOTE ── */
+    .panel-note {
+      font-size: 0.575rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 0.5rem;
+      margin-top: 0.625rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1280px) {
+      .g5 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 1024px) {
+      .g3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      main { padding-left: 0.625rem; padding-right: 0.625rem; }
+      .g5  { grid-template-columns: 1fr 1fr; }
+      .g3, .g2 { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; gap: 0.5rem; }
+      .page-clock { text-align: left; }
+    }
+    @media (max-width: 480px) {
+      .g5 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="dashboard.html" class="nav-logo">⬡ Arcane Archives</a>
+    <div class="nav-right">
+      <div class="nav-live"><div class="live-dot"></div>Live</div>
+      <a href="market-data.html" class="nav-btn">← Market Hub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── TICKER STRIP ── -->
+<div class="ticker-strip">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName":"OANDA:SPX500USD","title":"S&P 500"},
+        {"proName":"OANDA:NAS100USD","title":"Nasdaq 100"},
+        {"proName":"OANDA:US30USD","title":"Dow 30"},
+        {"proName":"TVC:RUT","title":"Russell 2K"},
+        {"proName":"TVC:DXY","title":"DXY"},
+        {"proName":"TVC:US10Y","title":"US 10Y"},
+        {"proName":"CBOE:VIX","title":"VIX"},
+        {"proName":"OANDA:XAUUSD","title":"Gold"},
+        {"proName":"OANDA:XAGUSD","title":"Silver"},
+        {"proName":"TVC:USOIL","title":"WTI Oil"},
+        {"proName":"NYMEX:NG1!","title":"Nat Gas"},
+        {"proName":"BINANCE:BTCUSDT","title":"Bitcoin"},
+        {"proName":"BINANCE:ETHUSDT","title":"Ethereum"},
+        {"proName":"BINANCE:SOLUSDT","title":"Solana"},
+        {"proName":"FX:EURUSD","title":"EUR/USD"},
+        {"proName":"FX:GBPUSD","title":"GBP/USD"},
+        {"proName":"FX:USDJPY","title":"USD/JPY"},
+        {"proName":"INDEX:FTSE","title":"FTSE 100"},
+        {"proName":"INDEX:DEU40","title":"DAX"},
+        {"proName":"INDEX:NI225","title":"Nikkei 225"}
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": true,
+      "displayMode": "compact",
+      "colorTheme": "dark",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</div>
+
+<!-- ── SESSION BAR ── -->
+<div class="session-bar" id="sessionBar"><!-- JS --></div>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Global Intelligence</h1>
+      <p class="page-sub">Real-time markets · Macro signals · Global risk monitoring</p>
+    </div>
+    <div class="page-clock">
+      <div class="clock-utc" id="utcClock">--:--:-- UTC</div>
+      <div class="clock-date" id="utcDate">--- -- ---- </div>
+    </div>
+  </div>
+
+  <!-- ── HERO STATS ── -->
+  <div class="section">
+    <div class="sec-hdr">
+      <span class="sec-label">Key Macro</span>
+      <div class="sec-line"></div>
+      <span class="sec-badge badge-live">Live</span>
+    </div>
+    <div class="g5">
+
+      <div class="hero-card">
+        <div class="hero-label">📈 S&P 500</div>
+        <div class="tradingview-widget-container" style="height:90px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"OANDA:SPX500USD","width":"100%","height":"90","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">💻 Nasdaq 100</div>
+        <div class="tradingview-widget-container" style="height:90px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"OANDA:NAS100USD","width":"100%","height":"90","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">💵 Dollar Index</div>
+        <div class="tradingview-widget-container" style="height:90px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"TVC:DXY","width":"100%","height":"90","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">🥇 Gold</div>
+        <div class="tradingview-widget-container" style="height:90px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"OANDA:XAUUSD","width":"100%","height":"90","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-label">📊 US 10Y Yield</div>
+        <div class="tradingview-widget-container" style="height:90px;min-height:unset;">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+          {"symbol":"TVC:US10Y","width":"100%","height":"90","isTransparent":true,"colorTheme":"dark","locale":"en"}
+          </script>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ROW 1: Sessions | F&G | Crypto ── -->
+  <div class="section">
+    <div class="g3">
+
+      <!-- MARKET SESSIONS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">🌐 Market Sessions</div>
+            <div class="panel-sub">Global exchange hours</div>
+          </div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="sess-list" id="sessionsPanel"><!-- JS --></div>
+        </div>
+      </div>
+
+      <!-- FEAR & GREED -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">🧠 Market Sentiment</div>
+            <div class="panel-sub">Fear & Greed Index</div>
+          </div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="fg-wrap">
+            <div class="fg-gauge">
+              <svg viewBox="0 0 180 100">
+                <defs>
+                  <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stop-color="#ef4444"/>
+                    <stop offset="25%"  stop-color="#f97316"/>
+                    <stop offset="50%"  stop-color="#eab308"/>
+                    <stop offset="75%"  stop-color="#84cc16"/>
+                    <stop offset="100%" stop-color="#10b981"/>
+                  </linearGradient>
+                </defs>
+                <!-- Track -->
+                <path d="M 14 90 A 76 76 0 0 1 166 90" fill="none" stroke="rgba(100,116,139,0.12)" stroke-width="14" stroke-linecap="round"/>
+                <!-- Fill arc -->
+                <path id="fgArc" d="M 14 90 A 76 76 0 0 1 166 90" fill="none" stroke="url(#arcGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239"/>
+                <!-- Labels -->
+                <text x="8"   y="100" fill="#ef4444" font-size="8" font-weight="700">FEAR</text>
+                <text x="140" y="100" fill="#10b981" font-size="8" font-weight="700">GREED</text>
+                <!-- Needle -->
+                <g id="fgNeedle" style="transform-origin:90px 90px; transform:rotate(-90deg); transition:transform 1.5s cubic-bezier(.34,1.56,.64,1);">
+                  <line x1="90" y1="90" x2="90" y2="22" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+                  <circle cx="90" cy="90" r="5" fill="white" opacity="0.9"/>
+                  <circle cx="90" cy="90" r="2.5" fill="#05050a"/>
+                </g>
+              </svg>
+              <div class="fg-score-wrap">
+                <div class="fg-score" id="fgScore" style="color:#eab308">--</div>
+              </div>
+            </div>
+            <div class="fg-label" id="fgLabel" style="color:#eab308">Loading...</div>
+            <div class="fg-bands">
+              <div class="fg-band" id="fgb0" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.25);color:#ef4444;">Extreme<br>Fear</div>
+              <div class="fg-band" id="fgb1" style="background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.25);color:#f97316;">Fear</div>
+              <div class="fg-band" id="fgb2" style="background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.25);color:#eab308;">Neutral</div>
+              <div class="fg-band" id="fgb3" style="background:rgba(132,204,22,0.08);border-color:rgba(132,204,22,0.25);color:#84cc16;">Greed</div>
+              <div class="fg-band" id="fgb4" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.25);color:#10b981;">Extreme<br>Greed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRYPTO INTELLIGENCE -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">₿ Crypto Intelligence</div>
+            <div class="panel-sub">Global crypto market data</div>
+          </div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="crypto-grid2">
+            <div class="c-metric">
+              <div class="c-metric-label">BTC Price</div>
+              <div class="c-metric-val shimmer" id="btcPrice" style="min-height:1.25rem;width:80px;">&nbsp;</div>
+              <div class="c-metric-chg" id="btcChg"></div>
+            </div>
+            <div class="c-metric">
+              <div class="c-metric-label">ETH Price</div>
+              <div class="c-metric-val shimmer" id="ethPrice" style="min-height:1.25rem;width:80px;">&nbsp;</div>
+              <div class="c-metric-chg" id="ethChg"></div>
+            </div>
+            <div class="c-metric">
+              <div class="c-metric-label">Total Mkt Cap</div>
+              <div class="c-metric-val shimmer" id="mktCap" style="min-height:1.25rem;width:60px;">&nbsp;</div>
+              <div class="c-metric-chg" id="mktCapChg"></div>
+            </div>
+            <div class="c-metric">
+              <div class="c-metric-label">24H Volume</div>
+              <div class="c-metric-val shimmer" id="vol24h" style="min-height:1.25rem;width:60px;">&nbsp;</div>
+              <div class="c-metric-chg" style="color:var(--text-dim)">Global crypto</div>
+            </div>
+          </div>
+          <div class="dom-section">
+            <div class="dom-row">
+              <div class="dom-label">
+                <span>BTC Dominance</span>
+                <span class="dom-val" id="btcDomPct" style="color:var(--gold)">--%</span>
+              </div>
+              <div class="dom-track">
+                <div class="dom-fill" id="btcDomBar" style="width:0%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div>
+              </div>
+            </div>
+            <div class="dom-row">
+              <div class="dom-label">
+                <span>ETH Dominance</span>
+                <span class="dom-val" id="ethDomPct" style="color:var(--purple-light)">--%</span>
+              </div>
+              <div class="dom-track">
+                <div class="dom-fill" id="ethDomBar" style="width:0%;background:linear-gradient(90deg,#9333ea,#a78bfa);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ROW 2: Full Market Overview ── -->
+  <div class="section">
+    <div class="sec-hdr">
+      <span class="sec-label">Asset Classes</span>
+      <div class="sec-line"></div>
+      <span class="sec-badge badge-live">Live</span>
+    </div>
+    <div class="tv-panel">
+      <div class="tv-hdr">
+        <div class="panel-title">🌐 Global Market Overview</div>
+        <span class="sec-badge badge-live">Live</span>
+      </div>
+      <div style="height:580px;">
+        <div class="tradingview-widget-container" style="height:100%">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+          {
+            "colorTheme": "dark",
+            "dateRange": "1D",
+            "showChart": true,
+            "locale": "en",
+            "width": "100%",
+            "height": "100%",
+            "isTransparent": true,
+            "showSymbolLogo": true,
+            "showFloatingTooltip": true,
+            "plotLineColorGrowing": "rgba(16,185,129,1)",
+            "plotLineColorFalling": "rgba(239,68,68,1)",
+            "gridLineColor": "rgba(42,46,57,0.25)",
+            "scaleFontColor": "rgba(100,116,139,1)",
+            "belowLineFillColorGrowing": "rgba(16,185,129,0.07)",
+            "belowLineFillColorFalling": "rgba(239,68,68,0.07)",
+            "belowLineFillColorGrowingBottom": "rgba(16,185,129,0)",
+            "belowLineFillColorFallingBottom": "rgba(239,68,68,0)",
+            "symbolActiveColor": "rgba(147,51,234,0.12)",
+            "tabs": [
+              {"title":"US Indices","symbols":[
+                {"s":"OANDA:SPX500USD","d":"S&P 500"},
+                {"s":"OANDA:NAS100USD","d":"Nasdaq 100"},
+                {"s":"OANDA:US30USD","d":"Dow 30"},
+                {"s":"TVC:RUT","d":"Russell 2000"},
+                {"s":"CBOE:VIX","d":"VIX"}
+              ]},
+              {"title":"World Indices","symbols":[
+                {"s":"INDEX:FTSE","d":"FTSE 100"},
+                {"s":"INDEX:DEU40","d":"DAX"},
+                {"s":"INDEX:NI225","d":"Nikkei 225"},
+                {"s":"INDEX:HSI","d":"Hang Seng"},
+                {"s":"INDEX:CAC40","d":"CAC 40"},
+                {"s":"INDEX:ASX200","d":"ASX 200"}
+              ]},
+              {"title":"Commodities","symbols":[
+                {"s":"OANDA:XAUUSD","d":"Gold"},
+                {"s":"OANDA:XAGUSD","d":"Silver"},
+                {"s":"TVC:USOIL","d":"WTI Crude"},
+                {"s":"TVC:UKOIL","d":"Brent Crude"},
+                {"s":"NYMEX:NG1!","d":"Natural Gas"},
+                {"s":"CBOT:ZC1!","d":"Corn"}
+              ]},
+              {"title":"Forex","symbols":[
+                {"s":"FX:EURUSD","d":"EUR/USD"},
+                {"s":"FX:GBPUSD","d":"GBP/USD"},
+                {"s":"FX:USDJPY","d":"USD/JPY"},
+                {"s":"TVC:DXY","d":"Dollar Index"},
+                {"s":"FX:AUDUSD","d":"AUD/USD"},
+                {"s":"FX:USDCAD","d":"USD/CAD"}
+              ]},
+              {"title":"Crypto","symbols":[
+                {"s":"BINANCE:BTCUSDT","d":"Bitcoin"},
+                {"s":"BINANCE:ETHUSDT","d":"Ethereum"},
+                {"s":"BINANCE:SOLUSDT","d":"Solana"},
+                {"s":"BINANCE:BNBUSDT","d":"BNB"},
+                {"s":"BINANCE:XRPUSDT","d":"XRP"},
+                {"s":"BINANCE:AVAXUSDT","d":"Avalanche"}
+              ]},
+              {"title":"Bonds","symbols":[
+                {"s":"TVC:US10Y","d":"US 10Y"},
+                {"s":"TVC:US02Y","d":"US 2Y"},
+                {"s":"TVC:US30Y","d":"US 30Y"},
+                {"s":"TVC:DE10Y","d":"Germany 10Y"},
+                {"s":"TVC:GB10Y","d":"UK 10Y"},
+                {"s":"TVC:JP10Y","d":"Japan 10Y"}
+              ]}
+            ]
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 3: Currency | Commodities | Risk ── -->
+  <div class="section">
+    <div class="g3">
+
+      <!-- CURRENCY STRENGTH -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">💱 Currency Strength</div>
+            <div class="panel-sub">Relative strength vs basket</div>
+          </div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="cur-list" id="curPanel"><!-- JS --></div>
+          <p class="panel-note">Relative index — see Forex Heatmap for live cross rates</p>
+        </div>
+      </div>
+
+      <!-- COMMODITIES -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">🏅 Commodities Pulse</div>
+            <div class="panel-sub">Key commodity markets</div>
+          </div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div class="panel-body">
+          <div class="com-grid">
+
+            <div class="com-card">
+              <div class="com-icon">🥇</div>
+              <div class="com-name">Gold</div>
+              <div style="height:50px;min-height:unset;">
+                <div class="tradingview-widget-container" style="height:50px;min-height:unset;">
+                  <div class="tradingview-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                  {"symbol":"OANDA:XAUUSD","width":"100%","height":"50","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false,"largeChartUrl":""}
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="com-card">
+              <div class="com-icon">🛢️</div>
+              <div class="com-name">WTI Crude</div>
+              <div style="height:50px;min-height:unset;">
+                <div class="tradingview-widget-container" style="height:50px;min-height:unset;">
+                  <div class="tradingview-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                  {"symbol":"TVC:USOIL","width":"100%","height":"50","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false,"largeChartUrl":""}
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="com-card">
+              <div class="com-icon">🥈</div>
+              <div class="com-name">Silver</div>
+              <div style="height:50px;min-height:unset;">
+                <div class="tradingview-widget-container" style="height:50px;min-height:unset;">
+                  <div class="tradingview-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                  {"symbol":"OANDA:XAGUSD","width":"100%","height":"50","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false,"largeChartUrl":""}
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="com-card">
+              <div class="com-icon">🔥</div>
+              <div class="com-name">Natural Gas</div>
+              <div style="height:50px;min-height:unset;">
+                <div class="tradingview-widget-container" style="height:50px;min-height:unset;">
+                  <div class="tradingview-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                  {"symbol":"NYMEX:NG1!","width":"100%","height":"50","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false,"largeChartUrl":""}
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="com-card">
+              <div class="com-icon">🔴</div>
+              <div class="com-name">Copper</div>
+              <div style="height:50px;min-height:unset;">
+                <div class="tradingview-widget-container" style="height:50px;min-height:unset;">
+                  <div class="tradingview-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                  {"symbol":"OANDA:XCUUSD","width":"100%","height":"50","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false,"largeChartUrl":""}
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="com-card">
+              <div class="com-icon">⛽</div>
+              <div class="com-name">Brent Crude</div>
+              <div style="height:50px;min-height:unset;">
+                <div class="tradingview-widget-container" style="height:50px;min-height:unset;">
+                  <div class="tradingview-widget-container__widget"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                  {"symbol":"TVC:UKOIL","width":"100%","height":"50","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":false,"largeChartUrl":""}
+                  </script>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- MACRO RISK MONITOR -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div>
+            <div class="panel-title">⚡ Macro Risk Monitor</div>
+            <div class="panel-sub">Key risk indicators</div>
+          </div>
+          <span class="sec-badge badge-ai">AI</span>
+        </div>
+        <div class="panel-body">
+          <div class="risk-list" id="riskPanel"><!-- JS --></div>
+          <p class="panel-note">Qualitative assessment · Updated periodically</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ROW 4: S&P 500 Heatmap ── -->
+  <div class="section">
+    <div class="sec-hdr">
+      <span class="sec-label">Equity Intelligence</span>
+      <div class="sec-line"></div>
+      <span class="sec-badge badge-live">S&P 500 Sectors</span>
+    </div>
+    <div class="tv-panel">
+      <div class="tv-hdr">
+        <div class="panel-title">📊 S&P 500 Sector Heatmap</div>
+        <span class="sec-badge badge-live">Live</span>
+      </div>
+      <div style="height:500px;">
+        <div class="tradingview-widget-container" style="height:100%">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+          {
+            "exchanges": [],
+            "dataSource": "SPX500",
+            "grouping": "sector",
+            "blockSize": "market_cap_basic",
+            "blockColor": "change",
+            "locale": "en",
+            "colorTheme": "dark",
+            "hasTopBar": true,
+            "isDataSetEnabled": true,
+            "isZoomEnabled": true,
+            "hasSymbolTooltip": true,
+            "isTransparent": true,
+            "width": "100%",
+            "height": "100%"
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 5: Forex Heatmap + Market News ── -->
+  <div class="section">
+    <div class="g2">
+
+      <div class="tv-panel">
+        <div class="tv-hdr">
+          <div class="panel-title">🔥 Forex Heatmap</div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div style="height:420px;">
+          <div class="tradingview-widget-container" style="height:100%">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
+            {
+              "width": "100%",
+              "height": "100%",
+              "currencies": ["EUR","USD","JPY","GBP","CHF","AUD","CAD","NZD","CNY"],
+              "isTransparent": true,
+              "colorTheme": "dark",
+              "locale": "en"
+            }
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="tv-panel">
+        <div class="tv-hdr">
+          <div class="panel-title">📰 Market Intelligence Feed</div>
+          <span class="sec-badge badge-live">Live</span>
+        </div>
+        <div style="height:420px;">
+          <div class="tradingview-widget-container" style="height:100%">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+            {
+              "feedMode": "all_symbols",
+              "isTransparent": true,
+              "displayMode": "regular",
+              "width": "100%",
+              "height": "100%",
+              "colorTheme": "dark",
+              "locale": "en"
+            }
+            </script>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ROW 6: Forex Cross Rates ── -->
+  <div class="section">
+    <div class="tv-panel">
+      <div class="tv-hdr">
+        <div class="panel-title">💱 Forex Cross Rates Matrix</div>
+        <span class="sec-badge badge-live">Live</span>
+      </div>
+      <div style="height:440px;">
+        <div class="tradingview-widget-container" style="height:100%">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-cross-rates.js" async>
+          {
+            "width": "100%",
+            "height": "100%",
+            "currencies": ["EUR","USD","JPY","GBP","CHF","AUD","CAD","NZD"],
+            "isTransparent": true,
+            "colorTheme": "dark",
+            "locale": "en"
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 7: Economic Calendar ── -->
+  <div class="section">
+    <div class="sec-hdr">
+      <span class="sec-label">Economic Intelligence</span>
+      <div class="sec-line"></div>
+      <span class="sec-badge badge-hi">High Impact</span>
+    </div>
+    <div class="tv-panel">
+      <div class="tv-hdr">
+        <div class="panel-title">📅 Economic Calendar</div>
+        <span class="sec-badge badge-live">Live</span>
+      </div>
+      <div style="height:580px;">
+        <div class="tradingview-widget-container" style="height:100%">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+          {
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "width": "100%",
+            "height": "100%",
+            "locale": "en",
+            "importanceFilter": "0,1",
+            "countryFilter": "us,eu,gb,jp,cn,au,ca,ch"
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 8: Crypto Screener ── -->
+  <div class="section">
+    <div class="sec-hdr">
+      <span class="sec-label">Crypto Screener</span>
+      <div class="sec-line"></div>
+      <span class="sec-badge badge-live">Top 100</span>
+    </div>
+    <div class="tv-panel">
+      <div class="tv-hdr">
+        <div class="panel-title">₿ Crypto Market Screener</div>
+        <span class="sec-badge badge-live">Live</span>
+      </div>
+      <div style="height:580px;">
+        <div class="tradingview-widget-container" style="height:100%">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+          {
+            "width": "100%",
+            "height": "100%",
+            "defaultColumn": "overview",
+            "screener_type": "crypto_mkt",
+            "displayCurrency": "USD",
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "locale": "en"
+          }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ================================================================
+//  GLOBAL INTELLIGENCE ENGINE
+// ================================================================
+
+// ── Market Sessions ──
+const SESSIONS = [
+  { name:'NYSE',  city:'New York',   flag:'🇺🇸', tz:'America/New_York',   open:[9,30],  close:[16,0],  pre:[4,0]  },
+  { name:'LSE',   city:'London',     flag:'🇬🇧', tz:'Europe/London',      open:[8,0],   close:[16,30], pre:null   },
+  { name:'XETRA', city:'Frankfurt',  flag:'🇩🇪', tz:'Europe/Berlin',      open:[9,0],   close:[17,30], pre:null   },
+  { name:'TSE',   city:'Tokyo',      flag:'🇯🇵', tz:'Asia/Tokyo',         open:[9,0],   close:[15,0],  pre:null   },
+  { name:'HKEX',  city:'Hong Kong',  flag:'🇭🇰', tz:'Asia/Hong_Kong',     open:[9,30],  close:[16,0],  pre:null   },
+  { name:'SSE',   city:'Shanghai',   flag:'🇨🇳', tz:'Asia/Shanghai',      open:[9,30],  close:[15,0],  pre:null   },
+  { name:'ASX',   city:'Sydney',     flag:'🇦🇺', tz:'Australia/Sydney',   open:[10,0],  close:[16,0],  pre:null   },
+];
+
+function localTime(tz) {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+}
+
+function toMins(h, m) { return h * 60 + m; }
+
+function sessionStatus(s) {
+  const t = localTime(s.tz);
+  const day = t.getDay();
+  const mins = toMins(t.getHours(), t.getMinutes());
+  if (day === 0 || day === 6) return 'closed';
+  const [oh, om] = s.open;
+  const [ch, cm] = s.close;
+  if (mins >= toMins(oh, om) && mins < toMins(ch, cm)) return 'open';
+  if (s.pre) {
+    const [ph, pm] = s.pre;
+    if (mins >= toMins(ph, pm) && mins < toMins(oh, om)) return 'pre';
+  }
+  return 'closed';
+}
+
+function formatTime(tz) {
+  return localTime(tz).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+}
+
+function renderSessions() {
+  const panel = document.getElementById('sessionsPanel');
+  const bar   = document.getElementById('sessionBar');
+
+  panel.innerHTML = SESSIONS.map(s => {
+    const st = sessionStatus(s);
+    const t  = formatTime(s.tz);
+    const stLabel = st === 'open' ? '● OPEN' : st === 'pre' ? '◐ PRE' : 'CLOSED';
+    const stClass = st === 'open' ? 'st-open' : st === 'pre' ? 'st-pre' : 'st-closed';
+    return `
+      <div class="sess-row ${st}">
+        <span class="sess-flag">${s.flag}</span>
+        <span class="sess-name">${s.name}</span>
+        <div>
+          <div class="sess-city">${s.city}</div>
+          <div class="sess-time-local">${t}</div>
+        </div>
+        <span class="sess-status ${stClass}">${stLabel}</span>
+      </div>`;
+  }).join('');
+
+  bar.innerHTML = SESSIONS.map(s => {
+    const st = sessionStatus(s);
+    const t  = formatTime(s.tz);
+    return `
+      <div class="sess-chip ${st}">
+        <div class="sess-dot"></div>
+        ${s.flag} ${s.name} <span style="opacity:.7">${t}</span>
+      </div>`;
+  }).join('');
+}
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('utcClock').textContent =
+    now.toLocaleTimeString('en-US', { timeZone:'UTC', hour12:false }) + ' UTC';
+  document.getElementById('utcDate').textContent =
+    now.toLocaleDateString('en-US', { timeZone:'UTC', weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+  renderSessions();
+}
+
+// ── Fear & Greed ──
+async function fetchFG() {
+  try {
+    const r = await fetch('https://api.alternative.me/fng/?limit=1');
+    const d = await r.json();
+    const v = parseInt(d.data[0].value);
+    const label = d.data[0].value_classification;
+
+    let color;
+    if      (v <= 25) color = '#ef4444';
+    else if (v <= 45) color = '#f97316';
+    else if (v <= 55) color = '#eab308';
+    else if (v <= 75) color = '#84cc16';
+    else              color = '#10b981';
+
+    document.getElementById('fgScore').textContent = v;
+    document.getElementById('fgScore').style.color = color;
+    document.getElementById('fgLabel').textContent = label.toUpperCase();
+    document.getElementById('fgLabel').style.color = color;
+
+    // Needle: -90deg = 0, +90deg = 100
+    const angle = (v / 100) * 180 - 90;
+    document.getElementById('fgNeedle').style.transform = `rotate(${angle}deg)`;
+
+    // Arc fill (approx 239px circumference)
+    document.getElementById('fgArc').style.strokeDashoffset = 239 - (v / 100) * 239;
+
+    // Highlight band
+    ['fgb0','fgb1','fgb2','fgb3','fgb4'].forEach(id => document.getElementById(id).classList.remove('active'));
+    const idx = v <= 25 ? 0 : v <= 45 ? 1 : v <= 55 ? 2 : v <= 75 ? 3 : 4;
+    document.getElementById('fgb' + idx).classList.add('active');
+  } catch(e) {
+    document.getElementById('fgLabel').textContent = 'DATA UNAVAILABLE';
+  }
+}
+
+// ── Crypto Data ──
+function fmt(n) {
+  if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+  if (n >= 1e9)  return '$' + (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6)  return '$' + (n/1e6).toFixed(1) + 'M';
+  return '$' + n.toLocaleString();
+}
+
+async function fetchCrypto() {
+  try {
+    const [gRes, pRes] = await Promise.all([
+      fetch('https://api.coingecko.com/api/v3/global'),
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true')
+    ]);
+    const g = (await gRes.json()).data;
+    const p = await pRes.json();
+
+    const btc = p.bitcoin, eth = p.ethereum;
+
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      el.classList.remove('shimmer');
+      el.textContent = val;
+    };
+
+    set('btcPrice', '$' + btc.usd.toLocaleString('en-US', {maximumFractionDigits:0}));
+    const bc = btc.usd_24h_change.toFixed(2);
+    const bcEl = document.getElementById('btcChg');
+    bcEl.textContent = (bc >= 0 ? '+' : '') + bc + '%';
+    bcEl.className = 'c-metric-chg ' + (bc >= 0 ? 'up' : 'down');
+
+    set('ethPrice', '$' + eth.usd.toLocaleString('en-US', {maximumFractionDigits:0}));
+    const ec = eth.usd_24h_change.toFixed(2);
+    const ecEl = document.getElementById('ethChg');
+    ecEl.textContent = (ec >= 0 ? '+' : '') + ec + '%';
+    ecEl.className = 'c-metric-chg ' + (ec >= 0 ? 'up' : 'down');
+
+    set('mktCap', fmt(g.total_market_cap.usd));
+    const mc = g.market_cap_change_percentage_24h_usd.toFixed(2);
+    const mcEl = document.getElementById('mktCapChg');
+    mcEl.textContent = (mc >= 0 ? '+' : '') + mc + '% 24h';
+    mcEl.className = 'c-metric-chg ' + (mc >= 0 ? 'up' : 'down');
+
+    set('vol24h', fmt(g.total_volume.usd));
+
+    const bd = g.market_cap_percentage.btc.toFixed(1);
+    const ed = g.market_cap_percentage.eth.toFixed(1);
+    document.getElementById('btcDomPct').textContent = bd + '%';
+    document.getElementById('ethDomPct').textContent = ed + '%';
+    document.getElementById('btcDomBar').style.width = bd + '%';
+    document.getElementById('ethDomBar').style.width = ed + '%';
+
+  } catch(e) {
+    console.warn('Crypto fetch failed:', e);
+  }
+}
+
+// ── Currency Strength (visual index) ──
+const CURRENCIES = [
+  { code:'USD', flag:'🇺🇸', color:'#60a5fa' },
+  { code:'EUR', flag:'🇪🇺', color:'#818cf8' },
+  { code:'GBP', flag:'🇬🇧', color:'#a78bfa' },
+  { code:'JPY', flag:'🇯🇵', color:'#f472b6' },
+  { code:'CHF', flag:'🇨🇭', color:'#34d399' },
+  { code:'AUD', flag:'🇦🇺', color:'#fbbf24' },
+  { code:'CAD', flag:'🇨🇦', color:'#fb923c' },
+  { code:'NZD', flag:'🇳🇿', color:'#a3e635' },
+];
+
+// Placeholder values — real implementation requires paid FX API
+const STRENGTH_BASE = [72, 58, 52, 42, 68, 45, 48, 40];
+
+function renderCurrencies() {
+  const max = Math.max(...STRENGTH_BASE);
+  document.getElementById('curPanel').innerHTML = CURRENCIES.map((c, i) => {
+    const pct = (STRENGTH_BASE[i] / max * 100).toFixed(0);
+    const strong = STRENGTH_BASE[i] > 55;
+    return `
+      <div class="cur-row">
+        <div class="cur-code">${c.flag} ${c.code}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${c.color};"></div>
+        </div>
+        <div class="cur-val ${strong ? 'up' : 'down'}">${strong ? '▲' : '▼'} ${STRENGTH_BASE[i]}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Macro Risk ──
+const RISKS = [
+  { label:'Yield Curve',   desc:'2Y-10Y spread inversion', level:'ELEVATED', dots:3, color:'#f97316' },
+  { label:'Credit Spreads',desc:'HY vs IG bond spreads',   level:'MODERATE', dots:2, color:'#eab308' },
+  { label:'Geopolitical',  desc:'Global conflict index',   level:'HIGH',     dots:4, color:'#ef4444' },
+  { label:'Inflation',     desc:'CPI trend momentum',      level:'MODERATE', dots:2, color:'#eab308' },
+  { label:'USD Liquidity', desc:'Fed balance sheet · M2',  level:'LOW',      dots:1, color:'#10b981' },
+  { label:'Volatility',    desc:'VIX regime assessment',   level:'MODERATE', dots:2, color:'#eab308' },
+];
+
+function renderRisk() {
+  document.getElementById('riskPanel').innerHTML = RISKS.map(r => `
+    <div class="risk-row">
+      <div>
+        <div class="risk-label">${r.label}</div>
+        <div class="risk-desc">${r.desc}</div>
+      </div>
+      <div class="risk-right">
+        <span class="risk-lvl" style="color:${r.color}">${r.level}</span>
+        <div class="risk-dots">
+          ${[1,2,3,4,5].map(d => `<div class="risk-dot ${d <= r.dots ? 'on' : 'off'}" style="${d <= r.dots ? 'background:'+r.color : ''}"></div>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Init ──
+function init() {
+  renderCurrencies();
+  renderRisk();
+  updateClock();
+  fetchFG();
+  fetchCrypto();
+
+  setInterval(updateClock, 1000);
+  setInterval(() => { fetchFG(); fetchCrypto(); }, 60000);
+}
+
+document.readyState === 'loading'
+  ? document.addEventListener('DOMContentLoaded', init)
+  : init();
+</script>
+</body>
+</html>
