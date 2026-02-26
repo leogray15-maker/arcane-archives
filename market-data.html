@@ -234,7 +234,8 @@
     .geo-wrap{
       border:1px solid var(--border); border-radius:12px;
       overflow:hidden; display:grid;
-      grid-template-columns:1fr 268px;
+      grid-template-columns:1fr 272px;
+      height:580px; /* fixed height — prevents blank space below map */
     }
     .geo-map-col{ position:relative; display:flex; flex-direction:column; }
     .geo-toolbar{
@@ -260,13 +261,45 @@
       background:var(--bg-panel); border-left:1px solid var(--border);
       display:flex; flex-direction:column; overflow:hidden;
     }
-    .geo-side-inner{ overflow-y:auto; flex:1; padding:.75rem; scrollbar-width:thin; scrollbar-color:rgba(100,116,139,.2) transparent; }
-    .geo-side-inner::-webkit-scrollbar{ width:3px; }
-    .geo-side-inner::-webkit-scrollbar-track{ background:transparent; }
-    .geo-side-inner::-webkit-scrollbar-thumb{ background:rgba(100,116,139,.2); border-radius:2px; }
-
+    /* Stats block — always visible at top of sidebar */
+    .geo-stats-wrap{
+      flex-shrink:0; padding:.55rem .6rem .45rem;
+      border-bottom:1px solid var(--border);
+    }
     /* Risk stats row */
-    .geo-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:.375rem; margin-bottom:.75rem; padding-bottom:.75rem; border-bottom:1px solid var(--border); }
+    .geo-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:.3rem; }
+
+    /* Sidebar tabs */
+    .geo-side-tabs{
+      display:flex; flex-shrink:0; overflow-x:auto; scrollbar-width:none;
+      border-bottom:1px solid var(--border); background:rgba(5,5,10,.5);
+    }
+    .geo-side-tabs::-webkit-scrollbar{ display:none; }
+    .geo-side-tab-btn{
+      flex:1; min-width:0; padding:.425rem .2rem;
+      font-size:.475rem; font-weight:700; text-align:center; line-height:1.2;
+      color:var(--text-dim); cursor:pointer;
+      border:none; border-bottom:2px solid transparent;
+      background:transparent; font-family:inherit;
+      text-transform:uppercase; letter-spacing:.04em;
+      white-space:nowrap; transition:all .15s;
+    }
+    .geo-side-tab-btn:hover{ color:var(--text); background:rgba(255,255,255,.02); }
+    .geo-side-tab-btn.stab-active{ color:var(--purple-light); border-bottom-color:var(--purple); background:rgba(147,51,234,.07); }
+
+    /* Scrollable content area */
+    .geo-side-content{
+      flex:1; min-height:0; overflow-y:auto; overflow-x:hidden;
+      padding:.45rem .575rem .75rem;
+      scrollbar-width:thin; scrollbar-color:rgba(100,116,139,.2) transparent;
+    }
+    .geo-side-content::-webkit-scrollbar{ width:3px; }
+    .geo-side-content::-webkit-scrollbar-track{ background:transparent; }
+    .geo-side-content::-webkit-scrollbar-thumb{ background:rgba(100,116,139,.2); border-radius:2px; }
+
+    /* Tab panes — only active is shown */
+    .geo-tab-pane{ display:none; }
+    .geo-tab-pane.stab-active{ display:block; }
     .geo-stat{ background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:.45rem .375rem; text-align:center; }
     .geo-stat-lbl{ font-size:.5rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin-bottom:.2rem; }
     .geo-stat-val{ font-size:1.375rem; font-weight:900; line-height:1; }
@@ -328,8 +361,8 @@
     @media (max-width:1280px){ .g5,.g-com{ grid-template-columns:repeat(3,1fr); } }
     @media (max-width:1024px){
       .g3{ grid-template-columns:1fr 1fr; }
-      .geo-wrap{ grid-template-columns:1fr; }
-      .geo-side{ border-left:none; border-top:1px solid var(--border); max-height:340px; }
+      .geo-wrap{ grid-template-columns:1fr; height:auto; }
+      .geo-side{ border-left:none; border-top:1px solid var(--border); max-height:360px; }
       .geo-stats{ grid-template-columns:repeat(4,1fr); }
     }
 
@@ -405,7 +438,7 @@
         lose their right-side badge to the radius curve.
         FIX: strip overflow+border from parent, give each child its own rounding.
       */
-      .geo-wrap{ overflow:visible; border:none; border-radius:0; }
+      .geo-wrap{ overflow:visible; border:none; border-radius:0; height:auto; }
       .geo-map-col{
         border:1px solid var(--border); border-bottom:none;
         border-radius:12px 12px 0 0; overflow:hidden;
@@ -413,16 +446,14 @@
       .geo-side{
         border:1px solid var(--border); border-top:none;
         border-radius:0 0 12px 12px; overflow:hidden;
-        max-height:420px;
+        max-height:400px;
       }
-      /*
-        padding-right:1rem (16px) and padding-bottom:1.5rem (24px) both exceed
-        the 12px border-radius, so NO content ever enters the corner clip zone.
-      */
-      .geo-side-inner{
+      .geo-stats-wrap{ padding:.45rem .5rem .35rem; }
+      .geo-side-content{
         overflow-y:auto; overflow-x:hidden;
-        padding:.5rem 1rem 1.5rem .5rem;
+        padding:.4rem .5rem 1.5rem;
       }
+      .geo-side-tab-btn{ font-size:.45rem; padding:.38rem .15rem; }
       .geo-event{ padding:.45rem .5rem; }
       .geo-evname{ font-size:.675rem; gap:.375rem; flex-wrap:nowrap; }
       .sev-badge{ flex-shrink:0; white-space:nowrap; }
@@ -692,30 +723,45 @@
 
       <!-- Sidebar -->
       <div class="geo-side">
-        <div class="geo-side-inner">
-          <!-- Risk stats -->
+
+        <!-- Stats always visible -->
+        <div class="geo-stats-wrap">
           <div class="geo-stats">
             <div class="geo-stat"><div class="geo-stat-lbl">Conflicts</div><div class="geo-stat-val" id="gStatConflicts" style="color:#ef4444">18</div></div>
             <div class="geo-stat"><div class="geo-stat-lbl">Hotspots</div><div class="geo-stat-val" id="gStatHotspots"  style="color:#f97316">14</div></div>
             <div class="geo-stat"><div class="geo-stat-lbl">Quakes</div><div class="geo-stat-val"   id="gStatQuakes"    style="color:#facc15">--</div></div>
             <div class="geo-stat"><div class="geo-stat-lbl">Risk</div><div class="geo-stat-val"     id="gStatRisk"      style="color:#ef4444;font-size:.75rem;margin-top:.15rem;line-height:1.1">CRIT</div></div>
           </div>
-
-          <div class="geo-group-title">🔴 Active Conflicts</div>
-          <div id="gListConflicts"></div>
-
-          <div class="geo-group-title">⚡ Geopolitical Hotspots</div>
-          <div id="gListHotspots"></div>
-
-          <div class="geo-group-title">🌍 Live Earthquakes (M5.5+)</div>
-          <div id="gListEarthquakes"><div class="geo-evdesc" style="padding:.25rem 0">Loading quake data…</div></div>
-
-          <div class="geo-group-title">🏕️ Refugee Crises</div>
-          <div id="gListRefugees"></div>
-
-          <div class="geo-group-title">🛢️ Critical Choke Points</div>
-          <div id="gListEnergy"></div>
         </div>
+
+        <!-- Section tabs -->
+        <div class="geo-side-tabs">
+          <button class="geo-side-tab-btn stab-active" data-stab="conflicts" onclick="switchGeoTab('conflicts')">🔴 Conflicts</button>
+          <button class="geo-side-tab-btn" data-stab="hotspots"  onclick="switchGeoTab('hotspots')">⚡ Hotspots</button>
+          <button class="geo-side-tab-btn" data-stab="quakes"    onclick="switchGeoTab('quakes')">🌍 Quakes</button>
+          <button class="geo-side-tab-btn" data-stab="refugees"  onclick="switchGeoTab('refugees')">🏕️ Refugees</button>
+          <button class="geo-side-tab-btn" data-stab="energy"    onclick="switchGeoTab('energy')">🛢️ Energy</button>
+        </div>
+
+        <!-- Scrollable pane per tab -->
+        <div class="geo-side-content">
+          <div class="geo-tab-pane stab-active" id="gPaneConflicts">
+            <div id="gListConflicts"></div>
+          </div>
+          <div class="geo-tab-pane" id="gPaneHotspots">
+            <div id="gListHotspots"></div>
+          </div>
+          <div class="geo-tab-pane" id="gPaneQuakes">
+            <div id="gListEarthquakes"><div class="geo-evdesc" style="padding:.35rem 0">Loading quake data…</div></div>
+          </div>
+          <div class="geo-tab-pane" id="gPaneRefugees">
+            <div id="gListRefugees"></div>
+          </div>
+          <div class="geo-tab-pane" id="gPaneEnergy">
+            <div id="gListEnergy"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -1421,6 +1467,15 @@
   window.flyToGeo=function(lat,lng){
     if(geoMap) geoMap.flyTo([lat,lng],5,{duration:1.2});
     document.getElementById('global').scrollIntoView({behavior:'smooth'});
+  };
+
+  window.switchGeoTab=function(name){
+    document.querySelectorAll('.geo-side-tab-btn').forEach(function(b){ b.classList.remove('stab-active'); });
+    document.querySelectorAll('.geo-tab-pane').forEach(function(p){ p.classList.remove('stab-active'); });
+    var btn=document.querySelector('.geo-side-tab-btn[data-stab="'+name+'"]');
+    var pane=document.getElementById('gPane'+name.charAt(0).toUpperCase()+name.slice(1));
+    if(btn)  btn.classList.add('stab-active');
+    if(pane) pane.classList.add('stab-active');
   };
 
   function sevBadge(sev){
