@@ -393,20 +393,36 @@
       .s-hdr-badges .badge{ font-size:.5rem; }
 
       /* ── Geo map ────────────────────────────────────── */
-      #geoMap{ min-height:300px; }
-      .geo-side{ max-height:360px; }
+      #geoMap{ min-height:320px; }
       .geo-stats{ grid-template-columns:repeat(3,1fr); }
       .geo-toolbar{ padding:.375rem .5rem; gap:.25rem; }
       .geo-tlabel{ display:none; }
       .geo-stat-val{ font-size:1.125rem; }
-      /* Geo sidebar — prevent badge clipping at right edge */
-      .geo-side{ overflow:visible; }
-      .geo-side-inner{
-        padding:.5rem .75rem .5rem .5rem;  /* extra right breathing room */
-        overflow-y:auto;
-        overflow-x:hidden;                 /* stops horizontal bleed */
+      /*
+        ROOT CAUSE: .geo-wrap overflow:hidden + border-radius:12px corner-clips
+        content at the bottom-right zone. Items near the bottom of the sidebar
+        lose their right-side badge to the radius curve.
+        FIX: strip overflow+border from parent, give each child its own rounding.
+      */
+      .geo-wrap{ overflow:visible; border:none; border-radius:0; }
+      .geo-map-col{
+        border:1px solid var(--border); border-bottom:none;
+        border-radius:12px 12px 0 0; overflow:hidden;
       }
-      .geo-event{ padding:.45rem .5rem .45rem .5rem; }
+      .geo-side{
+        border:1px solid var(--border); border-top:none;
+        border-radius:0 0 12px 12px; overflow:hidden;
+        max-height:420px;
+      }
+      /*
+        padding-right:1rem (16px) and padding-bottom:1.5rem (24px) both exceed
+        the 12px border-radius, so NO content ever enters the corner clip zone.
+      */
+      .geo-side-inner{
+        overflow-y:auto; overflow-x:hidden;
+        padding:.5rem 1rem 1.5rem .5rem;
+      }
+      .geo-event{ padding:.45rem .5rem; }
       .geo-evname{ font-size:.675rem; gap:.375rem; flex-wrap:nowrap; }
       .sev-badge{ flex-shrink:0; white-space:nowrap; }
       .geo-evdesc{ font-size:.6rem; }
