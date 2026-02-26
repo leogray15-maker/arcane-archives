@@ -266,7 +266,7 @@
     .geo-side-inner::-webkit-scrollbar-thumb{ background:rgba(100,116,139,.2); border-radius:2px; }
 
     /* Risk stats row */
-    .geo-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:.375rem; margin-bottom:.75rem; padding-bottom:.75rem; border-bottom:1px solid var(--border); }
+    .geo-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:.375rem; margin-bottom:.75rem; padding-bottom:.75rem; border-bottom:1px solid var(--border); }
     .geo-stat{ background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:.45rem .375rem; text-align:center; }
     .geo-stat-lbl{ font-size:.5rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin-bottom:.2rem; }
     .geo-stat-val{ font-size:1.375rem; font-weight:900; line-height:1; }
@@ -290,6 +290,7 @@
     .sev-high{ background:rgba(249,115,22,.18); color:#f97316; }
     .sev-elev{ background:rgba(245,158,11,.18); color:#f59e0b; }
     .sev-low { background:rgba(100,116,139,.18); color:#94a3b8; }
+    .geo-live-ct{ display:inline-block; margin-left:.25rem; font-size:.45rem; font-weight:700; background:rgba(0,255,136,.12); color:var(--live); border-radius:3px; padding:.05rem .25rem; vertical-align:middle; line-height:1.4; }
 
     /* Leaflet popup override */
     .leaflet-popup-content-wrapper{
@@ -329,7 +330,7 @@
       .g3{ grid-template-columns:1fr 1fr; }
       .geo-wrap{ grid-template-columns:1fr; }
       .geo-side{ border-left:none; border-top:1px solid var(--border); max-height:340px; }
-      .geo-stats{ grid-template-columns:repeat(6,1fr); }
+      .geo-stats{ grid-template-columns:repeat(4,1fr); }
     }
 
     /* ══════════════════════ MOBILE ══════════════════════ */
@@ -394,7 +395,7 @@
 
       /* ── Geo map ────────────────────────────────────── */
       #geoMap{ min-height:320px; }
-      .geo-stats{ grid-template-columns:repeat(3,1fr); }
+      .geo-stats{ grid-template-columns:repeat(2,1fr); }
       .geo-toolbar{ padding:.375rem .5rem; gap:.25rem; }
       .geo-tlabel{ display:none; }
       .geo-stat-val{ font-size:1.125rem; }
@@ -674,11 +675,17 @@
       <div class="geo-map-col">
         <div class="geo-toolbar">
           <span class="geo-tlabel">Layers:</span>
-          <button class="geo-btn active" data-layer="conflicts" onclick="toggleGeoLayer('conflicts')">🔴 Conflicts</button>
-          <button class="geo-btn active" data-layer="hotspots"  onclick="toggleGeoLayer('hotspots')">⚡ Hotspots</button>
-          <button class="geo-btn active" data-layer="markets"   onclick="toggleGeoLayer('markets')">🏦 Markets</button>
-          <button class="geo-btn active" data-layer="energy"    onclick="toggleGeoLayer('energy')">🛢️ Energy</button>
-          <button class="geo-btn"        data-layer="nuclear"   onclick="toggleGeoLayer('nuclear')">☢️ Nuclear</button>
+          <button class="geo-btn active" data-layer="conflicts"   onclick="toggleGeoLayer('conflicts')">🔴 Conflicts</button>
+          <button class="geo-btn active" data-layer="hotspots"    onclick="toggleGeoLayer('hotspots')">⚡ Hotspots</button>
+          <button class="geo-btn active" data-layer="markets"     onclick="toggleGeoLayer('markets')">🏦 Markets</button>
+          <button class="geo-btn active" data-layer="energy"      onclick="toggleGeoLayer('energy')">🛢️ Energy</button>
+          <button class="geo-btn"        data-layer="nuclear"     onclick="toggleGeoLayer('nuclear')">☢️ Nuclear</button>
+          <button class="geo-btn"        data-layer="military"    onclick="toggleGeoLayer('military')">🪖 Military</button>
+          <button class="geo-btn"        data-layer="routes"      onclick="toggleGeoLayer('routes')">🚢 Routes</button>
+          <button class="geo-btn"        data-layer="cables"      onclick="toggleGeoLayer('cables')">🔌 Cables</button>
+          <button class="geo-btn"        data-layer="refugees"    onclick="toggleGeoLayer('refugees')">🏕️ Refugees</button>
+          <button class="geo-btn"        data-layer="sanctions"   onclick="toggleGeoLayer('sanctions')">🚫 Sanctions</button>
+          <button class="geo-btn"        data-layer="earthquakes" onclick="toggleGeoLayer('earthquakes')">🌍 Quakes<span id="quakeCount" class="geo-live-ct"></span></button>
         </div>
         <div id="geoMap"></div>
       </div>
@@ -688,9 +695,10 @@
         <div class="geo-side-inner">
           <!-- Risk stats -->
           <div class="geo-stats">
-            <div class="geo-stat"><div class="geo-stat-lbl">Conflicts</div><div class="geo-stat-val" id="gStatConflicts" style="color:#ef4444">9</div></div>
-            <div class="geo-stat"><div class="geo-stat-lbl">Hotspots</div><div class="geo-stat-val" id="gStatHotspots"  style="color:#f97316">7</div></div>
-            <div class="geo-stat"><div class="geo-stat-lbl">Risk</div><div class="geo-stat-val" id="gStatRisk"      style="color:#f59e0b;font-size:.9rem;margin-top:.1rem;">HIGH</div></div>
+            <div class="geo-stat"><div class="geo-stat-lbl">Conflicts</div><div class="geo-stat-val" id="gStatConflicts" style="color:#ef4444">18</div></div>
+            <div class="geo-stat"><div class="geo-stat-lbl">Hotspots</div><div class="geo-stat-val" id="gStatHotspots"  style="color:#f97316">14</div></div>
+            <div class="geo-stat"><div class="geo-stat-lbl">Quakes</div><div class="geo-stat-val"   id="gStatQuakes"    style="color:#facc15">--</div></div>
+            <div class="geo-stat"><div class="geo-stat-lbl">Risk</div><div class="geo-stat-val"     id="gStatRisk"      style="color:#ef4444;font-size:.75rem;margin-top:.15rem;line-height:1.1">CRIT</div></div>
           </div>
 
           <div class="geo-group-title">🔴 Active Conflicts</div>
@@ -698,6 +706,12 @@
 
           <div class="geo-group-title">⚡ Geopolitical Hotspots</div>
           <div id="gListHotspots"></div>
+
+          <div class="geo-group-title">🌍 Live Earthquakes (M5.5+)</div>
+          <div id="gListEarthquakes"><div class="geo-evdesc" style="padding:.25rem 0">Loading quake data…</div></div>
+
+          <div class="geo-group-title">🏕️ Refugee Crises</div>
+          <div id="gListRefugees"></div>
 
           <div class="geo-group-title">🛢️ Critical Choke Points</div>
           <div id="gListEnergy"></div>
@@ -1068,35 +1082,56 @@
 
   // ── GEO MAP ───────────────────────────────────
   var CONFLICTS=[
-    {lat:49.0,lng:31.0,  name:'Ukraine',          detail:'Russia-Ukraine War',          sev:'critical'},
-    {lat:31.5,lng:34.5,  name:'Gaza Strip',        detail:'Israel-Hamas Conflict',       sev:'critical'},
-    {lat:15.5,lng:30.5,  name:'Sudan',             detail:'Sudanese Civil War',          sev:'critical'},
-    {lat:19.0,lng:96.0,  name:'Myanmar',           detail:'Military Junta vs Resistance',sev:'high'},
-    {lat:13.5,lng: 2.0,  name:'Sahel Region',      detail:'Jihadist Insurgencies',       sev:'high'},
-    {lat:15.3,lng:44.2,  name:'Yemen',             detail:'Houthi-Saudi Conflict',       sev:'high'},
-    {lat:18.5,lng:-72.3, name:'Haiti',             detail:'Gang Violence / State Collapse',sev:'high'},
-    {lat: 8.5,lng:38.5,  name:'Ethiopia',          detail:'Amhara / Oromia Conflict',    sev:'elevated'},
-    {lat:11.0,lng:43.1,  name:'Horn of Africa',    detail:'Regional Instability',        sev:'elevated'},
+    {lat:49.0, lng: 31.0, name:'Ukraine',           detail:'Russia-Ukraine War · 3rd year',               sev:'critical'},
+    {lat:31.5, lng: 34.5, name:'Gaza Strip',         detail:'Israel-Hamas Conflict · Ongoing',             sev:'critical'},
+    {lat:15.5, lng: 30.5, name:'Sudan',              detail:'SAF vs RSF Civil War',                        sev:'critical'},
+    {lat:19.0, lng: 96.0, name:'Myanmar',            detail:'Military Junta vs Resistance',                sev:'critical'},
+    {lat:-4.0, lng: 22.0, name:'DR Congo',           detail:'M23 Rebel Offensive · Eastern DRC',           sev:'critical'},
+    {lat:35.0, lng: 38.0, name:'Syria',              detail:'HTS Post-Assad Instability',                  sev:'high'},
+    {lat: 4.0, lng: 42.0, name:'Somalia',            detail:'Al-Shabaab Insurgency',                       sev:'high'},
+    {lat:13.5, lng:  2.0, name:'Sahel Region',       detail:'Jihadist Insurgencies · Burkina/Mali/Niger',  sev:'high'},
+    {lat:10.0, lng:  8.0, name:'Nigeria',            detail:'Boko Haram / ISWAP Insurgency',               sev:'high'},
+    {lat:15.3, lng: 44.2, name:'Yemen',              detail:'Houthi Operations · Red Sea Attacks',         sev:'high'},
+    {lat:18.5, lng:-72.3, name:'Haiti',              detail:'Gang Violence · State Collapse',              sev:'high'},
+    {lat: 8.5, lng: 38.5, name:'Ethiopia',           detail:'Amhara & Oromia Conflicts',                   sev:'elevated'},
+    {lat:-18.0,lng: 35.0, name:'Mozambique',         detail:'ISCAP Insurgency · Cabo Delgado',             sev:'elevated'},
+    {lat:33.0, lng: 65.0, name:'Afghanistan',        detail:'Taliban Rule · ISIS-K Attacks',               sev:'elevated'},
+    {lat:40.4, lng: 46.8, name:'Nagorno-Karabakh',   detail:'Post-War Tensions · Armenian Exodus',         sev:'elevated'},
+    {lat:30.0, lng: 70.0, name:'Pakistan',           detail:'TTP Attacks · Balochistan Unrest',            sev:'elevated'},
+    {lat:11.0, lng: 43.1, name:'Horn of Africa',     detail:'Regional Instability · Piracy',               sev:'elevated'},
+    {lat:11.5, lng: 15.0, name:'Lake Chad Basin',    detail:'Multi-State Insurgency · Boko Haram Splinter',sev:'elevated'},
   ];
 
   var HOTSPOTS=[
-    {lat:23.5, lng:119.5, name:'Taiwan Strait',       detail:'China-Taiwan Military Tensions',sev:'critical'},
-    {lat:10.0, lng:113.0, name:'South China Sea',     detail:'Territorial Disputes',          sev:'high'},
-    {lat:38.0, lng:127.5, name:'Korean Peninsula',    detail:'DPRK Missile Provocations',     sev:'high'},
-    {lat:32.0, lng: 53.0, name:'Iran',                detail:'Nuclear Program & Regional Proxy',sev:'high'},
-    {lat:34.5, lng: 77.5, name:'Kashmir',             detail:'India-Pakistan Standoff',       sev:'elevated'},
-    {lat: 6.0, lng:-66.0, name:'Venezuela-Guyana',    detail:'Essequibo Border Dispute',      sev:'elevated'},
-    {lat:40.2, lng: 47.0, name:'South Caucasus',      detail:'Armenia-Azerbaijan Tensions',   sev:'elevated'},
+    {lat:23.5, lng:119.5, name:'Taiwan Strait',      detail:'China-Taiwan Military Tensions',              sev:'critical'},
+    {lat:10.0, lng:113.0, name:'South China Sea',    detail:'Territorial Disputes · Naval Standoffs',      sev:'high'},
+    {lat:38.0, lng:127.5, name:'Korean Peninsula',   detail:'DPRK Missile Provocations',                   sev:'high'},
+    {lat:32.0, lng: 53.0, name:'Iran',               detail:'Nuclear Program · Proxy Networks',            sev:'high'},
+    {lat:12.5, lng: 43.5, name:'Red Sea',            detail:'Houthi Shipping Attacks · NATO Escort',       sev:'high'},
+    {lat:14.0, lng:  2.0, name:'Niger / Sahel Coup', detail:'Military Coups · Wagner/Russia Expansion',    sev:'high'},
+    {lat:56.0, lng: 22.0, name:'Baltic Flank',       detail:'NATO-Russia Tensions · Article 5 Tripwire',   sev:'elevated'},
+    {lat:53.0, lng: 28.0, name:'Belarus',            detail:'Lukashenko Regime · Russia Forward Base',     sev:'elevated'},
+    {lat:42.5, lng: 21.0, name:'Serbia-Kosovo',      detail:'Renewed Ethnic Tensions',                     sev:'elevated'},
+    {lat:37.5, lng: 25.0, name:'Aegean Sea',         detail:'Greece-Turkey Maritime Dispute',              sev:'elevated'},
+    {lat:34.5, lng: 77.5, name:'Kashmir',            detail:'India-Pakistan Standoff · LOC Violations',    sev:'elevated'},
+    {lat: 6.0, lng:-66.0, name:'Venezuela-Guyana',   detail:'Essequibo Border Dispute',                    sev:'elevated'},
+    {lat:40.2, lng: 47.0, name:'South Caucasus',     detail:'Armenia-Azerbaijan Post-War Tensions',        sev:'elevated'},
+    {lat:17.5, lng:-92.0, name:'Mexico Drug War',    detail:'Cartel Violence · State Capture Risk',        sev:'elevated'},
   ];
 
   var ENERGY=[
-    {lat:26.5, lng: 56.5, name:'Strait of Hormuz',   detail:'~20% of global oil transit',  icon:'🛢️'},
-    {lat:30.0, lng: 32.5, name:'Suez Canal',          detail:'~12% of global trade route',  icon:'⚓'},
-    {lat: 1.5, lng:103.5, name:'Strait of Malacca',   detail:'~40% of global shipping',     icon:'⚓'},
-    {lat:61.0, lng:  2.5, name:'North Sea',           detail:'Brent crude production hub',  icon:'🛢️'},
-    {lat:30.5, lng: 47.5, name:'Persian Gulf',        detail:'Major oil export corridor',   icon:'🛢️'},
-    {lat:28.0, lng:-100.0,name:'Permian Basin',       detail:'US shale production center',  icon:'⛽'},
-    {lat:65.0, lng: 55.0, name:'West Siberia',        detail:'Russia gas pipeline network', icon:'🔥'},
+    {lat:26.5, lng: 56.5, name:'Strait of Hormuz',  detail:'~20% of global oil transit',          icon:'🛢️'},
+    {lat:30.0, lng: 32.5, name:'Suez Canal',         detail:'~12% of global trade route',          icon:'⚓'},
+    {lat: 1.5, lng:103.5, name:'Strait of Malacca',  detail:'~40% of global shipping',             icon:'⚓'},
+    {lat:41.0, lng: 29.0, name:'Turkish Straits',    detail:'Bosphorus · Black Sea oil egress',    icon:'⚓'},
+    {lat:-34.0,lng: 18.5, name:'Cape of Good Hope',  detail:'Alt route bypassing Suez/Hormuz',     icon:'⚓'},
+    {lat:57.0, lng: 11.0, name:'Danish Straits',     detail:'Baltic Sea energy gateway',           icon:'⚓'},
+    {lat:61.0, lng:  2.5, name:'North Sea',          detail:'Brent crude production hub',          icon:'🛢️'},
+    {lat:30.5, lng: 47.5, name:'Persian Gulf',       detail:'Major oil export corridor',           icon:'🛢️'},
+    {lat:40.5, lng: 52.0, name:'Caspian Basin',      detail:'Landlocked oil & gas export hub',     icon:'🛢️'},
+    {lat:34.0, lng: 31.0, name:'E. Med Gas Fields',  detail:'Leviathan/Aphrodite discoveries',     icon:'🔥'},
+    {lat:28.0, lng:-100.0,name:'Permian Basin',      detail:'US shale production center',          icon:'⛽'},
+    {lat:65.0, lng: 55.0, name:'West Siberia',       detail:'Russia gas pipeline network',         icon:'🔥'},
   ];
 
   var NUCLEAR=[
@@ -1104,24 +1139,91 @@
     {lat:55.75,lng: 37.6, name:'Russia',      detail:'~6,200 warheads'},
     {lat:51.5, lng: -0.1, name:'UK',          detail:'~225 warheads'},
     {lat:48.85,lng:  2.35,name:'France',      detail:'~290 warheads'},
-    {lat:39.9, lng:116.4, name:'China',       detail:'~350 warheads'},
-    {lat:28.7, lng: 77.1, name:'India',       detail:'~160 warheads'},
-    {lat:33.7, lng: 73.1, name:'Pakistan',    detail:'~160 warheads'},
+    {lat:39.9, lng:116.4, name:'China',       detail:'~500 warheads'},
+    {lat:28.7, lng: 77.1, name:'India',       detail:'~172 warheads'},
+    {lat:33.7, lng: 73.1, name:'Pakistan',    detail:'~170 warheads'},
     {lat:31.8, lng: 35.2, name:'Israel',      detail:'~90 warheads (est.)'},
-    {lat:39.0, lng:127.0, name:'North Korea', detail:'~40-50 warheads'},
+    {lat:39.0, lng:127.0, name:'North Korea', detail:'~40-50 warheads (est.)'},
   ];
 
   var MARKETS=[
-    {lat:40.71,lng:-74.01,name:'New York',   exchange:'NYSE / NASDAQ',   session:'NYSE'},
-    {lat:51.51,lng: -0.13,name:'London',     exchange:'LSE',             session:'LSE'},
-    {lat:50.11,lng:  8.68,name:'Frankfurt',  exchange:'XETRA',           session:'XETRA'},
-    {lat:35.68,lng:139.65,name:'Tokyo',      exchange:'TSE',             session:'TSE'},
-    {lat:22.32,lng:114.17,name:'Hong Kong',  exchange:'HKEX',            session:'HKEX'},
-    {lat:31.23,lng:121.47,name:'Shanghai',   exchange:'SSE',             session:'SSE'},
-    {lat:-33.87,lng:151.21,name:'Sydney',    exchange:'ASX',             session:'ASX'},
-    {lat:19.08,lng: 72.88,name:'Mumbai',     exchange:'BSE / NSE',       session:null},
-    {lat: 1.35,lng:103.82,name:'Singapore',  exchange:'SGX',             session:null},
-    {lat:43.65,lng:-79.38,name:'Toronto',    exchange:'TSX',             session:null},
+    {lat:40.71, lng:-74.01, name:'New York',   exchange:'NYSE / NASDAQ', session:'NYSE'},
+    {lat:51.51, lng: -0.13, name:'London',     exchange:'LSE',           session:'LSE'},
+    {lat:50.11, lng:  8.68, name:'Frankfurt',  exchange:'XETRA',         session:'XETRA'},
+    {lat:35.68, lng:139.65, name:'Tokyo',      exchange:'TSE',           session:'TSE'},
+    {lat:22.32, lng:114.17, name:'Hong Kong',  exchange:'HKEX',          session:'HKEX'},
+    {lat:31.23, lng:121.47, name:'Shanghai',   exchange:'SSE',           session:'SSE'},
+    {lat:-33.87,lng:151.21, name:'Sydney',     exchange:'ASX',           session:'ASX'},
+    {lat:19.08, lng: 72.88, name:'Mumbai',     exchange:'BSE / NSE',     session:null},
+    {lat: 1.35, lng:103.82, name:'Singapore',  exchange:'SGX',           session:null},
+    {lat:43.65, lng:-79.38, name:'Toronto',    exchange:'TSX',           session:null},
+  ];
+
+  var MILITARY=[
+    {lat:36.3, lng: -5.4, name:'Gibraltar (UK/NATO)', detail:'Naval base · Mediterranean gateway',     col:'#3b82f6'},
+    {lat:35.9, lng: 14.5, name:'Malta (NATO)',         detail:'Joint NATO Mediterranean HQ',            col:'#3b82f6'},
+    {lat:64.8, lng:-14.0, name:'Keflavik (NATO)',      detail:'Iceland GIUK gap monitoring',            col:'#3b82f6'},
+    {lat:35.5, lng: 24.0, name:'Souda Bay (US/NATO)',  detail:'Largest US naval base in Med',           col:'#ef4444'},
+    {lat:37.0, lng: 35.4, name:'Incirlik AB (NATO)',   detail:'US nukes stored · Turkey NATO base',     col:'#ef4444'},
+    {lat:11.5, lng: 43.1, name:'Camp Lemonnier',       detail:'US AFRICOM HQ · Djibouti',              col:'#ef4444'},
+    {lat:25.2, lng: 55.3, name:'Al Dhafra AB (US)',    detail:'Major US Air Force base · UAE',          col:'#ef4444'},
+    {lat:26.2, lng: 50.6, name:'NSA Bahrain (US)',     detail:'US 5th Fleet HQ',                       col:'#ef4444'},
+    {lat:36.9, lng:140.0, name:'Yokosuka (US)',        detail:'US 7th Fleet HQ · Japan',               col:'#ef4444'},
+    {lat:13.5, lng:144.8, name:'Andersen AB (US)',     detail:'Guam strategic bomber base',             col:'#ef4444'},
+    {lat:36.8, lng: 10.2, name:'US Access · Tunisia',  detail:'US-Tunisia security cooperation',        col:'#ef4444'},
+    {lat:44.8, lng: 33.5, name:'Sevastopol (Russia)',  detail:'Black Sea Fleet HQ',                     col:'#9333ea'},
+    {lat:34.7, lng: 36.0, name:'Tartus (Russia)',      detail:'Russia Med naval facility · Syria',      col:'#9333ea'},
+    {lat:22.5, lng:113.9, name:'Zhanjiang (PLAN)',     detail:'China South Sea Fleet HQ',               col:'#f59e0b'},
+    {lat:11.6, lng: 43.2, name:'Djibouti (China PLA)', detail:'First overseas Chinese naval base',      col:'#f59e0b'},
+  ];
+
+  var ROUTES=[
+    {name:'Trans-Atlantic',      color:'#3b82f6', weight:1.5, dash:'6,4',
+     coords:[[40.71,-74.01],[45.0,-30.0],[51.51,-0.13]]},
+    {name:'Trans-Pacific',       color:'#06b6d4', weight:1.5, dash:'6,4',
+     coords:[[37.77,-122.4],[40.0,-170.0],[35.68,139.65]]},
+    {name:'Suez / Indian Ocean', color:'#10b981', weight:1.5, dash:'4,3',
+     coords:[[51.51,-0.13],[36.0,14.0],[30.0,32.5],[12.5,43.5],[26.5,56.5],[20.0,65.0],[1.5,103.5]]},
+    {name:'Cape of Good Hope',   color:'#f59e0b', weight:1.5, dash:'8,5',
+     coords:[[51.51,-0.13],[-5.0,0.0],[-34.0,18.5],[-20.0,50.0],[1.5,103.5]]},
+    {name:'Red Sea Houthi Zone', color:'#ef4444', weight:2.0, dash:'3,3',
+     coords:[[12.5,43.5],[15.0,42.5],[20.0,38.0],[26.5,36.0]]},
+  ];
+
+  var CABLES=[
+    {lat:50.8, lng: -1.1, name:'Southampton Hub',   detail:'Major transatlantic cable landing · UK'},
+    {lat:40.6, lng:-73.9, name:'New York Hub',       detail:'Atlantic cable terminus · ~25 cables'},
+    {lat:37.7, lng:-122.4,name:'San Francisco Hub',  detail:'Trans-Pacific cable landing · US West'},
+    {lat: 1.3, lng:103.8, name:'Singapore Hub',      detail:'Asia-Pacific cable nexus · largest hub'},
+    {lat:35.7, lng:139.7, name:'Tokyo Hub',          detail:'Trans-Pacific cable terminus · Japan'},
+    {lat:22.3, lng:114.2, name:'Hong Kong Hub',      detail:'Asia submarine cable center'},
+    {lat:19.4, lng: 72.8, name:'Mumbai Hub',         detail:'India-Europe cable landing · SEA-ME-WE'},
+    {lat:11.6, lng: 43.1, name:'Djibouti Hub',       detail:'East-West cable chokepoint · 9+ cables'},
+    {lat:31.2, lng: 32.3, name:'Suez Hub',           detail:'Med-Asia cable corridor pinch point'},
+    {lat:-33.9,lng:151.2, name:'Sydney Hub',         detail:'Pacific cable terminus · Australia'},
+  ];
+
+  var REFUGEES=[
+    {lat:36.0, lng: 37.0, name:'Syrian Refugees',   detail:'~5.3M abroad · Turkey/Lebanon/Jordan',       count:'5.3M'},
+    {lat:49.5, lng: 31.5, name:'Ukraine Displaced',  detail:'~6.5M fled to Europe · largest post-WWII',   count:'6.5M'},
+    {lat:15.5, lng: 30.5, name:'Sudan Displaced',    detail:'~9M IDP + refugees · growing crisis',        count:'9M'},
+    {lat:31.5, lng: 34.5, name:'Gaza Displaced',     detail:'~1.9M internally displaced · 75%+ pop',      count:'1.9M'},
+    {lat:19.0, lng: 96.0, name:'Myanmar Displaced',  detail:'~2.6M fled military coup violence',          count:'2.6M'},
+    {lat:13.0, lng:  2.0, name:'Sahel Displaced',    detail:'~3.1M across Burkina Faso/Mali/Niger',       count:'3.1M'},
+    {lat:15.3, lng: 44.2, name:'Yemen Displaced',    detail:'~4.5M IDP · famine conditions',              count:'4.5M'},
+    {lat:-4.0, lng: 22.0, name:'DRC Displaced',      detail:'~6.9M IDP · worst Africa crisis',            count:'6.9M'},
+    {lat:33.0, lng: 65.0, name:'Afghan Refugees',    detail:'~6M abroad · Iran and Pakistan hosts',       count:'6M'},
+  ];
+
+  var SANCTIONS=[
+    {lat:55.75,lng: 37.6, name:'Russia',       detail:'SWIFT removal · oil cap · full sectoral',     col:'#ef4444'},
+    {lat:35.7, lng: 51.4, name:'Iran',         detail:'Nuclear sanctions · OFAC SDN · arms embargo', col:'#ef4444'},
+    {lat:39.0, lng:127.0, name:'North Korea',  detail:'Full UN embargo · arms/finance/tech ban',     col:'#ef4444'},
+    {lat:39.9, lng:116.4, name:'China',        detail:'Chip export controls · entity list targets',  col:'#f97316'},
+    {lat:10.5, lng:-66.9, name:'Venezuela',    detail:'OFAC sanctions · Maduro regime targets',      col:'#f97316'},
+    {lat:35.0, lng: 38.0, name:'Syria',        detail:'Caesar Act · EU/US comprehensive sanctions',  col:'#f97316'},
+    {lat:53.9, lng: 27.6, name:'Belarus',      detail:'EU/US sanctions · Lukashenko regime',         col:'#f59e0b'},
+    {lat:15.5, lng: 30.5, name:'Sudan (SAF)',  detail:'Arms embargo · targeted individual sanctions', col:'#f59e0b'},
   ];
 
   var geoLayers={}, geoMap=null;
@@ -1133,20 +1235,69 @@
     return '<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+(titleColor||sevColor(sev))+'">'+title+'</div><div class="geo-popup-desc">'+desc+'</div><div class="geo-popup-sev" style="background:'+bg+';color:'+(titleColor||sevColor(sev))+'">'+sev.toUpperCase()+'</div></div>';
   }
 
+  async function fetchEarthquakes(){
+    try{
+      var r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson');
+      var d=await r.json();
+      geoLayers.earthquakes.clearLayers();
+      var count=0;
+      d.features.forEach(function(f){
+        if(!f.geometry||f.geometry.type!=='Point') return;
+        var c=f.geometry.coordinates, mag=+(f.properties.mag||0).toFixed(1);
+        var place=f.properties.place||'Unknown location';
+        var time=new Date(f.properties.time).toISOString().slice(0,10);
+        var col=mag>=7?'#ef4444':mag>=6?'#f97316':mag>=5?'#f59e0b':'#facc15';
+        var sz=Math.max(5,Math.min(16,Math.round((mag-4)*3.5)));
+        var icon=L.divIcon({className:'',iconSize:[sz*2,sz*2],iconAnchor:[sz,sz],
+          html:'<div style="position:relative;width:'+(sz*2)+'px;height:'+(sz*2)+'px;display:flex;align-items:center;justify-content:center;">'
+              +'<div style="position:absolute;inset:0;border-radius:50%;border:1px solid '+col+';opacity:.4;animation:pulseRing 3s ease-out infinite;"></div>'
+              +'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+col+';opacity:.75;"></div>'
+              +'</div>'
+        });
+        var html='<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+col+'">🌍 M'+mag+' Earthquake</div><div class="geo-popup-desc">'+place+'</div><div class="geo-popup-desc" style="margin-top:.2rem;opacity:.7">'+time+'</div><div class="geo-popup-sev" style="background:rgba(250,204,21,.12);color:'+col+'">MAGNITUDE '+mag+'</div></div>';
+        L.marker([c[1],c[0]],{icon:icon}).bindPopup(html,{maxWidth:220,className:'geo-popup-wrap'}).addTo(geoLayers.earthquakes);
+        count++;
+      });
+      var qc=document.getElementById('quakeCount'); if(qc) qc.textContent=count;
+      var qs=document.getElementById('gStatQuakes');  if(qs) qs.textContent=count;
+      renderEarthquakeSidebar(d.features);
+    }catch(e){ console.warn('USGS quakes fetch failed',e); }
+  }
+
+  function renderEarthquakeSidebar(features){
+    var el=document.getElementById('gListEarthquakes'); if(!el) return;
+    var top=features.filter(function(f){ return (f.properties.mag||0)>=5.5; }).slice(0,8);
+    if(!top.length){ el.innerHTML='<div class="geo-evdesc" style="padding:.25rem 0">No M5.5+ quakes this week.</div>'; return; }
+    el.innerHTML=top.map(function(f){
+      var mag=+(f.properties.mag||0).toFixed(1), place=(f.properties.place||'Unknown').substring(0,30);
+      var time=new Date(f.properties.time).toISOString().slice(0,10);
+      var col=mag>=7?'#ef4444':mag>=6?'#f97316':'#f59e0b';
+      var sev=mag>=7?'critical':mag>=6?'high':'elevated';
+      var c=f.geometry&&f.geometry.coordinates;
+      var click=c?'onclick="flyToGeo('+c[1]+','+c[0]+')" title="Click to zoom"':'';
+      return '<div class="geo-event '+sev+'" '+click+'><div class="geo-evname"><span>M'+mag+' · '+place+'</span><span class="sev-badge" style="background:rgba(250,204,21,.1);color:'+col+'">M'+mag+'</span></div><div class="geo-evdesc">'+time+'</div></div>';
+    }).join('');
+  }
+
   function initGeoMap(){
     if(typeof L==='undefined'||!document.getElementById('geoMap')) return;
 
     geoMap=L.map('geoMap',{center:[25,15],zoom:2,zoomControl:false,attributionControl:false,minZoom:2,maxZoom:6,worldCopyJump:true});
-
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:6}).addTo(geoMap);
     L.control.zoom({position:'topright'}).addTo(geoMap);
     L.control.attribution({position:'bottomright',prefix:false}).addAttribution('© CartoDB').addTo(geoMap);
 
-    geoLayers.conflicts = L.layerGroup();
-    geoLayers.hotspots  = L.layerGroup();
-    geoLayers.markets   = L.layerGroup();
-    geoLayers.energy    = L.layerGroup();
-    geoLayers.nuclear   = L.layerGroup();
+    geoLayers.conflicts   = L.layerGroup();
+    geoLayers.hotspots    = L.layerGroup();
+    geoLayers.markets     = L.layerGroup();
+    geoLayers.energy      = L.layerGroup();
+    geoLayers.nuclear     = L.layerGroup();
+    geoLayers.military    = L.layerGroup();
+    geoLayers.routes      = L.layerGroup();
+    geoLayers.cables      = L.layerGroup();
+    geoLayers.refugees    = L.layerGroup();
+    geoLayers.sanctions   = L.layerGroup();
+    geoLayers.earthquakes = L.layerGroup();
 
     // Conflicts — pulsing filled circles
     CONFLICTS.forEach(function(c){
@@ -1204,7 +1355,54 @@
         .addTo(geoLayers.nuclear);
     });
 
-    // Add default layers
+    // Military bases — triangle markers
+    MILITARY.forEach(function(m){
+      var icon=L.divIcon({className:'',iconSize:[12,12],iconAnchor:[6,10],
+        html:'<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid '+m.col+';opacity:.85;filter:drop-shadow(0 0 3px '+m.col+'60);"></div>'
+      });
+      L.marker([m.lat,m.lng],{icon:icon})
+        .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+m.col+'">🪖 '+m.name+'</div><div class="geo-popup-desc">'+m.detail+'</div></div>',{maxWidth:210,className:'geo-popup-wrap'})
+        .addTo(geoLayers.military);
+    });
+
+    // Maritime routes — dashed polylines
+    ROUTES.forEach(function(r){
+      L.polyline(r.coords,{color:r.color,weight:r.weight,opacity:.55,dashArray:r.dash})
+        .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+r.color+'">🚢 '+r.name+'</div></div>',{maxWidth:180,className:'geo-popup-wrap'})
+        .addTo(geoLayers.routes);
+    });
+
+    // Submarine cable landing points — small purple dots
+    CABLES.forEach(function(c){
+      var icon=L.divIcon({className:'',iconSize:[10,10],iconAnchor:[5,5],
+        html:'<div style="width:6px;height:6px;border-radius:50%;background:#a78bfa;border:1px solid rgba(167,139,250,.5);box-shadow:0 0 6px rgba(167,139,250,.4);"></div>'
+      });
+      L.marker([c.lat,c.lng],{icon:icon})
+        .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:#a78bfa">🔌 '+c.name+'</div><div class="geo-popup-desc">'+c.detail+'</div></div>',{maxWidth:210,className:'geo-popup-wrap'})
+        .addTo(geoLayers.cables);
+    });
+
+    // Refugee crises — amber circle with count
+    REFUGEES.forEach(function(r){
+      var icon=L.divIcon({className:'',iconSize:[18,18],iconAnchor:[9,9],
+        html:'<div style="width:14px;height:14px;border-radius:50%;background:rgba(251,191,36,.12);border:1.5px solid #fbbf24;display:flex;align-items:center;justify-content:center;font-size:5px;color:#fbbf24;font-weight:800;line-height:1;">'+r.count.replace('M','')+'M</div>'
+      });
+      L.marker([r.lat,r.lng],{icon:icon})
+        .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:#fbbf24">🏕️ '+r.name+'</div><div class="geo-popup-desc">'+r.detail+'</div><div class="geo-popup-sev" style="background:rgba(251,191,36,.12);color:#fbbf24">'+r.count+' DISPLACED</div></div>',{maxWidth:215,className:'geo-popup-wrap'})
+        .addTo(geoLayers.refugees);
+    });
+
+    // Sanctions — 🚫 markers
+    SANCTIONS.forEach(function(s){
+      var icon=L.divIcon({className:'',iconSize:[12,12],iconAnchor:[6,6],
+        html:'<div style="font-size:9px;line-height:1;opacity:.85;filter:drop-shadow(0 0 3px '+s.col+'60);">🚫</div>'
+      });
+      L.marker([s.lat,s.lng],{icon:icon})
+        .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+s.col+'">🚫 '+s.name+'</div><div class="geo-popup-desc">'+s.detail+'</div></div>',{maxWidth:215,className:'geo-popup-wrap'})
+        .addTo(geoLayers.sanctions);
+    });
+
+    // Add default visible layers
     geoLayers.conflicts.addTo(geoMap);
     geoLayers.hotspots.addTo(geoMap);
     geoLayers.markets.addTo(geoMap);
@@ -1231,16 +1429,23 @@
   }
 
   function renderGeoSidebar(){
-    var ce=document.getElementById('gListConflicts'),he=document.getElementById('gListHotspots'),ee=document.getElementById('gListEnergy');
+    var ce=document.getElementById('gListConflicts'),
+        he=document.getElementById('gListHotspots'),
+        ee=document.getElementById('gListEnergy'),
+        re=document.getElementById('gListRefugees');
     if(ce) ce.innerHTML=CONFLICTS.map(function(c){
       return '<div class="geo-event '+c.sev+'" onclick="flyToGeo('+c.lat+','+c.lng+')" title="Click to zoom"><div class="geo-evname">'+c.name+sevBadge(c.sev)+'</div><div class="geo-evdesc">'+c.detail+'</div></div>';
     }).join('');
     if(he) he.innerHTML=HOTSPOTS.map(function(h){
       return '<div class="geo-event '+h.sev+'" onclick="flyToGeo('+h.lat+','+h.lng+')" title="Click to zoom"><div class="geo-evname">'+h.name+sevBadge(h.sev)+'</div><div class="geo-evdesc">'+h.detail+'</div></div>';
     }).join('');
-    if(ee) ee.innerHTML=ENERGY.slice(0,5).map(function(e){
+    if(ee) ee.innerHTML=ENERGY.map(function(e){
       return '<div class="geo-event neutral" onclick="flyToGeo('+e.lat+','+e.lng+')" title="Click to zoom"><div class="geo-evname">'+e.icon+' '+e.name+'</div><div class="geo-evdesc">'+e.detail+'</div></div>';
     }).join('');
+    if(re) re.innerHTML=REFUGEES.map(function(r){
+      return '<div class="geo-event elevated" onclick="flyToGeo('+r.lat+','+r.lng+')" title="Click to zoom"><div class="geo-evname">🏕️ '+r.name+'<span class="sev-badge sev-elev">'+r.count+'</span></div><div class="geo-evdesc">'+r.detail+'</div></div>';
+    }).join('');
+    renderEarthquakeSidebar([]);
   }
 
   // ── BOOT ──────────────────────────────────────
@@ -1251,8 +1456,10 @@
     fetchFG();
     fetchCrypto();
     initGeoMap();
+    fetchEarthquakes();
     setInterval(tick,1000);
     setInterval(function(){fetchFG();fetchCrypto();},60000);
+    setInterval(fetchEarthquakes,300000); // refresh quakes every 5 min
   }
 
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
