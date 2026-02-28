@@ -325,6 +325,29 @@
     .sev-low { background:rgba(100,116,139,.18); color:#94a3b8; }
     .geo-live-ct{ display:inline-block; margin-left:.25rem; font-size:.45rem; font-weight:700; background:rgba(0,255,136,.12); color:var(--live); border-radius:3px; padding:.05rem .25rem; vertical-align:middle; line-height:1.4; }
 
+    /* ── Intel ticker bar ──────────────────────────── */
+    .geo-intel-bar{
+      flex-shrink:0; height:22px;
+      background:rgba(5,5,10,.96); border-top:1px solid rgba(100,116,139,.1);
+      display:flex; align-items:center; overflow:hidden;
+    }
+    .geo-intel-label{
+      flex-shrink:0; padding:0 .5rem;
+      font-size:.48rem; font-weight:800; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--live); white-space:nowrap;
+      font-family:var(--mono); border-right:1px solid rgba(100,116,139,.12);
+    }
+    .geo-intel-wrap{ flex:1; overflow:hidden; }
+    .geo-intel-ticker{
+      display:inline-block; white-space:nowrap; padding-left:1rem;
+      font-size:.48rem; color:rgba(148,163,184,.7); font-family:var(--mono);
+      animation:tickerScroll 80s linear infinite;
+    }
+    @keyframes tickerScroll{
+      0%  { transform:translateX(0); }
+      100%{ transform:translateX(-50%); }
+    }
+
     /* Leaflet popup override */
     .leaflet-popup-content-wrapper{
       background:rgba(10,10,18,.97) !important;
@@ -693,10 +716,11 @@
       <span class="s-hdr-icon">🌍</span>
       <div class="s-hdr-text">
         <div class="s-hdr-title">Global Situation</div>
-        <div class="s-hdr-sub">Geopolitical risk · Active conflicts · Hotspots · Financial centers · Energy choke points</div>
+        <div class="s-hdr-sub">Live intelligence · Active conflicts · Seismic · Flights · Natural hazards · Energy choke points</div>
       </div>
       <div class="s-hdr-badges">
-        <span class="badge b-red" id="globalRiskBadge">▲ ELEVATED RISK</span>
+        <span class="badge b-red" id="globalRiskBadge">▲ CRITICAL RISK</span>
+        <span class="badge" style="background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.2);color:var(--live);font-size:.5rem">4 LIVE FEEDS</span>
         <span class="badge b-live">Live</span>
       </div>
     </div>
@@ -717,8 +741,17 @@
           <button class="geo-btn"        data-layer="refugees"    onclick="toggleGeoLayer('refugees')">🏕️ Refugees</button>
           <button class="geo-btn"        data-layer="sanctions"   onclick="toggleGeoLayer('sanctions')">🚫 Sanctions</button>
           <button class="geo-btn"        data-layer="earthquakes" onclick="toggleGeoLayer('earthquakes')">🌍 Quakes<span id="quakeCount" class="geo-live-ct"></span></button>
+          <button class="geo-btn"        data-layer="natural"     onclick="toggleGeoLayer('natural')">🌋 Natural<span id="naturalCount" class="geo-live-ct"></span></button>
+          <button class="geo-btn"        data-layer="flights"     onclick="toggleGeoLayer('flights')">✈️ Flights<span id="flightCount" class="geo-live-ct"></span></button>
         </div>
         <div id="geoMap"></div>
+        <!-- Live intelligence ticker -->
+        <div class="geo-intel-bar">
+          <span class="geo-intel-label">⚡ LIVE INTEL</span>
+          <div class="geo-intel-wrap">
+            <div id="geoIntelTicker" class="geo-intel-ticker">Initializing live intelligence feeds… · Connecting to NASA EONET · Connecting to OpenSky Network · Connecting to USGS Seismic · Initializing live intelligence feeds… · Connecting to NASA EONET · Connecting to OpenSky Network · Connecting to USGS Seismic</div>
+          </div>
+        </div>
       </div>
 
       <!-- Sidebar -->
@@ -741,6 +774,8 @@
           <button class="geo-side-tab-btn" data-stab="quakes"    onclick="switchGeoTab('quakes')">🌍 Quakes</button>
           <button class="geo-side-tab-btn" data-stab="refugees"  onclick="switchGeoTab('refugees')">🏕️ Refugees</button>
           <button class="geo-side-tab-btn" data-stab="energy"    onclick="switchGeoTab('energy')">🛢️ Energy</button>
+          <button class="geo-side-tab-btn" data-stab="natural"   onclick="switchGeoTab('natural')">🌋 Natural</button>
+          <button class="geo-side-tab-btn" data-stab="flights"   onclick="switchGeoTab('flights')">✈️ Flights</button>
         </div>
 
         <!-- Scrollable pane per tab -->
@@ -759,6 +794,12 @@
           </div>
           <div class="geo-tab-pane" id="gPaneEnergy">
             <div id="gListEnergy"></div>
+          </div>
+          <div class="geo-tab-pane" id="gPaneNatural">
+            <div id="gListNatural"><div class="geo-evdesc" style="padding:.35rem 0">Loading NASA EONET…</div></div>
+          </div>
+          <div class="geo-tab-pane" id="gPaneFlights">
+            <div id="gListFlights"><div class="geo-evdesc" style="padding:.35rem 0">Loading OpenSky Network…</div></div>
           </div>
         </div>
 
@@ -1344,6 +1385,8 @@
     geoLayers.refugees    = L.layerGroup();
     geoLayers.sanctions   = L.layerGroup();
     geoLayers.earthquakes = L.layerGroup();
+    geoLayers.natural     = L.layerGroup();
+    geoLayers.flights     = L.layerGroup();
 
     // Conflicts — pulsing filled circles
     CONFLICTS.forEach(function(c){
@@ -1469,6 +1512,150 @@
     document.getElementById('global').scrollIntoView({behavior:'smooth'});
   };
 
+  // ── NATURAL EVENTS (NASA EONET) ──────────────────
+  var EONET_CATS={
+    '8' :{emoji:'🔥',label:'Wildfire',        col:'#f97316'},
+    '12':{emoji:'🌋',label:'Volcano',          col:'#ef4444'},
+    '17':{emoji:'🌋',label:'Volcanic Eruption',col:'#ef4444'},
+    '10':{emoji:'🌪️',label:'Severe Storm',   col:'#818cf8'},
+    '9' :{emoji:'🌊',label:'Flood',            col:'#3b82f6'},
+    '14':{emoji:'🏔️',label:'Landslide',       col:'#92400e'},
+    '15':{emoji:'❄️',label:'Sea/Lake Ice',    col:'#a5f3fc'},
+    '7' :{emoji:'🌫️',label:'Dust & Haze',    col:'#d4d4d4'},
+    '5' :{emoji:'🏜️',label:'Drought',         col:'#d97706'},
+    '16':{emoji:'🌊',label:'Tsunami',          col:'#0ea5e9'},
+  };
+  var liveNaturalEvents=[], liveFlightCount=0;
+
+  async function fetchNaturalEvents(){
+    try{
+      var r=await fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=100&days=30');
+      var d=await r.json();
+      liveNaturalEvents=d.events||[];
+      geoLayers.natural.clearLayers();
+      liveNaturalEvents.forEach(function(ev){
+        var cat=ev.categories&&ev.categories[0];
+        var info=cat?EONET_CATS[String(cat.id)]||{emoji:'⚠️',label:cat.title||'Event',col:'#f59e0b'}:{emoji:'⚠️',label:'Event',col:'#f59e0b'};
+        var geo=ev.geometry&&ev.geometry[0];
+        if(!geo||!geo.coordinates) return;
+        var lat,lng;
+        if(geo.type==='Point'){ lat=geo.coordinates[1]; lng=geo.coordinates[0]; }
+        else if(geo.type==='Polygon'){ lat=geo.coordinates[0][0][1]; lng=geo.coordinates[0][0][0]; }
+        else return;
+        if(isNaN(lat)||isNaN(lng)) return;
+        var icon=L.divIcon({className:'',iconSize:[16,16],iconAnchor:[8,8],
+          html:'<div style="width:12px;height:12px;border-radius:50%;background:'+info.col+';opacity:.85;border:1px solid rgba(255,255,255,.25);box-shadow:0 0 8px '+info.col+'60;animation:pulseMap 2.5s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:7px;">'+info.emoji+'</div>'
+        });
+        var date=geo.date?geo.date.slice(0,10):'';
+        L.marker([lat,lng],{icon:icon})
+          .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+info.col+'">'+info.emoji+' '+ev.title+'</div><div class="geo-popup-desc">'+info.label+(date?' · '+date:'')+'</div><div class="geo-popup-sev" style="background:rgba(239,68,68,.12);color:'+info.col+'">ACTIVE EVENT</div></div>',{maxWidth:230,className:'geo-popup-wrap'})
+          .addTo(geoLayers.natural);
+      });
+      var nc=document.getElementById('naturalCount'); if(nc) nc.textContent=liveNaturalEvents.length;
+      renderNaturalSidebar();
+      updateIntelFeed();
+    }catch(e){ console.warn('EONET fetch failed',e); }
+  }
+
+  function renderNaturalSidebar(){
+    var el=document.getElementById('gListNatural'); if(!el) return;
+    if(!liveNaturalEvents.length){ el.innerHTML='<div class="geo-evdesc" style="padding:.35rem 0">No active events detected.</div>'; return; }
+    var sorted=liveNaturalEvents.slice().sort(function(a,b){
+      return new Date((b.geometry&&b.geometry[0]&&b.geometry[0].date)||0)-new Date((a.geometry&&a.geometry[0]&&a.geometry[0].date)||0);
+    });
+    el.innerHTML=sorted.slice(0,40).map(function(ev){
+      var cat=ev.categories&&ev.categories[0];
+      var info=cat?EONET_CATS[String(cat.id)]||{emoji:'⚠️',label:cat.title||'Event',col:'#f59e0b'}:{emoji:'⚠️',label:'Event',col:'#f59e0b'};
+      var geo=ev.geometry&&ev.geometry[0];
+      var date=geo&&geo.date?geo.date.slice(0,10):'';
+      var lat=null,lng=null;
+      if(geo&&geo.type==='Point'){ lat=geo.coordinates[1]; lng=geo.coordinates[0]; }
+      else if(geo&&geo.type==='Polygon'){ lat=geo.coordinates[0][0][1]; lng=geo.coordinates[0][0][0]; }
+      var click=(lat!=null&&lng!=null)?'onclick="flyToGeo('+lat+','+lng+')" title="Click to zoom"':'';
+      return '<div class="geo-event elevated" '+click+'><div class="geo-evname"><span>'+info.emoji+' '+ev.title.substring(0,30)+'</span><span class="sev-badge" style="background:rgba(249,115,22,.12);color:'+info.col+'">'+info.label+'</span></div><div class="geo-evdesc">'+date+'</div></div>';
+    }).join('');
+  }
+
+  // ── LIVE FLIGHTS (OpenSky Network) ───────────────
+  async function fetchFlights(){
+    try{
+      var r=await fetch('https://opensky-network.org/api/states/all');
+      var d=await r.json();
+      geoLayers.flights.clearLayers();
+      var all=(d.states||[]).filter(function(s){ return s[8]===false&&s[5]!=null&&s[6]!=null&&(s[7]||0)>7000; });
+      var step=Math.max(1,Math.floor(all.length/600));
+      var count=0;
+      for(var i=0;i<all.length;i+=step){
+        var s=all[i];
+        var lng2=s[5],lat2=s[6],altFt=Math.round((s[7]||0)*3.281);
+        var spd=Math.round((s[9]||0)*1.944), track=s[10]||0;
+        var call=(s[1]||'').trim()||s[0]||'N/A', country=s[2]||'Unknown';
+        var col=altFt>35000?'#60a5fa':altFt>25000?'#818cf8':'#a78bfa';
+        var icon=L.divIcon({className:'',iconSize:[8,8],iconAnchor:[4,4],
+          html:'<div style="width:0;height:0;border-left:2.5px solid transparent;border-right:2.5px solid transparent;border-bottom:6px solid '+col+';opacity:.7;transform:rotate('+track+'deg);filter:drop-shadow(0 0 2px '+col+'70);"></div>'
+        });
+        L.marker([lat2,lng2],{icon:icon})
+          .bindPopup('<div class="geo-popup-inner"><div class="geo-popup-title" style="color:'+col+'">✈️ '+call+'</div><div class="geo-popup-desc">'+country+'</div><div class="geo-popup-desc">Alt: '+altFt.toLocaleString()+' ft · '+spd+' kts · Hdg: '+Math.round(track)+'°</div></div>',{maxWidth:200,className:'geo-popup-wrap'})
+          .addTo(geoLayers.flights);
+        count++;
+      }
+      liveFlightCount=count;
+      var fc=document.getElementById('flightCount'); if(fc) fc.textContent=count;
+      renderFlightSidebar(all.length,count);
+      updateIntelFeed();
+    }catch(e){ console.warn('OpenSky fetch failed',e); }
+  }
+
+  function renderFlightSidebar(total,shown){
+    var el=document.getElementById('gListFlights'); if(!el) return;
+    var ts=new Date().toUTCString().slice(17,25)+' UTC';
+    el.innerHTML='<div class="geo-event neutral"><div class="geo-evname">✈️ Airborne Aircraft<span class="sev-badge" style="background:rgba(96,165,250,.1);color:#60a5fa">LIVE</span></div><div class="geo-evdesc">'+total.toLocaleString()+' detected · '+shown+' displayed on map</div></div>'
+      +'<div class="geo-event neutral"><div class="geo-evname">🌐 Coverage</div><div class="geo-evdesc">Global ADS-B transponder network · &gt;23,000 ft filter</div></div>'
+      +'<div class="geo-event neutral"><div class="geo-evname">🎨 Altitude coding</div><div class="geo-evdesc">Purple &lt;25k ft · Indigo 25-35k ft · Blue &gt;35k ft</div></div>'
+      +'<div class="geo-event neutral"><div class="geo-evname">🔄 Refresh rate</div><div class="geo-evdesc">~45 seconds · Source: OpenSky Network</div></div>'
+      +'<div class="geo-event neutral"><div class="geo-evname">🕐 Last updated</div><div class="geo-evdesc">'+ts+'</div></div>';
+  }
+
+  // ── LIVE INTEL TICKER ────────────────────────────
+  function updateIntelFeed(){
+    var msgs=[];
+    var qs=document.getElementById('gStatQuakes');
+    if(qs&&qs.textContent&&qs.textContent!=='--') msgs.push('🌍 '+qs.textContent+' EARTHQUAKES DETECTED THIS WEEK (USGS M4.5+)');
+    if(liveNaturalEvents.length){
+      var fires=liveNaturalEvents.filter(function(e){ var c=e.categories&&e.categories[0]; return c&&String(c.id)==='8'; }).length;
+      var volcs=liveNaturalEvents.filter(function(e){ var c=e.categories&&e.categories[0]; return c&&(String(c.id)==='12'||String(c.id)==='17'); }).length;
+      var strms=liveNaturalEvents.filter(function(e){ var c=e.categories&&e.categories[0]; return c&&String(c.id)==='10'; }).length;
+      if(fires) msgs.push('🔥 '+fires+' ACTIVE WILDFIRES TRACKED IN REAL-TIME (NASA EONET)');
+      if(volcs) msgs.push('🌋 '+volcs+' ACTIVE VOLCANIC EVENTS UNDER CONTINUOUS MONITORING');
+      if(strms) msgs.push('🌪️ '+strms+' SEVERE STORM SYSTEMS BEING TRACKED GLOBALLY');
+      msgs.push('⚠️ '+liveNaturalEvents.length+' OPEN NATURAL HAZARD EVENTS — SOURCE: NASA EONET');
+      liveNaturalEvents.slice(0,5).forEach(function(ev){
+        var c=ev.categories&&ev.categories[0];
+        var info=c?EONET_CATS[String(c.id)]||{emoji:'⚠️'}:{emoji:'⚠️'};
+        msgs.push(info.emoji+' '+ev.title.toUpperCase());
+      });
+    }
+    if(liveFlightCount) msgs.push('✈️ '+liveFlightCount.toLocaleString()+'+ COMMERCIAL FLIGHTS TRACKED GLOBALLY (OPENSKY ADS-B NETWORK)');
+    msgs.push('🔴 18 ACTIVE ARMED CONFLICTS · RISK LEVEL: CRITICAL · UKRAINE / GAZA / SUDAN / DRC');
+    msgs.push('⚡ 14 GEOPOLITICAL FLASHPOINTS UNDER ACTIVE SURVEILLANCE · TAIWAN STRAIT: CRITICAL');
+    msgs.push('🛢️ 12 CRITICAL ENERGY CHOKE POINTS · STRAIT OF HORMUZ: 20% GLOBAL OIL TRANSIT');
+    msgs.push('🚢 RED SEA HOUTHI THREAT ZONE ACTIVE · COMMERCIAL SHIPPING DIVERSIONS ONGOING');
+    msgs.push('☢️ 9 NUCLEAR STATES MONITORED · ~13,000 WARHEADS GLOBALLY · LAUNCH-ON-WARNING POSTURES');
+    msgs.push('🪖 15 STRATEGIC MILITARY INSTALLATIONS MAPPED · 6 REGIONS · US/NATO/RUSSIA/CHINA');
+    msgs.push('🏕️ 44M+ PEOPLE DISPLACED GLOBALLY ACROSS 9 MONITORED CRISIS ZONES');
+    msgs.push('🚫 8 SANCTIONED STATES · RUSSIA SWIFT REMOVAL · IRAN NUCLEAR SANCTIONS · DPRK EMBARGO');
+    msgs.push('🔌 10 SUBMARINE CABLE HUBS TRACKED · CRITICAL INTERNET INFRASTRUCTURE MONITORING');
+    if(!msgs.length) return;
+    var text=msgs.join('   ·   ');
+    var doubled=text+'   ·   '+text;
+    var el=document.getElementById('geoIntelTicker'); if(!el) return;
+    el.textContent=doubled;
+    var dur=Math.max(50,Math.round(text.length*0.16));
+    el.style.animation='none';
+    el.offsetHeight;
+    el.style.animation='tickerScroll '+dur+'s linear infinite';
+  }
+
   window.switchGeoTab=function(name){
     document.querySelectorAll('.geo-side-tab-btn').forEach(function(b){ b.classList.remove('stab-active'); });
     document.querySelectorAll('.geo-tab-pane').forEach(function(p){ p.classList.remove('stab-active'); });
@@ -1512,9 +1699,15 @@
     fetchCrypto();
     initGeoMap();
     fetchEarthquakes();
+    fetchNaturalEvents();
+    fetchFlights();
+    // Stagger fetch starts to avoid all hitting at once
+    setTimeout(updateIntelFeed, 2000);
     setInterval(tick,1000);
     setInterval(function(){fetchFG();fetchCrypto();},60000);
-    setInterval(fetchEarthquakes,300000); // refresh quakes every 5 min
+    setInterval(fetchEarthquakes,180000);    // quakes:   3 min
+    setInterval(fetchNaturalEvents,480000);  // EONET:    8 min
+    setInterval(fetchFlights,45000);         // flights: 45 sec
   }
 
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
