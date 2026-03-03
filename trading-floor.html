@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Trading Floor | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png"/>
+  <link rel="stylesheet" href="arcane-globals.css"/>
+
+  <style>
+    body { overflow: hidden; }
+
+    /* ── Full-height layout ── */
+    .tf-layout {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
+      margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── Top toolbar ── */
+    .tf-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1rem;
+      height: 46px;
+      background: rgba(9,9,14,0.98);
+      border-bottom: 1px solid var(--border-hi);
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tf-toolbar::-webkit-scrollbar { display: none; }
+
+    .tf-back {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      white-space: nowrap;
+      transition: all 0.18s;
+    }
+    .tf-back:hover { color: var(--teal); border-color: var(--teal); }
+
+    .tf-sep { width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem; flex-shrink: 0; }
+
+    /* Symbol search */
+    .sym-search {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .sym-search:hover { border-color: var(--teal); }
+    .sym-search input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      width: 100px;
+      letter-spacing: 0.08em;
+    }
+    .sym-search input::placeholder { color: var(--text-dim); }
+
+    /* Timeframe buttons */
+    .tf-time-group {
+      display: flex;
+      gap: 1px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .tf-time-btn {
+      padding: 0.22rem 0.55rem;
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tf-time-btn:hover { color: var(--text); background: var(--bg-4); }
+    .tf-time-btn.active { background: var(--teal-glow); color: var(--teal); }
+
+    /* Chart type */
+    .tf-chart-type {
+      display: flex;
+      gap: 1px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .tf-ct-btn {
+      padding: 0.22rem 0.6rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: all 0.15s;
+    }
+    .tf-ct-btn:hover   { color: var(--text); background: var(--bg-4); }
+    .tf-ct-btn.active  { background: var(--teal-glow); color: var(--teal); }
+
+    /* Indicator btn */
+    .tf-indicator-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.22rem 0.7rem;
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--bg-3);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.18s;
+    }
+    .tf-indicator-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+    .tf-price-display {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .tf-current-price {
+      font-family: var(--font-head);
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.03em;
+    }
+    .tf-price-chg {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+    }
+    .tf-price-chg.up   { color: var(--green); }
+    .tf-price-chg.down { color: var(--red); }
+
+    /* ── Main area: chart + side panel ── */
+    .tf-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Chart */
+    .tf-chart-wrap {
+      flex: 1;
+      position: relative;
+      min-width: 0;
+    }
+
+    #tv-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Chart overlay info (top-left) */
+    .chart-overlay {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .chart-sym-label {
+      font-family: var(--font-head);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+    .chart-ohlc {
+      display: flex;
+      gap: 0.75rem;
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      color: var(--text-dim);
+    }
+    .chart-ohlc span { letter-spacing: 0.04em; }
+    .chart-ohlc .val { color: var(--text); }
+
+    /* ── Side Panel ── */
+    .tf-side {
+      width: 260px;
+      flex-shrink: 0;
+      background: rgba(9,9,14,0.98);
+      border-left: 1px solid var(--border-hi);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    /* Side tabs */
+    .side-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .side-tab {
+      flex: 1;
+      padding: 0.6rem 0.5rem;
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-align: center;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      text-transform: uppercase;
+      transition: all 0.18s;
+    }
+    .side-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .side-tab:hover:not(.active) { color: var(--text); }
+
+    .side-content { flex: 1; overflow-y: auto; }
+
+    /* Quick stats strip */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .qs-cell {
+      background: var(--bg-2);
+      padding: 0.5rem 0.75rem;
+    }
+    .qs-label {
+      font-family: var(--font-head);
+      font-size: 0.42rem;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .qs-val {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 0.15rem;
+    }
+    .qs-val.up   { color: var(--green); }
+    .qs-val.down { color: var(--red); }
+
+    /* Watchlist items */
+    .wl-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .wl-item:hover, .wl-item.active { background: var(--bg-3); }
+    .wl-item.active { border-left: 2px solid var(--gold); }
+    .wl-left { display: flex; align-items: center; gap: 0.5rem; }
+    .wl-sym {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+    .wl-name { font-size: 0.58rem; color: var(--text-dim); margin-top: 0.1rem; }
+    .wl-right { text-align: right; }
+    .wl-price { font-family: var(--font-head); font-size: 0.62rem; font-weight: 700; color: var(--text); }
+    .wl-chg { font-family: var(--font-head); font-size: 0.52rem; font-weight: 600; }
+    .wl-chg.up   { color: var(--green); }
+    .wl-chg.down { color: var(--red); }
+
+    /* Signal items */
+    .sig-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sig-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+    .sig-sym {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .sig-dir {
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+    .sig-dir.long  { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+    .sig-dir.short { background: var(--red-glow);  color: var(--red);   border: 1px solid var(--border-red); }
+    .sig-body { font-size: 0.65rem; color: var(--text-dim); }
+    .sig-levels {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.4rem;
+      font-family: var(--font-head);
+      font-size: 0.5rem;
+    }
+    .sig-level { color: var(--text-muted); }
+    .sig-level span { color: var(--text-dim); }
+
+    /* Notes area */
+    .notes-area {
+      padding: 0.75rem;
+    }
+    .notes-textarea {
+      width: 100%;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      padding: 0.6rem;
+      resize: none;
+      outline: none;
+      height: 200px;
+      transition: border-color 0.18s;
+    }
+    .notes-textarea:focus { border-color: var(--teal); }
+    .notes-save {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.45rem;
+      background: var(--teal-glow);
+      border: 1px solid var(--border-hi);
+      border-radius: 5px;
+      color: var(--teal);
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .notes-save:hover { background: var(--teal); color: #000; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .tf-side { width: 220px; }
+    }
+    @media (max-width: 700px) {
+      body { overflow: auto; }
+      .tf-layout { height: auto; }
+      .tf-body { flex-direction: column; }
+      .tf-side { width: 100%; height: 300px; }
+      #tv-chart { height: 50vh; }
+      .tf-toolbar { flex-wrap: nowrap; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="scanlines"></div>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="arcane-nav">
+  <div class="nav-inner">
+    <a class="nav-left" href="dashboard.html">
+      <img src="ArcaneA.png" class="nav-logo" alt="AA"/>
+      <span class="nav-brand">The Arcane Archives</span>
+    </a>
+    <div class="nav-sep"></div>
+    <div class="nav-center">
+      <a href="arcane-store.html" class="nav-store-btn">Store</a>
+      <div class="nav-ticker-wrap">
+        <div class="nav-ticker-track" id="nav-ticker-track"></div>
+      </div>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-right">
+      <div class="nav-balance" id="nav-balance">£0.00</div>
+      <div class="nav-online"></div>
+      <button class="nav-btn" onclick="location.href='alerts.html'">🔔</button>
+      <a class="nav-btn" href="settings.html">⚙️</a>
+      <div class="nav-xp-block">
+        <span class="nav-xp-val" id="nav-xp">0</span>
+        <span class="nav-xp-label">XP</span>
+      </div>
+      <div class="nav-rank" id="nav-rank">INITIATE</div>
+      <img class="nav-avatar" id="nav-avatar" src="ArcaneA.png" alt="Avatar"/>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════ LAYOUT ══════════════ -->
+<div class="tf-layout">
+
+  <!-- ── Toolbar ── -->
+  <div class="tf-toolbar">
+    <a class="tf-back" href="dashboard.html">← Dashboard</a>
+    <div class="tf-sep"></div>
+
+    <!-- Symbol search -->
+    <div class="sym-search" onclick="document.getElementById('sym-inp').focus()">
+      <span style="font-size:0.75rem;color:var(--text-dim)">🔍</span>
+      <input id="sym-inp" type="text" placeholder="XAUUSD" value="XAUUSD"
+             onkeydown="if(event.key==='Enter')loadChart(this.value.toUpperCase())"/>
+    </div>
+
+    <div class="tf-sep"></div>
+
+    <!-- Timeframes -->
+    <div class="tf-time-group">
+      <div class="tf-time-btn" onclick="setTF('1',this)">1m</div>
+      <div class="tf-time-btn" onclick="setTF('5',this)">5m</div>
+      <div class="tf-time-btn" onclick="setTF('15',this)">15m</div>
+      <div class="tf-time-btn" onclick="setTF('60',this)">1H</div>
+      <div class="tf-time-btn active" onclick="setTF('240',this)">4H</div>
+      <div class="tf-time-btn" onclick="setTF('D',this)">1D</div>
+      <div class="tf-time-btn" onclick="setTF('W',this)">1W</div>
+    </div>
+
+    <div class="tf-sep"></div>
+
+    <!-- Chart types -->
+    <div class="tf-chart-type">
+      <div class="tf-ct-btn active" title="Candles" onclick="setChartType('candlestick',this)">🕯</div>
+      <div class="tf-ct-btn" title="Bars"    onclick="setChartType('bars',this)">⊞</div>
+      <div class="tf-ct-btn" title="Line"    onclick="setChartType('line',this)">📈</div>
+      <div class="tf-ct-btn" title="Area"    onclick="setChartType('area',this)">◭</div>
+    </div>
+
+    <div class="tf-sep"></div>
+    <button class="tf-indicator-btn" onclick="openIndicators()">⚡ Indicators</button>
+    <button class="tf-indicator-btn" style="color:var(--teal);border-color:var(--border-hi)" onclick="openAlertDialog()">🔔 Alert</button>
+
+    <!-- Live price -->
+    <div class="tf-price-display">
+      <div class="tf-current-price" id="live-price">—</div>
+      <div class="tf-price-chg up" id="live-chg">—</div>
+    </div>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="tf-body">
+
+    <!-- Chart -->
+    <div class="tf-chart-wrap">
+      <div id="tv-chart"></div>
+    </div>
+
+    <!-- Side panel -->
+    <aside class="tf-side">
+
+      <!-- Quick stats -->
+      <div class="quick-stats">
+        <div class="qs-cell">
+          <div class="qs-label">Open</div>
+          <div class="qs-val" id="qs-open">—</div>
+        </div>
+        <div class="qs-cell">
+          <div class="qs-label">High</div>
+          <div class="qs-val up" id="qs-high">—</div>
+        </div>
+        <div class="qs-cell">
+          <div class="qs-label">Low</div>
+          <div class="qs-val down" id="qs-low">—</div>
+        </div>
+        <div class="qs-cell">
+          <div class="qs-label">Vol</div>
+          <div class="qs-val" id="qs-vol">—</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="side-tabs">
+        <div class="side-tab active" onclick="switchSideTab('watchlist',this)">Watchlist</div>
+        <div class="side-tab" onclick="switchSideTab('signals',this)">Signals</div>
+        <div class="side-tab" onclick="switchSideTab('notes',this)">Notes</div>
+      </div>
+
+      <!-- Watchlist content -->
+      <div class="side-content" id="tab-watchlist">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Signals content -->
+      <div class="side-content" id="tab-signals" style="display:none">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Notes content -->
+      <div class="side-content" id="tab-notes" style="display:none">
+        <div class="notes-area">
+          <div style="font-family:var(--font-head);font-size:0.52rem;color:var(--text-dim);margin-bottom:0.4rem;letter-spacing:0.1em">TRADE JOURNAL</div>
+          <textarea class="notes-textarea" id="notes-ta" placeholder="Record your trade thesis, analysis, entry/exit reasons…"></textarea>
+          <button class="notes-save" onclick="saveNotes()">💾 Save Notes</button>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════════ TRADINGVIEW ══════════════ -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+<!-- ══════════════ FIREBASE ══════════════ -->
+<script type="module">
+  import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  const app  = initializeApp({ apiKey:"AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain:"arcane-archives-3b0f5.firebaseapp.com", projectId:"arcane-archives-3b0f5" });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const RANKS=[{min:0,label:'INITIATE'},{min:100,label:'ANALYST'},{min:500,label:'OPERATIVE'},{min:1500,label:'TACTICIAN'},{min:3000,label:'STRATEGIST'},{min:6000,label:'COMMANDER'},{min:10000,label:'ARCHON'}];
+  function getRank(xp){ let r=RANKS[0]; RANKS.forEach(x=>{ if(xp>=x.min) r=x; }); return r; }
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) { location.href='login.html'; return; }
+    const snap = await getDoc(doc(db,'users',user.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const xp = data.xp ?? 0;
+    document.getElementById('nav-balance').textContent = `£${(data.balance??0).toFixed(2)}`;
+    document.getElementById('nav-xp').textContent = xp.toLocaleString();
+    document.getElementById('nav-rank').textContent = getRank(xp).label;
+    if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
+  });
+</script>
+
+<script>
+/* ══ Stars ══ */
+(function(){
+  const canvas=document.getElementById('stars-canvas');
+  const ctx=canvas.getContext('2d');let stars=[];
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  function initStars(){stars=[];for(let i=0;i<150;i++)stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,a:Math.random()*0.5+0.05,da:(Math.random()-0.5)*0.006});}
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();s.a+=s.da;if(s.a>0.7||s.a<0.05)s.da*=-1;});requestAnimationFrame(draw);}
+  resize();initStars();draw();
+  window.addEventListener('resize',()=>{resize();initStars();});
+})();
+
+/* ══ Nav Ticker ══ */
+(function(){
+  const items=[{sym:'XAU/USD',price:'2,643.20',chg:'+0.42%',dir:'up'},{sym:'XAG/USD',price:'29.84',chg:'-0.18%',dir:'down'},{sym:'BTC/USD',price:'…',chg:'…',dir:'flat',live:'btc'},{sym:'S&P 500',price:'5,871.50',chg:'+0.61%',dir:'up'},{sym:'ETH/USD',price:'…',chg:'…',dir:'flat',live:'eth'},{sym:'GBP/USD',price:'1.2641',chg:'+0.23%',dir:'up'}];
+  const track=document.getElementById('nav-ticker-track');
+  track.innerHTML=[...items,...items].map(it=>`<div class="nav-ticker-item"><span class="t-sym">${it.sym}</span><span class="t-price">${it.price}</span><span class="t-chg ${it.dir}">${it.chg}</span></div>`).join('');
+})();
+
+/* ══ TradingView Widget ══ */
+let tvWidget = null;
+let currentSymbol = 'XAUUSD';
+let currentTF = '240';
+let currentType = 'candlestick';
+
+function loadChart(symbol, tf, type) {
+  symbol = symbol || currentSymbol;
+  tf     = tf     || currentTF;
+  type   = type   || currentType;
+  currentSymbol = symbol;
+
+  const container = document.getElementById('tv-chart');
+  container.innerHTML = '';
+
+  tvWidget = new TradingView.widget({
+    symbol:           symbol,
+    interval:         tf,
+    container_id:     'tv-chart',
+    datafeed:         new Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
+    library_path:     'https://www.tradingview.com/charting_library/',
+    // Use the lightweight public chart instead:
+    width:  '100%',
+    height: '100%',
+    locale: 'en',
+    theme:  'dark',
+    style:  type === 'candlestick' ? '1' : type === 'bars' ? '0' : type === 'line' ? '2' : '3',
+    timezone: 'Etc/UTC',
+    toolbar_bg: '#0a0a0f',
+    hide_top_toolbar: true,
+    hide_legend: false,
+    withdateranges: false,
+    allow_symbol_change: false,
+    save_image: false,
+    backgroundColor: '#0a0a0f',
+    gridColor: 'rgba(0,212,255,0.05)',
+    enable_publishing: false,
+    overrides: {
+      'paneProperties.background':       '#0a0a0f',
+      'paneProperties.backgroundType':   'solid',
+      'paneProperties.vertGridProperties.color': 'rgba(0,212,255,0.05)',
+      'paneProperties.horzGridProperties.color': 'rgba(0,212,255,0.05)',
+      'scalesProperties.textColor':      '#7a8499',
+      'scalesProperties.lineColor':      'rgba(80,100,140,0.2)',
+      'mainSeriesProperties.candleStyle.upColor':        '#00e676',
+      'mainSeriesProperties.candleStyle.downColor':      '#ff3b3b',
+      'mainSeriesProperties.candleStyle.borderUpColor':  '#00e676',
+      'mainSeriesProperties.candleStyle.borderDownColor':'#ff3b3b',
+      'mainSeriesProperties.candleStyle.wickUpColor':    '#00e676',
+      'mainSeriesProperties.candleStyle.wickDownColor':  '#ff3b3b',
+    }
+  });
+}
+
+// Fallback: Use the simple embed widget (no charting_library needed)
+function loadSimpleChart(symbol, tf) {
+  symbol = symbol || currentSymbol;
+  tf = tf || currentTF;
+  currentSymbol = symbol;
+
+  const container = document.getElementById('tv-chart');
+  container.style.background = '#0a0a0f';
+
+  // Map interval to TradingView format
+  const tfMap = {'1':'1','5':'5','15':'15','60':'60','240':'240','D':'1D','W':'1W'};
+  const tvTF = tfMap[tf] || '240';
+
+  container.innerHTML = `
+    <div class="tradingview-widget-container" style="height:100%;width:100%">
+      <div id="tradingview_embed" style="height:calc(100% - 32px);width:100%"></div>
+    </div>`;
+
+  new TradingView.widget({
+    width:   '100%',
+    height:  '100%',
+    symbol:  symbol,
+    interval: tvTF,
+    timezone: 'Etc/UTC',
+    theme:   'dark',
+    style:   '1',
+    locale:  'en',
+    toolbar_bg:          '#0a0a0f',
+    enable_publishing:   false,
+    allow_symbol_change: true,
+    save_image:          false,
+    container_id:        'tradingview_embed',
+    overrides: {
+      'paneProperties.background':        '#0a0a0f',
+      'paneProperties.backgroundType':    'solid',
+      'paneProperties.vertGridProperties.color': 'rgba(0,212,255,0.05)',
+      'paneProperties.horzGridProperties.color': 'rgba(0,212,255,0.05)',
+      'mainSeriesProperties.candleStyle.upColor':        '#00e676',
+      'mainSeriesProperties.candleStyle.downColor':      '#ff3b3b',
+      'mainSeriesProperties.candleStyle.borderUpColor':  '#00e676',
+      'mainSeriesProperties.candleStyle.borderDownColor':'#ff3b3b',
+      'mainSeriesProperties.candleStyle.wickUpColor':    '#00e676',
+      'mainSeriesProperties.candleStyle.wickDownColor':  '#ff3b3b',
+    }
+  });
+}
+
+function setTF(tf, el) {
+  currentTF = tf;
+  document.querySelectorAll('.tf-time-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadSimpleChart(currentSymbol, tf);
+}
+window.setTF = setTF;
+
+function setChartType(type, el) {
+  currentType = type;
+  document.querySelectorAll('.tf-ct-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadSimpleChart(currentSymbol, currentTF);
+}
+window.setChartType = setChartType;
+
+function loadChart(sym) { currentSymbol = sym; loadSimpleChart(sym, currentTF); }
+window.loadChart = loadChart;
+
+function openIndicators() {
+  alert('💡 Indicators panel coming soon — EMA, RSI, MACD, Bollinger Bands & more');
+}
+window.openIndicators = openIndicators;
+
+function openAlertDialog() {
+  const sym = prompt(`Set price alert for ${currentSymbol}\nEnter target price:`, '');
+  if (sym) alert(`✅ Alert set for ${currentSymbol} at ${sym}`);
+}
+window.openAlertDialog = openAlertDialog;
+
+/* ══ Side panel tabs ══ */
+function switchSideTab(tab, el) {
+  document.querySelectorAll('.side-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['watchlist','signals','notes'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? '' : 'none';
+  });
+}
+window.switchSideTab = switchSideTab;
+
+/* ══ Watchlist ══ */
+const WATCHLIST = [
+  { sym:'XAUUSD',  name:'Gold',        price:'2,643.20', chg:'+0.42%', up:true,  active:true  },
+  { sym:'XAGUSD',  name:'Silver',      price:'29.84',    chg:'-0.18%', up:false },
+  { sym:'BTCUSD',  name:'Bitcoin',     price:'…',        chg:'…',      up:true,  live:'btc'   },
+  { sym:'ETHUSD',  name:'Ethereum',    price:'…',        chg:'…',      up:true,  live:'eth'   },
+  { sym:'SPX500',  name:'S&P 500',     price:'5,871.50', chg:'+0.61%', up:true  },
+  { sym:'GBPUSD',  name:'GBP/USD',     price:'1.2641',   chg:'+0.23%', up:true  },
+  { sym:'EURUSD',  name:'EUR/USD',     price:'1.0823',   chg:'-0.09%', up:false },
+  { sym:'USDJPY',  name:'USD/JPY',     price:'149.82',   chg:'+0.31%', up:true  },
+  { sym:'USOIL',   name:'Crude Oil',   price:'78.42',    chg:'-0.54%', up:false },
+  { sym:'NAS100',  name:'NASDAQ 100',  price:'20,914',   chg:'+0.88%', up:true  },
+];
+
+function renderWatchlist() {
+  const container = document.getElementById('tab-watchlist');
+  container.innerHTML = WATCHLIST.map(item => `
+    <div class="wl-item ${item.active ? 'active' : ''}" onclick="selectSymbol('${item.sym}',this)">
+      <div class="wl-left">
+        <div>
+          <div class="wl-sym">${item.sym}</div>
+          <div class="wl-name">${item.name}</div>
+        </div>
+      </div>
+      <div class="wl-right">
+        <div class="wl-price" id="wl-p-${item.sym}">${item.price}</div>
+        <div class="wl-chg ${item.up ? 'up' : 'down'}" id="wl-c-${item.sym}">${item.chg}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectSymbol(sym, el) {
+  document.querySelectorAll('.wl-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  currentSymbol = sym;
+  document.getElementById('sym-inp').value = sym;
+  loadSimpleChart(sym, currentTF);
+}
+window.selectSymbol = selectSymbol;
+
+/* ══ Signals ══ */
+function renderSignals() {
+  const signals = [
+    { sym:'XAUUSD', dir:'LONG',  desc:'Break above key resistance at 2,640. Target 2,680. SL below 2,620.',
+      entry:'2,641', tp:'2,680', sl:'2,618' },
+    { sym:'BTCUSD', dir:'LONG',  desc:'Consolidation above 95K. Bullish structure intact. Watch for momentum push.',
+      entry:'95,400', tp:'102,000', sl:'91,500' },
+    { sym:'EURUSD', dir:'SHORT', desc:'Bearish divergence on 4H RSI. Rejection from 1.0850 resistance.',
+      entry:'1.0835', tp:'1.0760', sl:'1.0875' },
+    { sym:'USOIL',  dir:'SHORT', desc:'Supply zone reaction. EIA data negative. OPEC+ uncertainty.',
+      entry:'78.80', tp:'75.50', sl:'80.10' },
+  ];
+
+  document.getElementById('tab-signals').innerHTML = signals.map(s => `
+    <div class="sig-item">
+      <div class="sig-header">
+        <span class="sig-sym">${s.sym}</span>
+        <span class="sig-dir ${s.dir.toLowerCase()}">${s.dir}</span>
+      </div>
+      <div class="sig-body">${s.desc}</div>
+      <div class="sig-levels">
+        <div class="sig-level">ENTRY <span>${s.entry}</span></div>
+        <div class="sig-level">TP <span style="color:var(--green)">${s.tp}</span></div>
+        <div class="sig-level">SL <span style="color:var(--red)">${s.sl}</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══ Notes ══ */
+function saveNotes() {
+  const notes = document.getElementById('notes-ta').value;
+  localStorage.setItem('arcane_notes_' + currentSymbol, notes);
+  const btn = document.querySelector('.notes-save');
+  btn.textContent = '✅ Saved';
+  setTimeout(() => btn.textContent = '💾 Save Notes', 1500);
+}
+window.saveNotes = saveNotes;
+
+/* ══ Crypto prices ══ */
+async function fetchPrices() {
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+    const d = await r.json();
+    const fmt = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+    const btcEl = document.getElementById('wl-p-BTCUSD');
+    const btcChg = document.getElementById('wl-c-BTCUSD');
+    if (btcEl) { btcEl.textContent = fmt(d.bitcoin.usd); }
+    if (btcChg) {
+      const c = d.bitcoin.usd_24h_change;
+      btcChg.textContent = `${c>=0?'+':''}${c.toFixed(2)}%`;
+      btcChg.className = 'wl-chg ' + (c>=0?'up':'down');
+    }
+
+    // Live price strip
+    if (currentSymbol === 'BTCUSD') {
+      document.getElementById('live-price').textContent = fmt(d.bitcoin.usd);
+      const c = d.bitcoin.usd_24h_change;
+      const el = document.getElementById('live-chg');
+      el.textContent = `${c>=0?'+':''}${c.toFixed(2)}%`;
+      el.className = 'tf-price-chg ' + (c>=0?'up':'down');
+    }
+  } catch(e) {}
+}
+
+/* ══ Quick stats (simulated per symbol) ══ */
+const STATS = {
+  XAUUSD: { open:'2,638.40', high:'2,649.80', low:'2,631.20', vol:'184K' },
+  XAGUSD: { open:'29.94',    high:'30.12',    low:'29.58',    vol:'42K'  },
+  BTCUSD: { open:'94,820',   high:'96,100',   low:'93,450',   vol:'28B'  },
+  EURUSD: { open:'1.0831',   high:'1.0858',   low:'1.0812',   vol:'8.2B' },
+};
+
+function updateStats(sym) {
+  const s = STATS[sym] || { open:'—', high:'—', low:'—', vol:'—' };
+  document.getElementById('qs-open').textContent = s.open;
+  document.getElementById('qs-high').textContent = s.high;
+  document.getElementById('qs-low').textContent  = s.low;
+  document.getElementById('qs-vol').textContent  = s.vol;
+}
+
+/* ══ Init ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  renderWatchlist();
+  renderSignals();
+  loadSimpleChart('XAUUSD', '240');
+  updateStats('XAUUSD');
+  fetchPrices();
+  setInterval(fetchPrices, 60000);
+
+  // Update live price every 5s (simulated fluctuation)
+  setInterval(() => {
+    if (currentSymbol !== 'BTCUSD') {
+      const base = 2643.20;
+      const v = base + (Math.random() - 0.5) * 4;
+      document.getElementById('live-price').textContent = v.toFixed(2);
+    }
+    updateStats(currentSymbol);
+  }, 5000);
+
+  // Load saved notes
+  document.getElementById('notes-ta').value = localStorage.getItem('arcane_notes_' + currentSymbol) || '';
+});
+</script>
+
+</body>
+</html>

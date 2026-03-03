@@ -1,1691 +1,1002 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>Dashboard | The Arcane Archives</title>
-  <link rel="icon" href="ArcaneA.png" />
-  <link rel="apple-touch-icon" href="ArcaneA.png">
-  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="ArcaneA.png"/>
+  <link rel="apple-touch-icon" href="ArcaneA.png"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="stylesheet" href="arcane-globals.css"/>
 
   <style>
-    :root {
-      --bg-dark: #0a0a0a;
-      --bg-elevated: #121212;
-      --bg-card: #1a1a1a;
-      --purple: #9333ea;
-      --purple-dark: #7e22ce;
-      --purple-light: #a78bfa;
-      --gold: #fbbf24;
-      --green: #10b981;
-      --red: #ef4444;
-      --text: #f5f5f5;
-      --text-dim: #a1a1a1;
-      --border: rgba(148, 163, 184, 0.2);
-    }
+    /* ── Dashboard-specific styles ── */
 
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
-    }
+    body { background: var(--bg); }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Inter', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: calc(2rem + env(safe-area-inset-top, 0px)) max(2rem, env(safe-area-inset-right, 0px)) calc(4rem + env(safe-area-inset-bottom, 0px)) max(2rem, env(safe-area-inset-left, 0px));
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 2.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-weight: 800;
-      font-size: 1.125rem;
-      background: linear-gradient(135deg, var(--purple-light), white);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .brand img { 
-      width: 40px; 
-      height: 40px; 
-      border-radius: 8px; 
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .pill-btn {
-      cursor: pointer;
-      border-radius: 8px;
-      padding: 0.625rem 1.25rem;
-      font-weight: 600;
-      font-size: 0.875rem;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text);
-      transition: all 0.2s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      white-space: nowrap;
-    }
-
-    .pill-btn:hover {
-      transform: translateY(-1px);
-      border-color: var(--purple);
-      background: rgba(147, 51, 234, 0.1);
-      color: var(--purple-light);
-    }
-
-    .logout {
-      border-color: rgba(239, 68, 68, 0.3);
-      color: var(--red);
-    }
-
-    .logout:hover {
-      border-color: var(--red);
-      background: rgba(239, 68, 68, 0.1);
-    }
-
-    /* Welcome Section */
-    .welcome {
-      background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), var(--bg-card));
-      border: 2px solid var(--purple);
-      border-radius: 24px;
-      padding: 3rem;
-      margin-bottom: 3rem;
+    /* ── Hero Banner ── */
+    .dash-hero {
+      padding: 2rem 1.5rem 1rem;
       position: relative;
-      overflow: hidden;
     }
-
-    .welcome::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .welcome-content {
-      position: relative;
-      z-index: 1;
-    }
-
-    .welcome h1 {
-      font-size: clamp(1.75rem, 4vw, 3rem);
-      font-weight: 900;
-      background: linear-gradient(135deg, white, var(--purple-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.75rem;
-      line-height: 1.1;
-    }
-
-    .welcome > p {
-      color: var(--text-dim);
-      font-size: 1.125rem;
-      margin-bottom: 2.5rem;
-    }
-
-    /* Balance Card */
-    .balance-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 2rem;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-    }
-
-    .balance-left {
-      flex: 1;
-    }
-
-    .label {
-      font-size: 0.75rem;
+    .dash-greeting {
+      font-family: var(--font-head);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
       color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.3rem;
     }
-
-    .balance-amount {
+    .dash-title {
+      font-family: var(--font-head);
+      font-size: clamp(1.1rem, 3vw, 1.6rem);
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .dash-title span { color: var(--gold); }
+    .dash-sub {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      max-width: 480px;
+    }
+    .dash-meta {
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .balance-amount span:first-child {
-      font-size: 3rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--gold), #fcd34d);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1;
-    }
-
-    .pulse-dot {
-      width: 10px;
-      height: 10px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.5;
-        transform: scale(1.1);
-      }
-    }
-
-    .balance-sub {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-    }
-
-    .balance-actions {
-      display: flex;
-      gap: 0.75rem;
+      margin-top: 1rem;
       flex-wrap: wrap;
     }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.875rem;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
+    .dash-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
     }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-      color: white;
+    .dash-meta-item .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
     }
+    .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-gold  { background: var(--gold);  box-shadow: 0 0 6px var(--gold); }
+    .dot-teal  { background: var(--teal);  box-shadow: 0 0 6px var(--teal); }
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4);
+    /* ── Section Header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      margin-bottom: 1rem;
     }
-
-    .btn-secondary {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--purple);
-      background: rgba(147, 51, 234, 0.1);
-      color: var(--purple-light);
-      transform: translateY(-1px);
-    }
-
-    /* TradingView Ticker */
-    .tv-ticker-wrap {
-      margin-bottom: 3rem;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    /* Section Title */
     .section-title {
-      font-size: 1.75rem;
-      font-weight: 800;
-      margin-bottom: 1.5rem;
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      text-transform: uppercase;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-
-    /* Grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 3rem;
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: var(--teal);
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--teal);
     }
 
-    /* Tile */
-    .tile {
-      background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
+    /* ── Module Carousel ── */
+    .carousel-section { margin-bottom: 2.5rem; }
+
+    .carousel-outer {
       position: relative;
+      padding: 0 1.5rem;
     }
 
-    .tile:hover {
-      transform: translateY(-4px);
-      border-color: var(--purple);
-      box-shadow: 0 12px 30px rgba(147, 51, 234, 0.3);
+    .carousel-track {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .carousel-track::-webkit-scrollbar { display: none; }
 
-    .tile-icon {
-      font-size: 2rem;
-      width: 50px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .tile-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .tile-title {
-      font-weight: 700;
-      font-size: 1.125rem;
-      margin-bottom: 0.25rem;
-      color: white;
-    }
-
-    .tile-desc {
-      color: var(--text-dim);
-      font-size: 0.875rem;
-      line-height: 1.4;
-    }
-
-    /* Special Tiles */
-    .tile-insights {
-      border-color: var(--gold);
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), var(--bg-card));
-    }
-
-    .tile-insights:hover {
-      border-color: var(--gold);
-      box-shadow: 0 12px 30px rgba(251, 191, 36, 0.3);
-    }
-
-    .tile-retreat {
-      border-color: var(--green);
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), var(--bg-card));
-    }
-
-    .tile-retreat:hover {
-      border-color: var(--green);
-      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3);
-    }
-
-    /* Locked Badge */
-    .tile.locked {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    .tile.locked::after {
-      content: '🔒 LOCKED';
+    /* Scroll arrow */
+    .carousel-arrow {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid var(--red);
-      color: var(--red);
-      padding: 0.375rem 0.75rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-    }
-
-    .tile.locked:hover {
-      transform: none;
-      box-shadow: none;
-    }
-
-    /* Admin Section */
-    .admin-grid .tile {
-      border-color: var(--gold);
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), var(--bg-card));
-    }
-
-    .admin-grid .tile:hover {
-      border-color: var(--gold);
-      box-shadow: 0 12px 30px rgba(251, 191, 36, 0.3);
-    }
-
-    /* Modal Overlay */
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(4px);
-      z-index: 999;
-      display: none;
-    }
-
-    .overlay.active {
-      display: block;
-    }
-
-    /* Modal */
-    .modal {
-      position: fixed;
+      right: 0.5rem;
       top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--bg-card);
-      border: 2px solid var(--border);
-      border-radius: 20px;
-      padding: 2.5rem;
-      z-index: 1000;
-      display: none;
-      max-width: 500px;
-      width: calc(100% - 2rem);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal.active {
-      display: block;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 2rem;
-    }
-
-    .modal-close {
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0;
-      width: 32px;
-      height: 32px;
+      transform: translateY(-60%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-4);
+      border: 1px solid var(--border-hi);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 8px;
-      transition: all 0.2s;
-    }
-
-    .modal-close:hover {
-      background: rgba(239, 68, 68, 0.1);
-      color: var(--red);
-    }
-
-    .modal h3 {
-      font-size: 1.75rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .modal p {
-      color: var(--text-dim);
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    /* Admin Modal */
-    .admin-modal {
-      max-width: 900px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .admin-panel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-      padding: 1.5rem;
-    }
-
-    /* Admin tiles with gold accent */
-    .admin-modal .tile {
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), var(--bg-card));
-      border-color: rgba(251, 191, 36, 0.3);
-    }
-
-    .admin-modal .tile:hover {
-      border-color: var(--gold);
-      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.25);
-      transform: translateY(-3px);
-    }
-
-    .admin-modal .tile-title {
-      color: var(--gold);
-    }
-
-    .admin-panel-tile {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
       cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .admin-panel-tile:hover {
-      transform: translateY(-2px);
-      border-color: var(--gold);
-      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.2);
-    }
-
-    .admin-panel-icon {
-      font-size: 1.5rem;
-      width: 40px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .admin-panel-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .admin-panel-title {
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
-
-    .admin-panel-desc {
-      color: var(--text-dim);
-      font-size: 0.85rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .container {
-        padding: calc(1.5rem + env(safe-area-inset-top, 0px)) max(1.5rem, env(safe-area-inset-right, 0px)) calc(1.5rem + env(safe-area-inset-bottom, 0px)) max(1.5rem, env(safe-area-inset-left, 0px));
-      }
-
-      .welcome {
-        padding: 2rem;
-      }
-
-      .balance-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .balance-actions {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-      }
-
-      .balance-actions .btn {
-        flex: 1;
-        min-width: 140px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .header {
-        padding-bottom: 1rem;
-      }
-
-      .brand {
-        font-size: 1rem;
-      }
-
-      .brand img {
-        width: 32px;
-        height: 32px;
-      }
-
-      .pill-btn {
-        font-size: 0.8rem;
-        padding: 0.5rem 1rem;
-      }
-
-      .welcome {
-        padding: 1.5rem;
-      }
-
-      .welcome h1 {
-        font-size: 1.75rem;
-      }
-
-      .balance-amount span:first-child {
-        font-size: 2.5rem;
-      }
-
-      .balance-card {
-        padding: 1.5rem;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .section-title {
-        font-size: 1.5rem;
-      }
-
-      .tile {
-        padding: 1.25rem;
-      }
-
-      .tile-icon {
-        font-size: 1.75rem;
-        width: 40px;
-      }
-
-      .tile-title {
-        font-size: 1rem;
-      }
-
-      .modal {
-        padding: 2rem;
-      }
-
-      .admin-panel-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* ================================================
-       ADMIN POPUP - PURPLE GRADIENT DESIGN
-       ================================================ */
-    .admin-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px);
-      z-index: 99998;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .admin-overlay.show {
-      display: block;
-      opacity: 1;
-    }
-
-    .admin-popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-      border: 1px solid rgba(251, 191, 36, 0.3);
-      border-radius: 20px;
-      padding: 0;
-      max-width: 1000px;
-      width: 92%;
-      max-height: 85vh;
-      overflow: hidden;
-      z-index: 99999;
-      display: none;
-      box-shadow: 0 25px 100px rgba(0, 0, 0, 0.8);
-    }
-
-    .admin-popup.show {
-      display: block;
-    }
-
-    .admin-popup-header {
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(147, 51, 234, 0.15));
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .admin-popup-title h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--gold);
-      margin: 0;
-    }
-
-    .admin-close-btn {
-      background: transparent;
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      color: var(--text-dim);
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .admin-close-btn:hover {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(239, 68, 68, 0.1);
-    }
-
-    .admin-popup-content {
-      padding: 2rem;
-      max-height: calc(85vh - 80px);
-      overflow-y: auto;
-    }
-
-    .admin-tools-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-    }
-
-    .admin-tool-tile {
-      background: rgba(30, 27, 75, 0.5);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .admin-tool-tile:hover {
-      background: rgba(30, 27, 75, 0.8);
-      border-color: var(--gold);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
-    }
-
-    .admin-tool-icon {
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      flex-shrink: 0;
-    }
-
-    .admin-tool-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .admin-tool-title {
+      z-index: 10;
+      color: var(--teal);
       font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 0.25rem;
+      box-shadow: 0 0 12px var(--teal-glow);
+      transition: all 0.2s;
+      animation: arrow-pulse 2s ease-in-out infinite;
+    }
+    .carousel-arrow:hover {
+      background: var(--teal-glow);
+      box-shadow: 0 0 20px var(--teal-glow);
+    }
+    @keyframes arrow-pulse {
+      0%, 100% { box-shadow: 0 0 8px var(--teal-glow); }
+      50%       { box-shadow: 0 0 18px rgba(0,212,255,0.3); }
     }
 
-    .admin-tool-desc {
-      font-size: 0.875rem;
-      color: var(--text-dim);
-      line-height: 1.4;
-    }
-
-    /* ================================================
-       FLOATING ADMIN BUTTON (FAB) - Silicon Valley Style
-       ================================================ */
-    .admin-fab {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      z-index: 9999;
-      display: none;
-    }
-
-    .admin-fab.show {
-      display: block;
-    }
-
-    .admin-fab-btn {
-      width: 64px;
-      height: 64px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      border: 2px solid var(--gold);
-      color: var(--gold);
-      font-size: 1.75rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow:
-        0 10px 40px rgba(251, 191, 36, 0.3),
-        0 0 0 0 rgba(251, 191, 36, 0.4);
-      animation: fabPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes fabPulse {
-      0%, 100% {
-        box-shadow:
-          0 10px 40px rgba(251, 191, 36, 0.3),
-          0 0 0 0 rgba(251, 191, 36, 0.4);
-      }
-      50% {
-        box-shadow:
-          0 10px 40px rgba(251, 191, 36, 0.4),
-          0 0 0 8px rgba(251, 191, 36, 0);
-      }
-    }
-
-    .admin-fab-btn:hover {
-      transform: scale(1.1) rotate(5deg);
-      background: linear-gradient(135deg, var(--gold), #f59e0b);
-      color: #0a0a0a;
-      border-color: var(--gold);
-      box-shadow: 0 20px 60px rgba(251, 191, 36, 0.5);
-      animation: none;
-    }
-
-    .admin-fab-tooltip {
-      position: absolute;
-      right: calc(100% + 1rem);
-      top: 50%;
-      transform: translateY(-50%);
-      background: var(--bg-card);
+    /* ── Module Card ── */
+    .module-card {
+      flex: 0 0 270px;
+      height: 380px;
+      border-radius: 12px;
       border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-
-    .admin-fab-btn:hover + .admin-fab-tooltip {
-      opacity: 1;
-    }
-
-    /* ================================================
-       PAGE TRANSITIONS - Smooth Silicon Valley Feel
-       ================================================ */
-    .page-transition-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg-dark);
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .page-transition-overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .page-loader {
+      background: var(--bg-3);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      scroll-snap-align: start;
+      text-decoration: none;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
     }
 
-    .page-loader-logo {
-      width: 60px;
-      height: 60px;
-      border-radius: 16px;
-      animation: logoFloat 1.5s ease-in-out infinite;
+    .module-card:hover {
+      transform: translateY(-6px);
+    }
+    .module-card.teal-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 1px rgba(0,212,255,0.15), 0 8px 40px rgba(0,0,0,0.5), 0 0 30px var(--teal-glow);
+    }
+    .module-card.gold-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px rgba(245,200,66,0.15), 0 8px 40px rgba(0,0,0,0.5), 0 0 30px var(--gold-glow);
+    }
+    .module-card.red-card:hover {
+      border-color: var(--red);
+      box-shadow: 0 0 0 1px rgba(255,59,59,0.15), 0 8px 40px rgba(0,0,0,0.5), 0 0 30px var(--red-glow);
     }
 
-    @keyframes logoFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .page-loader-bar {
-      width: 200px;
-      height: 4px;
-      background: var(--bg-elevated);
-      border-radius: 4px;
+    /* Card Visual Area */
+    .card-visual {
+      flex: 1;
+      position: relative;
       overflow: hidden;
     }
 
-    .page-loader-progress {
-      height: 100%;
-      width: 30%;
-      background: linear-gradient(90deg, var(--purple), var(--purple-light));
-      border-radius: 4px;
-      animation: loadProgress 1s ease-in-out infinite;
+    /* Animated backgrounds per card */
+    .comm-bg {
+      background: radial-gradient(ellipse 80% 80% at 50% 60%, rgba(0,212,255,0.12) 0%, transparent 70%),
+                  linear-gradient(180deg, #0c0c18 0%, #0a1020 100%);
+    }
+    .floor-bg {
+      background: radial-gradient(ellipse 70% 70% at 50% 70%, rgba(245,200,66,0.1) 0%, transparent 70%),
+                  linear-gradient(180deg, #100c08 0%, #0a0a0f 100%);
+    }
+    .watch-bg {
+      background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,212,255,0.08) 0%, transparent 70%),
+                  linear-gradient(180deg, #080c14 0%, #0a0a0f 100%);
+    }
+    .war-bg {
+      background: radial-gradient(ellipse 70% 80% at 50% 40%, rgba(255,59,59,0.1) 0%, transparent 70%),
+                  linear-gradient(180deg, #100808 0%, #0a0a0f 100%);
     }
 
-    @keyframes loadProgress {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(400%); }
+    /* Card center icon */
+    .card-icon-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* ================================================
-       SKELETON LOADING - Modern Content Placeholders
-       ================================================ */
-    .skeleton {
-      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
-      background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s ease-in-out infinite;
-      border-radius: 8px;
+    .card-icon {
+      font-size: 4rem;
+      opacity: 0.18;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .module-card:hover .card-icon { opacity: 0.32; transform: scale(1.1); }
+
+    /* SVG pattern overlays */
+    .card-grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 28px 28px;
     }
 
-    @keyframes skeletonShimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    /* Communication card specific */
+    .chat-bubbles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .chat-bubble {
+      position: absolute;
+      border-radius: 12px 12px 12px 2px;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.15);
+      animation: float-up 4s ease-in-out infinite;
+    }
+    .chat-bubble:nth-child(2) {
+      border-radius: 12px 12px 2px 12px;
+      background: rgba(245,200,66,0.06);
+      border-color: rgba(245,200,66,0.12);
+      animation-delay: -1.5s;
+    }
+    .chat-bubble:nth-child(3) { animation-delay: -3s; }
+    @keyframes float-up {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50%       { transform: translateY(-8px); opacity: 1; }
     }
 
-    /* ================================================
-       ENHANCED TILE INTERACTIONS
-       ================================================ */
-    .tile {
-      transform: translateY(0);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Trading Floor card — animated candles */
+    .candle-chart {
+      position: absolute;
+      bottom: 20px;
+      left: 16px; right: 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 120px;
+    }
+    .candle {
+      flex: 1;
+      border-radius: 2px 2px 0 0;
+      position: relative;
+      transition: height 1s ease;
+    }
+    .candle.bull { background: rgba(0,230,118,0.35); border: 1px solid rgba(0,230,118,0.5); }
+    .candle.bear { background: rgba(255,59,59,0.35);  border: 1px solid rgba(255,59,59,0.5); }
+    .candle-wick {
+      position: absolute;
+      left: 50%;
+      width: 1px;
+      background: currentColor;
+      transform: translateX(-50%);
+    }
+    .candle.bull .candle-wick { top: -12px; height: 12px; background: rgba(0,230,118,0.6); }
+    .candle.bear .candle-wick { top: -8px;  height: 8px;  background: rgba(255,59,59,0.6); }
+
+    /* Watchtower card — globe dots */
+    .globe-dots {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .globe-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(0,212,255,0.12);
+      animation: ring-pulse 3s ease-in-out infinite;
+    }
+    @keyframes ring-pulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50%       { opacity: 0.8; transform: scale(1.03); }
     }
 
-    .tile:active:not(.locked) {
-      transform: scale(0.98);
+    /* War Room card — radar sweep */
+    .radar-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .radar-circle {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(255,59,59,0.15);
+    }
+    .radar-sweep {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(rgba(255,59,59,0.25) 0deg, transparent 60deg);
+      animation: radar-spin 3s linear infinite;
+    }
+    @keyframes radar-spin { to { transform: rotate(360deg); } }
+    .radar-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 6px var(--red);
+      animation: radar-blink 2s ease-in-out infinite;
+    }
+    @keyframes radar-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    /* Card footer */
+    .card-footer {
+      padding: 1rem 1.25rem 1.25rem;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.6));
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+    .card-tag {
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .card-name {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+    .teal-card  .card-name { color: var(--teal); }
+    .gold-card  .card-name { color: var(--gold); }
+    .red-card   .card-name { color: var(--red); }
+    .card-desc {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-top: 0.35rem;
+      line-height: 1.4;
     }
 
-    .tile::before {
+    .card-arrow {
+      position: absolute;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: transform 0.2s;
+    }
+    .teal-card .card-arrow { border: 1px solid rgba(0,212,255,0.35); color: var(--teal); }
+    .gold-card .card-arrow { border: 1px solid rgba(245,200,66,0.35); color: var(--gold); }
+    .red-card  .card-arrow { border: 1px solid rgba(255,59,59,0.35);  color: var(--red); }
+    .module-card:hover .card-arrow { transform: translate(2px, -2px); }
+
+    /* ── Free Access Grid ── */
+    .free-section {
+      padding: 0 1.5rem 2rem;
+    }
+
+    .free-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .free-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s var(--ease);
+      position: relative;
+      overflow: hidden;
+    }
+    .free-card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 16px;
-      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(147, 51, 234, 0.15), transparent 50%);
+      inset: 0;
+      background: linear-gradient(135deg, transparent 60%, rgba(0,212,255,0.04));
       opacity: 0;
       transition: opacity 0.3s;
-      pointer-events: none;
+    }
+    .free-card:hover {
+      border-color: var(--teal);
+      background: var(--bg-4);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 12px var(--teal-glow);
+      transform: translateY(-2px);
+    }
+    .free-card:hover::before { opacity: 1; }
+
+    .free-card.retreat {
+      border-color: var(--border-gold);
+      background: linear-gradient(135deg, var(--bg-3), rgba(245,200,66,0.04));
+      box-shadow: 0 0 16px var(--gold-glow);
+    }
+    .free-card.retreat:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 20px var(--gold-glow);
     }
 
-    .tile:hover::before {
-      opacity: 1;
+    .free-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      background: var(--bg-5);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .free-card:hover .free-icon { border-color: var(--teal); background: var(--teal-glow2); }
+    .retreat .free-icon { border-color: var(--border-gold); background: var(--gold-glow2); }
+    .retreat:hover .free-icon { background: var(--gold-glow); }
+
+    .free-info { flex: 1; min-width: 0; }
+    .free-title {
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .retreat .free-title { color: var(--gold); }
+    .free-desc {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* ================================================
-       FADE-IN ANIMATIONS
-       ================================================ */
-    .fade-in-up {
-      animation: fadeInUp 0.6s ease-out forwards;
-      opacity: 0;
+    .free-badge {
+      font-family: var(--font-head);
+      font-size: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      flex-shrink: 0;
     }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* ── Logout ── */
+    .dash-footer {
+      padding: 0 1.5rem;
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      background: rgba(255,59,59,0.08);
+      border: 1px solid rgba(255,59,59,0.25);
+      border-radius: 6px;
+      color: var(--red);
+      font-family: var(--font-head);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover {
+      background: rgba(255,59,59,0.14);
+      border-color: var(--red);
+      box-shadow: 0 0 12px var(--red-glow);
     }
 
-    .stagger-1 { animation-delay: 0.1s; }
-    .stagger-2 { animation-delay: 0.2s; }
-    .stagger-3 { animation-delay: 0.3s; }
-    .stagger-4 { animation-delay: 0.4s; }
-
-    /* ================================================
-       PREMIUM BADGE SHIMMER
-       ================================================ */
-    .tile[data-paid="true"]:not(.locked) .tile-title::after {
-      content: '✨';
-      margin-left: 0.5rem;
-      font-size: 0.875rem;
+    .version-tag {
+      font-family: var(--font-head);
+      font-size: 0.5rem;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
     }
 
-    /* ================================================
-       GLASSMORPHISM EFFECTS
-       ================================================ */
-    .glass {
-      background: rgba(26, 26, 26, 0.8);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-
-    /* ================================================
-       RESPONSIVE FAB
-       ================================================ */
+    /* ── Responsive ── */
     @media (max-width: 640px) {
-      .admin-fab {
-        bottom: 1.5rem;
-        right: 1.5rem;
-      }
-
-      .admin-fab-btn {
-        width: 56px;
-        height: 56px;
-        font-size: 1.5rem;
-      }
-
-      .admin-fab-tooltip {
-        display: none;
-      }
+      .dash-hero { padding: 1.25rem 1rem 0.75rem; }
+      .section-header { padding: 0 1rem; }
+      .carousel-outer { padding: 0 1rem; }
+      .free-section { padding: 0 1rem 1.5rem; }
+      .dash-footer { padding: 0 1rem 2rem; }
+      .module-card { flex: 0 0 240px; height: 340px; }
+      .free-grid { grid-template-columns: 1fr; }
     }
-
-    /* ================================================
-       MOBILE OPTIMIZED ADMIN POPUP
-       ================================================ */
-    @media (max-width: 768px) {
-      .admin-popup {
-        width: 100%;
-        height: 100%;
-        max-width: 100%;
-        max-height: 100%;
-        border-radius: 0;
-        top: 0;
-        left: 0;
-        transform: none;
-        border: none;
-      }
-
-      .admin-popup-header {
-        padding: 1rem 1.25rem;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: linear-gradient(135deg, rgba(30, 27, 75, 0.98), rgba(15, 23, 42, 0.98));
-        backdrop-filter: blur(20px);
-      }
-
-      .admin-popup-title h2 {
-        font-size: 1.25rem;
-      }
-
-      .admin-close-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1.5rem;
-      }
-
-      .admin-popup-content {
-        padding: 1rem;
-        max-height: calc(100vh - 70px);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      .admin-popup-content > p {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-      }
-
-      .admin-tools-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-      }
-
-      .admin-tool-tile {
-        padding: 1rem;
-        border-radius: 12px;
-        min-height: 70px;
-      }
-
-      .admin-tool-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 1.5rem;
-        background: rgba(251, 191, 36, 0.1);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .admin-tool-title {
-        font-size: 0.95rem;
-      }
-
-      .admin-tool-desc {
-        font-size: 0.8rem;
-        line-height: 1.3;
-      }
-
-      /* Better touch targets */
-      .admin-tool-tile:active {
-        transform: scale(0.98);
-        background: rgba(30, 27, 75, 0.9);
-      }
-    }
-
-    @media (max-width: 380px) {
-      .admin-popup-title h2 {
-        font-size: 1.1rem;
-      }
-
-      .admin-tool-tile {
-        padding: 0.875rem;
-      }
-
-      .admin-tool-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1.25rem;
-      }
+    @media (max-width: 400px) {
+      .module-card { flex: 0 0 220px; height: 320px; }
     }
   </style>
 </head>
-
 <body>
-  <!-- Page Transition Overlay -->
-  <div class="page-transition-overlay" id="pageTransition">
-    <div class="page-loader">
-      <img src="ArcaneA.png" alt="Loading" class="page-loader-logo" />
-      <div class="page-loader-bar">
-        <div class="page-loader-progress"></div>
+
+<!-- ── Stars & Overlays ── -->
+<canvas id="stars-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+
+<!-- ════════════════════════════
+     NAVBAR
+════════════════════════════ -->
+<nav class="arcane-nav">
+  <div class="nav-inner">
+    <!-- Left: Brand -->
+    <a class="nav-left" href="dashboard.html">
+      <img src="ArcaneA.png" class="nav-logo" alt="AA"/>
+      <span class="nav-brand">The Arcane Archives</span>
+    </a>
+    <div class="nav-sep"></div>
+
+    <!-- Center: Store + Ticker -->
+    <div class="nav-center">
+      <a href="arcane-store.html" class="nav-store-btn">Store</a>
+      <div class="nav-ticker-wrap">
+        <div class="nav-ticker-track" id="nav-ticker-track">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+    <div class="nav-sep"></div>
+
+    <!-- Right: User info -->
+    <div class="nav-right">
+      <div class="nav-balance" id="nav-balance">£0.00</div>
+      <div class="nav-online" id="nav-online"></div>
+      <button class="nav-btn" onclick="location.href='alerts.html'" title="Notifications" style="position:relative">
+        🔔 <span class="notif-dot" id="notif-dot" style="display:none"></span>
+      </button>
+      <a class="nav-btn" href="settings.html" title="Settings">⚙️</a>
+      <div class="nav-xp-block">
+        <span class="nav-xp-val" id="nav-xp">0</span>
+        <span class="nav-xp-label">XP</span>
+      </div>
+      <div class="nav-rank" id="nav-rank">INITIATE</div>
+      <img class="nav-avatar" id="nav-avatar" src="ArcaneA.png" alt="Avatar"/>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════
+     PAGE CONTENT
+════════════════════════════ -->
+<main class="page-wrap">
+
+  <!-- ── Hero Banner ── -->
+  <div class="dash-hero">
+    <div class="dash-greeting">Mission Control</div>
+    <h1 class="dash-title">Welcome back, <span id="user-name">Operator</span></h1>
+    <p class="dash-sub">All systems operational. Markets are active. Select your module.</p>
+    <div class="dash-meta">
+      <div class="dash-meta-item">
+        <div class="dot dot-green"></div>
+        <span id="market-status">MARKETS OPEN</span>
+      </div>
+      <div class="dash-meta-item">
+        <div class="dot dot-gold"></div>
+        <span id="dash-date"></span>
+      </div>
+      <div class="dash-meta-item">
+        <div class="dot dot-teal"></div>
+        <span id="member-plan">FREE TIER</span>
       </div>
     </div>
   </div>
 
-  <!-- Floating Admin Button (FAB) -->
-  <div class="admin-fab" id="adminFab">
-    <button class="admin-fab-btn" onclick="window.openAdminPopup()" aria-label="Admin Panel">
-      👑
-    </button>
-    <span class="admin-fab-tooltip">Admin Panel</span>
-  </div>
-
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="brand">
-        <img src="ArcaneA.png" alt="Arcane" />
-        THE ARCANE ARCHIVES
-      </div>
-
-      <div class="header-actions">
-        <a class="pill-btn" href="settings.html">⚙️ Settings</a>
-        <button class="pill-btn logout" id="logoutBtn">🚪 Log out</button>
-      </div>
+  <!-- ── Main Modules Carousel ── -->
+  <section class="carousel-section">
+    <div class="section-header">
+      <div class="section-title">Command Modules</div>
+      <div class="badge-live">Live</div>
     </div>
 
-    <!-- Welcome Section -->
-    <div class="welcome">
-      <div class="welcome-content">
-        <h1 id="welcomeTitle">Welcome back 👋</h1>
-        <p>Your command center for mastering life</p>
+    <div class="carousel-outer">
+      <div class="carousel-track" id="carousel-track">
 
-        <div class="balance-card">
-          <div class="balance-left">
-            <div class="label">ACCOUNT BALANCE</div>
-            <div class="balance-amount">
-              <span id="accountBalance">£0.00</span>
-              <span class="pulse-dot" id="balancePulse"></span>
+        <!-- 1. COMMUNICATION -->
+        <a class="module-card teal-card" href="live-calls.html">
+          <div class="card-visual comm-bg">
+            <div class="card-grid-pattern"></div>
+            <div class="chat-bubbles">
+              <div class="chat-bubble" style="width:90px;height:18px;left:30px;top:60px"></div>
+              <div class="chat-bubble" style="width:70px;height:18px;left:60px;top:95px;animation-delay:-1.5s"></div>
+              <div class="chat-bubble" style="width:110px;height:18px;left:20px;top:130px;animation-delay:-3s"></div>
+              <div class="chat-bubble" style="width:80px;height:18px;left:50px;top:165px;animation-delay:-0.8s"></div>
             </div>
-            <div class="balance-sub">Withdraw commissions or spend in The Arcane Store</div>
+            <div class="card-icon-wrap">
+              <span class="card-icon">💬</span>
+            </div>
           </div>
-
-          <div class="balance-actions">
-            <button class="btn btn-primary" id="shopBtn">🛍️ Store</button>
-            <button class="btn btn-secondary" id="historyBtn">🧾 History</button>
-            <button class="btn btn-secondary" id="earningsBtn">💸 Referrals</button>
+          <div class="card-footer">
+            <div class="card-tag">Module 01</div>
+            <div class="card-name">Communication</div>
+            <div class="card-desc">Group channels, leaderboard, trading tips &amp; cues</div>
+            <div class="card-arrow">→</div>
           </div>
-        </div>
-      </div>
-    </div>
+        </a>
 
-    <!-- TradingView Ticker Tape -->
-    <div class="tv-ticker-wrap">
-      <!-- TradingView Widget BEGIN -->
-      <div class="tradingview-widget-container">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-        {
-          "symbols": [
-            {"proName": "FOREXCOM:XAUUSD", "title": "Gold"},
-            {"proName": "FOREXCOM:XAGUSD", "title": "Silver"},
-            {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
-            {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
-            {"proName": "BITSTAMP:ETHUSD", "title": "Ethereum"},
-            {"proName": "FX_IDC:EURUSD", "title": "EUR/USD"},
-            {"proName": "FX:GBPUSD", "title": "GBP/USD"}
-          ],
-          "showSymbolLogo": true,
-          "isTransparent": true,
-          "displayMode": "adaptive",
-          "colorTheme": "dark",
-          "locale": "en"
-        }
-        </script>
-      </div>
-      <!-- TradingView Widget END -->
-    </div>
-
-    <!-- CORE FEATURES -->
-    <div class="section-title">🔥 Core Features</div>
-    <div class="grid" id="coreGrid">
-
-      <div class="tile" data-paid="true" data-href="notion-invite.html">
-        <div class="tile-icon">📚</div>
-        <div class="tile-content">
-          <div class="tile-title">Archives</div>
-          <div class="tile-desc">3,330+ Modules • Complete Vault</div>
-        </div>
-      </div>
-
-      <div class="tile tile-insights" data-paid="true" data-href="arcane-insights.html">
-        <div class="tile-icon" id="insightsEmoji">⚡</div>
-        <div class="tile-content">
-          <div class="tile-title">Arcane Insights</div>
-          <div class="tile-desc">
-            <span id="streakDisplay">0 day streak</span> • Daily wisdom
+        <!-- 2. TRADING FLOOR -->
+        <a class="module-card gold-card" href="trading-floor.html">
+          <div class="card-visual floor-bg">
+            <div class="card-grid-pattern"></div>
+            <!-- Animated candles -->
+            <div class="candle-chart">
+              <div class="candle bull" style="height:60px"><div class="candle-wick"></div></div>
+              <div class="candle bear" style="height:75px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:50px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:90px"><div class="candle-wick"></div></div>
+              <div class="candle bear" style="height:65px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:80px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:100px"><div class="candle-wick"></div></div>
+              <div class="candle bear" style="height:55px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:85px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:110px"><div class="candle-wick"></div></div>
+              <div class="candle bear" style="height:70px"><div class="candle-wick"></div></div>
+              <div class="candle bull" style="height:95px"><div class="candle-wick"></div></div>
+            </div>
+            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.5rem">
+              <span class="card-icon" style="font-size:3rem">📈</span>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div class="tile" data-paid="true" data-href="alerts.html">
-        <div class="tile-icon">📈</div>
-        <div class="tile-content">
-          <div class="tile-title">Trading Floor</div>
-          <div class="tile-desc">Live charts & market data</div>
-        </div>
-      </div>
-
-      <div class="tile" data-paid="true" data-href="live-calls.html">
-        <div class="tile-icon">🎙️</div>
-        <div class="tile-content">
-          <div class="tile-title">Live Calls</div>
-          <div class="tile-desc">Weekly education sessions</div>
-        </div>
-      </div>
-
-      <div class="tile" data-paid="true" data-href="stock-picks.html">
-        <div class="tile-icon">💼</div>
-        <div class="tile-content">
-          <div class="tile-title">Stock Picks</div>
-          <div class="tile-desc">Long-term investment ideas</div>
-        </div>
-      </div>
-
-      <div class="tile" data-paid="true" data-href="arcane-store.html">
-        <div class="tile-icon">🛍️</div>
-        <div class="tile-content">
-          <div class="tile-title">Store</div>
-          <div class="tile-desc">Exclusive merchandise</div>
-        </div>
-      </div>
-
-      <div class="tile" data-href="inner-circle.html">
-        <div class="tile-icon">👑</div>
-        <div class="tile-content">
-          <div class="tile-title">Inner Circle</div>
-          <div class="tile-desc">1:1 Mentorship • £4,997</div>
-        </div>
-      </div>
-
-      <div class="tile tile-retreat" data-href="retreat.html">
-        <div class="tile-icon">🌴</div>
-        <div class="tile-content">
-          <div class="tile-title">2028 Retreat</div>
-          <div class="tile-desc">Epic adventure awaits</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- FREE ACCESS -->
-    <div class="section-title">🎁 Free Access</div>
-    <div class="grid">
-      
-      <div class="tile" data-href="referrals.html">
-        <div class="tile-icon">🎯</div>
-        <div class="tile-content">
-          <div class="tile-title">Referrals</div>
-          <div class="tile-desc">Earn monthly commission</div>
-        </div>
-      </div>
-
-      <div class="tile" data-href="bullion.html">
-        <div class="tile-icon">🪙</div>
-        <div class="tile-content">
-          <div class="tile-title">Bullion</div>
-          <div class="tile-desc">Gold / Silver products</div>
-        </div>
-      </div>
-
-      <div class="tile" data-href="free-signals.html">
-        <div class="tile-icon">🎁</div>
-        <div class="tile-content">
-          <div class="tile-title">Free Signals</div>
-          <div class="tile-desc">Starter access</div>
-        </div>
-      </div>
-
-      <div class="tile" data-href="live-streams.html">
-        <div class="tile-icon">📺</div>
-        <div class="tile-content">
-          <div class="tile-title">Live Streams</div>
-          <div class="tile-desc">Public streams</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ADMIN TOOLS (hidden for non-admin) -->
-    <!-- ⚡ ADMIN TOOLS - ONLY FOR ADMINS -->
-    <div id="adminSection" style="display:none;">
-      <div class="section-title">⚡ Admin Tools</div>
-      <div class="grid admin-grid">
-        <div class="tile admin-trigger" onclick="openAdminPopup()" style="cursor:pointer;">
-          <div class="tile-icon">👑</div>
-          <div class="tile-content">
-            <div class="tile-title">Admin Panel</div>
-            <div class="tile-desc">Click to open control hub</div>
+          <div class="card-footer">
+            <div class="card-tag">Module 02</div>
+            <div class="card-name">Trading Floor</div>
+            <div class="card-desc">Live charts, indicators, watchlist &amp; signals</div>
+            <div class="card-arrow">→</div>
           </div>
-        </div>
-      </div>
+        </a>
+
+        <!-- 3. WATCHTOWER -->
+        <a class="module-card teal-card" href="watchtower.html">
+          <div class="card-visual watch-bg">
+            <div class="card-grid-pattern"></div>
+            <!-- Globe rings -->
+            <div class="globe-dots">
+              <div class="globe-ring" style="width:200px;height:200px;left:35px;top:30px;animation-delay:0s"></div>
+              <div class="globe-ring" style="width:150px;height:150px;left:60px;top:55px;animation-delay:-1s"></div>
+              <div class="globe-ring" style="width:100px;height:100px;left:85px;top:80px;animation-delay:-2s"></div>
+              <!-- Grid lines (longitude) -->
+              <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.12" viewBox="0 0 270 240">
+                <ellipse cx="135" cy="130" rx="100" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.5"/>
+                <ellipse cx="135" cy="130" rx="60" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.5"/>
+                <ellipse cx="135" cy="130" rx="30" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.5"/>
+                <line x1="35" y1="130" x2="235" y2="130" stroke="#00d4ff" stroke-width="0.5"/>
+                <line x1="55" y1="100" x2="215" y2="100" stroke="#00d4ff" stroke-width="0.5"/>
+                <line x1="55" y1="160" x2="215" y2="160" stroke="#00d4ff" stroke-width="0.5"/>
+                <!-- Hotspot dots -->
+                <circle cx="90" cy="110" r="3" fill="#00d4ff" opacity="0.8"/>
+                <circle cx="150" cy="125" r="3" fill="#f5c842" opacity="0.8"/>
+                <circle cx="180" cy="115" r="3" fill="#00d4ff" opacity="0.8"/>
+                <circle cx="70" cy="140" r="2" fill="#00e676" opacity="0.8"/>
+                <circle cx="210" cy="130" r="2" fill="#ff3b3b" opacity="0.8"/>
+              </svg>
+            </div>
+            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-left:1.25rem">
+              <span class="card-icon" style="font-size:2.5rem">🌍</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-tag">Module 03</div>
+            <div class="card-name">Watchtower</div>
+            <div class="card-desc">Global intelligence map, crypto &amp; forex intel</div>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <!-- 4. WAR ROOM -->
+        <a class="module-card red-card" href="war-room.html">
+          <div class="card-visual war-bg">
+            <div class="card-grid-pattern"></div>
+            <!-- Radar animation -->
+            <div class="radar-wrap">
+              <div class="radar-circle" style="width:200px;height:200px;border-color:rgba(255,59,59,0.12)"></div>
+              <div class="radar-circle" style="width:150px;height:150px;border-color:rgba(255,59,59,0.15)"></div>
+              <div class="radar-circle" style="width:100px;height:100px;border-color:rgba(255,59,59,0.2)"></div>
+              <div class="radar-sweep"></div>
+              <!-- Blips -->
+              <div class="radar-dot" style="width:5px;height:5px;left:118px;top:88px"></div>
+              <div class="radar-dot" style="width:4px;height:4px;left:148px;top:105px;animation-delay:-0.8s"></div>
+              <div class="radar-dot" style="width:4px;height:4px;left:100px;top:115px;animation-delay:-1.5s"></div>
+            </div>
+            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-right:1.25rem;justify-content:flex-end">
+              <span class="card-icon" style="font-size:2.5rem">🎖️</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-tag">Module 04</div>
+            <div class="card-name">War Room</div>
+            <div class="card-desc">Live calls, group sessions &amp; recorded briefings</div>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+      </div><!-- /carousel-track -->
+
+      <!-- Scroll arrow -->
+      <button class="carousel-arrow" id="carousel-next" onclick="scrollCarousel()" title="More modules">›</button>
+    </div>
+  </section>
+
+  <!-- ── Free Access Grid ── -->
+  <section class="free-section">
+    <div class="section-header" style="margin-bottom:1rem">
+      <div class="section-title">Free Access</div>
+      <span class="badge-tag teal">Open Intel</span>
     </div>
 
+    <div class="free-grid">
+
+      <a class="free-card" href="referrals.html">
+        <div class="free-icon">💰</div>
+        <div class="free-info">
+          <div class="free-title">Referrals</div>
+          <div class="free-desc">Earn monthly commission</div>
+        </div>
+      </a>
+
+      <a class="free-card" href="bullion.html">
+        <div class="free-icon">🥇</div>
+        <div class="free-info">
+          <div class="free-title">Bullion</div>
+          <div class="free-desc">Gold &amp; Silver products</div>
+        </div>
+      </a>
+
+      <a class="free-card" href="stock-picks.html">
+        <div class="free-icon">📊</div>
+        <div class="free-info">
+          <div class="free-title">Stock Picks</div>
+          <div class="free-desc">Long-term investment ideas</div>
+        </div>
+        <div class="free-badge">✦</div>
+      </a>
+
+      <a class="free-card" href="free-signals.html">
+        <div class="free-icon">📡</div>
+        <div class="free-info">
+          <div class="free-title">Free Signals</div>
+          <div class="free-desc">Starter access signals</div>
+        </div>
+      </a>
+
+      <a class="free-card" href="live-streams.html">
+        <div class="free-icon">📺</div>
+        <div class="free-info">
+          <div class="free-title">Live Streams</div>
+          <div class="free-desc">Public broadcasts</div>
+        </div>
+      </a>
+
+      <a class="free-card retreat" href="retreat.html">
+        <div class="free-icon">🏔️</div>
+        <div class="free-info">
+          <div class="free-title">2028 Retreat</div>
+          <div class="free-desc">Epic adventure awaits</div>
+        </div>
+        <div class="free-badge" style="color:var(--gold)">★</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <div class="dash-footer">
+    <span class="version-tag">ARCANE ARCHIVES v2.0 // CLASSIFIED</span>
+    <button class="logout-btn" id="logout-btn">
+      <span>⏻</span> Log Out
+    </button>
   </div>
 
-  <!-- Locked Modal -->
-  <div class="overlay" id="lockedOverlay" onclick="closeLockedModal()"></div>
-  <div class="modal" id="lockedModal">
-    <div class="modal-header">
-      <div>
-        <h3>🔒 Premium Feature</h3>
-        <p>This feature requires an active subscription</p>
-      </div>
-      <button class="modal-close" onclick="closeLockedModal()">✕</button>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="window.location.href='index.html#pricing'">Unlock Now</button>
-      <button class="btn btn-secondary" onclick="closeLockedModal()">Maybe Later</button>
-    </div>
-  </div>
+</main>
 
-  <!-- ADMIN POPUP - NEW DESIGN -->
-  <div class="admin-overlay" id="adminOverlay" onclick="closeAdminPopup()"></div>
-  <div class="admin-popup" id="adminPopup">
-    <div class="admin-popup-header">
-      <div class="admin-popup-title">
-        <h2>👑 Admin Control Panel</h2>
-      </div>
-      <button class="admin-close-btn" onclick="closeAdminPopup()">✕</button>
-    </div>
-    
-    <div class="admin-popup-content">
-      <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Manage all platform functions</p>
+<!-- ════════════════════════════
+     FIREBASE + APP JS
+════════════════════════════ -->
+<script type="module">
+  import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-      <div class="admin-tools-grid">
-        <!-- Trades & Alerts Admin (Master Control) -->
-        <a href="admin-panel.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">📈</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Trades & Alerts</div>
-            <div class="admin-tool-desc">Manage stock picks & trade alerts</div>
-          </div>
-        </a>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+    projectId: "arcane-archives-3b0f5"
+  };
 
-        <!-- Arcane Insights Admin -->
-        <a href="arcane-insight-admin.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">⚡</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Arcane Insights</div>
-            <div class="admin-tool-desc">Daily posts & content</div>
-          </div>
-        </a>
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
 
-        <!-- Affiliate Admin -->
-        <a href="affiliate-admin.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">💰</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Affiliate Admin</div>
-            <div class="admin-tool-desc">Withdrawals & payouts</div>
-          </div>
-        </a>
+  const RANKS = [
+    { min: 0,    label: 'INITIATE',   color: '#7a8499' },
+    { min: 100,  label: 'ANALYST',    color: '#00d4ff' },
+    { min: 500,  label: 'OPERATIVE',  color: '#00d4ff' },
+    { min: 1500, label: 'TACTICIAN',  color: '#f5c842' },
+    { min: 3000, label: 'STRATEGIST', color: '#f5c842' },
+    { min: 6000, label: 'COMMANDER',  color: '#ff3b3b' },
+    { min: 10000,label: 'ARCHON',     color: '#ff3b3b' },
+  ];
 
-        <!-- Store Admin -->
-        <a href="store-admin.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">🛍️</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Store Admin</div>
-            <div class="admin-tool-desc">Products & inventory</div>
-          </div>
-        </a>
+  function getRank(xp) {
+    let rank = RANKS[0];
+    for (const r of RANKS) { if (xp >= r.min) rank = r; }
+    return rank;
+  }
 
-        <!-- Store Orders -->
-        <a href="store-orders.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">📦</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Store Orders</div>
-            <div class="admin-tool-desc">Order fulfillment</div>
-          </div>
-        </a>
+  onAuthStateChanged(auth, async user => {
+    if (!user) { location.href = 'login.html'; return; }
 
-        <!-- Bullion Admin -->
-        <a href="bullion-admin.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">🥇</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Bullion Admin</div>
-            <div class="admin-tool-desc">Gold & silver inventory</div>
-          </div>
-        </a>
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const data = snap.exists() ? snap.data() : {};
 
-        <!-- CRM - Member Intelligence Platform -->
-        <a href="arcane-crm.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">📊</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Member CRM</div>
-            <div class="admin-tool-desc">Member intelligence</div>
-          </div>
-        </a>
+    // Update UI
+    const name = data.displayName || user.displayName || user.email?.split('@')[0] || 'Operator';
+    document.getElementById('user-name').textContent = name;
 
-        <!-- Consulting CRM - High-Ticket Pipeline -->
-        <a href="arcane-consulting-crm.html" class="admin-tool-tile">
-          <div class="admin-tool-icon">🏆</div>
-          <div class="admin-tool-content">
-            <div class="admin-tool-title">Consulting CRM</div>
-            <div class="admin-tool-desc">High-ticket pipeline</div>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
+    const balance = data.balance ?? 0;
+    document.getElementById('nav-balance').textContent = `£${balance.toFixed(2)}`;
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    const xp = data.xp ?? 0;
+    document.getElementById('nav-xp').textContent = xp.toLocaleString();
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-      authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-      projectId: "arcane-archives-3b0f5"
-    };
+    const rank = getRank(xp);
+    const rankEl = document.getElementById('nav-rank');
+    rankEl.textContent = rank.label;
+    rankEl.style.color = rank.color;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    if (data.plan === 'paid') {
+      document.getElementById('member-plan').textContent = 'PREMIUM MEMBER';
+    }
 
-    const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
+    if (user.photoURL) {
+      document.getElementById('nav-avatar').src = user.photoURL;
+    }
 
-    let currentUser = null;
-    let isPaid = false;
-    let isAdmin = false;
+    document.getElementById('nav-online').classList.remove('offline');
+  });
 
-    // Make functions global IMMEDIATELY
-    window.openAdminPopup = function() {
-      console.log('🔥 openAdminPopup called! isAdmin:', isAdmin);
-      if (!isAdmin) {
-        console.log('⛔ Not admin, returning');
-        return;
-      }
-      
-      const adminOverlay = document.getElementById('adminOverlay');
-      const adminPopup = document.getElementById('adminPopup');
-      console.log('📦 Elements:', { overlay: !!adminOverlay, popup: !!adminPopup });
-      
-      if (adminOverlay) adminOverlay.classList.add('show');
-      if (adminPopup) adminPopup.classList.add('show');
-      document.body.style.overflow = 'hidden';
-      console.log('✅ Admin popup opened!');
-    };
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await signOut(auth);
+    location.href = 'login.html';
+  });
+</script>
 
-    window.closeAdminPopup = function() {
-      console.log('❌ Closing admin popup');
-      const adminOverlay = document.getElementById('adminOverlay');
-      const adminPopup = document.getElementById('adminPopup');
-      if (adminOverlay) adminOverlay.classList.remove('show');
-      if (adminPopup) adminPopup.classList.remove('show');
-      document.body.style.overflow = '';
-    };
+<script>
+/* ══ Stars ══ */
+(function() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
 
-    // Legacy function names for backwards compatibility
-    window.openAdminModal = window.openAdminPopup;
-    window.closeAdminModal = window.closeAdminPopup;
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 
-    window.closeLockedModal = function() {
-      const overlay = document.getElementById('lockedOverlay');
-      const modal = document.getElementById('lockedModal');
-      if (overlay) overlay.classList.remove('active');
-      if (modal) modal.classList.remove('active');
-    };
+  function initStars() {
+    stars = [];
+    for (let i = 0; i < 220; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4,
+        a: Math.random() * 0.7 + 0.1,
+        da: (Math.random() - 0.5) * 0.008,
+      });
+    }
+  }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      currentUser = user;
-      isAdmin = ADMIN_UIDS.includes(user.uid);
-
-      // 🔥 DEBUG ADMIN STATUS
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('👤 USER INFO:');
-      console.log('   Email:', user.email);
-      console.log('   UID:', user.uid);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('👑 ADMIN CHECK:');
-      console.log('   Expected UIDs:', ADMIN_UIDS);
-      console.log('   Is Admin?', isAdmin);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-      // Get user data
-      try {
-        const userDoc = await getDoc(doc(db, 'Users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          isPaid = userData.isPaid === true || userData.subscriptionStatus === 'active';
-          
-          // Update welcome title with username
-          const welcomeEl = document.getElementById('welcomeTitle');
-          if (welcomeEl) {
-            const username = userData.Username || user.email.split('@')[0];
-            welcomeEl.textContent = `Welcome back, ${username} 👋`;
-          }
-
-          // Update account balance display
-          const balanceEl = document.getElementById('accountBalance');
-          if (balanceEl && userData.balance !== undefined) {
-            balanceEl.textContent = `£${userData.balance.toFixed(2)}`;
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
-
-      // Show admin section and FAB ONLY for admin users
-      if (isAdmin) {
-        console.log('✅ USER IS ADMIN - Showing admin controls');
-        const adminSection = document.getElementById('adminSection');
-        const adminFab = document.getElementById('adminFab');
-        if (adminSection) {
-          adminSection.style.display = 'block';
-          console.log('✅ Admin section visible!');
-        }
-        if (adminFab) {
-          adminFab.classList.add('show');
-          console.log('✅ Admin FAB visible!');
-        }
-      } else {
-        console.log('⛔ USER IS NOT ADMIN - Admin controls stay hidden');
-      }
-
-      // Setup navigation
-      setupTileNavigation();
-      setupAdminButton();
-      setupButtons();
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+      ctx.fill();
+      s.a += s.da;
+      if (s.a > 0.9 || s.a < 0.05) s.da *= -1;
     });
+    requestAnimationFrame(draw);
+  }
 
-    function setupAdminButton() {
-      console.log('🔧 setupAdminButton called, isAdmin:', isAdmin);
-      const adminTrigger = document.querySelector('.admin-trigger');
-      console.log('🎯 Admin trigger element:', adminTrigger);
-      
-      if (adminTrigger && isAdmin) {
-        adminTrigger.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('👑 Admin button CLICKED!');
-          window.openAdminModal();
-        });
-        console.log('✅ Admin button listener attached!');
-      } else {
-        console.log('⚠️ Not attaching listener. Trigger:', !!adminTrigger, 'isAdmin:', isAdmin);
-      }
-    }
+  resize(); initStars(); draw();
+  window.addEventListener('resize', () => { resize(); initStars(); });
+})();
 
-    function setupTileNavigation() {
-      const tiles = document.querySelectorAll('.tile[data-href]');
-      
-      tiles.forEach(tile => {
-        const href = tile.getAttribute('data-href');
-        const requiresPaid = tile.getAttribute('data-paid') === 'true';
-        
-        // Lock tile if requires payment and user hasn't paid
-        if (requiresPaid && !isPaid && !isAdmin) {
-          tile.classList.add('locked');
-        }
-        
-        // Add click handler with smooth transition
-        tile.addEventListener('click', () => {
-          if (requiresPaid && !isPaid && !isAdmin) {
-            showLockedModal();
-            return;
-          }
+/* ══ Date ══ */
+(function() {
+  const d = new Date();
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('dash-date').textContent =
+    `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 
-          navigateWithTransition(href);
-        });
+  // Market hours (rough: Mon-Fri 08:00-16:30 London time)
+  const h = d.getHours(), m = d.getMinutes(), day = d.getDay();
+  const isOpen = day >= 1 && day <= 5 && (h > 8 || (h === 8 && m >= 0)) && (h < 16 || (h === 16 && m <= 30));
+  const el = document.getElementById('market-status');
+  if (!isOpen) { el.textContent = 'MARKETS CLOSED'; el.style.color = 'var(--red)'; }
+})();
+
+/* ══ Ticker ══ */
+(function() {
+  const items = [
+    { sym: 'XAU/USD', price: '2,643.20', chg: '+0.42%', dir: 'up'   },
+    { sym: 'XAG/USD', price: '29.84',    chg: '-0.18%', dir: 'down' },
+    { sym: 'BTC/USD', price: '0',        chg: '…',      dir: 'flat', live: 'btc' },
+    { sym: 'S&P 500', price: '5,871.50', chg: '+0.61%', dir: 'up'   },
+    { sym: 'EUR/USD', price: '1.0823',   chg: '-0.09%', dir: 'down' },
+    { sym: 'GBP/USD', price: '1.2641',   chg: '+0.23%', dir: 'up'   },
+  ];
+
+  function buildTicker() {
+    const track = document.getElementById('nav-ticker-track');
+    // duplicate for seamless loop
+    const html = [...items, ...items].map(it =>
+      `<div class="nav-ticker-item">
+        <span class="t-sym">${it.sym}</span>
+        <span class="t-price" id="tp-${it.live || ''}">${it.price}</span>
+        <span class="t-chg ${it.dir}" id="tc-${it.live || ''}">${it.chg}</span>
+      </div>`
+    ).join('');
+    track.innerHTML = html;
+  }
+
+  buildTicker();
+
+  // Fetch live BTC
+  async function fetchBTC() {
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+      const d = await r.json();
+      const price = d.bitcoin.usd.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+      const chg   = d.bitcoin.usd_24h_change;
+      const sign  = chg >= 0 ? '+' : '';
+      document.querySelectorAll('[id="tp-btc"]').forEach(el => el.textContent = price);
+      document.querySelectorAll('[id="tc-btc"]').forEach(el => {
+        el.textContent = `${sign}${chg.toFixed(2)}%`;
+        el.className = `t-chg ${chg >= 0 ? 'up' : 'down'}`;
       });
-    }
+    } catch(e) {}
+  }
+  fetchBTC();
+  setInterval(fetchBTC, 60000);
+})();
 
-    function setupButtons() {
-      // Logout button
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
-          await signOut(auth);
-          window.location.href = 'login.html';
-        });
-      }
+/* ══ Carousel scroll ══ */
+function scrollCarousel() {
+  const t = document.getElementById('carousel-track');
+  t.scrollBy({ left: 290, behavior: 'smooth' });
+}
+</script>
 
-      // Settings button
-      const settingsBtn = document.getElementById('settingsBtn');
-      if (settingsBtn) {
-        settingsBtn.addEventListener('click', () => {
-          window.location.href = 'settings.html';
-        });
-      }
-    }
-
-    function showLockedModal() {
-      const overlay = document.getElementById('lockedOverlay');
-      const modal = document.getElementById('lockedModal');
-      if (overlay) overlay.classList.add('active');
-      if (modal) modal.classList.add('active');
-    }
-
-    // Page transition for smooth navigation
-    function navigateWithTransition(url) {
-      const transition = document.getElementById('pageTransition');
-      if (transition) {
-        transition.classList.add('active');
-        setTimeout(() => {
-          window.location.href = url;
-        }, 300);
-      } else {
-        window.location.href = url;
-      }
-    }
-
-    // Add tile hover effects (mouse follow gradient)
-    function initTileEffects() {
-      const tiles = document.querySelectorAll('.tile');
-      tiles.forEach(tile => {
-        tile.addEventListener('mousemove', (e) => {
-          const rect = tile.getBoundingClientRect();
-          const x = ((e.clientX - rect.left) / rect.width) * 100;
-          const y = ((e.clientY - rect.top) / rect.height) * 100;
-          tile.style.setProperty('--mouse-x', `${x}%`);
-          tile.style.setProperty('--mouse-y', `${y}%`);
-        });
-      });
-    }
-
-    // Add fade-in animations to grid items
-    function initFadeAnimations() {
-      const tiles = document.querySelectorAll('.tile');
-      tiles.forEach((tile, index) => {
-        tile.classList.add('fade-in-up');
-        tile.style.animationDelay = `${0.1 + (index * 0.05)}s`;
-      });
-    }
-
-    // Initialize effects on load
-    document.addEventListener('DOMContentLoaded', () => {
-      initTileEffects();
-      initFadeAnimations();
-    });
-  </script>
 </body>
 </html>

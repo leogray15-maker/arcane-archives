@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Watchtower | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png"/>
+  <link rel="stylesheet" href="arcane-globals.css"/>
+
+  <!-- Leaflet map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body { overflow: hidden; }
+
+    /* ── Three-column layout ── */
+    .wt-layout {
+      display: flex;
+      height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
+      margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ══════════════════
+       LEFT SIDEBAR
+    ══════════════════ */
+    .wt-sidebar-left {
+      width: 200px;
+      flex-shrink: 0;
+      background: rgba(9,9,14,0.97);
+      border-right: 1px solid var(--border-hi);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .wt-sidebar-title {
+      padding: 1.25rem 1rem 0.75rem;
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      color: var(--teal);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .wt-sidebar-title::before {
+      content: '⬡';
+      color: var(--teal);
+      opacity: 0.6;
+    }
+
+    .wt-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      color: var(--text-dim);
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      transition: all 0.18s;
+    }
+    .wt-back-btn:hover { color: var(--teal); background: var(--teal-glow2); }
+
+    /* Nav thumbnails */
+    .wt-nav-section {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+    }
+    .wt-nav-label {
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    .wt-nav-thumb {
+      display: block;
+      height: 90px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .wt-nav-thumb:hover { border-color: var(--teal); box-shadow: 0 0 12px var(--teal-glow); }
+    .wt-nav-thumb-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      opacity: 0.3;
+    }
+    .thumb-floor { background: radial-gradient(ellipse at 50% 70%, rgba(245,200,66,0.15), var(--bg-3)); }
+    .thumb-war   { background: radial-gradient(ellipse at 50% 50%, rgba(255,59,59,0.15), var(--bg-3)); }
+    .wt-nav-thumb-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 0.4rem 0.6rem;
+      background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+
+    /* Online users count */
+    .wt-online-count {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .online-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green); }
+
+    /* ══════════════════
+       MAIN MAP
+    ══════════════════ */
+    .wt-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Map toolbar */
+    .map-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 0;
+      background: rgba(9,9,14,0.9);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .map-tab {
+      padding: 0.65rem 1.25rem;
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.18s;
+      border-right: 1px solid var(--border);
+    }
+    .map-tab.active { color: var(--teal); border-bottom-color: var(--teal); background: var(--teal-glow2); }
+    .map-tab:hover:not(.active) { color: var(--text); background: var(--bg-3); }
+
+    .map-toolbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 0.75rem;
+    }
+    .map-action-btn {
+      padding: 0.3rem 0.75rem;
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      text-transform: uppercase;
+      transition: all 0.18s;
+    }
+    .map-action-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .map-action-btn.active { border-color: var(--teal); color: var(--teal); background: var(--teal-glow2); }
+
+    /* Leaflet map area */
+    #world-map {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      position: relative;
+    }
+
+    /* Leaflet dark theme overrides */
+    .leaflet-container { background: #050510; }
+    .leaflet-control-zoom a {
+      background: var(--bg-4) !important;
+      border-color: var(--border) !important;
+      color: var(--text-dim) !important;
+    }
+    .leaflet-control-zoom a:hover { color: var(--teal) !important; }
+    .leaflet-control-attribution { display: none; }
+
+    /* Map overlay panel (table/news tabs) */
+    .map-content-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: none;
+      background: var(--bg-1);
+    }
+    .map-content-panel.active { display: block; }
+
+    /* ══════════════════
+       RIGHT SIDEBAR
+    ══════════════════ */
+    .wt-sidebar-right {
+      width: 280px;
+      flex-shrink: 0;
+      background: rgba(9,9,14,0.97);
+      border-left: 1px solid var(--border-hi);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(20px);
+    }
+
+    /* Panel blocks */
+    .intel-panel {
+      border-bottom: 1px solid var(--border);
+      padding: 0.875rem 1rem;
+      flex-shrink: 0;
+    }
+    .intel-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .intel-panel-title {
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* ── Fear & Greed ── */
+    .fg-meter {
+      position: relative;
+      height: 10px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #ff3b3b 0%, #ff9500 25%, #f5c842 50%, #00e676 75%, #00d4ff 100%);
+      margin: 0.5rem 0 0.3rem;
+      overflow: visible;
+    }
+    .fg-needle {
+      position: absolute;
+      top: -4px;
+      width: 4px;
+      height: 18px;
+      background: white;
+      border-radius: 2px;
+      transform: translateX(-50%);
+      box-shadow: 0 0 8px rgba(255,255,255,0.6);
+      transition: left 1s ease;
+    }
+    .fg-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.4rem;
+    }
+    .fg-label {
+      font-family: var(--font-head);
+      font-size: 0.42rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .fg-value {
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .fg-number {
+      font-family: var(--font-head);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .fg-text {
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Crypto Intel ── */
+    .crypto-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .crypto-row:last-child { border-bottom: none; }
+    .crypto-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .crypto-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      background: var(--bg-4);
+      border: 1px solid var(--border);
+    }
+    .crypto-sym {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .crypto-name {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+    .crypto-right { text-align: right; }
+    .crypto-price {
+      font-family: var(--font-head);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .crypto-chg {
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 600;
+    }
+    .crypto-chg.up   { color: var(--green); }
+    .crypto-chg.down { color: var(--red); }
+
+    /* Market cap row */
+    .crypto-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .crypto-stat {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.5rem;
+    }
+    .cs-label {
+      font-family: var(--font-head);
+      font-size: 0.42rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .cs-value {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--teal);
+      margin-top: 0.15rem;
+    }
+
+    /* ── S&P Heatmap ── */
+    .sp-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      margin-top: 0.25rem;
+    }
+    .sp-cell {
+      padding: 0.35rem 0.2rem;
+      border-radius: 4px;
+      text-align: center;
+      cursor: default;
+      transition: filter 0.2s;
+    }
+    .sp-cell:hover { filter: brightness(1.2); }
+    .sp-name {
+      font-family: var(--font-head);
+      font-size: 0.4rem;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+    }
+    .sp-pct {
+      font-family: var(--font-head);
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: white;
+      margin-top: 0.15rem;
+    }
+
+    /* ── Forex Matrix ── */
+    .fx-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      margin-top: 0.25rem;
+    }
+    .fx-table th, .fx-table td {
+      padding: 0.25rem 0.3rem;
+      text-align: center;
+    }
+    .fx-table th {
+      color: var(--text-dim);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+    }
+    .fx-cell {
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 0.5rem;
+    }
+    .fx-row-label {
+      color: var(--text-dim);
+      font-weight: 600;
+      text-align: left;
+    }
+
+    /* Table view */
+    .markets-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .markets-table th {
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+    }
+    .markets-table td {
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+    }
+    .markets-table tr:hover td { background: var(--bg-3); }
+    .mkt-name { font-family: var(--font-head); font-size: 0.65rem; font-weight: 700; color: var(--text); }
+    .mkt-country { font-size: 0.6rem; color: var(--text-dim); margin-top: 0.1rem; }
+    .mkt-price { font-family: var(--font-head); font-weight: 700; color: var(--text); }
+    .mkt-chg.up   { color: var(--green); font-family: var(--font-head); font-size: 0.62rem; }
+    .mkt-chg.down { color: var(--red);   font-family: var(--font-head); font-size: 0.62rem; }
+
+    /* News items */
+    .news-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .news-item:hover { opacity: 0.85; }
+    .news-dot { width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:0.3rem;flex-shrink:0; }
+    .news-title { font-size: 0.72rem; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .news-meta  { font-family: var(--font-head); font-size: 0.48rem; color: var(--text-muted); margin-top: 0.25rem; letter-spacing: 0.08em; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .wt-sidebar-right { width: 240px; }
+    }
+    @media (max-width: 900px) {
+      .wt-sidebar-left  { width: 160px; }
+      .wt-sidebar-right { display: none; }
+    }
+    @media (max-width: 640px) {
+      body { overflow: auto; }
+      .wt-layout { flex-direction: column; height: auto; }
+      .wt-sidebar-left  { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; }
+      #world-map { height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="arcane-nav">
+  <div class="nav-inner">
+    <a class="nav-left" href="dashboard.html">
+      <img src="ArcaneA.png" class="nav-logo" alt="AA"/>
+      <span class="nav-brand">The Arcane Archives</span>
+    </a>
+    <div class="nav-sep"></div>
+    <div class="nav-center">
+      <a href="arcane-store.html" class="nav-store-btn">Store</a>
+      <div class="nav-ticker-wrap">
+        <div class="nav-ticker-track" id="nav-ticker-track"></div>
+      </div>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-right">
+      <div class="nav-balance" id="nav-balance">£0.00</div>
+      <div class="nav-online" id="nav-online"></div>
+      <button class="nav-btn" onclick="location.href='alerts.html'" style="position:relative">🔔</button>
+      <a class="nav-btn" href="settings.html">⚙️</a>
+      <div class="nav-xp-block">
+        <span class="nav-xp-val" id="nav-xp">0</span>
+        <span class="nav-xp-label">XP</span>
+      </div>
+      <div class="nav-rank" id="nav-rank">INITIATE</div>
+      <img class="nav-avatar" id="nav-avatar" src="ArcaneA.png" alt="Avatar"/>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════ LAYOUT ══════════════ -->
+<div class="wt-layout">
+
+  <!-- ────────────── LEFT SIDEBAR ────────────── -->
+  <aside class="wt-sidebar-left">
+    <div class="wt-sidebar-title">Watch Tower</div>
+
+    <a class="wt-back-btn" href="dashboard.html">
+      ← &nbsp;Dashboard
+    </a>
+
+    <div class="wt-nav-section">
+      <div class="wt-nav-label">Quick Nav</div>
+
+      <a class="wt-nav-thumb" href="market-data.html">
+        <div class="wt-nav-thumb-bg thumb-floor">📈</div>
+        <div class="wt-nav-thumb-label">Trading Floor</div>
+      </a>
+
+      <a class="wt-nav-thumb" href="war-room.html">
+        <div class="wt-nav-thumb-bg thumb-war">🎖️</div>
+        <div class="wt-nav-thumb-label">War Room</div>
+      </a>
+    </div>
+
+    <div class="wt-online-count">
+      <div class="online-dot"></div>
+      <span id="online-count">—</span> online
+    </div>
+  </aside>
+
+  <!-- ────────────── MAIN MAP ────────────── -->
+  <main class="wt-main">
+
+    <!-- Toolbar / Tabs -->
+    <div class="map-toolbar">
+      <div class="map-tab active" data-tab="map" onclick="switchTab('map',this)">🗺 Map</div>
+      <div class="map-tab" data-tab="table" onclick="switchTab('table',this)">📊 Markets</div>
+      <div class="map-tab" data-tab="news" onclick="switchTab('news',this)">📰 Intel Feed</div>
+
+      <div class="map-toolbar-right">
+        <button class="map-action-btn" id="custom-map-btn" onclick="toggleHeat()">⬡ Heat Zones</button>
+        <button class="map-action-btn" onclick="resetMapView()">⊕ Reset View</button>
+      </div>
+    </div>
+
+    <!-- Map panel -->
+    <div id="world-map"></div>
+
+    <!-- Markets table panel -->
+    <div class="map-content-panel" id="panel-table">
+      <table class="markets-table">
+        <thead>
+          <tr>
+            <th>Market</th>
+            <th>Price</th>
+            <th>Change</th>
+            <th>Volume</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="markets-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- News/Intel panel -->
+    <div class="map-content-panel" id="panel-news">
+      <div id="news-feed">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ────────────── RIGHT SIDEBAR ────────────── -->
+  <aside class="wt-sidebar-right">
+
+    <!-- Fear & Greed -->
+    <div class="intel-panel">
+      <div class="intel-panel-head">
+        <span class="intel-panel-title">Fear &amp; Greed</span>
+        <span class="badge-live" id="fg-live">Live</span>
+      </div>
+      <div class="fg-value">
+        <div class="fg-number" id="fg-number">—</div>
+        <div class="fg-text" id="fg-text" style="color:var(--text-dim)">Loading…</div>
+      </div>
+      <div class="fg-meter" style="margin-top:0.75rem">
+        <div class="fg-needle" id="fg-needle" style="left:50%"></div>
+      </div>
+      <div class="fg-labels">
+        <span class="fg-label" style="color:var(--red)">Extreme Fear</span>
+        <span class="fg-label" style="color:var(--text-muted)">Neutral</span>
+        <span class="fg-label" style="color:var(--green)">Greed</span>
+      </div>
+    </div>
+
+    <!-- Crypto Intel -->
+    <div class="intel-panel">
+      <div class="intel-panel-head">
+        <span class="intel-panel-title">Crypto Intel</span>
+        <span class="badge-live">Live</span>
+      </div>
+
+      <div id="crypto-rows">
+        <div class="crypto-row">
+          <div class="crypto-left">
+            <div class="crypto-logo">₿</div>
+            <div>
+              <div class="crypto-sym">BTC</div>
+              <div class="crypto-name">Bitcoin</div>
+            </div>
+          </div>
+          <div class="crypto-right">
+            <div class="crypto-price" id="btc-price">—</div>
+            <div class="crypto-chg" id="btc-chg">—</div>
+          </div>
+        </div>
+        <div class="crypto-row">
+          <div class="crypto-left">
+            <div class="crypto-logo">Ξ</div>
+            <div>
+              <div class="crypto-sym">ETH</div>
+              <div class="crypto-name">Ethereum</div>
+            </div>
+          </div>
+          <div class="crypto-right">
+            <div class="crypto-price" id="eth-price">—</div>
+            <div class="crypto-chg" id="eth-chg">—</div>
+          </div>
+        </div>
+        <div class="crypto-row">
+          <div class="crypto-left">
+            <div class="crypto-logo" style="font-size:0.55rem">SOL</div>
+            <div>
+              <div class="crypto-sym">SOL</div>
+              <div class="crypto-name">Solana</div>
+            </div>
+          </div>
+          <div class="crypto-right">
+            <div class="crypto-price" id="sol-price">—</div>
+            <div class="crypto-chg" id="sol-chg">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="crypto-stats">
+        <div class="crypto-stat">
+          <div class="cs-label">Market Cap</div>
+          <div class="cs-value" id="market-cap">—</div>
+        </div>
+        <div class="crypto-stat">
+          <div class="cs-label">24h Volume</div>
+          <div class="cs-value" id="market-vol">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S&P Sector Heatmap -->
+    <div class="intel-panel">
+      <div class="intel-panel-head">
+        <span class="intel-panel-title">S&amp;P Sectors</span>
+        <span class="badge-tag gold">EST</span>
+      </div>
+      <div class="sp-grid" id="sp-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Forex Matrix -->
+    <div class="intel-panel">
+      <div class="intel-panel-head">
+        <span class="intel-panel-title">FX Matrix</span>
+        <span class="badge-live">Live</span>
+      </div>
+      <table class="fx-table" id="fx-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>USD</th>
+            <th>EUR</th>
+            <th>GBP</th>
+            <th>JPY</th>
+          </tr>
+        </thead>
+        <tbody id="fx-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </aside><!-- /sidebar right -->
+
+</div><!-- /wt-layout -->
+
+<!-- ══════════════ SCRIPTS ══════════════ -->
+<script type="module">
+  import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  const app  = initializeApp({ apiKey:"AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain:"arcane-archives-3b0f5.firebaseapp.com", projectId:"arcane-archives-3b0f5" });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const RANKS = [
+    {min:0,label:'INITIATE'},{min:100,label:'ANALYST'},{min:500,label:'OPERATIVE'},
+    {min:1500,label:'TACTICIAN'},{min:3000,label:'STRATEGIST'},{min:6000,label:'COMMANDER'},{min:10000,label:'ARCHON'},
+  ];
+  function getRank(xp){ let r=RANKS[0]; RANKS.forEach(x=>{ if(xp>=x.min) r=x; }); return r; }
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) { location.href='login.html'; return; }
+    const snap = await getDoc(doc(db,'users',user.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const xp = data.xp ?? 0;
+    document.getElementById('nav-balance').textContent = `£${(data.balance??0).toFixed(2)}`;
+    document.getElementById('nav-xp').textContent = xp.toLocaleString();
+    document.getElementById('nav-rank').textContent = getRank(xp).label;
+    if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
+  });
+</script>
+
+<script>
+/* ══ Stars ══ */
+(function(){
+  const canvas=document.getElementById('stars-canvas');
+  const ctx=canvas.getContext('2d'); let stars=[];
+  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  function initStars(){ stars=[]; for(let i=0;i<180;i++) stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,a:Math.random()*0.6+0.1,da:(Math.random()-0.5)*0.007}); }
+  function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); stars.forEach(s=>{ ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();s.a+=s.da;if(s.a>0.85||s.a<0.05)s.da*=-1; }); requestAnimationFrame(draw); }
+  resize();initStars();draw();
+  window.addEventListener('resize',()=>{resize();initStars();});
+})();
+
+/* ══ Nav Ticker ══ */
+(function(){
+  const items=[{sym:'XAU/USD',price:'2,643.20',chg:'+0.42%',dir:'up'},{sym:'XAG/USD',price:'29.84',chg:'-0.18%',dir:'down'},{sym:'BTC/USD',price:'…',chg:'…',dir:'flat',live:'btc'},{sym:'S&P 500',price:'5,871.50',chg:'+0.61%',dir:'up'},{sym:'ETH/USD',price:'…',chg:'…',dir:'flat',live:'eth'},{sym:'EUR/USD',price:'1.0823',chg:'-0.09%',dir:'down'}];
+  const track=document.getElementById('nav-ticker-track');
+  track.innerHTML=[...items,...items].map(it=>`<div class="nav-ticker-item"><span class="t-sym">${it.sym}</span><span class="t-price" id="tp-${it.live||Math.random()}">${it.price}</span><span class="t-chg ${it.dir}">${it.chg}</span></div>`).join('');
+})();
+
+/* ══ Leaflet Map ══ */
+let map, heatShowing = false, heatLayer = null;
+
+function initMap() {
+  map = L.map('world-map', {
+    center: [20, 10],
+    zoom: 2,
+    minZoom: 1,
+    maxZoom: 10,
+    zoomControl: true,
+    attributionControl: false,
+  });
+
+  // Dark tile layer
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '', maxZoom: 20
+  }).addTo(map);
+
+  // Trading hotspot cities
+  const hotspots = [
+    { name: 'New York',   lat: 40.71,  lng: -74.01, type: 'major',  color: '#f5c842' },
+    { name: 'London',     lat: 51.51,  lng: -0.13,  type: 'major',  color: '#f5c842' },
+    { name: 'Tokyo',      lat: 35.68,  lng: 139.76, type: 'major',  color: '#f5c842' },
+    { name: 'Hong Kong',  lat: 22.32,  lng: 114.17, type: 'major',  color: '#00d4ff' },
+    { name: 'Singapore',  lat: 1.35,   lng: 103.82, type: 'major',  color: '#00d4ff' },
+    { name: 'Frankfurt',  lat: 50.11,  lng: 8.68,   type: 'mid',    color: '#00d4ff' },
+    { name: 'Sydney',     lat: -33.87, lng: 151.21, type: 'mid',    color: '#00d4ff' },
+    { name: 'Zurich',     lat: 47.37,  lng: 8.54,   type: 'mid',    color: '#00e676' },
+    { name: 'Dubai',      lat: 25.2,   lng: 55.27,  type: 'mid',    color: '#00e676' },
+    { name: 'Shanghai',   lat: 31.22,  lng: 121.47, type: 'mid',    color: '#00d4ff' },
+    { name: 'Mumbai',     lat: 19.08,  lng: 72.88,  type: 'small',  color: '#00e676' },
+    { name: 'Toronto',    lat: 43.65,  lng: -79.38, type: 'small',  color: '#00e676' },
+    { name: 'Sao Paulo',  lat: -23.55, lng: -46.64, type: 'small',  color: '#ff9500' },
+    { name: 'Johannesburg',lat:-26.2,  lng: 28.04,  type: 'small',  color: '#ff9500' },
+  ];
+
+  const sizeMap = { major: 10, mid: 7, small: 4 };
+
+  hotspots.forEach(h => {
+    const sz = sizeMap[h.type] || 5;
+    const circle = L.circleMarker([h.lat, h.lng], {
+      radius: sz,
+      fillColor: h.color,
+      color: h.color,
+      weight: 1,
+      opacity: 0.9,
+      fillOpacity: 0.7,
+    }).addTo(map);
+
+    circle.bindPopup(`
+      <div style="font-family:'Orbitron',monospace;font-size:0.65rem;color:#e6e9f2;background:#13131e;border:1px solid rgba(0,212,255,0.25);padding:0.5rem 0.75rem;border-radius:6px">
+        <strong style="color:#00d4ff">${h.name}</strong><br/>
+        <span style="color:#7a8499;font-size:0.55rem">Financial Centre</span>
+      </div>
+    `, { maxWidth: 200, className: 'leaflet-popup-dark' });
+
+    // Pulsing outer ring for major centres
+    if (h.type === 'major') {
+      const pulse = L.circleMarker([h.lat, h.lng], {
+        radius: sz + 5,
+        fillColor: 'none',
+        color: h.color,
+        weight: 1,
+        opacity: 0.3,
+        fillOpacity: 0,
+        className: 'pulse-ring',
+      }).addTo(map);
+    }
+  });
+
+  // Trade route lines
+  const routes = [
+    [[51.51,-0.13],[40.71,-74.01]],  // London → NY
+    [[40.71,-74.01],[35.68,139.76]], // NY → Tokyo
+    [[51.51,-0.13],[50.11,8.68]],   // London → Frankfurt
+    [[22.32,114.17],[1.35,103.82]], // HK → Singapore
+    [[35.68,139.76],[22.32,114.17]], // Tokyo → HK
+  ];
+
+  routes.forEach(r => {
+    L.polyline(r, {
+      color: 'rgba(0,212,255,0.2)',
+      weight: 1,
+      dashArray: '4 8',
+    }).addTo(map);
+  });
+}
+
+function resetMapView() {
+  map.setView([20, 10], 2, { animate: true });
+}
+
+let heatCircles = [];
+function toggleHeat() {
+  heatShowing = !heatShowing;
+  const btn = document.getElementById('custom-map-btn');
+  if (heatShowing) {
+    btn.classList.add('active');
+    const regions = [
+      {lat:45, lng:-100, r:500000, color:'rgba(245,200,66,0.08)'},
+      {lat:50, lng:10,   r:400000, color:'rgba(0,212,255,0.08)'},
+      {lat:35, lng:130,  r:450000, color:'rgba(0,212,255,0.07)'},
+      {lat:10, lng:110,  r:350000, color:'rgba(0,230,118,0.07)'},
+      {lat:-25,lng:140,  r:300000, color:'rgba(255,149,0,0.07)'},
+    ];
+    regions.forEach(r => {
+      const c = L.circle([r.lat, r.lng], {
+        radius: r.r,
+        fillColor: r.color,
+        fillOpacity: 1,
+        color: 'transparent',
+        weight: 0,
+      }).addTo(map);
+      heatCircles.push(c);
+    });
+  } else {
+    btn.classList.remove('active');
+    heatCircles.forEach(c => map.removeLayer(c));
+    heatCircles = [];
+  }
+}
+
+/* ══ Tab switching ══ */
+function switchTab(tab, el) {
+  document.querySelectorAll('.map-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  const mapEl = document.getElementById('world-map');
+  const tablePanel = document.getElementById('panel-table');
+  const newsPanel  = document.getElementById('panel-news');
+
+  mapEl.style.display   = tab === 'map'   ? '' : 'none';
+  tablePanel.classList.toggle('active', tab === 'table');
+  newsPanel.classList.toggle('active',  tab === 'news');
+
+  if (tab === 'map') map.invalidateSize();
+}
+window.switchTab = switchTab;
+window.toggleHeat = toggleHeat;
+window.resetMapView = resetMapView;
+
+/* ══ Fear & Greed ══ */
+async function fetchFearGreed() {
+  try {
+    const r = await fetch('https://api.alternative.me/fng/?limit=1');
+    const d = await r.json();
+    const val = parseInt(d.data[0].value);
+    const text = d.data[0].value_classification;
+
+    document.getElementById('fg-number').textContent = val;
+    document.getElementById('fg-text').textContent   = text.toUpperCase();
+    document.getElementById('fg-needle').style.left  = `${val}%`;
+
+    // Color by zone
+    const colors = { 'Extreme Fear':'#ff3b3b','Fear':'#ff9500','Neutral':'#f5c842','Greed':'#00e676','Extreme Greed':'#00d4ff' };
+    document.getElementById('fg-text').style.color = colors[text] || '#e6e9f2';
+    document.getElementById('fg-number').style.color = colors[text] || '#e6e9f2';
+  } catch(e) {
+    document.getElementById('fg-number').textContent = '—';
+    document.getElementById('fg-text').textContent   = 'UNAVAILABLE';
+  }
+}
+
+/* ══ Crypto Data ══ */
+async function fetchCrypto() {
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true');
+    const d = await r.json();
+
+    function fmtPrice(n) { return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fmtChg(n)   { const s=n>=0?'+':''; return `${s}${n.toFixed(2)}%`; }
+    function fmtBig(n)   { if(n>=1e12) return `$${(n/1e12).toFixed(2)}T`; if(n>=1e9) return `$${(n/1e9).toFixed(1)}B`; return `$${n.toLocaleString()}`; }
+
+    // BTC
+    document.getElementById('btc-price').textContent = fmtPrice(d.bitcoin.usd);
+    const btcChgEl = document.getElementById('btc-chg');
+    btcChgEl.textContent  = fmtChg(d.bitcoin.usd_24h_change);
+    btcChgEl.className    = 'crypto-chg ' + (d.bitcoin.usd_24h_change >= 0 ? 'up' : 'down');
+
+    // ETH
+    document.getElementById('eth-price').textContent = fmtPrice(d.ethereum.usd);
+    const ethChgEl = document.getElementById('eth-chg');
+    ethChgEl.textContent  = fmtChg(d.ethereum.usd_24h_change);
+    ethChgEl.className    = 'crypto-chg ' + (d.ethereum.usd_24h_change >= 0 ? 'up' : 'down');
+
+    // SOL
+    document.getElementById('sol-price').textContent = fmtPrice(d.solana.usd);
+    const solChgEl = document.getElementById('sol-chg');
+    solChgEl.textContent  = fmtChg(d.solana.usd_24h_change);
+    solChgEl.className    = 'crypto-chg ' + (d.solana.usd_24h_change >= 0 ? 'up' : 'down');
+
+    // Market stats
+    document.getElementById('market-cap').textContent = fmtBig(d.bitcoin.usd_market_cap * 4.2);
+    document.getElementById('market-vol').textContent = fmtBig(d.bitcoin.usd_24h_vol * 8);
+  } catch(e) {}
+}
+
+/* ══ S&P Sectors ══ */
+function renderSPHeatmap() {
+  const sectors = [
+    { name: 'Tech',       pct: +1.82 },
+    { name: 'Finance',    pct: +0.54 },
+    { name: 'Health',     pct: -0.23 },
+    { name: 'Energy',     pct: +2.11 },
+    { name: 'Consumer',   pct: -0.87 },
+    { name: 'Utilities',  pct: +0.12 },
+    { name: 'Industrl',   pct: +0.73 },
+    { name: 'Materials',  pct: -0.44 },
+    { name: 'Real Est',   pct: -1.02 },
+  ];
+
+  const grid = document.getElementById('sp-grid');
+  grid.innerHTML = sectors.map(s => {
+    const norm = Math.min(Math.abs(s.pct)/3, 1);
+    const bg = s.pct >= 0
+      ? `rgba(0,${Math.floor(100+norm*130)},${Math.floor(norm*80)},${0.5+norm*0.4})`
+      : `rgba(${Math.floor(150+norm*105)},${Math.floor(norm*20)},${Math.floor(norm*20)},${0.5+norm*0.4})`;
+    return `<div class="sp-cell" style="background:${bg}">
+      <div class="sp-name">${s.name}</div>
+      <div class="sp-pct">${s.pct>0?'+':''}${s.pct.toFixed(2)}%</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ FX Matrix ══ */
+function renderFXMatrix() {
+  const currencies = ['USD','EUR','GBP','JPY'];
+  const rates = {
+    'USD/EUR': -0.31, 'USD/GBP': +0.22, 'USD/JPY': +0.65,
+    'EUR/USD': +0.31, 'EUR/GBP': +0.15, 'EUR/JPY': +0.42,
+    'GBP/USD': -0.22, 'GBP/EUR': -0.15, 'GBP/JPY': +0.18,
+    'JPY/USD': -0.65, 'JPY/EUR': -0.42, 'JPY/GBP': -0.18,
+  };
+
+  const tbody = document.getElementById('fx-tbody');
+  tbody.innerHTML = currencies.map(base =>
+    `<tr>
+      <td class="fx-row-label">${base}</td>
+      ${currencies.map(quote => {
+        if (base === quote) return `<td class="fx-cell" style="background:var(--bg-3);color:var(--text-muted)">—</td>`;
+        const key = `${base}/${quote}`;
+        const pct = rates[key] ?? 0;
+        const bg = pct > 0 ? `rgba(0,230,118,${0.15+Math.abs(pct)*0.1})` : `rgba(255,59,59,${0.15+Math.abs(pct)*0.1})`;
+        const color = pct > 0 ? '#00e676' : '#ff3b3b';
+        return `<td class="fx-cell" style="background:${bg};color:${color}">${pct>0?'+':''}${pct.toFixed(2)}%</td>`;
+      }).join('')}
+    </tr>`
+  ).join('');
+}
+
+/* ══ Markets Table ══ */
+function renderMarketsTable() {
+  const markets = [
+    { name:'S&P 500',    country:'🇺🇸 USA',      price:'5,871.50', chg:'+0.61%', vol:'4.2B', open:true },
+    { name:'FTSE 100',   country:'🇬🇧 UK',       price:'8,242.10', chg:'-0.12%', vol:'1.1B', open:true },
+    { name:'Nikkei 225', country:'🇯🇵 Japan',    price:'38,814',   chg:'+1.02%', vol:'2.8B', open:false },
+    { name:'DAX',        country:'🇩🇪 Germany',  price:'19,241',   chg:'+0.34%', vol:'0.9B', open:true },
+    { name:'Hang Seng',  country:'🇭🇰 HK',       price:'20,423',   chg:'-0.55%', vol:'1.7B', open:false },
+    { name:'ASX 200',    country:'🇦🇺 Australia',price:'8,124',    chg:'+0.28%', vol:'0.6B', open:false },
+    { name:'CAC 40',     country:'🇫🇷 France',   price:'7,801',    chg:'+0.19%', vol:'0.8B', open:true },
+    { name:'Shanghai',   country:'🇨🇳 China',    price:'3,282',    chg:'-0.91%', vol:'5.4B', open:false },
+  ];
+
+  const tbody = document.getElementById('markets-tbody');
+  tbody.innerHTML = markets.map(m => {
+    const up = m.chg.startsWith('+');
+    return `<tr>
+      <td><div class="mkt-name">${m.name}</div><div class="mkt-country">${m.country}</div></td>
+      <td class="mkt-price">${m.price}</td>
+      <td class="mkt-chg ${up?'up':'down'}">${m.chg}</td>
+      <td style="color:var(--text-dim);font-size:0.65rem">${m.vol}</td>
+      <td><span class="badge-tag ${m.open?'green':'red'}" style="font-size:0.42rem">${m.open?'OPEN':'CLOSED'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══ Intel News Feed ══ */
+function renderNewsFeed() {
+  const news = [
+    { title: 'Federal Reserve holds rates at 4.25-4.5% amid inflation concerns', time: '2 min ago', tag: 'MACRO' },
+    { title: 'Bitcoin surges past key resistance — bulls target $100K psychological level', time: '8 min ago', tag: 'CRYPTO' },
+    { title: 'Gold consolidates near all-time high as USD weakens on jobs data', time: '15 min ago', tag: 'COMMODITIES' },
+    { title: 'OPEC+ signals production cut extension through Q2 — Brent climbs 2.1%', time: '22 min ago', tag: 'ENERGY' },
+    { title: 'FTSE 100 edges lower as UK GDP disappoints — GBP/USD dips to 1.2612', time: '35 min ago', tag: 'FX' },
+    { title: 'Nvidia reports record earnings — AI infrastructure spending accelerates', time: '1 hr ago', tag: 'TECH' },
+    { title: 'Bank of Japan hints at further rate hikes — Yen strengthens against peers', time: '1.5 hr ago', tag: 'MACRO' },
+  ];
+
+  const feed = document.getElementById('news-feed');
+  feed.innerHTML = news.map(n => `
+    <div class="news-item">
+      <div class="news-dot"></div>
+      <div>
+        <div class="news-title">${n.title}</div>
+        <div class="news-meta">${n.time} &nbsp;·&nbsp; <span style="color:var(--teal)">${n.tag}</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══ Init ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  initMap();
+  fetchFearGreed();
+  fetchCrypto();
+  renderSPHeatmap();
+  renderFXMatrix();
+  renderMarketsTable();
+  renderNewsFeed();
+
+  // Simulate online count
+  document.getElementById('online-count').textContent = Math.floor(Math.random() * 60 + 20);
+
+  // Refresh crypto every 60s
+  setInterval(fetchCrypto, 60000);
+  setInterval(fetchFearGreed, 300000);
+});
+</script>
+
+</body>
+</html>

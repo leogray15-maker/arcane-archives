@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>War Room | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png"/>
+  <link rel="stylesheet" href="arcane-globals.css"/>
+
+  <style>
+    /* ── Layout ── */
+    .wr-layout {
+      display: flex;
+      height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
+      margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ═══════════════════
+       LEFT PANEL
+    ═══════════════════ */
+    .wr-left {
+      width: 240px;
+      flex-shrink: 0;
+      background: rgba(9,9,14,0.98);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .wr-panel-title {
+      padding: 1rem 1rem 0.75rem;
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .wr-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      color: var(--text-dim);
+      font-family: var(--font-head);
+      font-size: 0.56rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      transition: all 0.18s;
+    }
+    .wr-back-btn:hover { color: var(--teal); background: var(--teal-glow2); }
+
+    /* Nav pills */
+    .wr-nav {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .wr-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      transition: all 0.18s;
+      border-left: 3px solid transparent;
+    }
+    .wr-nav-item.active {
+      color: var(--red);
+      background: var(--red-glow);
+      border-left-color: var(--red);
+    }
+    .wr-nav-item:hover:not(.active) { color: var(--text); background: var(--bg-3); }
+    .wr-nav-icon { font-size: 0.9rem; }
+
+    /* Operator status list */
+    .wr-operators {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem 0;
+    }
+    .wr-ops-label {
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 0 1rem 0.5rem;
+    }
+    .op-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .op-item:hover { background: var(--bg-3); }
+    .op-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-5);
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .op-avatar.online { border-color: var(--green); }
+    .op-avatar.busy   { border-color: var(--red); }
+    .op-status-dot {
+      position: absolute;
+      bottom: -1px; right: -1px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid var(--bg-1);
+    }
+    .op-status-dot.online { background: var(--green); }
+    .op-status-dot.busy   { background: var(--red); }
+    .op-status-dot.away   { background: var(--gold); }
+    .op-name {
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .op-role {
+      font-size: 0.54rem;
+      color: var(--text-dim);
+    }
+
+    /* ═══════════════════
+       MAIN AREA
+    ═══════════════════ */
+    .wr-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Section panels */
+    .wr-section {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .wr-section.active {
+      display: flex;
+    }
+
+    /* ── Live Call Panel ── */
+    .live-call-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .call-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.25rem;
+      background: rgba(255,59,59,0.06);
+      border-bottom: 1px solid rgba(255,59,59,0.2);
+      flex-shrink: 0;
+    }
+    .call-status-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .call-status-title {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text);
+    }
+    .call-timer {
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+    .call-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .call-ctrl-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      border: 1px solid var(--border);
+      background: var(--bg-3);
+      color: var(--text-dim);
+    }
+    .call-ctrl-btn:hover { background: var(--bg-5); color: var(--text); }
+    .call-ctrl-btn.danger {
+      background: var(--red-glow);
+      border-color: var(--border-red);
+      color: var(--red);
+    }
+    .call-ctrl-btn.danger:hover { background: var(--red); color: #fff; }
+    .call-ctrl-btn.active {
+      background: var(--teal-glow);
+      border-color: var(--border-hi);
+      color: var(--teal);
+    }
+
+    /* Video grid */
+    .video-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      overflow: hidden;
+    }
+    .video-cell {
+      background: var(--bg-2);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .video-cell:hover { background: var(--bg-3); }
+    .video-cell.main { grid-column: 1 / -1; }
+
+    /* Jitsi embed */
+    #jitsi-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Host cell placeholder */
+    .video-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .video-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--bg-4);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    .video-name {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.08em;
+    }
+    .video-status {
+      font-size: 0.58rem;
+      color: var(--text-dim);
+    }
+    .video-cell-label {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vcl-name {
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    }
+    .vcl-mic {
+      font-size: 0.65rem;
+      opacity: 0.7;
+    }
+
+    /* Join button */
+    .join-call-prompt {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    .join-call-icon {
+      font-size: 4rem;
+      opacity: 0.5;
+      animation: pulse-icon 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse-icon { 0%,100%{transform:scale(1);opacity:0.5;} 50%{transform:scale(1.08);opacity:0.7;} }
+    .join-call-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+    .join-call-sub {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      text-align: center;
+      max-width: 360px;
+      line-height: 1.6;
+    }
+    .join-call-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+    .btn-join {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.75rem;
+      background: linear-gradient(135deg, var(--red), var(--red-dim));
+      color: white;
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      border-radius: 6px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 20px var(--red-glow);
+      transition: all 0.2s;
+    }
+    .btn-join:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 24px var(--red-glow); }
+
+    /* ── Recordings Panel ── */
+    .recordings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      padding: 1.25rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .rec-card {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .rec-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 12px var(--teal-glow);
+      transform: translateY(-2px);
+    }
+    .rec-thumb {
+      height: 130px;
+      background: var(--bg-4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .rec-thumb-bg {
+      position: absolute;
+      inset: 0;
+    }
+    .rec-thumb-bg.t1 { background: radial-gradient(ellipse at 50% 80%, rgba(0,212,255,0.12), var(--bg-4)); }
+    .rec-thumb-bg.t2 { background: radial-gradient(ellipse at 50% 80%, rgba(245,200,66,0.12), var(--bg-4)); }
+    .rec-thumb-bg.t3 { background: radial-gradient(ellipse at 50% 80%, rgba(255,59,59,0.10), var(--bg-4)); }
+    .rec-thumb-icon { position: relative; z-index: 1; opacity: 0.6; }
+    .rec-play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .rec-card:hover .rec-play-overlay { opacity: 1; }
+    .rec-play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #000;
+    }
+    .rec-duration {
+      position: absolute;
+      bottom: 0.4rem; right: 0.5rem;
+      font-family: var(--font-head);
+      font-size: 0.5rem;
+      font-weight: 700;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+    .rec-info { padding: 0.75rem; }
+    .rec-title {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+    .rec-meta {
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── Schedule Panel ── */
+    .schedule-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+    }
+    .sched-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sched-item:hover { border-color: var(--teal); }
+    .sched-time {
+      flex-shrink: 0;
+      text-align: center;
+      width: 72px;
+    }
+    .sched-hr {
+      font-family: var(--font-head);
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--teal);
+    }
+    .sched-ampm {
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+    .sched-info { flex: 1; }
+    .sched-title {
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .sched-desc { font-size: 0.65rem; color: var(--text-dim); }
+    .sched-tags { display: flex; gap: 0.4rem; margin-top: 0.4rem; flex-wrap: wrap; }
+    .sched-host {
+      flex-shrink: 0;
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      color: var(--text-dim);
+      text-align: right;
+      letter-spacing: 0.08em;
+    }
+    .sched-host strong { display: block; color: var(--gold); }
+
+    /* ═══════════════════
+       CHAT SIDEBAR
+    ═══════════════════ */
+    .wr-chat {
+      width: 260px;
+      flex-shrink: 0;
+      background: rgba(9,9,14,0.98);
+      border-left: 1px solid var(--border-hi);
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(20px);
+    }
+
+    .chat-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .chat-header-title {
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .chat-msg {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .chat-msg-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--bg-5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.52rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+    .chat-msg-body {}
+    .chat-msg-name {
+      font-family: var(--font-head);
+      font-size: 0.48rem;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.15rem;
+    }
+    .chat-msg-name.gold { color: var(--gold); }
+    .chat-msg-text {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      line-height: 1.45;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 0 8px 8px 8px;
+      padding: 0.4rem 0.6rem;
+    }
+    .chat-msg-time {
+      font-size: 0.48rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .chat-input-wrap {
+      padding: 0.75rem;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      padding: 0.4rem 0.6rem;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    .chat-input:focus { border-color: var(--teal); }
+    .chat-input::placeholder { color: var(--text-muted); }
+    .chat-send-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: var(--teal-glow);
+      border: 1px solid var(--border-hi);
+      color: var(--teal);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.18s;
+    }
+    .chat-send-btn:hover { background: var(--teal); color: #000; }
+
+    /* Panel header (recordings/schedule) */
+    .wr-panel-header {
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .wr-ph-title {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) { .wr-chat { width: 220px; } }
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .wr-layout { flex-direction: column; height: auto; min-height: 100vh; }
+      .wr-left { width: 100%; flex-direction: row; flex-wrap: wrap; height: auto; }
+      .wr-chat { width: 100%; height: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="arcane-nav">
+  <div class="nav-inner">
+    <a class="nav-left" href="dashboard.html">
+      <img src="ArcaneA.png" class="nav-logo" alt="AA"/>
+      <span class="nav-brand">The Arcane Archives</span>
+    </a>
+    <div class="nav-sep"></div>
+    <div class="nav-center">
+      <a href="arcane-store.html" class="nav-store-btn">Store</a>
+      <div class="nav-ticker-wrap">
+        <div class="nav-ticker-track" id="nav-ticker-track"></div>
+      </div>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-right">
+      <div class="nav-balance" id="nav-balance">£0.00</div>
+      <div class="nav-online"></div>
+      <button class="nav-btn" onclick="location.href='alerts.html'">🔔</button>
+      <a class="nav-btn" href="settings.html">⚙️</a>
+      <div class="nav-xp-block">
+        <span class="nav-xp-val" id="nav-xp">0</span>
+        <span class="nav-xp-label">XP</span>
+      </div>
+      <div class="nav-rank" id="nav-rank">INITIATE</div>
+      <img class="nav-avatar" id="nav-avatar" src="ArcaneA.png" alt="Avatar"/>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════ LAYOUT ══════════════ -->
+<div class="wr-layout">
+
+  <!-- ────────────── LEFT ────────────── -->
+  <aside class="wr-left">
+    <div class="wr-panel-title">🎖️ War Room</div>
+
+    <a class="wr-back-btn" href="dashboard.html">← Dashboard</a>
+
+    <!-- Nav items -->
+    <div class="wr-nav">
+      <div class="wr-nav-item active" onclick="showSection('live-call',this)">
+        <span class="wr-nav-icon">📡</span> Live Call
+        <span class="badge-live" style="margin-left:auto;font-size:0.42rem" id="live-indicator">Live</span>
+      </div>
+      <div class="wr-nav-item" onclick="showSection('recordings',this)">
+        <span class="wr-nav-icon">🎬</span> Recordings
+      </div>
+      <div class="wr-nav-item" onclick="showSection('schedule',this)">
+        <span class="wr-nav-icon">📅</span> Schedule
+      </div>
+    </div>
+
+    <!-- Operators online -->
+    <div class="wr-operators">
+      <div class="wr-ops-label">Operators Online</div>
+      <div id="operators-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- ────────────── MAIN ────────────── -->
+  <main class="wr-main">
+
+    <!-- Live Call Section -->
+    <div class="wr-section active" id="sec-live-call">
+      <div class="live-call-area" id="call-content">
+        <!-- Join prompt (shown when not in call) -->
+        <div class="join-call-prompt" id="join-prompt">
+          <div class="join-call-icon">🎖️</div>
+          <div class="join-call-title">Briefing Room</div>
+          <div class="join-call-sub">
+            Join the live strategy session with fellow operators.
+            All calls are end-to-end encrypted and recorded for premium members.
+          </div>
+          <div class="join-call-btns">
+            <button class="btn-join" onclick="joinCall()">📡 Join Live Call</button>
+            <button class="btn-ghost" onclick="startPrivate()">🔒 Private Briefing</button>
+          </div>
+
+          <!-- Upcoming session teaser -->
+          <div style="margin-top:1.5rem;padding:1rem 1.25rem;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;text-align:left;max-width:400px;width:100%">
+            <div style="font-family:var(--font-head);font-size:0.52rem;color:var(--text-dim);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.5rem">Next Session</div>
+            <div style="font-family:var(--font-head);font-size:0.75rem;font-weight:700;color:var(--text)">Daily Market Briefing</div>
+            <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.25rem">Gold, FX &amp; Index Review · With Leo G</div>
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.75rem">
+              <span style="font-family:var(--font-head);font-size:0.65rem;color:var(--teal);font-weight:700" id="next-session-time">08:00 GMT</span>
+              <span class="badge-tag teal">TOMORROW</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active call view (shown when in call) -->
+        <div id="active-call" style="display:none;flex-direction:column;flex:1">
+          <div class="call-status-bar">
+            <div class="call-status-info">
+              <div class="badge-live">Live</div>
+              <div class="call-status-title">Daily Market Briefing</div>
+              <div class="call-timer" id="call-timer">00:00</div>
+            </div>
+            <div class="call-controls">
+              <button class="call-ctrl-btn active" id="mic-btn" onclick="toggleMic()" title="Toggle Mic">🎙️</button>
+              <button class="call-ctrl-btn" id="cam-btn" onclick="toggleCam()" title="Toggle Camera">📷</button>
+              <button class="call-ctrl-btn" onclick="toggleScreen()" title="Share Screen">🖥️</button>
+              <button class="call-ctrl-btn" onclick="toggleHand()" title="Raise Hand">✋</button>
+              <button class="call-ctrl-btn danger" onclick="leaveCall()" title="Leave Call">📵</button>
+            </div>
+          </div>
+
+          <!-- Jitsi or video grid -->
+          <div class="video-grid" id="video-grid">
+            <!-- Main host -->
+            <div class="video-cell" style="background:#0a0f0a;">
+              <div class="video-placeholder">
+                <div class="video-avatar" style="border-color:var(--green);font-size:1.8rem">👤</div>
+                <div class="video-name">Leo G · Host</div>
+                <div class="video-status">Presenting</div>
+              </div>
+              <div class="video-cell-label">
+                <span class="vcl-name">Leo G (Host)</span>
+                <span class="vcl-mic">🎙️</span>
+              </div>
+            </div>
+            <!-- Participant cells -->
+            <div class="video-cell">
+              <div class="video-placeholder">
+                <div class="video-avatar" style="border-color:var(--teal)">JK</div>
+                <div class="video-name">J. Keane</div>
+                <div class="video-status" style="color:var(--text-muted)">Cam off</div>
+              </div>
+              <div class="video-cell-label">
+                <span class="vcl-name">J. Keane</span>
+                <span class="vcl-mic" style="opacity:0.3">🔇</span>
+              </div>
+            </div>
+            <div class="video-cell">
+              <div class="video-placeholder">
+                <div class="video-avatar" style="border-color:var(--gold)">SR</div>
+                <div class="video-name">S. Rahman</div>
+                <div class="video-status" style="color:var(--text-muted)">Cam off</div>
+              </div>
+              <div class="video-cell-label">
+                <span class="vcl-name">S. Rahman</span>
+                <span class="vcl-mic">🎙️</span>
+              </div>
+            </div>
+            <div class="video-cell" id="my-cell">
+              <div class="video-placeholder">
+                <div class="video-avatar" id="my-video-avatar" style="border-color:var(--teal)">ME</div>
+                <div class="video-name" id="my-video-name">You</div>
+                <div class="video-status">Connected</div>
+              </div>
+              <div class="video-cell-label">
+                <span class="vcl-name" id="my-vcl-name">You</span>
+                <span class="vcl-mic" id="my-mic-icon">🎙️</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recordings Section -->
+    <div class="wr-section" id="sec-recordings">
+      <div class="wr-panel-header">
+        <div class="wr-ph-title">🎬 Session Library</div>
+        <span class="badge-tag teal" id="rec-count">Loading…</span>
+      </div>
+      <div class="recordings-grid" id="recordings-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Schedule Section -->
+    <div class="wr-section" id="sec-schedule">
+      <div class="wr-panel-header">
+        <div class="wr-ph-title">📅 Upcoming Sessions</div>
+        <button class="btn-ghost" style="font-size:0.52rem;padding:0.3rem 0.75rem" onclick="location.href='inner-circle.html'">View All</button>
+      </div>
+      <div class="schedule-list" id="schedule-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ────────────── CHAT ────────────── -->
+  <aside class="wr-chat">
+    <div class="chat-header">
+      <div class="chat-header-title">War Room Chat</div>
+      <div class="badge-live" style="font-size:0.42rem">Live</div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- Populated by JS -->
+    </div>
+    <div class="chat-input-wrap">
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" type="text" placeholder="Send message…"
+               onkeydown="if(event.key==='Enter') sendChatMsg()"/>
+        <button class="chat-send-btn" onclick="sendChatMsg()">➤</button>
+      </div>
+    </div>
+  </aside>
+
+</div><!-- /wr-layout -->
+
+<!-- ══════════════ FIREBASE ══════════════ -->
+<script type="module">
+  import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  const app  = initializeApp({ apiKey:"AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain:"arcane-archives-3b0f5.firebaseapp.com", projectId:"arcane-archives-3b0f5" });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+  const RANKS=[{min:0,label:'INITIATE'},{min:100,label:'ANALYST'},{min:500,label:'OPERATIVE'},{min:1500,label:'TACTICIAN'},{min:3000,label:'STRATEGIST'},{min:6000,label:'COMMANDER'},{min:10000,label:'ARCHON'}];
+  function getRank(xp){ let r=RANKS[0]; RANKS.forEach(x=>{ if(xp>=x.min) r=x; }); return r; }
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) { location.href='login.html'; return; }
+    const snap = await getDoc(doc(db,'users',user.uid));
+    const data = snap.exists() ? snap.data() : {};
+    const xp = data.xp ?? 0;
+    document.getElementById('nav-balance').textContent = `£${(data.balance??0).toFixed(2)}`;
+    document.getElementById('nav-xp').textContent = xp.toLocaleString();
+    document.getElementById('nav-rank').textContent = getRank(xp).label;
+    if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
+
+    const name = data.displayName || user.displayName || 'Operator';
+    const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('my-video-avatar').textContent = initials;
+    document.getElementById('my-video-name').textContent = name;
+    document.getElementById('my-vcl-name').textContent = name;
+    window._userName = name;
+    window._userInitials = initials;
+  });
+</script>
+
+<script>
+/* ══ Stars ══ */
+(function(){
+  const canvas=document.getElementById('stars-canvas');
+  const ctx=canvas.getContext('2d');let stars=[];
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  function initStars(){stars=[];for(let i=0;i<180;i++)stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,a:Math.random()*0.6+0.05,da:(Math.random()-0.5)*0.007});}
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();s.a+=s.da;if(s.a>0.8||s.a<0.05)s.da*=-1;});requestAnimationFrame(draw);}
+  resize();initStars();draw();
+  window.addEventListener('resize',()=>{resize();initStars();});
+})();
+
+/* ══ Nav Ticker ══ */
+(function(){
+  const items=[{sym:'XAU/USD',price:'2,643.20',chg:'+0.42%',dir:'up'},{sym:'XAG/USD',price:'29.84',chg:'-0.18%',dir:'down'},{sym:'BTC/USD',price:'…',chg:'…',dir:'flat'},{sym:'S&P 500',price:'5,871.50',chg:'+0.61%',dir:'up'},{sym:'EUR/USD',price:'1.0823',chg:'-0.09%',dir:'down'},{sym:'GBP/USD',price:'1.2641',chg:'+0.23%',dir:'up'}];
+  const track=document.getElementById('nav-ticker-track');
+  track.innerHTML=[...items,...items].map(it=>`<div class="nav-ticker-item"><span class="t-sym">${it.sym}</span><span class="t-price">${it.price}</span><span class="t-chg ${it.dir}">${it.chg}</span></div>`).join('');
+})();
+
+/* ══ Section switching ══ */
+function showSection(id, el) {
+  document.querySelectorAll('.wr-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.wr-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+}
+window.showSection = showSection;
+
+/* ══ Operators ══ */
+const OPERATORS = [
+  { initials:'LG', name:'Leo G',     role:'Host · Analyst',   status:'online' },
+  { initials:'JK', name:'J. Keane',  role:'Senior Trader',    status:'online' },
+  { initials:'SR', name:'S. Rahman', role:'FX Specialist',    status:'online' },
+  { initials:'TW', name:'T. Walsh',  role:'Crypto Analyst',   status:'busy'   },
+  { initials:'EM', name:'E. Morris', role:'Commodities',      status:'online' },
+  { initials:'CM', name:'C. Marsh',  role:'Member',           status:'away'   },
+  { initials:'AB', name:'A. Brooks', role:'Member',           status:'online' },
+];
+
+function renderOperators() {
+  document.getElementById('operators-list').innerHTML = OPERATORS.map(op => `
+    <div class="op-item">
+      <div class="op-avatar ${op.status}">
+        ${op.initials}
+        <div class="op-status-dot ${op.status}"></div>
+      </div>
+      <div>
+        <div class="op-name">${op.name}</div>
+        <div class="op-role">${op.role}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══ Chat ══ */
+const CHAT_MESSAGES = [
+  { initials:'LG', name:'Leo G',     text:'Morning all — Gold is holding above 2,640. Watching for a break.',   time:'08:04', gold:true },
+  { initials:'JK', name:'J. Keane',  text:'4H chart looks very bullish. MACD about to cross.',                  time:'08:06' },
+  { initials:'SR', name:'S. Rahman', text:'EUR/USD struggling at 1.0850 resistance. Short bias for me.',         time:'08:09' },
+  { initials:'LG', name:'Leo G',     text:'Good catch on EURUSD — fundamentals also supporting dollar strength.',time:'08:11', gold:true },
+  { initials:'EM', name:'E. Morris', text:'BTC consolidating nicely. If it holds 95K I\'m looking for longs.',   time:'08:14' },
+  { initials:'TW', name:'T. Walsh',  text:'Oil looking weak — OPEC news didn\'t help. Watching 77.50 support.', time:'08:18' },
+];
+
+function renderChat() {
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = CHAT_MESSAGES.map(m => `
+    <div class="chat-msg">
+      <div class="chat-msg-avatar">${m.initials}</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-name ${m.gold?'gold':''}">${m.name}</div>
+        <div class="chat-msg-text">${m.text}</div>
+        <div class="chat-msg-time">${m.time} GMT</div>
+      </div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChatMsg() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  const container = document.getElementById('chat-messages');
+  const name = window._userName || 'You';
+  const initials = window._userInitials || 'ME';
+  const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+  container.innerHTML += `
+    <div class="chat-msg">
+      <div class="chat-msg-avatar" style="border:1px solid var(--teal);color:var(--teal)">${initials}</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-name">${name}</div>
+        <div class="chat-msg-text">${text}</div>
+        <div class="chat-msg-time">${time} GMT</div>
+      </div>
+    </div>`;
+  container.scrollTop = container.scrollHeight;
+  inp.value = '';
+}
+window.sendChatMsg = sendChatMsg;
+
+/* ══ Recordings ══ */
+const RECORDINGS = [
+  { title:'Gold Weekly Analysis', date:'02 Mar 2026', duration:'38:12', theme:'t1', emoji:'📈', views:'142' },
+  { title:'BTC Breakout Strategy', date:'28 Feb 2026', duration:'51:44', theme:'t2', emoji:'₿', views:'218' },
+  { title:'FX Market Deep Dive', date:'25 Feb 2026', duration:'44:20', theme:'t1', emoji:'💱', views:'97'  },
+  { title:'War Room Live Trade',  date:'21 Feb 2026', duration:'1:12:08',theme:'t3', emoji:'🎯', views:'331' },
+  { title:'OPEC Impact on Oil',   date:'17 Feb 2026', duration:'29:55', theme:'t3', emoji:'🛢️', views:'84'  },
+  { title:'Risk Management Masterclass', date:'14 Feb 2026', duration:'58:30', theme:'t2', emoji:'🛡️', views:'266' },
+];
+
+function renderRecordings() {
+  const grid = document.getElementById('recordings-grid');
+  grid.innerHTML = RECORDINGS.map(r => `
+    <div class="rec-card" onclick="playRecording('${r.title}')">
+      <div class="rec-thumb">
+        <div class="rec-thumb-bg ${r.theme}"></div>
+        <div class="rec-thumb-icon">${r.emoji}</div>
+        <div class="rec-play-overlay"><div class="rec-play-btn">▶</div></div>
+        <div class="rec-duration">${r.duration}</div>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">${r.title}</div>
+        <div class="rec-meta">
+          <span>${r.date}</span>
+          <span>·</span>
+          <span>${r.views} views</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('rec-count').textContent = `${RECORDINGS.length} sessions`;
+}
+
+function playRecording(title) {
+  alert(`▶ Playing: "${title}"\n\nFull playback with chapter markers and transcript coming soon.`);
+}
+window.playRecording = playRecording;
+
+/* ══ Schedule ══ */
+const SCHEDULE = [
+  { time:'08:00', ampm:'GMT', title:'Daily Market Briefing', desc:'Gold, FX & Index overview — market open analysis', tags:['gold','fx'], host:'Leo G', day:'Tomorrow' },
+  { time:'12:30', ampm:'GMT', title:'Lunchtime Live Signals', desc:'Real-time trade setups across major pairs and metals', tags:['signals','live'], host:'Leo G', day:'Tomorrow' },
+  { time:'19:00', ampm:'GMT', title:'US Close Debrief',      desc:'Review of key moves, overnight setups for Asia session', tags:['debrief'], host:'J. Keane', day:'Tomorrow' },
+  { time:'10:00', ampm:'GMT', title:'BTC & Crypto Weekly',   desc:'Crypto market structure review, altcoin opportunities', tags:['crypto'], host:'T. Walsh', day:'Tue 10 Mar' },
+  { time:'14:00', ampm:'GMT', title:'Risk & Psychology Workshop', desc:'Advanced risk management, trade psychology deep dive', tags:['education'], host:'Leo G', day:'Wed 11 Mar' },
+];
+
+function renderSchedule() {
+  const tagColors = { gold:'--gold', fx:'--teal', signals:'--green', live:'--red', debrief:'--text-dim', crypto:'--gold', education:'--teal' };
+  document.getElementById('schedule-list').innerHTML = SCHEDULE.map(s => `
+    <div class="sched-item">
+      <div class="sched-time">
+        <div class="sched-hr">${s.time}</div>
+        <div class="sched-ampm">${s.ampm}</div>
+      </div>
+      <div class="sched-info">
+        <div class="sched-title">${s.title}</div>
+        <div class="sched-desc">${s.desc}</div>
+        <div class="sched-tags">
+          ${s.tags.map(t=>`<span class="badge-tag teal" style="font-size:0.42rem">${t.toUpperCase()}</span>`).join('')}
+        </div>
+      </div>
+      <div class="sched-host">
+        <strong>${s.host}</strong>
+        ${s.day}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══ Call controls ══ */
+let callTimer = null;
+let callSeconds = 0;
+let micOn = true, camOn = false;
+
+function joinCall() {
+  document.getElementById('join-prompt').style.display = 'none';
+  document.getElementById('active-call').style.display = 'flex';
+  callSeconds = 0;
+  callTimer = setInterval(() => {
+    callSeconds++;
+    const m = String(Math.floor(callSeconds/60)).padStart(2,'0');
+    const s = String(callSeconds%60).padStart(2,'0');
+    document.getElementById('call-timer').textContent = `${m}:${s}`;
+  }, 1000);
+
+  // Add joining message to chat
+  const container = document.getElementById('chat-messages');
+  const name = window._userName || 'You';
+  container.innerHTML += `
+    <div style="text-align:center;font-family:var(--font-head);font-size:0.48rem;color:var(--text-muted);letter-spacing:0.1em;padding:0.4rem 0">
+      ── ${name} joined the call ──
+    </div>`;
+  container.scrollTop = container.scrollHeight;
+}
+
+function leaveCall() {
+  if (!confirm('Leave the call?')) return;
+  clearInterval(callTimer);
+  document.getElementById('join-prompt').style.display = 'flex';
+  document.getElementById('active-call').style.display = 'none';
+}
+
+function toggleMic() {
+  micOn = !micOn;
+  const btn = document.getElementById('mic-btn');
+  btn.textContent = micOn ? '🎙️' : '🔇';
+  btn.classList.toggle('active', micOn);
+  document.getElementById('my-mic-icon').textContent = micOn ? '🎙️' : '🔇';
+}
+
+function toggleCam() {
+  camOn = !camOn;
+  const btn = document.getElementById('cam-btn');
+  btn.classList.toggle('active', camOn);
+}
+
+function toggleScreen() { alert('Screen sharing requires desktop app — coming soon.'); }
+function toggleHand()   { alert('✋ Hand raised — host has been notified.'); }
+function startPrivate() { alert('Private briefing rooms coming soon.'); }
+
+window.joinCall = joinCall;
+window.leaveCall = leaveCall;
+window.toggleMic = toggleMic;
+window.toggleCam = toggleCam;
+window.toggleScreen = toggleScreen;
+window.toggleHand = toggleHand;
+window.startPrivate = startPrivate;
+
+/* ══ Init ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  renderOperators();
+  renderChat();
+  renderRecordings();
+  renderSchedule();
+
+  // Simulate incoming messages
+  const randomMsgs = [
+    { initials:'AB', name:'A. Brooks', text:'What\'s the target for Gold today?' },
+    { initials:'CM', name:'C. Marsh',  text:'RSI looking oversold on 1H — potential bounce?' },
+    { initials:'LG', name:'Leo G',     text:'Eyes on 2,650 — that\'s the key level.', gold:true },
+  ];
+
+  let msgIdx = 0;
+  setInterval(() => {
+    if (msgIdx < randomMsgs.length) {
+      const m = randomMsgs[msgIdx++];
+      const container = document.getElementById('chat-messages');
+      const time = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      container.innerHTML += `
+        <div class="chat-msg">
+          <div class="chat-msg-avatar">${m.initials}</div>
+          <div class="chat-msg-body">
+            <div class="chat-msg-name ${m.gold?'gold':''}">${m.name}</div>
+            <div class="chat-msg-text">${m.text}</div>
+            <div class="chat-msg-time">${time} GMT</div>
+          </div>
+        </div>`;
+      container.scrollTop = container.scrollHeight;
+    }
+  }, 18000);
+});
+</script>
+
+</body>
+</html>
