@@ -1096,7 +1096,7 @@ function renderNewsFeed() {
 }
 
 /* ══ Init ══ */
-document.addEventListener('DOMContentLoaded', () => {
+function initPage() {
   initMap();
   fetchFearGreed();
   fetchCrypto();
@@ -1111,7 +1111,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Refresh crypto every 60s
   setInterval(fetchCrypto, 60000);
   setInterval(fetchFearGreed, 300000);
-});
+}
+
+// Fire immediately if DOM already ready (handles document.write / late injection),
+// otherwise wait for DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
+  initPage();
+}
 </script>
 
 </body>
