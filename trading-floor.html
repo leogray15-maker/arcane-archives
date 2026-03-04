@@ -570,6 +570,8 @@
   });
 </script>
 
+<script src="arcane-prices.js"></script>
+
 <script>
 /* ══ Stars ══ */
 (function(){
@@ -582,12 +584,7 @@
   window.addEventListener('resize',()=>{resize();initStars();});
 })();
 
-/* ══ Nav Ticker ══ */
-(function(){
-  const items=[{sym:'XAU/USD',price:'2,643.20',chg:'+0.42%',dir:'up'},{sym:'XAG/USD',price:'29.84',chg:'-0.18%',dir:'down'},{sym:'BTC/USD',price:'…',chg:'…',dir:'flat',live:'btc'},{sym:'S&P 500',price:'5,871.50',chg:'+0.61%',dir:'up'},{sym:'ETH/USD',price:'…',chg:'…',dir:'flat',live:'eth'},{sym:'GBP/USD',price:'1.2641',chg:'+0.23%',dir:'up'}];
-  const track=document.getElementById('nav-ticker-track');
-  track.innerHTML=[...items,...items].map(it=>`<div class="nav-ticker-item"><span class="t-sym">${it.sym}</span><span class="t-price">${it.price}</span><span class="t-chg ${it.dir}">${it.chg}</span></div>`).join('');
-})();
+/* ══ Ticker — handled by arcane-prices.js ══ */
 
 /* ══ TradingView Widget ══ */
 let tvWidget = null;
@@ -810,31 +807,46 @@ function saveNotes() {
 }
 window.saveNotes = saveNotes;
 
-/* ══ Crypto prices ══ */
-async function fetchPrices() {
-  try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
-    const d = await r.json();
-    const fmt = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+/* ══ Live Watchlist Prices — powered by arcane-prices.js ══ */
+function bindLivePrices() {
+  const AP = window.ArcanePrices;
+  if (!AP) return;
 
-    const btcEl = document.getElementById('wl-p-BTCUSD');
-    const btcChg = document.getElementById('wl-c-BTCUSD');
-    if (btcEl) { btcEl.textContent = fmt(d.bitcoin.usd); }
-    if (btcChg) {
-      const c = d.bitcoin.usd_24h_change;
-      btcChg.textContent = `${c>=0?'+':''}${c.toFixed(2)}%`;
-      btcChg.className = 'wl-chg ' + (c>=0?'up':'down');
-    }
+  // Mapping: watchlist symbol → { ArcanePrices key, decimal places }
+  const MAP = {
+    XAUUSD: { key:'XAU',    dec:2 },
+    XAGUSD: { key:'XAG',    dec:3 },
+    BTCUSD: { key:'BTC',    dec:0 },
+    ETHUSD: { key:'ETH',    dec:2 },
+    SPX500: { key:'SPX',    dec:2 },
+    GBPUSD: { key:'GBPUSD', dec:4 },
+    EURUSD: { key:'EURUSD', dec:4 },
+    USDJPY: { key:'USDJPY', dec:2 },
+  };
 
-    // Live price strip
-    if (currentSymbol === 'BTCUSD') {
-      document.getElementById('live-price').textContent = fmt(d.bitcoin.usd);
-      const c = d.bitcoin.usd_24h_change;
-      const el = document.getElementById('live-chg');
-      el.textContent = `${c>=0?'+':''}${c.toFixed(2)}%`;
-      el.className = 'tf-price-chg ' + (c>=0?'up':'down');
+  AP.subscribe(data => {
+    // Update watchlist rows
+    Object.entries(MAP).forEach(([wlSym, {key, dec}]) => {
+      const d = data[key];
+      if (!d) return;
+      const pEl = document.getElementById('wl-p-' + wlSym);
+      const cEl = document.getElementById('wl-c-' + wlSym);
+      if (pEl) pEl.textContent = AP.fmtPrice(d.price, dec);
+      if (cEl) { cEl.textContent = AP.fmtChg(d.change); cEl.className = 'wl-chg ' + d.dir; }
+    });
+
+    // Update live price strip for the currently selected symbol
+    const m = MAP[currentSymbol];
+    if (m) {
+      const d = data[m.key];
+      if (d) {
+        const lp = document.getElementById('live-price');
+        const lc = document.getElementById('live-chg');
+        if (lp) lp.textContent = AP.fmtPrice(d.price, m.dec);
+        if (lc) { lc.textContent = AP.fmtChg(d.change); lc.className = 'tf-price-chg ' + d.dir; }
+      }
     }
-  } catch(e) {}
+  });
 }
 
 /* ══ Quick stats (simulated per symbol) ══ */
@@ -859,8 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSignals();
   loadSimpleChart('XAUUSD', '240');
   updateStats('XAUUSD');
-  fetchPrices();
-  setInterval(fetchPrices, 60000);
+  bindLivePrices(); // live prices via arcane-prices.js (auto-refreshes every 30s)
 
   // Update live price every 5s (simulated fluctuation)
   setInterval(() => {

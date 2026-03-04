@@ -505,13 +505,116 @@
     }
     @media (max-width: 900px) {
       .wt-sidebar-left  { width: 160px; }
-      .wt-sidebar-right { display: none; }
+      .wt-sidebar-right { width: 220px; }
     }
-    @media (max-width: 640px) {
-      body { overflow: auto; }
-      .wt-layout { flex-direction: column; height: auto; }
-      .wt-sidebar-left  { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; }
-      #world-map { height: 50vh; }
+
+    /* ══════════════════════════════════════
+       MOBILE  (≤768px)
+       Sidebar → compact top bar
+       Right sidebar → horizontal scroll strip
+    ══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      body { overflow-y: auto; overflow-x: hidden; }
+
+      .wt-layout {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
+      }
+
+      /* ── Left sidebar → slim top bar ── */
+      .wt-sidebar-left {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        flex-shrink: 0;
+        height: 42px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-hi);
+        overflow: hidden;
+        padding: 0 0.5rem;
+        gap: 0;
+      }
+      .wt-sidebar-title {
+        padding: 0 0.75rem 0 0.25rem;
+        border-bottom: none;
+        font-size: 0.5rem;
+        letter-spacing: 0.18em;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+      }
+      .wt-sidebar-title::before { display: none; }
+      .wt-back-btn {
+        padding: 0 0.75rem;
+        border-bottom: none;
+        font-size: 0.5rem;
+        flex-shrink: 0;
+        height: 100%;
+        border-right: 1px solid var(--border);
+      }
+      /* Hide nav thumbnails and operator list on mobile */
+      .wt-nav-section { display: none; }
+      .wt-online-count {
+        border-top: none;
+        padding: 0 0.75rem;
+        font-size: 0.46rem;
+        margin-left: auto;
+        flex-shrink: 0;
+      }
+
+      /* ── Map: full width, fixed proportional height ── */
+      .wt-main { flex: none; width: 100%; overflow: visible; }
+      #world-map {
+        width: 100%;
+        height: 56vw;
+        min-height: 220px;
+        max-height: 340px;
+        display: block;
+      }
+      .map-content-panel { min-height: 300px; height: auto; }
+
+      /* Toolbar: horizontal scroll, no wrap */
+      .map-toolbar {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .map-toolbar::-webkit-scrollbar { display: none; }
+      .map-tab { padding: 0.5rem 0.75rem; font-size: 0.5rem; flex-shrink: 0; }
+      .map-action-btn { font-size: 0.46rem; padding: 0.25rem 0.5rem; flex-shrink: 0; }
+      .map-toolbar-right { flex-shrink: 0; padding: 0 0.4rem; }
+
+      /* ── Right sidebar → horizontal scroll strip below map ── */
+      .wt-sidebar-right {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border-hi);
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-wrap: nowrap;
+        height: auto;
+        min-height: 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        align-items: stretch;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      .wt-sidebar-right::-webkit-scrollbar { display: none; }
+
+      /* Each intel panel becomes a fixed-width card */
+      .intel-panel {
+        flex: 0 0 270px;
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+        overflow: visible;
+        min-width: 0;
+      }
+      /* Compact Fear & Greed on mobile */
+      .fg-number { font-size: 1.1rem; }
+      /* S&P stays 3-col */
+      .sp-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
@@ -776,6 +879,8 @@
   });
 </script>
 
+<script src="arcane-prices.js"></script>
+
 <script>
 /* ══ Stars ══ */
 (function(){
@@ -788,12 +893,7 @@
   window.addEventListener('resize',()=>{resize();initStars();});
 })();
 
-/* ══ Nav Ticker ══ */
-(function(){
-  const items=[{sym:'XAU/USD',price:'2,643.20',chg:'+0.42%',dir:'up'},{sym:'XAG/USD',price:'29.84',chg:'-0.18%',dir:'down'},{sym:'BTC/USD',price:'…',chg:'…',dir:'flat',live:'btc'},{sym:'S&P 500',price:'5,871.50',chg:'+0.61%',dir:'up'},{sym:'ETH/USD',price:'…',chg:'…',dir:'flat',live:'eth'},{sym:'EUR/USD',price:'1.0823',chg:'-0.09%',dir:'down'}];
-  const track=document.getElementById('nav-ticker-track');
-  track.innerHTML=[...items,...items].map(it=>`<div class="nav-ticker-item"><span class="t-sym">${it.sym}</span><span class="t-price" id="tp-${it.live||Math.random()}">${it.price}</span><span class="t-chg ${it.dir}">${it.chg}</span></div>`).join('');
-})();
+/* ══ Ticker — handled by arcane-prices.js ══ */
 
 /* ══ Leaflet Map ══ */
 let map, heatShowing = false, heatLayer = null;
@@ -881,7 +981,17 @@ function initMap() {
       dashArray: '4 8',
     }).addTo(map);
   });
+
+  // Force Leaflet to recalculate map size after layout settles (critical on iOS/mobile)
+  setTimeout(() => map.invalidateSize(), 100);
+  setTimeout(() => map.invalidateSize(), 500);
 }
+
+// Re-invalidate on resize and orientation change
+window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => { if (map) map.invalidateSize(); }, 350);
+});
 
 function resetMapView() {
   map.setView([20, 10], 2, { animate: true });
@@ -958,38 +1068,33 @@ async function fetchFearGreed() {
   }
 }
 
-/* ══ Crypto Data ══ */
-async function fetchCrypto() {
-  try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true');
-    const d = await r.json();
+/* ══ Crypto Intel — powered by arcane-prices.js ══ */
+function bindCryptoPrices() {
+  const AP = window.ArcanePrices;
+  if (!AP) return;
+  AP.subscribe(data => {
+    const fmtP = (n, d=2) => n != null ? '$'+n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—';
+    const fmtC = n => n != null ? (n>=0?'+':'')+n.toFixed(2)+'%' : '—';
+    const upd = (id, txt, cls) => { const el=document.getElementById(id); if(el){if(txt!==null)el.textContent=txt; if(cls)el.className=cls;} };
 
-    function fmtPrice(n) { return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-    function fmtChg(n)   { const s=n>=0?'+':''; return `${s}${n.toFixed(2)}%`; }
-    function fmtBig(n)   { if(n>=1e12) return `$${(n/1e12).toFixed(2)}T`; if(n>=1e9) return `$${(n/1e9).toFixed(1)}B`; return `$${n.toLocaleString()}`; }
-
-    // BTC
-    document.getElementById('btc-price').textContent = fmtPrice(d.bitcoin.usd);
-    const btcChgEl = document.getElementById('btc-chg');
-    btcChgEl.textContent  = fmtChg(d.bitcoin.usd_24h_change);
-    btcChgEl.className    = 'crypto-chg ' + (d.bitcoin.usd_24h_change >= 0 ? 'up' : 'down');
-
-    // ETH
-    document.getElementById('eth-price').textContent = fmtPrice(d.ethereum.usd);
-    const ethChgEl = document.getElementById('eth-chg');
-    ethChgEl.textContent  = fmtChg(d.ethereum.usd_24h_change);
-    ethChgEl.className    = 'crypto-chg ' + (d.ethereum.usd_24h_change >= 0 ? 'up' : 'down');
-
-    // SOL
-    document.getElementById('sol-price').textContent = fmtPrice(d.solana.usd);
-    const solChgEl = document.getElementById('sol-chg');
-    solChgEl.textContent  = fmtChg(d.solana.usd_24h_change);
-    solChgEl.className    = 'crypto-chg ' + (d.solana.usd_24h_change >= 0 ? 'up' : 'down');
-
-    // Market stats
-    document.getElementById('market-cap').textContent = fmtBig(d.bitcoin.usd_market_cap * 4.2);
-    document.getElementById('market-vol').textContent = fmtBig(d.bitcoin.usd_24h_vol * 8);
-  } catch(e) {}
+    const btc = data.BTC;
+    if (btc) {
+      upd('btc-price', fmtP(btc.price, 0), null);
+      upd('btc-chg',   fmtC(btc.change),   'crypto-chg ' + btc.dir);
+      if (btc.mcap) upd('market-cap', btc.mcap, null);
+      if (btc.vol)  upd('market-vol', btc.vol,  null);
+    }
+    const eth = data.ETH;
+    if (eth) {
+      upd('eth-price', fmtP(eth.price), null);
+      upd('eth-chg',   fmtC(eth.change), 'crypto-chg ' + eth.dir);
+    }
+    const sol = data.SOL;
+    if (sol) {
+      upd('sol-price', fmtP(sol.price), null);
+      upd('sol-chg',   fmtC(sol.change), 'crypto-chg ' + sol.dir);
+    }
+  });
 }
 
 /* ══ S&P Sectors ══ */
@@ -1099,7 +1204,7 @@ function renderNewsFeed() {
 function initPage() {
   initMap();
   fetchFearGreed();
-  fetchCrypto();
+  bindCryptoPrices();
   renderSPHeatmap();
   renderFXMatrix();
   renderMarketsTable();
@@ -1108,8 +1213,7 @@ function initPage() {
   // Simulate online count
   document.getElementById('online-count').textContent = Math.floor(Math.random() * 60 + 20);
 
-  // Refresh crypto every 60s
-  setInterval(fetchCrypto, 60000);
+  // Fear & Greed refreshes every 5 min; crypto handled by arcane-prices.js (30s)
   setInterval(fetchFearGreed, 300000);
 }
 

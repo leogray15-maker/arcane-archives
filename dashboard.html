@@ -889,6 +889,9 @@
   });
 </script>
 
+<!-- Live price service — populates ticker + all price displays -->
+<script src="arcane-prices.js"></script>
+
 <script>
 /* ══ Stars ══ */
 (function() {
@@ -946,50 +949,7 @@
   if (!isOpen) { el.textContent = 'MARKETS CLOSED'; el.style.color = 'var(--red)'; }
 })();
 
-/* ══ Ticker ══ */
-(function() {
-  const items = [
-    { sym: 'XAU/USD', price: '2,643.20', chg: '+0.42%', dir: 'up'   },
-    { sym: 'XAG/USD', price: '29.84',    chg: '-0.18%', dir: 'down' },
-    { sym: 'BTC/USD', price: '0',        chg: '…',      dir: 'flat', live: 'btc' },
-    { sym: 'S&P 500', price: '5,871.50', chg: '+0.61%', dir: 'up'   },
-    { sym: 'EUR/USD', price: '1.0823',   chg: '-0.09%', dir: 'down' },
-    { sym: 'GBP/USD', price: '1.2641',   chg: '+0.23%', dir: 'up'   },
-  ];
-
-  function buildTicker() {
-    const track = document.getElementById('nav-ticker-track');
-    // duplicate for seamless loop
-    const html = [...items, ...items].map(it =>
-      `<div class="nav-ticker-item">
-        <span class="t-sym">${it.sym}</span>
-        <span class="t-price" id="tp-${it.live || ''}">${it.price}</span>
-        <span class="t-chg ${it.dir}" id="tc-${it.live || ''}">${it.chg}</span>
-      </div>`
-    ).join('');
-    track.innerHTML = html;
-  }
-
-  buildTicker();
-
-  // Fetch live BTC
-  async function fetchBTC() {
-    try {
-      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
-      const d = await r.json();
-      const price = d.bitcoin.usd.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
-      const chg   = d.bitcoin.usd_24h_change;
-      const sign  = chg >= 0 ? '+' : '';
-      document.querySelectorAll('[id="tp-btc"]').forEach(el => el.textContent = price);
-      document.querySelectorAll('[id="tc-btc"]').forEach(el => {
-        el.textContent = `${sign}${chg.toFixed(2)}%`;
-        el.className = `t-chg ${chg >= 0 ? 'up' : 'down'}`;
-      });
-    } catch(e) {}
-  }
-  fetchBTC();
-  setInterval(fetchBTC, 60000);
-})();
+/* ══ Ticker — handled by arcane-prices.js ══ */
 
 /* ══ Carousel scroll ══ */
 function scrollCarousel() {
