@@ -8,613 +8,269 @@
   <title>Watchtower | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png"/>
   <link rel="stylesheet" href="arcane-globals.css"/>
-
-  <!-- Leaflet map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     body { overflow: hidden; }
 
-    /* ── Three-column layout ── */
+    /* ─── Two-column layout (no right sidebar) ─── */
     .wt-layout {
       display: flex;
       height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
       margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
-      position: relative;
-      z-index: 2;
+      position: relative; z-index: 2;
     }
 
-    /* ══════════════════
-       LEFT SIDEBAR
-    ══════════════════ */
+    /* ══ LEFT SIDEBAR ══ */
     .wt-sidebar-left {
-      width: 200px;
-      flex-shrink: 0;
-      background: rgba(9,9,14,0.97);
-      border-right: 1px solid var(--border-hi);
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      overflow: hidden;
-      backdrop-filter: blur(20px);
+      width: 200px; flex-shrink: 0;
+      background: rgba(9,9,14,0.97); border-right: 1px solid var(--border-hi);
+      display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(20px);
     }
-
     .wt-sidebar-title {
       padding: 1.25rem 1rem 0.75rem;
-      font-family: var(--font-head);
-      font-size: 0.58rem;
-      font-weight: 800;
-      letter-spacing: 0.28em;
-      color: var(--teal);
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      font-family: var(--font-head); font-size: 0.58rem; font-weight: 800;
+      letter-spacing: 0.28em; color: var(--teal); text-transform: uppercase;
+      border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;
     }
-    .wt-sidebar-title::before {
-      content: '⬡';
-      color: var(--teal);
-      opacity: 0.6;
-    }
-
+    .wt-sidebar-title::before { content: '⬡'; color: var(--teal); opacity: 0.6; }
     .wt-back-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.85rem 1rem;
-      color: var(--text-dim);
-      font-family: var(--font-head);
-      font-size: 0.58rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border);
-      text-decoration: none;
-      transition: all 0.18s;
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1rem;
+      color: var(--text-dim); font-family: var(--font-head); font-size: 0.58rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--border);
+      text-decoration: none; transition: all 0.18s;
     }
     .wt-back-btn:hover { color: var(--teal); background: var(--teal-glow2); }
-
-    /* Nav thumbnails */
-    .wt-nav-section {
-      padding: 1rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      overflow-y: auto;
-    }
-    .wt-nav-label {
-      font-family: var(--font-head);
-      font-size: 0.48rem;
-      letter-spacing: 0.2em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 0.25rem;
-    }
-    .wt-nav-thumb {
-      display: block;
-      height: 90px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      position: relative;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
+    .wt-nav-section { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; overflow-y: auto; }
+    .wt-nav-label { font-family: var(--font-head); font-size: 0.48rem; letter-spacing: 0.2em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .wt-nav-thumb { display: block; height: 90px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; position: relative; cursor: pointer; text-decoration: none; transition: all 0.2s; }
     .wt-nav-thumb:hover { border-color: var(--teal); box-shadow: 0 0 12px var(--teal-glow); }
-    .wt-nav-thumb-bg {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      opacity: 0.3;
-    }
+    .wt-nav-thumb-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: 0.3; }
     .thumb-floor { background: radial-gradient(ellipse at 50% 70%, rgba(245,200,66,0.15), var(--bg-3)); }
     .thumb-war   { background: radial-gradient(ellipse at 50% 50%, rgba(255,59,59,0.15), var(--bg-3)); }
-    .wt-nav-thumb-label {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 0.4rem 0.6rem;
-      background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);
-      font-family: var(--font-head);
-      font-size: 0.52rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: var(--text);
-      text-transform: uppercase;
-    }
+    .wt-nav-thumb-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.4rem 0.6rem; background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent); font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text); text-transform: uppercase; }
+    .wt-online-count { padding: 0.75rem 1rem; border-top: 1px solid var(--border); font-family: var(--font-head); font-size: 0.55rem; color: var(--text-dim); letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
+    .online-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); }
 
-    /* Online users count */
-    .wt-online-count {
-      padding: 0.75rem 1rem;
-      border-top: 1px solid var(--border);
-      font-family: var(--font-head);
-      font-size: 0.55rem;
-      color: var(--text-dim);
-      letter-spacing: 0.1em;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .online-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green); }
+    /* ══ MAIN ══ */
+    .wt-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-    /* ══════════════════
-       MAIN MAP
-    ══════════════════ */
-    .wt-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* Map toolbar */
-    .map-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      padding: 0 0;
-      background: rgba(9,9,14,0.9);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      z-index: 10;
-    }
-    .map-tab {
-      padding: 0.65rem 1.25rem;
-      font-family: var(--font-head);
-      font-size: 0.58rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.18s;
-      border-right: 1px solid var(--border);
-    }
+    /* ── Toolbar ── */
+    .map-toolbar { display: flex; align-items: center; background: rgba(9,9,14,0.9); border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 10; }
+    .map-tab { padding: 0.65rem 1.25rem; font-family: var(--font-head); font-size: 0.58rem; font-weight: 600; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.18s; border-right: 1px solid var(--border); }
     .map-tab.active { color: var(--teal); border-bottom-color: var(--teal); background: var(--teal-glow2); }
     .map-tab:hover:not(.active) { color: var(--text); background: var(--bg-3); }
-
-    .map-toolbar-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0 0.75rem;
-    }
-    .map-action-btn {
-      padding: 0.3rem 0.75rem;
-      font-family: var(--font-head);
-      font-size: 0.52rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg-3);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      text-transform: uppercase;
-      transition: all 0.18s;
-    }
+    .map-toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; padding: 0 0.75rem; }
+    .map-action-btn { padding: 0.3rem 0.75rem; font-family: var(--font-head); font-size: 0.52rem; font-weight: 600; letter-spacing: 0.1em; color: var(--text-dim); border: 1px solid var(--border); border-radius: 4px; background: var(--bg-3); cursor: pointer; display: flex; align-items: center; gap: 0.3rem; text-transform: uppercase; transition: all 0.18s; }
     .map-action-btn:hover { border-color: var(--teal); color: var(--teal); }
-    .map-action-btn.active { border-color: var(--teal); color: var(--teal); background: var(--teal-glow2); }
 
-    /* Leaflet map area */
-    #world-map {
-      flex: 1;
-      width: 100%;
-      min-height: 0;
-      position: relative;
-    }
+    /* ── Main panel containers ── */
+    .main-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
+    .main-panel.active { display: flex; }
 
-    /* Leaflet dark theme overrides */
+    /* ════════════════
+       MAP PANEL
+    ════════════════ */
+
+    /* Situation header */
+    .sit-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.75rem; flex-shrink: 0; background: rgba(9,9,14,0.9); border-bottom: 1px solid var(--border); }
+    .sit-title { font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase; }
+    .sit-risk { padding: 0.15rem 0.55rem; border-radius: 3px; font-family: var(--font-head); font-size: 0.44rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; background: rgba(255,59,59,0.18); border: 1px solid rgba(255,59,59,0.45); color: #ff3b3b; }
+    .sit-count { margin-left: auto; font-family: var(--font-head); font-size: 0.46rem; color: var(--text-muted); letter-spacing: 0.06em; }
+
+    /* Layer filter bar */
+    .layer-filters { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; flex-shrink: 0; background: rgba(9,9,14,0.92); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .layer-filters::-webkit-scrollbar { display: none; }
+    .layer-btn { display: flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 20px; flex-shrink: 0; font-family: var(--font-head); font-size: 0.46rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.18s; border: 1px solid var(--border); background: var(--bg-3); color: var(--text-dim); white-space: nowrap; }
+    .layer-btn.active { color: #fff; }
+    .layer-btn[data-layer="all"].active      { border-color:rgba(210,215,235,0.5); background:rgba(210,215,235,0.1); color:var(--text); }
+    .layer-btn[data-layer="conflicts"].active { border-color:rgba(255,59,59,0.6); background:rgba(255,59,59,0.14); color:#ff3b3b; }
+    .layer-btn[data-layer="hotspots"].active  { border-color:rgba(255,149,0,0.6); background:rgba(255,149,0,0.14); color:#ff9500; }
+    .layer-btn[data-layer="markets"].active   { border-color:rgba(245,200,66,0.6); background:rgba(245,200,66,0.11); color:var(--gold); }
+    .layer-btn[data-layer="energy"].active    { border-color:rgba(255,179,50,0.6); background:rgba(255,179,50,0.11); color:#ffb332; }
+    .layer-btn[data-layer="nuclear"].active   { border-color:rgba(0,212,255,0.6); background:rgba(0,212,255,0.11); color:var(--teal); }
+    .layer-btn[data-layer="quakes"].active    { border-color:rgba(160,100,255,0.6); background:rgba(160,100,255,0.11); color:#a064ff; }
+    .layer-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+    /* ── Leaflet map ── */
+    #world-map { flex: 1; width: 100%; min-height: 200px; }
     .leaflet-container { background: #050510; }
-    .leaflet-control-zoom a {
-      background: var(--bg-4) !important;
-      border-color: var(--border) !important;
-      color: var(--text-dim) !important;
-    }
+    .leaflet-control-zoom a { background: var(--bg-4) !important; border-color: var(--border) !important; color: var(--text-dim) !important; }
     .leaflet-control-zoom a:hover { color: var(--teal) !important; }
     .leaflet-control-attribution { display: none; }
+    .leaflet-popup-content-wrapper { background: rgba(10,10,18,0.97); border: 1px solid rgba(0,212,255,0.28); border-radius: 8px; padding: 0; box-shadow: 0 0 18px rgba(0,212,255,0.1), 0 6px 24px rgba(0,0,0,0.7); }
+    .leaflet-popup-content { margin: 0; }
+    .leaflet-popup-tip { background: rgba(10,10,18,0.97); }
+    .leaflet-popup-close-button { color: rgba(120,130,160,0.8) !important; right: 6px !important; top: 6px !important; }
+    .leaflet-popup-close-button:hover { color: var(--teal) !important; }
+    .map-popup { font-family: var(--font-head); color: var(--text); padding: 0.6rem 0.8rem; min-width: 150px; max-width: 220px; }
+    .mp-title  { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 0.15rem; }
+    .mp-region { font-size: 0.46rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .mp-desc   { font-size: 0.57rem; color: var(--text-dim); line-height: 1.5; font-family: var(--font-body); margin-bottom: 0.35rem; }
+    .mp-row    { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+    .mp-badge  { padding: 0.12rem 0.42rem; border-radius: 3px; font-size: 0.42rem; font-weight: 700; letter-spacing: 0.1em; }
+    .mp-extra  { font-size: 0.48rem; color: var(--text-muted); }
+    /* severity colours */
+    .b-critical   { background:rgba(255,59,59,0.2);  color:#ff3b3b; border:1px solid rgba(255,59,59,0.4); }
+    .b-high       { background:rgba(255,149,0,0.2);  color:#ff9500; border:1px solid rgba(255,149,0,0.4); }
+    .b-moderate   { background:rgba(245,200,66,0.2); color:var(--gold); border:1px solid rgba(245,200,66,0.4); }
+    .b-active     { background:rgba(255,59,59,0.15); color:#ff5c5c; border:1px solid rgba(255,59,59,0.3); }
+    .b-escalating { background:rgba(255,100,50,0.2); color:#ff6432; border:1px solid rgba(255,100,50,0.4); }
+    .b-expanding  { background:rgba(255,149,0,0.2);  color:#ff9500; border:1px solid rgba(255,149,0,0.4); }
+    .b-alert      { background:rgba(255,59,59,0.18); color:#ff4040; border:1px solid rgba(255,59,59,0.35); }
+    .b-undeclared { background:rgba(0,212,255,0.15); color:var(--teal); border:1px solid rgba(0,212,255,0.3); }
+    .b-chokepoint { background:rgba(255,179,50,0.2); color:#ffb332; border:1px solid rgba(255,179,50,0.4); }
+    .b-field      { background:rgba(90,190,80,0.18); color:#5abe50; border:1px solid rgba(90,190,80,0.35); }
+    .b-teal       { background:rgba(0,212,255,0.15); color:var(--teal); border:1px solid rgba(0,212,255,0.3); }
 
-    /* Map overlay panel (table/news tabs) */
-    .map-content-panel {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      display: none;
-      background: var(--bg-1);
-    }
-    .map-content-panel.active { display: block; }
+    /* ── Custom marker animations ── */
+    @keyframes conflictPulse { 0%{transform:scale(0.85);opacity:0.7} 100%{transform:scale(2.8);opacity:0} }
+    @keyframes nuclearGlow   { 0%,100%{box-shadow:0 0 5px rgba(0,212,255,0.5)} 50%{box-shadow:0 0 14px rgba(0,212,255,0.9),0 0 26px rgba(0,212,255,0.35)} }
+    @keyframes quakePulse    { 0%{transform:scale(1)} 50%{transform:scale(1.25)} 100%{transform:scale(1)} }
 
-    /* ══════════════════
-       RIGHT SIDEBAR
-    ══════════════════ */
-    .wt-sidebar-right {
-      width: 280px;
-      flex-shrink: 0;
-      background: rgba(9,9,14,0.97);
-      border-left: 1px solid var(--border-hi);
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      backdrop-filter: blur(20px);
-    }
+    .m-conflict { width:11px; height:11px; border-radius:50%; position:relative; }
+    .m-conflict::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1.5px solid var(--mc,#ff3b3b); opacity:0.6; animation:conflictPulse 2.3s ease-out infinite; }
+    .m-hotspot  { width:10px; height:10px; border-radius:50%; position:relative; }
+    .m-hotspot::after  { content:''; position:absolute; inset:-4px; border-radius:50%; border:1px solid var(--mc,#ff9500); opacity:0.5; animation:conflictPulse 3s ease-out infinite; }
+    .m-market   { width:10px; height:10px; transform:rotate(45deg); position:relative; }
+    .m-energy   { width:13px; height:13px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:8px; line-height:1; }
+    .m-nuclear  { width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; animation:nuclearGlow 2.8s ease-in-out infinite; }
+    .m-quake    { border-radius:50%; position:relative; animation:quakePulse 4s ease-in-out infinite; }
 
-    /* Panel blocks */
-    .intel-panel {
-      border-bottom: 1px solid var(--border);
-      padding: 0.875rem 1rem;
-      flex-shrink: 0;
-    }
-    .intel-panel-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-    }
-    .intel-panel-title {
-      font-family: var(--font-head);
-      font-size: 0.55rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
+    /* ── Intel stats bar ── */
+    .intel-stats { display:flex; align-items:stretch; flex-shrink:0; height:46px; background:rgba(9,9,14,0.94); border-top:1px solid var(--border); }
+    .stat-block { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:1px solid var(--border); gap:0.08rem; cursor:default; }
+    .stat-block:last-child { border-right:none; }
+    .stat-num   { font-family:var(--font-head); font-size:0.88rem; font-weight:800; line-height:1; }
+    .stat-lbl   { font-family:var(--font-head); font-size:0.37rem; font-weight:600; letter-spacing:0.15em; color:var(--text-muted); text-transform:uppercase; }
+    .stat-block.s-conflicts .stat-num { color:#ff3b3b; }
+    .stat-block.s-hotspots  .stat-num { color:#ff9500; }
+    .stat-block.s-quakes    .stat-num { color:#a064ff; }
+    .stat-block.s-energy    .stat-num { color:#ffb332; }
+    .stat-block.s-nuclear   .stat-num { color:var(--teal); }
+    .stat-block.s-risk { flex:0 0 auto; padding:0 0.9rem; }
+    .risk-pill  { padding:0.18rem 0.55rem; border-radius:4px; font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+    .rp-critical { background:rgba(255,59,59,0.18); color:#ff3b3b; border:1px solid rgba(255,59,59,0.45); }
 
-    /* ── Fear & Greed ── */
-    .fg-meter {
-      position: relative;
-      height: 10px;
-      border-radius: 6px;
-      background: linear-gradient(90deg, #ff3b3b 0%, #ff9500 25%, #f5c842 50%, #00e676 75%, #00d4ff 100%);
-      margin: 0.5rem 0 0.3rem;
-      overflow: visible;
-    }
-    .fg-needle {
-      position: absolute;
-      top: -4px;
-      width: 4px;
-      height: 18px;
-      background: white;
-      border-radius: 2px;
-      transform: translateX(-50%);
-      box-shadow: 0 0 8px rgba(255,255,255,0.6);
-      transition: left 1s ease;
-    }
-    .fg-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 0.4rem;
-    }
-    .fg-label {
-      font-family: var(--font-head);
-      font-size: 0.42rem;
-      color: var(--text-muted);
-      letter-spacing: 0.05em;
-    }
-    .fg-value {
-      text-align: center;
-      margin-top: 0.5rem;
-    }
-    .fg-number {
-      font-family: var(--font-head);
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .fg-text {
-      font-family: var(--font-head);
-      font-size: 0.52rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-top: 0.1rem;
-    }
+    /* ── Feed section ── */
+    .feed-section { flex:0 0 230px; display:flex; flex-direction:column; background:rgba(9,9,14,0.96); border-top:1px solid var(--border-hi); overflow:hidden; }
+    .feed-tabs-bar { display:flex; align-items:center; background:rgba(9,9,14,0.99); border-bottom:1px solid var(--border); flex-shrink:0; overflow-x:auto; scrollbar-width:none; }
+    .feed-tabs-bar::-webkit-scrollbar { display:none; }
+    .feed-tab-btn { padding:0.42rem 0.85rem; flex-shrink:0; font-family:var(--font-head); font-size:0.48rem; font-weight:600; letter-spacing:0.12em; color:var(--text-muted); text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.18s; border-right:1px solid var(--border); }
+    .feed-tab-btn.active { color:var(--text); border-bottom-color:var(--teal); background:var(--teal-glow2); }
+    .feed-tab-btn:hover:not(.active) { color:var(--text-dim); background:var(--bg-3); }
+    .feed-list { flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .feed-list::-webkit-scrollbar { width:3px; }
+    .feed-list::-webkit-scrollbar-thumb { background:var(--border); }
+    .feed-item { display:flex; align-items:flex-start; gap:0.55rem; padding:0.45rem 0.7rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.14s; }
+    .feed-item:hover { background:var(--bg-3); }
+    .feed-icon { flex-shrink:0; width:8px; height:8px; border-radius:50%; margin-top:0.25rem; }
+    .feed-body { flex:1; min-width:0; }
+    .fi-name { font-family:var(--font-head); font-size:0.58rem; font-weight:700; color:var(--text); letter-spacing:0.04em; }
+    .fi-desc { font-size:0.57rem; color:var(--text-dim); margin-top:0.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .fi-meta { display:flex; align-items:center; gap:0.35rem; margin-top:0.2rem; flex-wrap:wrap; }
+    .fi-region { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); letter-spacing:0.08em; }
+    .fi-badge  { padding:0.1rem 0.38rem; border-radius:3px; font-family:var(--font-head); font-size:0.4rem; font-weight:700; letter-spacing:0.1em; }
 
-    /* ── Crypto Intel ── */
-    .crypto-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.45rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .crypto-row:last-child { border-bottom: none; }
-    .crypto-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .crypto-logo {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      background: var(--bg-4);
-      border: 1px solid var(--border);
-    }
-    .crypto-sym {
-      font-family: var(--font-head);
-      font-size: 0.62rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .crypto-name {
-      font-size: 0.6rem;
-      color: var(--text-dim);
-    }
-    .crypto-right { text-align: right; }
-    .crypto-price {
-      font-family: var(--font-head);
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .crypto-chg {
-      font-family: var(--font-head);
-      font-size: 0.52rem;
-      font-weight: 600;
-    }
-    .crypto-chg.up   { color: var(--green); }
-    .crypto-chg.down { color: var(--red); }
+    /* ════════════════
+       MARKETS PANEL
+    ════════════════ */
+    #panel-markets { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--border) transparent; background:var(--bg-1); }
+    #panel-markets::-webkit-scrollbar { width:4px; }
+    #panel-markets::-webkit-scrollbar-thumb { background:var(--border); }
+    .markets-grid { display:grid; grid-template-columns:1fr 1fr; }
+    .intel-panel { border-bottom:1px solid var(--border); border-right:1px solid var(--border); padding:0.9rem 1rem; }
+    .intel-panel.full-w { grid-column:1/-1; border-right:none; }
+    .intel-panel:nth-child(2n) { border-right:none; }
+    .intel-panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.7rem; }
+    .intel-panel-title { font-family:var(--font-head); font-size:0.55rem; font-weight:700; letter-spacing:0.18em; color:var(--text-dim); text-transform:uppercase; }
+    /* Fear & Greed */
+    .fg-meter { position:relative; height:10px; border-radius:6px; background:linear-gradient(90deg,#ff3b3b 0%,#ff9500 25%,#f5c842 50%,#00e676 75%,#00d4ff 100%); margin:0.5rem 0 0.3rem; overflow:visible; }
+    .fg-needle { position:absolute; top:-4px; width:4px; height:18px; background:white; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 8px rgba(255,255,255,0.6); transition:left 1s ease; }
+    .fg-labels { display:flex; justify-content:space-between; margin-top:0.35rem; }
+    .fg-label  { font-family:var(--font-head); font-size:0.42rem; color:var(--text-muted); }
+    .fg-value  { text-align:center; margin-top:0.45rem; }
+    .fg-number { font-family:var(--font-head); font-size:1.4rem; font-weight:800; color:var(--text); }
+    .fg-text   { font-family:var(--font-head); font-size:0.52rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-top:0.1rem; }
+    /* Crypto */
+    .crypto-row { display:flex; align-items:center; justify-content:space-between; padding:0.38rem 0; border-bottom:1px solid var(--border); }
+    .crypto-row:last-child { border-bottom:none; }
+    .crypto-left { display:flex; align-items:center; gap:0.45rem; }
+    .crypto-logo { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; background:var(--bg-4); border:1px solid var(--border); }
+    .crypto-sym  { font-family:var(--font-head); font-size:0.58rem; font-weight:700; color:var(--text); }
+    .crypto-name { font-size:0.54rem; color:var(--text-dim); }
+    .crypto-right { text-align:right; }
+    .crypto-price { font-family:var(--font-head); font-size:0.64rem; font-weight:700; color:var(--text); }
+    .crypto-chg   { font-family:var(--font-head); font-size:0.5rem; font-weight:600; }
+    .crypto-chg.up { color:var(--green); } .crypto-chg.down { color:var(--red); }
+    .crypto-stats { display:grid; grid-template-columns:1fr 1fr; gap:0.35rem; margin-top:0.45rem; }
+    .crypto-stat  { background:var(--bg-3); border:1px solid var(--border); border-radius:5px; padding:0.32rem 0.45rem; }
+    .cs-label { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
+    .cs-value { font-family:var(--font-head); font-size:0.6rem; font-weight:700; color:var(--teal); margin-top:0.1rem; }
+    /* S&P Sectors */
+    .sp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-top:0.2rem; }
+    .sp-cell { padding:0.3rem 0.15rem; border-radius:4px; text-align:center; transition:filter 0.2s; cursor:default; }
+    .sp-cell:hover { filter:brightness(1.2); }
+    .sp-name { font-family:var(--font-head); font-size:0.4rem; color:rgba(255,255,255,0.8); }
+    .sp-pct  { font-family:var(--font-head); font-size:0.52rem; font-weight:700; color:white; margin-top:0.1rem; }
+    /* FX */
+    .fx-table { width:100%; border-collapse:collapse; font-family:var(--font-head); font-size:0.46rem; margin-top:0.2rem; }
+    .fx-table th, .fx-table td { padding:0.22rem 0.3rem; text-align:center; }
+    .fx-table th { color:var(--text-dim); font-weight:600; letter-spacing:0.08em; border-bottom:1px solid var(--border); }
+    .fx-cell { border-radius:3px; font-weight:700; }
+    .fx-row-label { color:var(--text-dim); font-weight:600; text-align:left; }
+    /* FX Live row */
+    .fx-live-row { display:flex; gap:0.5rem; margin-top:0.6rem; flex-wrap:wrap; }
+    .fx-live-item { flex:1; min-width:80px; background:var(--bg-3); border:1px solid var(--border); border-radius:6px; padding:0.35rem 0.5rem; }
+    .fx-pair  { font-family:var(--font-head); font-size:0.44rem; color:var(--text-muted); letter-spacing:0.1em; }
+    .fx-price { font-family:var(--font-head); font-size:0.68rem; font-weight:700; color:var(--text); margin-top:0.1rem; }
+    /* Indices */
+    .markets-table { width:100%; border-collapse:collapse; }
+    .markets-table th { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.1em; color:var(--text-dim); text-align:left; padding:0.45rem 0.7rem; border-bottom:1px solid var(--border); text-transform:uppercase; }
+    .markets-table td { padding:0.48rem 0.7rem; border-bottom:1px solid var(--border); }
+    .markets-table tr:hover td { background:var(--bg-3); }
+    .mkt-name    { font-family:var(--font-head); font-size:0.6rem; font-weight:700; color:var(--text); }
+    .mkt-country { font-size:0.55rem; color:var(--text-dim); margin-top:0.08rem; }
+    .mkt-price   { font-family:var(--font-head); font-weight:700; font-size:0.65rem; color:var(--text); }
+    .mkt-chg.up   { color:var(--green); font-family:var(--font-head); font-size:0.6rem; }
+    .mkt-chg.down { color:var(--red);   font-family:var(--font-head); font-size:0.6rem; }
 
-    /* Market cap row */
-    .crypto-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .crypto-stat {
-      background: var(--bg-3);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.4rem 0.5rem;
-    }
-    .cs-label {
-      font-family: var(--font-head);
-      font-size: 0.42rem;
-      color: var(--text-muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .cs-value {
-      font-family: var(--font-head);
-      font-size: 0.62rem;
-      font-weight: 700;
-      color: var(--teal);
-      margin-top: 0.15rem;
-    }
+    /* ════════════════
+       INTEL FEED PANEL
+    ════════════════ */
+    #panel-news { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    #panel-news::-webkit-scrollbar { width:4px; }
+    .news-wrap { padding:1rem; }
+    .news-item { display:flex; gap:0.7rem; padding:0.7rem 0; border-bottom:1px solid var(--border); cursor:pointer; }
+    .news-item:hover { opacity:0.85; }
+    .news-dot  { width:6px; height:6px; border-radius:50%; background:var(--teal); margin-top:0.32rem; flex-shrink:0; }
+    .news-title { font-size:0.72rem; font-weight:600; color:var(--text); line-height:1.4; }
+    .news-meta  { font-family:var(--font-head); font-size:0.46rem; color:var(--text-muted); margin-top:0.22rem; letter-spacing:0.08em; }
 
-    /* ── S&P Heatmap ── */
-    .sp-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3px;
-      margin-top: 0.25rem;
-    }
-    .sp-cell {
-      padding: 0.35rem 0.2rem;
-      border-radius: 4px;
-      text-align: center;
-      cursor: default;
-      transition: filter 0.2s;
-    }
-    .sp-cell:hover { filter: brightness(1.2); }
-    .sp-name {
-      font-family: var(--font-head);
-      font-size: 0.4rem;
-      color: rgba(255,255,255,0.8);
-      letter-spacing: 0.04em;
-      line-height: 1.2;
-    }
-    .sp-pct {
-      font-family: var(--font-head);
-      font-size: 0.55rem;
-      font-weight: 700;
-      color: white;
-      margin-top: 0.15rem;
-    }
+    /* ══ Responsive ══ */
+    @media (max-width:1100px) { .wt-sidebar-left { width:160px; } }
+    @media (max-width:900px)  { .markets-grid { grid-template-columns:1fr; } .intel-panel:nth-child(2n) { border-right:none; } .intel-panel.full-w { border-right:none; } }
 
-    /* ── Forex Matrix ── */
-    .fx-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-head);
-      font-size: 0.48rem;
-      margin-top: 0.25rem;
-    }
-    .fx-table th, .fx-table td {
-      padding: 0.25rem 0.3rem;
-      text-align: center;
-    }
-    .fx-table th {
-      color: var(--text-dim);
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      border-bottom: 1px solid var(--border);
-    }
-    .fx-cell {
-      border-radius: 3px;
-      font-weight: 700;
-      font-size: 0.5rem;
-    }
-    .fx-row-label {
-      color: var(--text-dim);
-      font-weight: 600;
-      text-align: left;
-    }
-
-    /* Table view */
-    .markets-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .markets-table th {
-      font-family: var(--font-head);
-      font-size: 0.52rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      color: var(--text-dim);
-      text-align: left;
-      padding: 0.5rem 0.75rem;
-      border-bottom: 1px solid var(--border);
-      text-transform: uppercase;
-    }
-    .markets-table td {
-      padding: 0.55rem 0.75rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.72rem;
-    }
-    .markets-table tr:hover td { background: var(--bg-3); }
-    .mkt-name { font-family: var(--font-head); font-size: 0.65rem; font-weight: 700; color: var(--text); }
-    .mkt-country { font-size: 0.6rem; color: var(--text-dim); margin-top: 0.1rem; }
-    .mkt-price { font-family: var(--font-head); font-weight: 700; color: var(--text); }
-    .mkt-chg.up   { color: var(--green); font-family: var(--font-head); font-size: 0.62rem; }
-    .mkt-chg.down { color: var(--red);   font-family: var(--font-head); font-size: 0.62rem; }
-
-    /* News items */
-    .news-item {
-      display: flex;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .news-item:hover { opacity: 0.85; }
-    .news-dot { width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:0.3rem;flex-shrink:0; }
-    .news-title { font-size: 0.72rem; font-weight: 600; color: var(--text); line-height: 1.4; }
-    .news-meta  { font-family: var(--font-head); font-size: 0.48rem; color: var(--text-muted); margin-top: 0.25rem; letter-spacing: 0.08em; }
-
-    /* ── Responsive ── */
-    @media (max-width: 1100px) {
-      .wt-sidebar-right { width: 240px; }
-    }
-    @media (max-width: 900px) {
-      .wt-sidebar-left  { width: 160px; }
-      .wt-sidebar-right { width: 220px; }
-    }
-
-    /* ══════════════════════════════════════
-       MOBILE  (≤768px)
-       Sidebar → compact top bar
-       Right sidebar → horizontal scroll strip
-    ══════════════════════════════════════ */
-    @media (max-width: 768px) {
-      body { overflow-y: auto; overflow-x: hidden; }
-
-      .wt-layout {
-        flex-direction: column;
-        height: auto;
-        min-height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
-      }
-
-      /* ── Left sidebar → slim top bar ── */
-      .wt-sidebar-left {
-        width: 100%;
-        flex-direction: row;
-        align-items: center;
-        flex-shrink: 0;
-        height: 42px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-hi);
-        overflow: hidden;
-        padding: 0 0.5rem;
-        gap: 0;
-      }
-      .wt-sidebar-title {
-        padding: 0 0.75rem 0 0.25rem;
-        border-bottom: none;
-        font-size: 0.5rem;
-        letter-spacing: 0.18em;
-        flex-shrink: 0;
-        border-right: 1px solid var(--border);
-      }
-      .wt-sidebar-title::before { display: none; }
-      .wt-back-btn {
-        padding: 0 0.75rem;
-        border-bottom: none;
-        font-size: 0.5rem;
-        flex-shrink: 0;
-        height: 100%;
-        border-right: 1px solid var(--border);
-      }
-      /* Hide nav thumbnails and operator list on mobile */
-      .wt-nav-section { display: none; }
-      .wt-online-count {
-        border-top: none;
-        padding: 0 0.75rem;
-        font-size: 0.46rem;
-        margin-left: auto;
-        flex-shrink: 0;
-      }
-
-      /* ── Map: full width, fixed proportional height ── */
-      .wt-main { flex: none; width: 100%; overflow: visible; }
-      #world-map {
-        width: 100%;
-        height: 56vw;
-        min-height: 220px;
-        max-height: 340px;
-        display: block;
-      }
-      .map-content-panel { min-height: 300px; height: auto; }
-
-      /* Toolbar: horizontal scroll, no wrap */
-      .map-toolbar {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-      }
-      .map-toolbar::-webkit-scrollbar { display: none; }
-      .map-tab { padding: 0.5rem 0.75rem; font-size: 0.5rem; flex-shrink: 0; }
-      .map-action-btn { font-size: 0.46rem; padding: 0.25rem 0.5rem; flex-shrink: 0; }
-      .map-toolbar-right { flex-shrink: 0; padding: 0 0.4rem; }
-
-      /* ── Right sidebar → horizontal scroll strip below map ── */
-      .wt-sidebar-right {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid var(--border-hi);
-        flex-direction: row;
-        overflow-x: auto;
-        overflow-y: hidden;
-        flex-wrap: nowrap;
-        height: auto;
-        min-height: 0;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        align-items: stretch;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-      }
-      .wt-sidebar-right::-webkit-scrollbar { display: none; }
-
-      /* Each intel panel becomes a fixed-width card */
-      .intel-panel {
-        flex: 0 0 270px;
-        border-bottom: none;
-        border-right: 1px solid var(--border);
-        overflow: visible;
-        min-width: 0;
-      }
-      /* Compact Fear & Greed on mobile */
-      .fg-number { font-size: 1.1rem; }
-      /* S&P stays 3-col */
-      .sp-grid { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width:768px) {
+      body { overflow-y:auto; overflow-x:hidden; }
+      .wt-layout { flex-direction:column; height:auto; min-height:calc(100vh - var(--nav-h) - env(safe-area-inset-top,0px)); }
+      .wt-sidebar-left { width:100%; flex-direction:row; align-items:center; flex-shrink:0; height:42px; border-right:none; border-bottom:1px solid var(--border-hi); overflow:hidden; padding:0 0.5rem; }
+      .wt-sidebar-title { padding:0 0.75rem 0 0.25rem; border-bottom:none; font-size:0.5rem; letter-spacing:0.18em; flex-shrink:0; border-right:1px solid var(--border); }
+      .wt-sidebar-title::before { display:none; }
+      .wt-back-btn { padding:0 0.75rem; border-bottom:none; font-size:0.5rem; flex-shrink:0; height:100%; border-right:1px solid var(--border); }
+      .wt-nav-section { display:none; }
+      .wt-online-count { border-top:none; padding:0 0.75rem; font-size:0.46rem; margin-left:auto; flex-shrink:0; }
+      .wt-main { flex:none; width:100%; overflow:visible; }
+      #world-map { width:100%; height:56vw; min-height:220px; max-height:340px; flex:none; }
+      .feed-section { flex:0 0 200px; }
+      .map-toolbar { overflow-x:auto; scrollbar-width:none; }
+      .map-toolbar::-webkit-scrollbar { display:none; }
+      .map-tab { padding:0.5rem 0.75rem; font-size:0.5rem; flex-shrink:0; }
+      .intel-stats { height:40px; }
+      .stat-num { font-size:0.76rem; }
+      .stat-lbl { font-size:0.33rem; }
+      .sit-count { display:none; }
     }
   </style>
 </head>
@@ -657,198 +313,201 @@
 <!-- ══════════════ LAYOUT ══════════════ -->
 <div class="wt-layout">
 
-  <!-- ────────────── LEFT SIDEBAR ────────────── -->
+  <!-- LEFT SIDEBAR -->
   <aside class="wt-sidebar-left">
     <div class="wt-sidebar-title">Watch Tower</div>
-
-    <a class="wt-back-btn" href="dashboard.html">
-      ← &nbsp;Dashboard
-    </a>
-
+    <a class="wt-back-btn" href="dashboard.html">← &nbsp;Dashboard</a>
     <div class="wt-nav-section">
       <div class="wt-nav-label">Quick Nav</div>
-
       <a class="wt-nav-thumb" href="trading-floor.html">
         <div class="wt-nav-thumb-bg thumb-floor">📈</div>
         <div class="wt-nav-thumb-label">Trading Floor</div>
       </a>
-
       <a class="wt-nav-thumb" href="war-room.html">
         <div class="wt-nav-thumb-bg thumb-war">🎖️</div>
         <div class="wt-nav-thumb-label">War Room</div>
       </a>
     </div>
-
     <div class="wt-online-count">
       <div class="online-dot"></div>
       <span id="online-count">—</span> online
     </div>
   </aside>
 
-  <!-- ────────────── MAIN MAP ────────────── -->
+  <!-- MAIN -->
   <main class="wt-main">
 
-    <!-- Toolbar / Tabs -->
+    <!-- Toolbar / Main Tabs -->
     <div class="map-toolbar">
-      <div class="map-tab active" data-tab="map" onclick="switchTab('map',this)">🗺 Map</div>
-      <div class="map-tab" data-tab="table" onclick="switchTab('table',this)">📊 Markets</div>
-      <div class="map-tab" data-tab="news" onclick="switchTab('news',this)">📰 Intel Feed</div>
-
+      <div class="map-tab active" data-tab="map"     onclick="switchTab('map',this)">🗺 Map</div>
+      <div class="map-tab"        data-tab="markets" onclick="switchTab('markets',this)">📊 Markets</div>
+      <div class="map-tab"        data-tab="news"    onclick="switchTab('news',this)">📰 Intel Feed</div>
       <div class="map-toolbar-right">
-        <button class="map-action-btn" id="custom-map-btn" onclick="toggleHeat()">⬡ Heat Zones</button>
         <button class="map-action-btn" onclick="resetMapView()">⊕ Reset View</button>
       </div>
     </div>
 
-    <!-- Map panel -->
-    <div id="world-map"></div>
+    <!-- ── MAP PANEL ── -->
+    <div class="main-panel active" id="panel-map">
 
-    <!-- Markets table panel -->
-    <div class="map-content-panel" id="panel-table">
-      <table class="markets-table">
-        <thead>
-          <tr>
-            <th>Market</th>
-            <th>Price</th>
-            <th>Change</th>
-            <th>Volume</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="markets-tbody">
-          <!-- Populated by JS -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- News/Intel panel -->
-    <div class="map-content-panel" id="panel-news">
-      <div id="news-feed">
-        <!-- Populated by JS -->
+      <!-- Situation header -->
+      <div class="sit-header">
+        <span class="sit-title">⬡ Global Situation</span>
+        <span class="sit-risk">⬤ Critical</span>
+        <span class="badge-live" style="font-size:0.42rem;padding:0.15rem 0.5rem">LIVE</span>
+        <span class="sit-count" id="sit-summary">18 Conflicts · 12 Hotspots · 9 Nuclear States</span>
       </div>
+
+      <!-- Layer filter buttons -->
+      <div class="layer-filters">
+        <button class="layer-btn active" data-layer="all"       onclick="filterLayer('all',this)"><span class="layer-dot" style="background:rgba(200,210,235,0.7)"></span>ALL</button>
+        <button class="layer-btn"        data-layer="conflicts" onclick="filterLayer('conflicts',this)"><span class="layer-dot" style="background:#ff3b3b"></span>CONFLICTS</button>
+        <button class="layer-btn"        data-layer="hotspots"  onclick="filterLayer('hotspots',this)"><span class="layer-dot" style="background:#ff9500"></span>HOTSPOTS</button>
+        <button class="layer-btn"        data-layer="markets"   onclick="filterLayer('markets',this)"><span class="layer-dot" style="background:#f5c842"></span>MARKETS</button>
+        <button class="layer-btn"        data-layer="energy"    onclick="filterLayer('energy',this)"><span class="layer-dot" style="background:#ffb332"></span>ENERGY</button>
+        <button class="layer-btn"        data-layer="nuclear"   onclick="filterLayer('nuclear',this)"><span class="layer-dot" style="background:#00d4ff"></span>NUCLEAR</button>
+        <button class="layer-btn"        data-layer="quakes"    onclick="filterLayer('quakes',this)"><span class="layer-dot" style="background:#a064ff"></span>QUAKES</button>
+      </div>
+
+      <!-- Leaflet map -->
+      <div id="world-map"></div>
+
+      <!-- Stats bar -->
+      <div class="intel-stats">
+        <div class="stat-block s-conflicts" title="Active conflict zones">
+          <span class="stat-num" id="stat-conflicts">18</span>
+          <span class="stat-lbl">Conflicts</span>
+        </div>
+        <div class="stat-block s-hotspots" title="Geopolitical flashpoints">
+          <span class="stat-num" id="stat-hotspots">12</span>
+          <span class="stat-lbl">Hotspots</span>
+        </div>
+        <div class="stat-block s-quakes" title="Earthquakes M4.5+ / 30 days">
+          <span class="stat-num" id="stat-quakes">—</span>
+          <span class="stat-lbl">Quakes</span>
+        </div>
+        <div class="stat-block s-energy" title="Energy chokepoints & fields">
+          <span class="stat-num" id="stat-energy">10</span>
+          <span class="stat-lbl">Energy</span>
+        </div>
+        <div class="stat-block s-nuclear" title="Nuclear-armed states">
+          <span class="stat-num" id="stat-nuclear">9</span>
+          <span class="stat-lbl">Nuclear</span>
+        </div>
+        <div class="stat-block s-risk" title="Global risk assessment">
+          <span class="stat-lbl" style="margin-bottom:0.12rem">Global Risk</span>
+          <span class="risk-pill rp-critical">CRITICAL</span>
+        </div>
+      </div>
+
+      <!-- Feed section -->
+      <div class="feed-section">
+        <div class="feed-tabs-bar">
+          <div class="feed-tab-btn active" data-feed="conflicts" onclick="switchFeed('conflicts',this)">⬤ CONFLICTS</div>
+          <div class="feed-tab-btn"        data-feed="hotspots"  onclick="switchFeed('hotspots',this)">⚡ HOTSPOTS</div>
+          <div class="feed-tab-btn"        data-feed="quakes"    onclick="switchFeed('quakes',this)">🌊 QUAKES</div>
+          <div class="feed-tab-btn"        data-feed="energy"    onclick="switchFeed('energy',this)">🛢 ENERGY</div>
+          <div class="feed-tab-btn"        data-feed="nuclear"   onclick="switchFeed('nuclear',this)">☢ NUCLEAR</div>
+        </div>
+        <div class="feed-list" id="feed-list"></div>
+      </div>
+    </div><!-- /panel-map -->
+
+    <!-- ── MARKETS PANEL ── -->
+    <div class="main-panel" id="panel-markets">
+      <div class="markets-grid">
+
+        <!-- Fear & Greed -->
+        <div class="intel-panel">
+          <div class="intel-panel-head">
+            <span class="intel-panel-title">Fear &amp; Greed</span>
+            <span class="badge-live">Live</span>
+          </div>
+          <div class="fg-value">
+            <div class="fg-number" id="fg-number">—</div>
+            <div class="fg-text"   id="fg-text" style="color:var(--text-dim)">Loading…</div>
+          </div>
+          <div class="fg-meter" style="margin-top:0.7rem">
+            <div class="fg-needle" id="fg-needle" style="left:50%"></div>
+          </div>
+          <div class="fg-labels">
+            <span class="fg-label" style="color:var(--red)">Extreme Fear</span>
+            <span class="fg-label">Neutral</span>
+            <span class="fg-label" style="color:var(--green)">Greed</span>
+          </div>
+        </div>
+
+        <!-- Crypto Intel -->
+        <div class="intel-panel">
+          <div class="intel-panel-head">
+            <span class="intel-panel-title">Crypto Intel</span>
+            <span class="badge-live">Live</span>
+          </div>
+          <div class="crypto-row">
+            <div class="crypto-left"><div class="crypto-logo">₿</div><div><div class="crypto-sym">BTC</div><div class="crypto-name">Bitcoin</div></div></div>
+            <div class="crypto-right"><div class="crypto-price" id="btc-price">—</div><div class="crypto-chg" id="btc-chg">—</div></div>
+          </div>
+          <div class="crypto-row">
+            <div class="crypto-left"><div class="crypto-logo">Ξ</div><div><div class="crypto-sym">ETH</div><div class="crypto-name">Ethereum</div></div></div>
+            <div class="crypto-right"><div class="crypto-price" id="eth-price">—</div><div class="crypto-chg" id="eth-chg">—</div></div>
+          </div>
+          <div class="crypto-row">
+            <div class="crypto-left"><div class="crypto-logo" style="font-size:0.5rem">SOL</div><div><div class="crypto-sym">SOL</div><div class="crypto-name">Solana</div></div></div>
+            <div class="crypto-right"><div class="crypto-price" id="sol-price">—</div><div class="crypto-chg" id="sol-chg">—</div></div>
+          </div>
+          <div class="crypto-stats">
+            <div class="crypto-stat"><div class="cs-label">Market Cap</div><div class="cs-value" id="market-cap">—</div></div>
+            <div class="crypto-stat"><div class="cs-label">24h Volume</div><div class="cs-value" id="market-vol">—</div></div>
+          </div>
+        </div>
+
+        <!-- S&P Sectors -->
+        <div class="intel-panel">
+          <div class="intel-panel-head">
+            <span class="intel-panel-title">S&amp;P Sectors</span>
+            <span class="badge-tag gold">EST</span>
+          </div>
+          <div class="sp-grid" id="sp-grid"></div>
+        </div>
+
+        <!-- FX -->
+        <div class="intel-panel">
+          <div class="intel-panel-head">
+            <span class="intel-panel-title">FX Matrix</span>
+            <span class="badge-live">Live</span>
+          </div>
+          <table class="fx-table">
+            <thead><tr><th></th><th>USD</th><th>EUR</th><th>GBP</th><th>JPY</th></tr></thead>
+            <tbody id="fx-tbody"></tbody>
+          </table>
+          <div class="fx-live-row" id="fx-live-row">
+            <div class="fx-live-item"><div class="fx-pair">EUR/USD</div><div class="fx-price" id="fx-eurusd">—</div></div>
+            <div class="fx-live-item"><div class="fx-pair">GBP/USD</div><div class="fx-price" id="fx-gbpusd">—</div></div>
+            <div class="fx-live-item"><div class="fx-pair">USD/JPY</div><div class="fx-price" id="fx-usdjpy">—</div></div>
+          </div>
+        </div>
+
+        <!-- Global Indices (full width) -->
+        <div class="intel-panel full-w">
+          <div class="intel-panel-head">
+            <span class="intel-panel-title">Global Indices</span>
+            <span class="badge-tag">EST</span>
+          </div>
+          <table class="markets-table">
+            <thead><tr><th>Market</th><th>Price</th><th>Change</th><th>Volume</th><th>Status</th></tr></thead>
+            <tbody id="markets-tbody"></tbody>
+          </table>
+        </div>
+
+      </div>
+    </div><!-- /panel-markets -->
+
+    <!-- ── INTEL FEED PANEL ── -->
+    <div class="main-panel" id="panel-news">
+      <div class="news-wrap" id="news-feed"></div>
     </div>
 
   </main>
-
-  <!-- ────────────── RIGHT SIDEBAR ────────────── -->
-  <aside class="wt-sidebar-right">
-
-    <!-- Fear & Greed -->
-    <div class="intel-panel">
-      <div class="intel-panel-head">
-        <span class="intel-panel-title">Fear &amp; Greed</span>
-        <span class="badge-live" id="fg-live">Live</span>
-      </div>
-      <div class="fg-value">
-        <div class="fg-number" id="fg-number">—</div>
-        <div class="fg-text" id="fg-text" style="color:var(--text-dim)">Loading…</div>
-      </div>
-      <div class="fg-meter" style="margin-top:0.75rem">
-        <div class="fg-needle" id="fg-needle" style="left:50%"></div>
-      </div>
-      <div class="fg-labels">
-        <span class="fg-label" style="color:var(--red)">Extreme Fear</span>
-        <span class="fg-label" style="color:var(--text-muted)">Neutral</span>
-        <span class="fg-label" style="color:var(--green)">Greed</span>
-      </div>
-    </div>
-
-    <!-- Crypto Intel -->
-    <div class="intel-panel">
-      <div class="intel-panel-head">
-        <span class="intel-panel-title">Crypto Intel</span>
-        <span class="badge-live">Live</span>
-      </div>
-
-      <div id="crypto-rows">
-        <div class="crypto-row">
-          <div class="crypto-left">
-            <div class="crypto-logo">₿</div>
-            <div>
-              <div class="crypto-sym">BTC</div>
-              <div class="crypto-name">Bitcoin</div>
-            </div>
-          </div>
-          <div class="crypto-right">
-            <div class="crypto-price" id="btc-price">—</div>
-            <div class="crypto-chg" id="btc-chg">—</div>
-          </div>
-        </div>
-        <div class="crypto-row">
-          <div class="crypto-left">
-            <div class="crypto-logo">Ξ</div>
-            <div>
-              <div class="crypto-sym">ETH</div>
-              <div class="crypto-name">Ethereum</div>
-            </div>
-          </div>
-          <div class="crypto-right">
-            <div class="crypto-price" id="eth-price">—</div>
-            <div class="crypto-chg" id="eth-chg">—</div>
-          </div>
-        </div>
-        <div class="crypto-row">
-          <div class="crypto-left">
-            <div class="crypto-logo" style="font-size:0.55rem">SOL</div>
-            <div>
-              <div class="crypto-sym">SOL</div>
-              <div class="crypto-name">Solana</div>
-            </div>
-          </div>
-          <div class="crypto-right">
-            <div class="crypto-price" id="sol-price">—</div>
-            <div class="crypto-chg" id="sol-chg">—</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="crypto-stats">
-        <div class="crypto-stat">
-          <div class="cs-label">Market Cap</div>
-          <div class="cs-value" id="market-cap">—</div>
-        </div>
-        <div class="crypto-stat">
-          <div class="cs-label">24h Volume</div>
-          <div class="cs-value" id="market-vol">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- S&P Sector Heatmap -->
-    <div class="intel-panel">
-      <div class="intel-panel-head">
-        <span class="intel-panel-title">S&amp;P Sectors</span>
-        <span class="badge-tag gold">EST</span>
-      </div>
-      <div class="sp-grid" id="sp-grid">
-        <!-- Populated by JS -->
-      </div>
-    </div>
-
-    <!-- Forex Matrix -->
-    <div class="intel-panel">
-      <div class="intel-panel-head">
-        <span class="intel-panel-title">FX Matrix</span>
-        <span class="badge-live">Live</span>
-      </div>
-      <table class="fx-table" id="fx-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>USD</th>
-            <th>EUR</th>
-            <th>GBP</th>
-            <th>JPY</th>
-          </tr>
-        </thead>
-        <tbody id="fx-tbody">
-          <!-- Populated by JS -->
-        </tbody>
-      </table>
-    </div>
-
-  </aside><!-- /sidebar right -->
-
 </div><!-- /wt-layout -->
 
 <!-- ══════════════ SCRIPTS ══════════════ -->
@@ -887,317 +546,499 @@
   const canvas=document.getElementById('stars-canvas');
   const ctx=canvas.getContext('2d'); let stars=[];
   function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
-  function initStars(){ stars=[]; for(let i=0;i<180;i++) stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,a:Math.random()*0.6+0.1,da:(Math.random()-0.5)*0.007}); }
+  function initS(){ stars=[]; for(let i=0;i<180;i++) stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,a:Math.random()*0.6+0.1,da:(Math.random()-0.5)*0.007}); }
   function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); stars.forEach(s=>{ ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();s.a+=s.da;if(s.a>0.85||s.a<0.05)s.da*=-1; }); requestAnimationFrame(draw); }
-  resize();initStars();draw();
-  window.addEventListener('resize',()=>{resize();initStars();});
+  resize(); initS(); draw();
+  window.addEventListener('resize',()=>{ resize(); initS(); });
 })();
 
 /* ══ Ticker — handled by arcane-prices.js ══ */
 
-/* ══ Leaflet Map ══ */
-let map, heatShowing = false, heatLayer = null;
+/* ══════════════════════════════════════════════
+   DATA — Global Intelligence Layers
+══════════════════════════════════════════════ */
+
+const CONFLICTS = [
+  { name:'Ukraine',       region:'Eastern Europe',  lat:49.0, lng:31.0,   sev:'CRITICAL', desc:'Russia-Ukraine War — 3rd year of full-scale invasion' },
+  { name:'Gaza Strip',    region:'Middle East',     lat:31.4, lng:34.5,   sev:'CRITICAL', desc:'Israel-Hamas conflict — ongoing offensive operations' },
+  { name:'Sudan',         region:'North Africa',    lat:15.6, lng:32.5,   sev:'HIGH',     desc:'Civil war — SAF vs RSF, humanitarian catastrophe' },
+  { name:'DR Congo',      region:'Central Africa',  lat:-4.3, lng:21.8,   sev:'HIGH',     desc:'M23 rebel offensive, eastern provinces destabilised' },
+  { name:'Myanmar',       region:'SE Asia',         lat:19.7, lng:96.1,   sev:'HIGH',     desc:'Military junta vs resistance — civil war escalating' },
+  { name:'Yemen',         region:'Middle East',     lat:15.6, lng:48.5,   sev:'HIGH',     desc:'Houthi-Coalition conflict, ongoing drone & missile strikes' },
+  { name:'Somalia',       region:'East Africa',     lat:5.2,  lng:46.2,   sev:'HIGH',     desc:'Al-Shabaab insurgency — offensive operations continue' },
+  { name:'Syria',         region:'Middle East',     lat:35.0, lng:38.0,   sev:'HIGH',     desc:'Post-Assad reconstruction — factional violence ongoing' },
+  { name:'West Bank',     region:'Middle East',     lat:31.9, lng:35.2,   sev:'HIGH',     desc:'Israeli military operations — escalating settler violence' },
+  { name:'Burkina Faso',  region:'West Africa',     lat:12.4, lng:-1.6,   sev:'HIGH',     desc:'Jihadist control of northern regions — military junta' },
+  { name:'Nigeria',       region:'West Africa',     lat:9.1,  lng:8.7,    sev:'MODERATE', desc:'Boko Haram insurgency + communal violence in Middle Belt' },
+  { name:'Ethiopia',      region:'East Africa',     lat:9.1,  lng:40.5,   sev:'MODERATE', desc:'Amhara region conflict post-Tigray ceasefire' },
+  { name:'Mali',          region:'West Africa',     lat:17.6, lng:-4.0,   sev:'MODERATE', desc:'Jihadist insurgency — Wagner-backed military junta' },
+  { name:'Haiti',         region:'Caribbean',       lat:18.9, lng:-72.3,  sev:'MODERATE', desc:'Gang violence — state collapse, Kenya-led MSS deployed' },
+  { name:'Libya',         region:'North Africa',    lat:26.3, lng:17.2,   sev:'MODERATE', desc:'Factional conflict — rival governments in east and west' },
+  { name:'Mozambique',    region:'Southern Africa', lat:-15.0,lng:40.7,   sev:'MODERATE', desc:'Insurgency in Cabo Delgado — ISIS-affiliated group' },
+  { name:'Pakistan',      region:'South Asia',      lat:30.4, lng:69.3,   sev:'MODERATE', desc:'TTP insurgency in KPK — cross-border Afghanistan attacks' },
+  { name:'Iraq',          region:'Middle East',     lat:33.2, lng:43.7,   sev:'MODERATE', desc:'ISIS resurgence — Shia militia activity, Iranian influence' },
+];
+
+const HOTSPOTS = [
+  { name:'Taiwan Strait',       region:'East Asia',       lat:24.5, lng:120.0, sev:'CRITICAL', desc:'PRC military exercises — invasion risk assessment elevated' },
+  { name:'South China Sea',     region:'SE Asia',         lat:14.0, lng:114.2, sev:'HIGH',     desc:'PRC territorial claims — Philippines, Vietnam confrontations' },
+  { name:'Red Sea',             region:'Middle East',     lat:17.0, lng:42.0,  sev:'HIGH',     desc:'Houthi attacks on commercial shipping — global supply impact' },
+  { name:'Iran',                region:'Middle East',     lat:32.4, lng:53.7,  sev:'HIGH',     desc:'Nuclear standoff — IAEA concerns, US/Israel tension elevated' },
+  { name:'North Korea',         region:'East Asia',       lat:40.3, lng:127.5, sev:'HIGH',     desc:'ICBM tests, troops deployed to Russia, nuclear escalation' },
+  { name:'Sahel Region',        region:'West Africa',     lat:15.0, lng:2.0,   sev:'HIGH',     desc:'Wagner/Africa Corps expansion — France expelled from 5 states' },
+  { name:'Kashmir',             region:'South Asia',      lat:34.1, lng:77.6,  sev:'MODERATE', desc:'India-Pakistan Line of Control — periodic military exchanges' },
+  { name:'Venezuela',           region:'S. America',      lat:8.0,  lng:-66.6, sev:'MODERATE', desc:'Maduro regime — disputed election, US sanctions, Guyana tension' },
+  { name:'Serbia / Kosovo',     region:'Balkans',         lat:43.2, lng:20.9,  sev:'MODERATE', desc:'Ongoing territorial dispute — NATO KFOR presence maintained' },
+  { name:'Armenia / Azerbaijan',region:'Caucasus',        lat:39.8, lng:47.4,  sev:'MODERATE', desc:'Post-Karabakh tensions — border demarcation disputes' },
+  { name:'Belarus Border',      region:'Eastern Europe',  lat:53.9, lng:27.6,  sev:'MODERATE', desc:'Migrant weaponisation — NATO Article 4 consultations ongoing' },
+  { name:'Niger Delta',         region:'West Africa',     lat:5.0,  lng:6.5,   sev:'MODERATE', desc:'Pipeline sabotage, oil theft, militant activity escalating' },
+];
+
+const ENERGY = [
+  { name:'Strait of Hormuz',    region:'Persian Gulf', lat:26.6, lng:56.3,   type:'CHOKEPOINT', flow:'~21M bpd', desc:'World\'s busiest oil chokepoint — Iran closure threat' },
+  { name:'Straits of Malacca',  region:'SE Asia',      lat:2.5,  lng:101.5,  type:'CHOKEPOINT', flow:'~16M bpd', desc:'Critical LNG & oil corridor — piracy monitoring active' },
+  { name:'Bab-el-Mandeb',       region:'Red Sea',      lat:12.6, lng:43.4,   type:'CHOKEPOINT', flow:'~6M bpd',  desc:'DISRUPTED — Houthi attacks rerouting tankers via Cape' },
+  { name:'Saudi Arabia',        region:'Middle East',  lat:23.9, lng:45.1,   type:'FIELD',      flow:'~12M bpd', desc:'Ghawar — world\'s largest oil field, ARAMCO operations' },
+  { name:'Permian Basin',       region:'N. America',   lat:31.8, lng:-102.5, type:'FIELD',      flow:'~6M bpd',  desc:'US shale oil epicentre — record production levels 2024' },
+  { name:'West Siberia',        region:'Russia',       lat:61.0, lng:71.0,   type:'FIELD',      flow:'~6M bpd',  desc:'Largest Russian producing region — under sanctions pressure' },
+  { name:'North Sea',           region:'Europe',       lat:57.5, lng:2.5,    type:'FIELD',      flow:'~1.5M bpd',desc:'UK/Norway offshore production — depletion accelerating' },
+  { name:'Gulf of Mexico',      region:'N. America',   lat:26.0, lng:-89.5,  type:'FIELD',      flow:'~2M bpd',  desc:'US offshore production hub — hurricane season risk' },
+  { name:'Niger Delta',         region:'W. Africa',    lat:5.0,  lng:6.0,    type:'FIELD',      flow:'~1.8M bpd',desc:'Nigeria offshore — bunkering & militant sabotage impact' },
+  { name:'Kazakhstan',          region:'Central Asia', lat:45.6, lng:53.1,   type:'FIELD',      flow:'~1.9M bpd',desc:'Tengiz & Kashagan fields — CPC pipeline export route' },
+];
+
+const NUCLEAR = [
+  { name:'United States', region:'N. America',    lat:38.9,  lng:-97.0,  warheads:5500, status:'ACTIVE',     desc:'Largest arsenal — land, sea & air triad, NATO umbrella' },
+  { name:'Russia',        region:'E. Europe/Asia', lat:55.8, lng:37.6,   warheads:6257, status:'ALERT',      desc:'Largest deployed — tactical nukes in Belarus, war status' },
+  { name:'China',         region:'East Asia',     lat:39.9,  lng:116.4,  warheads:410,  status:'EXPANDING',  desc:'Rapid build-up — 1,000 warheads projected by 2030' },
+  { name:'United Kingdom',region:'W. Europe',     lat:51.5,  lng:-0.1,   warheads:225,  status:'ACTIVE',     desc:'Trident SLBM-based deterrent — Vanguard class submarines' },
+  { name:'France',        region:'W. Europe',     lat:48.9,  lng:2.3,    warheads:290,  status:'ACTIVE',     desc:'Independent deterrent — sea & air based, de Gaulle doctrine' },
+  { name:'India',         region:'South Asia',    lat:28.6,  lng:77.2,   warheads:164,  status:'ACTIVE',     desc:'No first-use policy — land, sea & air triad developing' },
+  { name:'Pakistan',      region:'South Asia',    lat:33.7,  lng:73.1,   warheads:170,  status:'ACTIVE',     desc:'First-use policy — India-focused, tactical weapons programme' },
+  { name:'Israel',        region:'Middle East',   lat:31.8,  lng:35.2,   warheads:90,   status:'UNDECLARED', desc:'Undeclared arsenal — "Samson Option" deterrence doctrine' },
+  { name:'North Korea',   region:'East Asia',     lat:39.0,  lng:125.8,  warheads:40,   status:'ESCALATING', desc:'Active ICBM testing — miniaturised warheads, submarine launch' },
+];
+
+const MARKETS_CENTRES = [
+  { name:'New York',      lat:40.71,  lng:-74.01, type:'major', color:'#f5c842' },
+  { name:'London',        lat:51.51,  lng:-0.13,  type:'major', color:'#f5c842' },
+  { name:'Tokyo',         lat:35.68,  lng:139.76, type:'major', color:'#f5c842' },
+  { name:'Hong Kong',     lat:22.32,  lng:114.17, type:'major', color:'#00d4ff' },
+  { name:'Singapore',     lat:1.35,   lng:103.82, type:'major', color:'#00d4ff' },
+  { name:'Frankfurt',     lat:50.11,  lng:8.68,   type:'mid',   color:'#00d4ff' },
+  { name:'Sydney',        lat:-33.87, lng:151.21, type:'mid',   color:'#00d4ff' },
+  { name:'Zurich',        lat:47.37,  lng:8.54,   type:'mid',   color:'#00e676' },
+  { name:'Dubai',         lat:25.2,   lng:55.27,  type:'mid',   color:'#00e676' },
+  { name:'Shanghai',      lat:31.22,  lng:121.47, type:'mid',   color:'#00d4ff' },
+  { name:'Mumbai',        lat:19.08,  lng:72.88,  type:'small', color:'#00e676' },
+  { name:'Toronto',       lat:43.65,  lng:-79.38, type:'small', color:'#00e676' },
+  { name:'Sao Paulo',     lat:-23.55, lng:-46.64, type:'small', color:'#ff9500' },
+  { name:'Johannesburg',  lat:-26.2,  lng:28.04,  type:'small', color:'#ff9500' },
+];
+
+/* ══ Map setup ══ */
+let map;
+let layers = {};   // { conflicts, hotspots, markets, energy, nuclear, quakes }
+let activeLayer = 'all';
+let quakeData   = [];
+
+function mkIcon(cls, mc) {
+  return L.divIcon({ html:`<div class="${cls}" style="--mc:${mc}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
+}
+
+function popup(title, region, desc, badgeTxt, badgeCls, extra) {
+  return `<div class="map-popup">
+    <div class="mp-title">${title}</div>
+    <div class="mp-region">${region}</div>
+    <div class="mp-desc">${desc}</div>
+    <div class="mp-row">
+      <span class="mp-badge ${badgeCls}">${badgeTxt}</span>
+      ${extra ? `<span class="mp-extra">${extra}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function sevClass(sev) {
+  const m = { CRITICAL:'b-critical', HIGH:'b-high', MODERATE:'b-moderate', LOW:'b-low',
+    ACTIVE:'b-active', ALERT:'b-alert', ESCALATING:'b-escalating', EXPANDING:'b-expanding',
+    UNDECLARED:'b-undeclared', CHOKEPOINT:'b-chokepoint', FIELD:'b-field' };
+  return m[sev] || 'b-moderate';
+}
+
+function sevColor(sev) {
+  const m = { CRITICAL:'#ff3b3b', HIGH:'#ff6b35', MODERATE:'#f5c842', LOW:'#7a8499',
+    ACTIVE:'#ff4040', ALERT:'#ff3030', ESCALATING:'#ff5020', EXPANDING:'#ff9500',
+    UNDECLARED:'#00d4ff', CHOKEPOINT:'#ffb332', FIELD:'#5abe50' };
+  return m[sev] || '#f5c842';
+}
 
 function initMap() {
-  map = L.map('world-map', {
-    center: [20, 10],
-    zoom: 2,
-    minZoom: 1,
-    maxZoom: 10,
-    zoomControl: true,
-    attributionControl: false,
+  map = L.map('world-map', { center:[20,10], zoom:2, minZoom:1, maxZoom:10, zoomControl:true, attributionControl:false });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:20 }).addTo(map);
+
+  /* ── Build layer groups ── */
+  layers.conflicts = L.layerGroup();
+  layers.hotspots  = L.layerGroup();
+  layers.markets   = L.layerGroup();
+  layers.energy    = L.layerGroup();
+  layers.nuclear   = L.layerGroup();
+  layers.quakes    = L.layerGroup();
+
+  /* CONFLICTS */
+  CONFLICTS.forEach(c => {
+    const col = sevColor(c.sev);
+    const ico = L.divIcon({ html:`<div class="m-conflict" style="background:${col};box-shadow:0 0 8px ${col};--mc:${col}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
+    L.marker([c.lat,c.lng], {icon:ico})
+      .bindPopup(popup(c.name, c.region, c.desc, c.sev, sevClass(c.sev)), {maxWidth:240})
+      .addTo(layers.conflicts);
   });
 
-  // Dark tile layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '', maxZoom: 20
-  }).addTo(map);
+  /* HOTSPOTS */
+  HOTSPOTS.forEach(h => {
+    const col = sevColor(h.sev);
+    const ico = L.divIcon({ html:`<div class="m-hotspot" style="background:${col};box-shadow:0 0 7px ${col};--mc:${col}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
+    L.marker([h.lat,h.lng], {icon:ico})
+      .bindPopup(popup(h.name, h.region, h.desc, h.sev, sevClass(h.sev)), {maxWidth:240})
+      .addTo(layers.hotspots);
+  });
 
-  // Trading hotspot cities
-  const hotspots = [
-    { name: 'New York',   lat: 40.71,  lng: -74.01, type: 'major',  color: '#f5c842' },
-    { name: 'London',     lat: 51.51,  lng: -0.13,  type: 'major',  color: '#f5c842' },
-    { name: 'Tokyo',      lat: 35.68,  lng: 139.76, type: 'major',  color: '#f5c842' },
-    { name: 'Hong Kong',  lat: 22.32,  lng: 114.17, type: 'major',  color: '#00d4ff' },
-    { name: 'Singapore',  lat: 1.35,   lng: 103.82, type: 'major',  color: '#00d4ff' },
-    { name: 'Frankfurt',  lat: 50.11,  lng: 8.68,   type: 'mid',    color: '#00d4ff' },
-    { name: 'Sydney',     lat: -33.87, lng: 151.21, type: 'mid',    color: '#00d4ff' },
-    { name: 'Zurich',     lat: 47.37,  lng: 8.54,   type: 'mid',    color: '#00e676' },
-    { name: 'Dubai',      lat: 25.2,   lng: 55.27,  type: 'mid',    color: '#00e676' },
-    { name: 'Shanghai',   lat: 31.22,  lng: 121.47, type: 'mid',    color: '#00d4ff' },
-    { name: 'Mumbai',     lat: 19.08,  lng: 72.88,  type: 'small',  color: '#00e676' },
-    { name: 'Toronto',    lat: 43.65,  lng: -79.38, type: 'small',  color: '#00e676' },
-    { name: 'Sao Paulo',  lat: -23.55, lng: -46.64, type: 'small',  color: '#ff9500' },
-    { name: 'Johannesburg',lat:-26.2,  lng: 28.04,  type: 'small',  color: '#ff9500' },
-  ];
-
-  const sizeMap = { major: 10, mid: 7, small: 4 };
-
-  hotspots.forEach(h => {
-    const sz = sizeMap[h.type] || 5;
-    const circle = L.circleMarker([h.lat, h.lng], {
-      radius: sz,
-      fillColor: h.color,
-      color: h.color,
-      weight: 1,
-      opacity: 0.9,
-      fillOpacity: 0.7,
-    }).addTo(map);
-
-    circle.bindPopup(`
-      <div style="font-family:'Orbitron',monospace;font-size:0.65rem;color:#e6e9f2;background:#13131e;border:1px solid rgba(0,212,255,0.25);padding:0.5rem 0.75rem;border-radius:6px">
-        <strong style="color:#00d4ff">${h.name}</strong><br/>
-        <span style="color:#7a8499;font-size:0.55rem">Financial Centre</span>
-      </div>
-    `, { maxWidth: 200, className: 'leaflet-popup-dark' });
-
-    // Pulsing outer ring for major centres
-    if (h.type === 'major') {
-      const pulse = L.circleMarker([h.lat, h.lng], {
-        radius: sz + 5,
-        fillColor: 'none',
-        color: h.color,
-        weight: 1,
-        opacity: 0.3,
-        fillOpacity: 0,
-        className: 'pulse-ring',
-      }).addTo(map);
+  /* MARKETS */
+  const mktSz = { major:10, mid:7, small:5 };
+  MARKETS_CENTRES.forEach(m => {
+    const sz = mktSz[m.type] || 5;
+    L.circleMarker([m.lat,m.lng], { radius:sz, fillColor:m.color, color:m.color, weight:1, opacity:0.9, fillOpacity:0.75 })
+      .bindPopup(popup(m.name,'Financial Centre','Global trading hub — 24h market operations','MARKET','b-teal'), {maxWidth:220})
+      .addTo(layers.markets);
+    if (m.type === 'major') {
+      L.circleMarker([m.lat,m.lng], { radius:sz+5, fillColor:'none', color:m.color, weight:1, opacity:0.25, fillOpacity:0 }).addTo(layers.markets);
     }
   });
+  // Trade routes
+  [[51.51,-0.13],[40.71,-74.01]].join('|');
+  const routes = [[[51.51,-0.13],[40.71,-74.01]],[[40.71,-74.01],[35.68,139.76]],[[51.51,-0.13],[50.11,8.68]],[[22.32,114.17],[1.35,103.82]],[[35.68,139.76],[22.32,114.17]],[[25.2,55.27],[1.35,103.82]]];
+  routes.forEach(r => L.polyline(r, {color:'rgba(0,212,255,0.18)',weight:1,dashArray:'4 8'}).addTo(layers.markets));
 
-  // Trade route lines
-  const routes = [
-    [[51.51,-0.13],[40.71,-74.01]],  // London → NY
-    [[40.71,-74.01],[35.68,139.76]], // NY → Tokyo
-    [[51.51,-0.13],[50.11,8.68]],   // London → Frankfurt
-    [[22.32,114.17],[1.35,103.82]], // HK → Singapore
-    [[35.68,139.76],[22.32,114.17]], // Tokyo → HK
-  ];
-
-  routes.forEach(r => {
-    L.polyline(r, {
-      color: 'rgba(0,212,255,0.2)',
-      weight: 1,
-      dashArray: '4 8',
-    }).addTo(map);
+  /* ENERGY */
+  ENERGY.forEach(e => {
+    const col = e.type==='CHOKEPOINT' ? '#ffb332' : '#5abe50';
+    const ico = e.type==='CHOKEPOINT'
+      ? L.divIcon({ html:`<div class="m-energy" style="background:rgba(255,179,50,0.22);border:1px solid ${col};box-shadow:0 0 6px ${col}">⚓</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] })
+      : L.divIcon({ html:`<div class="m-energy" style="background:rgba(90,190,80,0.18);border:1px solid ${col}">🛢</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
+    L.marker([e.lat,e.lng], {icon:ico})
+      .bindPopup(popup(e.name, e.region, e.desc, e.type, sevClass(e.type), e.flow), {maxWidth:240})
+      .addTo(layers.energy);
   });
 
-  // Force Leaflet to recalculate map size after layout settles (critical on iOS/mobile)
+  /* NUCLEAR */
+  NUCLEAR.forEach(n => {
+    const col = n.status==='ALERT' ? '#ff3b3b' : n.status==='ESCALATING' ? '#ff6432' : '#00d4ff';
+    const ico = L.divIcon({ html:`<div class="m-nuclear" style="background:rgba(0,212,255,0.12);border:1.5px solid ${col};color:${col};box-shadow:0 0 8px ${col}40">☢</div>`, className:'', iconSize:[22,22], iconAnchor:[11,11] });
+    L.marker([n.lat,n.lng], {icon:ico})
+      .bindPopup(popup(n.name, n.region, n.desc, n.status, sevClass(n.status), `~${n.warheads.toLocaleString()} warheads`), {maxWidth:250})
+      .addTo(layers.nuclear);
+  });
+
+  /* Add all layers to map initially */
+  Object.values(layers).forEach(lg => lg.addTo(map));
+
+  /* Invalidate size */
   setTimeout(() => map.invalidateSize(), 100);
   setTimeout(() => map.invalidateSize(), 500);
+
+  /* Fetch quakes */
+  fetchEarthquakes();
 }
 
-// Re-invalidate on resize and orientation change
-window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
-window.addEventListener('orientationchange', () => {
-  setTimeout(() => { if (map) map.invalidateSize(); }, 350);
-});
+window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
+window.addEventListener('orientationchange', () => { setTimeout(() => { if(map) map.invalidateSize(); }, 350); });
 
-function resetMapView() {
-  map.setView([20, 10], 2, { animate: true });
-}
+/* ══ Layer filter ══ */
+function filterLayer(type, el) {
+  activeLayer = type;
+  document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
 
-let heatCircles = [];
-function toggleHeat() {
-  heatShowing = !heatShowing;
-  const btn = document.getElementById('custom-map-btn');
-  if (heatShowing) {
-    btn.classList.add('active');
-    const regions = [
-      {lat:45, lng:-100, r:500000, color:'rgba(245,200,66,0.08)'},
-      {lat:50, lng:10,   r:400000, color:'rgba(0,212,255,0.08)'},
-      {lat:35, lng:130,  r:450000, color:'rgba(0,212,255,0.07)'},
-      {lat:10, lng:110,  r:350000, color:'rgba(0,230,118,0.07)'},
-      {lat:-25,lng:140,  r:300000, color:'rgba(255,149,0,0.07)'},
-    ];
-    regions.forEach(r => {
-      const c = L.circle([r.lat, r.lng], {
-        radius: r.r,
-        fillColor: r.color,
-        fillOpacity: 1,
-        color: 'transparent',
-        weight: 0,
-      }).addTo(map);
-      heatCircles.push(c);
-    });
-  } else {
-    btn.classList.remove('active');
-    heatCircles.forEach(c => map.removeLayer(c));
-    heatCircles = [];
-  }
+  const all = Object.keys(layers);
+  all.forEach(key => {
+    if (type === 'all' || key === type) {
+      if (!map.hasLayer(layers[key])) layers[key].addTo(map);
+    } else {
+      if (map.hasLayer(layers[key])) map.removeLayer(layers[key]);
+    }
+  });
 }
+window.filterLayer = filterLayer;
 
 /* ══ Tab switching ══ */
 function switchTab(tab, el) {
   document.querySelectorAll('.map-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-
-  const mapEl = document.getElementById('world-map');
-  const tablePanel = document.getElementById('panel-table');
-  const newsPanel  = document.getElementById('panel-news');
-
-  mapEl.style.display   = tab === 'map'   ? '' : 'none';
-  tablePanel.classList.toggle('active', tab === 'table');
-  newsPanel.classList.toggle('active',  tab === 'news');
-
-  if (tab === 'map') map.invalidateSize();
+  document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'map') setTimeout(() => { if(map) map.invalidateSize(); }, 50);
 }
 window.switchTab = switchTab;
-window.toggleHeat = toggleHeat;
+
+function resetMapView() { map.setView([20,10], 2, {animate:true}); }
 window.resetMapView = resetMapView;
+
+/* ══ Earthquakes (USGS live) ══ */
+async function fetchEarthquakes() {
+  try {
+    const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson');
+    const d = await r.json();
+    quakeData = d.features.map(f => ({
+      lat:  f.geometry.coordinates[1],
+      lng:  f.geometry.coordinates[0],
+      mag:  f.properties.mag,
+      place:f.properties.place,
+      time: new Date(f.properties.time).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+      depth:Math.round(f.geometry.coordinates[2]),
+      url:  f.properties.url,
+    })).sort((a,b) => b.mag - a.mag);
+
+    layers.quakes.clearLayers();
+    quakeData.forEach(q => {
+      const sz  = Math.max(4, Math.min(14, (q.mag - 4) * 3.5));
+      const col = q.mag >= 7 ? '#ff3b3b' : q.mag >= 6 ? '#ff6432' : q.mag >= 5.5 ? '#ff9500' : '#a064ff';
+      const ico = L.divIcon({ html:`<div class="m-quake" style="width:${sz*2}px;height:${sz*2}px;background:${col}30;border:1.5px solid ${col};color:${col}"></div>`, className:'', iconSize:[sz*2,sz*2], iconAnchor:[sz,sz] });
+      L.marker([q.lat,q.lng], {icon:ico})
+        .bindPopup(`<div class="map-popup"><div class="mp-title">M${q.mag.toFixed(1)} Earthquake</div><div class="mp-region">${q.place}</div><div class="mp-desc">Depth: ${q.depth} km · ${q.time}</div><div class="mp-row"><span class="mp-badge ${q.mag>=7?'b-critical':q.mag>=6?'b-high':'b-moderate'}">M${q.mag.toFixed(1)}</span><span class="mp-extra">${q.depth}km deep</span></div></div>`, {maxWidth:240})
+        .addTo(layers.quakes);
+    });
+
+    document.getElementById('stat-quakes').textContent = quakeData.length;
+    if (activeLayer === 'quakes' || activeLayer === 'all') {
+      if (!map.hasLayer(layers.quakes)) layers.quakes.addTo(map);
+    }
+    // Refresh current feed if on quakes tab
+    const activeBtn = document.querySelector('.feed-tab-btn.active');
+    if (activeBtn && activeBtn.dataset.feed === 'quakes') renderFeed('quakes');
+  } catch(e) {
+    document.getElementById('stat-quakes').textContent = '—';
+  }
+}
+
+/* ══ Feed rendering ══ */
+function switchFeed(type, el) {
+  document.querySelectorAll('.feed-tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderFeed(type);
+}
+window.switchFeed = switchFeed;
+
+function renderFeed(type) {
+  const list = document.getElementById('feed-list');
+  if (!list) return;
+
+  if (type === 'conflicts') {
+    list.innerHTML = CONFLICTS.map(c => {
+      const col = sevColor(c.sev);
+      const bc  = sevClass(c.sev);
+      return `<div class="feed-item" onclick="map.setView([${c.lat},${c.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${c.name}</div>
+          <div class="fi-desc">${c.desc}</div>
+          <div class="fi-meta">
+            <span class="fi-region">${c.region}</span>
+            <span class="fi-badge ${bc}">${c.sev}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if (type === 'hotspots') {
+    list.innerHTML = HOTSPOTS.map(h => {
+      const col = sevColor(h.sev);
+      const bc  = sevClass(h.sev);
+      return `<div class="feed-item" onclick="map.setView([${h.lat},${h.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${h.name}</div>
+          <div class="fi-desc">${h.desc}</div>
+          <div class="fi-meta">
+            <span class="fi-region">${h.region}</span>
+            <span class="fi-badge ${bc}">${h.sev}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if (type === 'quakes') {
+    if (!quakeData.length) {
+      list.innerHTML = '<div style="padding:1rem;font-family:var(--font-head);font-size:0.55rem;color:var(--text-muted);text-align:center">Loading earthquake data…</div>';
+      return;
+    }
+    list.innerHTML = quakeData.slice(0,30).map(q => {
+      const col = q.mag >= 7 ? '#ff3b3b' : q.mag >= 6 ? '#ff6432' : q.mag >= 5.5 ? '#ff9500' : '#a064ff';
+      const bc  = q.mag >= 7 ? 'b-critical' : q.mag >= 6 ? 'b-high' : 'b-moderate';
+      return `<div class="feed-item" onclick="map.setView([${q.lat},${q.lng}],6,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${col}"></div>
+        <div class="feed-body">
+          <div class="fi-name">M${q.mag.toFixed(1)} — ${q.place.split(',')[0]}</div>
+          <div class="fi-desc">${q.place}</div>
+          <div class="fi-meta">
+            <span class="fi-region">${q.time} · ${q.depth}km depth</span>
+            <span class="fi-badge ${bc}">M${q.mag.toFixed(1)}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if (type === 'energy') {
+    list.innerHTML = ENERGY.map(e => {
+      const col = e.type==='CHOKEPOINT' ? '#ffb332' : '#5abe50';
+      const bc  = sevClass(e.type);
+      const ico = e.type==='CHOKEPOINT' ? '⚓' : '🛢';
+      return `<div class="feed-item" onclick="map.setView([${e.lat},${e.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${col}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${ico} ${e.name}</div>
+          <div class="fi-desc">${e.desc}</div>
+          <div class="fi-meta">
+            <span class="fi-region">${e.region} · ${e.flow}</span>
+            <span class="fi-badge ${bc}">${e.type}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if (type === 'nuclear') {
+    list.innerHTML = NUCLEAR.map(n => {
+      const col = n.status==='ALERT'?'#ff3b3b':n.status==='ESCALATING'?'#ff6432':'#00d4ff';
+      const bc  = sevClass(n.status);
+      return `<div class="feed-item" onclick="map.setView([${n.lat},${n.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
+        <div class="feed-body">
+          <div class="fi-name">☢ ${n.name}</div>
+          <div class="fi-desc">${n.desc}</div>
+          <div class="fi-meta">
+            <span class="fi-region">${n.region} · ~${n.warheads.toLocaleString()} warheads</span>
+            <span class="fi-badge ${bc}">${n.status}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
 
 /* ══ Fear & Greed ══ */
 async function fetchFearGreed() {
   try {
     const r = await fetch('https://api.alternative.me/fng/?limit=1');
     const d = await r.json();
-    const val = parseInt(d.data[0].value);
+    const val  = parseInt(d.data[0].value);
     const text = d.data[0].value_classification;
-
-    document.getElementById('fg-number').textContent = val;
-    document.getElementById('fg-text').textContent   = text.toUpperCase();
-    document.getElementById('fg-needle').style.left  = `${val}%`;
-
-    // Color by zone
-    const colors = { 'Extreme Fear':'#ff3b3b','Fear':'#ff9500','Neutral':'#f5c842','Greed':'#00e676','Extreme Greed':'#00d4ff' };
-    document.getElementById('fg-text').style.color = colors[text] || '#e6e9f2';
-    document.getElementById('fg-number').style.color = colors[text] || '#e6e9f2';
-  } catch(e) {
-    document.getElementById('fg-number').textContent = '—';
-    document.getElementById('fg-text').textContent   = 'UNAVAILABLE';
-  }
+    const cols = { 'Extreme Fear':'#ff3b3b','Fear':'#ff9500','Neutral':'#f5c842','Greed':'#00e676','Extreme Greed':'#00d4ff' };
+    const col  = cols[text] || '#e6e9f2';
+    const fg_n = document.getElementById('fg-number');
+    const fg_t = document.getElementById('fg-text');
+    const fg_nd= document.getElementById('fg-needle');
+    if(fg_n){ fg_n.textContent=val; fg_n.style.color=col; }
+    if(fg_t){ fg_t.textContent=text.toUpperCase(); fg_t.style.color=col; }
+    if(fg_nd) fg_nd.style.left=val+'%';
+  } catch(e) {}
 }
 
-/* ══ Crypto Intel — powered by arcane-prices.js ══ */
+/* ══ Crypto Intel — via arcane-prices.js ══ */
 function bindCryptoPrices() {
   const AP = window.ArcanePrices;
   if (!AP) return;
   AP.subscribe(data => {
-    const fmtP = (n, d=2) => n != null ? '$'+n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—';
-    const fmtC = n => n != null ? (n>=0?'+':'')+n.toFixed(2)+'%' : '—';
-    const upd = (id, txt, cls) => { const el=document.getElementById(id); if(el){if(txt!==null)el.textContent=txt; if(cls)el.className=cls;} };
-
-    const btc = data.BTC;
-    if (btc) {
-      upd('btc-price', fmtP(btc.price, 0), null);
-      upd('btc-chg',   fmtC(btc.change),   'crypto-chg ' + btc.dir);
-      if (btc.mcap) upd('market-cap', btc.mcap, null);
-      if (btc.vol)  upd('market-vol', btc.vol,  null);
-    }
-    const eth = data.ETH;
-    if (eth) {
-      upd('eth-price', fmtP(eth.price), null);
-      upd('eth-chg',   fmtC(eth.change), 'crypto-chg ' + eth.dir);
-    }
-    const sol = data.SOL;
-    if (sol) {
-      upd('sol-price', fmtP(sol.price), null);
-      upd('sol-chg',   fmtC(sol.change), 'crypto-chg ' + sol.dir);
-    }
+    const fP = (n,d=2)=>n!=null?'$'+n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+    const fC = n=>n!=null?(n>=0?'+':'')+n.toFixed(2)+'%':'—';
+    const upd = (id,txt,cls)=>{ const el=document.getElementById(id); if(el){if(txt!=null)el.textContent=txt; if(cls)el.className=cls;} };
+    const btc=data.BTC, eth=data.ETH, sol=data.SOL;
+    if(btc){ upd('btc-price',fP(btc.price,0),null); upd('btc-chg',fC(btc.change),'crypto-chg '+btc.dir); if(btc.mcap)upd('market-cap',btc.mcap,null); if(btc.vol)upd('market-vol',btc.vol,null); }
+    if(eth){ upd('eth-price',fP(eth.price),null); upd('eth-chg',fC(eth.change),'crypto-chg '+eth.dir); }
+    if(sol){ upd('sol-price',fP(sol.price),null); upd('sol-chg',fC(sol.change),'crypto-chg '+sol.dir); }
+    // Live FX rates
+    const fX = (id, sym, dec) => { const d=data[sym]; const el=document.getElementById(id); if(el&&d) el.textContent=AP.fmtPrice(d.price,dec); };
+    fX('fx-eurusd','EURUSD',4); fX('fx-gbpusd','GBPUSD',4); fX('fx-usdjpy','USDJPY',2);
   });
 }
 
 /* ══ S&P Sectors ══ */
 function renderSPHeatmap() {
   const sectors = [
-    { name: 'Tech',       pct: +1.82 },
-    { name: 'Finance',    pct: +0.54 },
-    { name: 'Health',     pct: -0.23 },
-    { name: 'Energy',     pct: +2.11 },
-    { name: 'Consumer',   pct: -0.87 },
-    { name: 'Utilities',  pct: +0.12 },
-    { name: 'Industrl',   pct: +0.73 },
-    { name: 'Materials',  pct: -0.44 },
-    { name: 'Real Est',   pct: -1.02 },
+    {name:'Tech',pct:+1.82},{name:'Finance',pct:+0.54},{name:'Health',pct:-0.23},
+    {name:'Energy',pct:+2.11},{name:'Consumer',pct:-0.87},{name:'Utilities',pct:+0.12},
+    {name:'Industrl',pct:+0.73},{name:'Materials',pct:-0.44},{name:'Real Est',pct:-1.02},
   ];
-
   const grid = document.getElementById('sp-grid');
+  if(!grid) return;
   grid.innerHTML = sectors.map(s => {
-    const norm = Math.min(Math.abs(s.pct)/3, 1);
-    const bg = s.pct >= 0
-      ? `rgba(0,${Math.floor(100+norm*130)},${Math.floor(norm*80)},${0.5+norm*0.4})`
-      : `rgba(${Math.floor(150+norm*105)},${Math.floor(norm*20)},${Math.floor(norm*20)},${0.5+norm*0.4})`;
-    return `<div class="sp-cell" style="background:${bg}">
-      <div class="sp-name">${s.name}</div>
-      <div class="sp-pct">${s.pct>0?'+':''}${s.pct.toFixed(2)}%</div>
-    </div>`;
+    const n = Math.min(Math.abs(s.pct)/3,1);
+    const bg = s.pct>=0
+      ? `rgba(0,${Math.floor(100+n*130)},${Math.floor(n*80)},${0.5+n*0.4})`
+      : `rgba(${Math.floor(150+n*105)},${Math.floor(n*20)},${Math.floor(n*20)},${0.5+n*0.4})`;
+    return `<div class="sp-cell" style="background:${bg}"><div class="sp-name">${s.name}</div><div class="sp-pct">${s.pct>0?'+':''}${s.pct.toFixed(2)}%</div></div>`;
   }).join('');
 }
 
 /* ══ FX Matrix ══ */
 function renderFXMatrix() {
   const currencies = ['USD','EUR','GBP','JPY'];
-  const rates = {
-    'USD/EUR': -0.31, 'USD/GBP': +0.22, 'USD/JPY': +0.65,
-    'EUR/USD': +0.31, 'EUR/GBP': +0.15, 'EUR/JPY': +0.42,
-    'GBP/USD': -0.22, 'GBP/EUR': -0.15, 'GBP/JPY': +0.18,
-    'JPY/USD': -0.65, 'JPY/EUR': -0.42, 'JPY/GBP': -0.18,
-  };
-
+  const rates = { 'USD/EUR':-0.31,'USD/GBP':+0.22,'USD/JPY':+0.65,'EUR/USD':+0.31,'EUR/GBP':+0.15,'EUR/JPY':+0.42,'GBP/USD':-0.22,'GBP/EUR':-0.15,'GBP/JPY':+0.18,'JPY/USD':-0.65,'JPY/EUR':-0.42,'JPY/GBP':-0.18 };
   const tbody = document.getElementById('fx-tbody');
+  if(!tbody) return;
   tbody.innerHTML = currencies.map(base =>
-    `<tr>
-      <td class="fx-row-label">${base}</td>
-      ${currencies.map(quote => {
-        if (base === quote) return `<td class="fx-cell" style="background:var(--bg-3);color:var(--text-muted)">—</td>`;
-        const key = `${base}/${quote}`;
-        const pct = rates[key] ?? 0;
-        const bg = pct > 0 ? `rgba(0,230,118,${0.15+Math.abs(pct)*0.1})` : `rgba(255,59,59,${0.15+Math.abs(pct)*0.1})`;
-        const color = pct > 0 ? '#00e676' : '#ff3b3b';
-        return `<td class="fx-cell" style="background:${bg};color:${color}">${pct>0?'+':''}${pct.toFixed(2)}%</td>`;
-      }).join('')}
-    </tr>`
+    `<tr><td class="fx-row-label">${base}</td>${currencies.map(quote=>{
+      if(base===quote) return `<td class="fx-cell" style="background:var(--bg-3);color:var(--text-muted)">—</td>`;
+      const key=`${base}/${quote}`, pct=rates[key]??0;
+      const bg=pct>0?`rgba(0,230,118,${0.12+Math.abs(pct)*0.08})`:`rgba(255,59,59,${0.12+Math.abs(pct)*0.08})`;
+      const col=pct>0?'#00e676':'#ff3b3b';
+      return `<td class="fx-cell" style="background:${bg};color:${col}">${pct>0?'+':''}${pct.toFixed(2)}%</td>`;
+    }).join('')}</tr>`
   ).join('');
 }
 
-/* ══ Markets Table ══ */
+/* ══ Global Indices ══ */
 function renderMarketsTable() {
   const markets = [
-    { name:'S&P 500',    country:'🇺🇸 USA',      price:'5,871.50', chg:'+0.61%', vol:'4.2B', open:true },
-    { name:'FTSE 100',   country:'🇬🇧 UK',       price:'8,242.10', chg:'-0.12%', vol:'1.1B', open:true },
-    { name:'Nikkei 225', country:'🇯🇵 Japan',    price:'38,814',   chg:'+1.02%', vol:'2.8B', open:false },
-    { name:'DAX',        country:'🇩🇪 Germany',  price:'19,241',   chg:'+0.34%', vol:'0.9B', open:true },
-    { name:'Hang Seng',  country:'🇭🇰 HK',       price:'20,423',   chg:'-0.55%', vol:'1.7B', open:false },
-    { name:'ASX 200',    country:'🇦🇺 Australia',price:'8,124',    chg:'+0.28%', vol:'0.6B', open:false },
-    { name:'CAC 40',     country:'🇫🇷 France',   price:'7,801',    chg:'+0.19%', vol:'0.8B', open:true },
-    { name:'Shanghai',   country:'🇨🇳 China',    price:'3,282',    chg:'-0.91%', vol:'5.4B', open:false },
+    {name:'S&P 500',    country:'🇺🇸 USA',       price:'5,871.50',chg:'+0.61%',vol:'4.2B',open:true},
+    {name:'FTSE 100',   country:'🇬🇧 UK',        price:'8,242.10',chg:'-0.12%',vol:'1.1B',open:true},
+    {name:'Nikkei 225', country:'🇯🇵 Japan',     price:'38,814',  chg:'+1.02%',vol:'2.8B',open:false},
+    {name:'DAX',        country:'🇩🇪 Germany',   price:'19,241',  chg:'+0.34%',vol:'0.9B',open:true},
+    {name:'Hang Seng',  country:'🇭🇰 HK',        price:'20,423',  chg:'-0.55%',vol:'1.7B',open:false},
+    {name:'ASX 200',    country:'🇦🇺 Australia', price:'8,124',   chg:'+0.28%',vol:'0.6B',open:false},
+    {name:'CAC 40',     country:'🇫🇷 France',    price:'7,801',   chg:'+0.19%',vol:'0.8B',open:true},
+    {name:'Shanghai',   country:'🇨🇳 China',     price:'3,282',   chg:'-0.91%',vol:'5.4B',open:false},
   ];
-
   const tbody = document.getElementById('markets-tbody');
-  tbody.innerHTML = markets.map(m => {
-    const up = m.chg.startsWith('+');
-    return `<tr>
-      <td><div class="mkt-name">${m.name}</div><div class="mkt-country">${m.country}</div></td>
-      <td class="mkt-price">${m.price}</td>
-      <td class="mkt-chg ${up?'up':'down'}">${m.chg}</td>
-      <td style="color:var(--text-dim);font-size:0.65rem">${m.vol}</td>
-      <td><span class="badge-tag ${m.open?'green':'red'}" style="font-size:0.42rem">${m.open?'OPEN':'CLOSED'}</span></td>
-    </tr>`;
+  if(!tbody) return;
+  tbody.innerHTML = markets.map(m=>{
+    const up=m.chg.startsWith('+');
+    return `<tr><td><div class="mkt-name">${m.name}</div><div class="mkt-country">${m.country}</div></td><td class="mkt-price">${m.price}</td><td class="mkt-chg ${up?'up':'down'}">${m.chg}</td><td style="color:var(--text-dim);font-size:0.62rem">${m.vol}</td><td><span class="badge-tag ${m.open?'green':'red'}" style="font-size:0.4rem">${m.open?'OPEN':'CLOSED'}</span></td></tr>`;
   }).join('');
 }
 
 /* ══ Intel News Feed ══ */
 function renderNewsFeed() {
   const news = [
-    { title: 'Federal Reserve holds rates at 4.25-4.5% amid inflation concerns', time: '2 min ago', tag: 'MACRO' },
-    { title: 'Bitcoin surges past key resistance — bulls target $100K psychological level', time: '8 min ago', tag: 'CRYPTO' },
-    { title: 'Gold consolidates near all-time high as USD weakens on jobs data', time: '15 min ago', tag: 'COMMODITIES' },
-    { title: 'OPEC+ signals production cut extension through Q2 — Brent climbs 2.1%', time: '22 min ago', tag: 'ENERGY' },
-    { title: 'FTSE 100 edges lower as UK GDP disappoints — GBP/USD dips to 1.2612', time: '35 min ago', tag: 'FX' },
-    { title: 'Nvidia reports record earnings — AI infrastructure spending accelerates', time: '1 hr ago', tag: 'TECH' },
-    { title: 'Bank of Japan hints at further rate hikes — Yen strengthens against peers', time: '1.5 hr ago', tag: 'MACRO' },
+    {title:'Federal Reserve holds rates at 4.25–4.5% — inflation data still sticky',time:'2 min ago',tag:'MACRO'},
+    {title:'Bitcoin surges past $73K — bulls target all-time high psychological levels',time:'8 min ago',tag:'CRYPTO'},
+    {title:'Gold consolidates near record high as USD weakens on payroll data miss',time:'15 min ago',tag:'COMMODITIES'},
+    {title:'OPEC+ signals production cut extension through Q2 — Brent climbs 2.1%',time:'22 min ago',tag:'ENERGY'},
+    {title:'FTSE 100 edges lower as UK GDP disappoints — GBP/USD dips below 1.26',time:'35 min ago',tag:'FX'},
+    {title:'Nvidia reports record earnings — AI infrastructure spending accelerates',time:'1 hr ago',tag:'TECH'},
+    {title:'Bank of Japan hints at further rate hikes — Yen strengthens against peers',time:'1.5 hr ago',tag:'MACRO'},
+    {title:'Red Sea shipping disruptions push global container rates to 18-month high',time:'2 hr ago',tag:'GEOPOLITICAL'},
+    {title:'North Korea fires ballistic missile — lands in Japan\'s EEZ, Tokyo protests',time:'3 hr ago',tag:'GEOPOLITICAL'},
+    {title:'EU announces new sanctions package on Russia — energy sector targeted',time:'4 hr ago',tag:'MACRO'},
   ];
-
   const feed = document.getElementById('news-feed');
-  feed.innerHTML = news.map(n => `
+  if(!feed) return;
+  feed.innerHTML = news.map(n=>`
     <div class="news-item">
       <div class="news-dot"></div>
       <div>
         <div class="news-title">${n.title}</div>
         <div class="news-meta">${n.time} &nbsp;·&nbsp; <span style="color:var(--teal)">${n.tag}</span></div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 /* ══ Init ══ */
@@ -1209,16 +1050,14 @@ function initPage() {
   renderFXMatrix();
   renderMarketsTable();
   renderNewsFeed();
+  renderFeed('conflicts');   // default feed tab
 
-  // Simulate online count
   document.getElementById('online-count').textContent = Math.floor(Math.random() * 60 + 20);
 
-  // Fear & Greed refreshes every 5 min; crypto handled by arcane-prices.js (30s)
   setInterval(fetchFearGreed, 300000);
+  setInterval(fetchEarthquakes, 600000);  // re-fetch quakes every 10 min
 }
 
-// Fire immediately if DOM already ready (handles document.write / late injection),
-// otherwise wait for DOMContentLoaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPage);
 } else {
