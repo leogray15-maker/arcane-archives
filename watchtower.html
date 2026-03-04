@@ -91,6 +91,11 @@
     .layer-btn[data-layer="energy"].active    { border-color:rgba(255,179,50,0.6); background:rgba(255,179,50,0.11); color:#ffb332; }
     .layer-btn[data-layer="nuclear"].active   { border-color:rgba(0,212,255,0.6); background:rgba(0,212,255,0.11); color:var(--teal); }
     .layer-btn[data-layer="quakes"].active    { border-color:rgba(160,100,255,0.6); background:rgba(160,100,255,0.11); color:#a064ff; }
+    .layer-btn[data-layer="cyber"].active     { border-color:rgba(57,255,20,0.6); background:rgba(57,255,20,0.1); color:#39ff14; }
+    .layer-btn[data-layer="sanctions"].active { border-color:rgba(255,45,85,0.6); background:rgba(255,45,85,0.11); color:#ff2d55; }
+    .layer-btn[data-layer="shipping"].active  { border-color:rgba(79,195,247,0.6); background:rgba(79,195,247,0.11); color:#4fc3f7; }
+    .layer-btn[data-layer="intel"].active     { border-color:rgba(224,64,251,0.6); background:rgba(224,64,251,0.11); color:#e040fb; }
+    .layer-btn[data-layer="metals"].active    { border-color:rgba(255,215,0,0.6); background:rgba(255,215,0,0.1); color:#ffd700; }
     .layer-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 
     /* ── Leaflet map ── */
@@ -156,6 +161,8 @@
     .m-intel     { width:13px; height:13px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; position:relative; }
     .m-intel::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1px solid var(--mc,#e040fb); opacity:0.55; animation:intelPing 2.6s ease-out infinite; }
     .m-shipping  { width:13px; height:13px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:8px; }
+    @keyframes metalShimmer { 0%,100%{box-shadow:0 0 5px rgba(255,215,0,0.5)} 50%{box-shadow:0 0 14px rgba(255,215,0,0.95),0 0 28px rgba(255,215,0,0.35)} }
+    .m-metals    { width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; animation:metalShimmer 3.5s ease-in-out infinite; }
 
     /* ── Intel stats bar ── */
     .intel-stats { display:flex; align-items:stretch; flex-shrink:0; height:46px; background:rgba(9,9,14,0.94); border-top:1px solid var(--border); }
@@ -197,79 +204,164 @@
     .fi-badge  { padding:0.1rem 0.38rem; border-radius:3px; font-family:var(--font-head); font-size:0.4rem; font-weight:700; letter-spacing:0.1em; }
 
     /* ════════════════
-       MARKETS PANEL
+       MARKETS PANEL — Bloomberg Terminal
     ════════════════ */
     #panel-markets { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--border) transparent; background:var(--bg-1); }
     #panel-markets::-webkit-scrollbar { width:4px; }
     #panel-markets::-webkit-scrollbar-thumb { background:var(--border); }
-    .markets-grid { display:grid; grid-template-columns:1fr 1fr; }
-    .intel-panel { border-bottom:1px solid var(--border); border-right:1px solid var(--border); padding:0.9rem 1rem; }
-    .intel-panel.full-w { grid-column:1/-1; border-right:none; }
-    .intel-panel:nth-child(2n) { border-right:none; }
-    .intel-panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.7rem; }
-    .intel-panel-title { font-family:var(--font-head); font-size:0.55rem; font-weight:700; letter-spacing:0.18em; color:var(--text-dim); text-transform:uppercase; }
+
+    /* Metals / key data bar */
+    .metals-bar { display:flex; align-items:stretch; background:rgba(6,6,12,0.98); border-bottom:1px solid rgba(255,215,0,0.2); flex-shrink:0; overflow-x:auto; scrollbar-width:none; }
+    .metals-bar::-webkit-scrollbar { display:none; }
+    .mb-item { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0.45rem 1rem; border-right:1px solid var(--border); gap:0.07rem; min-width:80px; flex-shrink:0; }
+    .mb-label { font-family:var(--font-head); font-size:0.38rem; letter-spacing:0.18em; color:var(--text-muted); text-transform:uppercase; }
+    .mb-price { font-family:var(--font-head); font-size:0.72rem; font-weight:800; }
+    .mb-chg   { font-family:var(--font-head); font-size:0.42rem; font-weight:600; }
+    .mb-chg.up { color:var(--green); } .mb-chg.down { color:var(--red); } .mb-chg.flat { color:var(--text-muted); }
+    .mb-item.gold  .mb-price { color:#ffd700; }
+    .mb-item.silver .mb-price { color:#c0c0c0; }
+    .mb-item.vix   .mb-price { color:#ff9500; }
+    .mb-item.dxy   .mb-price { color:var(--teal); }
+    .mb-item.yield .mb-price { color:#a0c8ff; }
+
+    /* Terminal grid */
+    .term-grid { display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid var(--border); }
+    .term-grid.two-col { grid-template-columns:1fr 1fr; }
+    .term-panel { border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:0.8rem 0.9rem; min-width:0; }
+    .term-panel:last-child, .term-panel.no-right { border-right:none; }
+    .term-panel.full-w { grid-column:1/-1; border-right:none; }
+    .tp-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem; }
+    .tp-title { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.18em; color:var(--text-dim); text-transform:uppercase; }
+    .tp-sub { font-family:var(--font-head); font-size:0.38rem; color:var(--text-muted); letter-spacing:0.06em; }
+
+    /* Market Sessions */
+    .sessions-list { display:flex; flex-direction:column; gap:0.38rem; }
+    .session-row { display:flex; align-items:center; gap:0.5rem; }
+    .sess-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .sess-name { font-family:var(--font-head); font-size:0.5rem; color:var(--text); width:54px; flex-shrink:0; }
+    .sess-bar-wrap { flex:1; height:5px; background:var(--bg-4); border-radius:3px; overflow:hidden; }
+    .sess-bar-fill { height:100%; border-radius:3px; transition:width 1s linear; }
+    .sess-time { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); width:62px; text-align:right; flex-shrink:0; }
+    .sess-status { font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.06em; flex-shrink:0; }
+    .sess-open { color:var(--green); } .sess-closed { color:var(--text-muted); }
+    .utc-clock { font-family:var(--font-head); font-size:1.1rem; font-weight:800; color:var(--teal); text-align:center; margin-bottom:0.5rem; letter-spacing:0.08em; }
+
     /* Fear & Greed */
-    .fg-meter { position:relative; height:10px; border-radius:6px; background:linear-gradient(90deg,#ff3b3b 0%,#ff9500 25%,#f5c842 50%,#00e676 75%,#00d4ff 100%); margin:0.5rem 0 0.3rem; overflow:visible; }
-    .fg-needle { position:absolute; top:-4px; width:4px; height:18px; background:white; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 8px rgba(255,255,255,0.6); transition:left 1s ease; }
-    .fg-labels { display:flex; justify-content:space-between; margin-top:0.35rem; }
-    .fg-label  { font-family:var(--font-head); font-size:0.42rem; color:var(--text-muted); }
-    .fg-value  { text-align:center; margin-top:0.45rem; }
-    .fg-number { font-family:var(--font-head); font-size:1.4rem; font-weight:800; color:var(--text); }
-    .fg-text   { font-family:var(--font-head); font-size:0.52rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-top:0.1rem; }
-    /* Crypto */
-    .crypto-row { display:flex; align-items:center; justify-content:space-between; padding:0.38rem 0; border-bottom:1px solid var(--border); }
+    .fg-meter { position:relative; height:8px; border-radius:6px; background:linear-gradient(90deg,#ff3b3b 0%,#ff9500 25%,#f5c842 50%,#00e676 75%,#00d4ff 100%); margin:0.4rem 0 0.25rem; overflow:visible; }
+    .fg-needle { position:absolute; top:-4px; width:3px; height:16px; background:white; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 8px rgba(255,255,255,0.6); transition:left 1s ease; }
+    .fg-labels { display:flex; justify-content:space-between; margin-top:0.28rem; }
+    .fg-label  { font-family:var(--font-head); font-size:0.38rem; color:var(--text-muted); }
+    .fg-value  { text-align:center; margin-top:0.3rem; }
+    .fg-number { font-family:var(--font-head); font-size:1.6rem; font-weight:800; color:var(--text); }
+    .fg-text   { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-top:0.05rem; }
+
+    /* Crypto command */
+    .crypto-row { display:flex; align-items:center; justify-content:space-between; padding:0.3rem 0; border-bottom:1px solid var(--border); }
     .crypto-row:last-child { border-bottom:none; }
-    .crypto-left { display:flex; align-items:center; gap:0.45rem; }
-    .crypto-logo { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; background:var(--bg-4); border:1px solid var(--border); }
-    .crypto-sym  { font-family:var(--font-head); font-size:0.58rem; font-weight:700; color:var(--text); }
-    .crypto-name { font-size:0.54rem; color:var(--text-dim); }
+    .crypto-left { display:flex; align-items:center; gap:0.4rem; }
+    .crypto-logo { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; background:var(--bg-4); border:1px solid var(--border); flex-shrink:0; }
+    .crypto-sym  { font-family:var(--font-head); font-size:0.56rem; font-weight:700; color:var(--text); }
+    .crypto-name { font-size:0.48rem; color:var(--text-dim); }
     .crypto-right { text-align:right; }
-    .crypto-price { font-family:var(--font-head); font-size:0.64rem; font-weight:700; color:var(--text); }
-    .crypto-chg   { font-family:var(--font-head); font-size:0.5rem; font-weight:600; }
+    .crypto-price { font-family:var(--font-head); font-size:0.62rem; font-weight:700; color:var(--text); }
+    .crypto-chg   { font-family:var(--font-head); font-size:0.46rem; font-weight:600; }
     .crypto-chg.up { color:var(--green); } .crypto-chg.down { color:var(--red); }
-    .crypto-stats { display:grid; grid-template-columns:1fr 1fr; gap:0.35rem; margin-top:0.45rem; }
-    .crypto-stat  { background:var(--bg-3); border:1px solid var(--border); border-radius:5px; padding:0.32rem 0.45rem; }
-    .cs-label { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
-    .cs-value { font-family:var(--font-head); font-size:0.6rem; font-weight:700; color:var(--teal); margin-top:0.1rem; }
+    .crypto-dom-row { display:flex; gap:0.4rem; margin-top:0.45rem; flex-wrap:wrap; }
+    .crypto-dom-item { flex:1; min-width:60px; background:var(--bg-3); border:1px solid var(--border); border-radius:4px; padding:0.28rem 0.4rem; }
+    .cd-label { font-family:var(--font-head); font-size:0.38rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
+    .cd-value { font-family:var(--font-head); font-size:0.55rem; font-weight:700; color:var(--teal); margin-top:0.08rem; }
+
+    /* FX Command */
+    .fx-pairs-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.3rem; }
+    .fx-pair-card { background:var(--bg-3); border:1px solid var(--border); border-radius:5px; padding:0.32rem 0.45rem; }
+    .fxc-pair  { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); letter-spacing:0.1em; }
+    .fxc-price { font-family:var(--font-head); font-size:0.65rem; font-weight:800; color:var(--text); margin-top:0.06rem; }
+    .fxc-chg   { font-family:var(--font-head); font-size:0.4rem; font-weight:600; }
+    .fxc-chg.up { color:var(--green); } .fxc-chg.down { color:var(--red); } .fxc-chg.flat { color:var(--text-muted); }
+
+    /* Commodities */
+    .commod-list { display:flex; flex-direction:column; gap:0.3rem; }
+    .commod-row { display:flex; align-items:center; justify-content:space-between; padding:0.28rem 0; border-bottom:1px solid var(--border); }
+    .commod-row:last-child { border-bottom:none; }
+    .commod-name { font-family:var(--font-head); font-size:0.52rem; font-weight:700; color:var(--text); }
+    .commod-unit { font-size:0.42rem; color:var(--text-muted); }
+    .commod-right { text-align:right; }
+    .commod-price { font-family:var(--font-head); font-size:0.6rem; font-weight:700; color:var(--text); }
+    .commod-chg   { font-family:var(--font-head); font-size:0.42rem; font-weight:600; }
+    .commod-chg.up { color:var(--green); } .commod-chg.down { color:var(--red); }
+
     /* S&P Sectors */
-    .sp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-top:0.2rem; }
-    .sp-cell { padding:0.3rem 0.15rem; border-radius:4px; text-align:center; transition:filter 0.2s; cursor:default; }
+    .sp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; }
+    .sp-cell { padding:0.28rem 0.12rem; border-radius:4px; text-align:center; transition:filter 0.2s; cursor:default; }
     .sp-cell:hover { filter:brightness(1.2); }
-    .sp-name { font-family:var(--font-head); font-size:0.4rem; color:rgba(255,255,255,0.8); }
-    .sp-pct  { font-family:var(--font-head); font-size:0.52rem; font-weight:700; color:white; margin-top:0.1rem; }
-    /* FX */
-    .fx-table { width:100%; border-collapse:collapse; font-family:var(--font-head); font-size:0.46rem; margin-top:0.2rem; }
-    .fx-table th, .fx-table td { padding:0.22rem 0.3rem; text-align:center; }
-    .fx-table th { color:var(--text-dim); font-weight:600; letter-spacing:0.08em; border-bottom:1px solid var(--border); }
-    .fx-cell { border-radius:3px; font-weight:700; }
-    .fx-row-label { color:var(--text-dim); font-weight:600; text-align:left; }
-    /* FX Live row */
-    .fx-live-row { display:flex; gap:0.5rem; margin-top:0.6rem; flex-wrap:wrap; }
-    .fx-live-item { flex:1; min-width:80px; background:var(--bg-3); border:1px solid var(--border); border-radius:6px; padding:0.35rem 0.5rem; }
-    .fx-pair  { font-family:var(--font-head); font-size:0.44rem; color:var(--text-muted); letter-spacing:0.1em; }
-    .fx-price { font-family:var(--font-head); font-size:0.68rem; font-weight:700; color:var(--text); margin-top:0.1rem; }
-    /* Indices */
-    .markets-table { width:100%; border-collapse:collapse; }
-    .markets-table th { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.1em; color:var(--text-dim); text-align:left; padding:0.45rem 0.7rem; border-bottom:1px solid var(--border); text-transform:uppercase; }
-    .markets-table td { padding:0.48rem 0.7rem; border-bottom:1px solid var(--border); }
-    .markets-table tr:hover td { background:var(--bg-3); }
-    .mkt-name    { font-family:var(--font-head); font-size:0.6rem; font-weight:700; color:var(--text); }
-    .mkt-country { font-size:0.55rem; color:var(--text-dim); margin-top:0.08rem; }
-    .mkt-price   { font-family:var(--font-head); font-weight:700; font-size:0.65rem; color:var(--text); }
-    .mkt-chg.up   { color:var(--green); font-family:var(--font-head); font-size:0.6rem; }
-    .mkt-chg.down { color:var(--red);   font-family:var(--font-head); font-size:0.6rem; }
+    .sp-name { font-family:var(--font-head); font-size:0.38rem; color:rgba(255,255,255,0.8); }
+    .sp-pct  { font-family:var(--font-head); font-size:0.5rem; font-weight:700; color:white; margin-top:0.08rem; }
+
+    /* Bond Yields */
+    .yields-list { display:flex; flex-direction:column; gap:0; }
+    .yield-row { display:flex; align-items:center; justify-content:space-between; padding:0.3rem 0; border-bottom:1px solid var(--border); }
+    .yield-row:last-child { border-bottom:none; }
+    .yield-name { font-family:var(--font-head); font-size:0.52rem; font-weight:700; color:var(--text); }
+    .yield-flag { font-size:0.7rem; margin-right:0.3rem; }
+    .yield-right { text-align:right; }
+    .yield-val  { font-family:var(--font-head); font-size:0.64rem; font-weight:800; color:#a0c8ff; }
+    .yield-chg  { font-family:var(--font-head); font-size:0.42rem; font-weight:600; }
+    .yield-chg.up { color:var(--red); } .yield-chg.down { color:var(--green); } /* inverted: higher yield = tighter, worse for bonds */
+
+    /* Global Indices table */
+    .mkt-table { width:100%; border-collapse:collapse; }
+    .mkt-table th { font-family:var(--font-head); font-size:0.46rem; font-weight:700; letter-spacing:0.1em; color:var(--text-dim); text-align:left; padding:0.4rem 0.6rem; border-bottom:1px solid var(--border); text-transform:uppercase; }
+    .mkt-table td { padding:0.42rem 0.6rem; border-bottom:1px solid var(--border); }
+    .mkt-table tr:hover td { background:var(--bg-3); }
+    .mkt-name    { font-family:var(--font-head); font-size:0.56rem; font-weight:700; color:var(--text); }
+    .mkt-country { font-size:0.5rem; color:var(--text-dim); margin-top:0.06rem; }
+    .mkt-price   { font-family:var(--font-head); font-weight:700; font-size:0.6rem; color:var(--text); }
+    .mkt-chg.up   { color:var(--green); font-family:var(--font-head); font-size:0.56rem; }
+    .mkt-chg.down { color:var(--red);   font-family:var(--font-head); font-size:0.56rem; }
+    .sess-badge { display:inline-block; padding:0.08rem 0.38rem; border-radius:3px; font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.08em; }
+    .sb-open  { background:rgba(0,230,118,0.15); color:#00e676; border:1px solid rgba(0,230,118,0.3); }
+    .sb-closed{ background:rgba(120,130,160,0.12); color:var(--text-muted); border:1px solid var(--border); }
 
     /* ════════════════
-       INTEL FEED PANEL
+       INTEL FEED PANEL — GDELT-powered
     ════════════════ */
-    #panel-news { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
-    #panel-news::-webkit-scrollbar { width:4px; }
-    .news-wrap { padding:1rem; }
-    .news-item { display:flex; gap:0.7rem; padding:0.7rem 0; border-bottom:1px solid var(--border); cursor:pointer; }
-    .news-item:hover { opacity:0.85; }
-    .news-dot  { width:6px; height:6px; border-radius:50%; background:var(--teal); margin-top:0.32rem; flex-shrink:0; }
-    .news-title { font-size:0.72rem; font-weight:600; color:var(--text); line-height:1.4; }
-    .news-meta  { font-family:var(--font-head); font-size:0.46rem; color:var(--text-muted); margin-top:0.22rem; letter-spacing:0.08em; }
+    #panel-news { display:flex; flex-direction:column; flex:1; overflow:hidden; background:var(--bg-1); }
+    .intel-feed-header { display:flex; align-items:center; justify-content:space-between; padding:0.55rem 1rem; background:rgba(6,6,12,0.98); border-bottom:1px solid var(--border-hi); flex-shrink:0; }
+    .if-title { font-family:var(--font-head); font-size:0.55rem; font-weight:700; letter-spacing:0.2em; color:var(--text-dim); text-transform:uppercase; }
+    .if-refresh { display:flex; align-items:center; gap:0.4rem; padding:0.22rem 0.65rem; border:1px solid var(--border); border-radius:4px; background:var(--bg-3); font-family:var(--font-head); font-size:0.44rem; color:var(--text-dim); cursor:pointer; transition:all 0.18s; letter-spacing:0.06em; }
+    .if-refresh:hover { border-color:var(--teal); color:var(--teal); }
+    .if-refresh.spinning { animation:spinIcon 0.8s linear infinite; }
+    @keyframes spinIcon { to { transform:rotate(360deg); } }
+    .intel-feed-tabs { display:flex; background:rgba(9,9,14,0.99); border-bottom:1px solid var(--border); flex-shrink:0; overflow-x:auto; scrollbar-width:none; }
+    .intel-feed-tabs::-webkit-scrollbar { display:none; }
+    .if-tab { padding:0.42rem 1rem; flex-shrink:0; font-family:var(--font-head); font-size:0.46rem; font-weight:600; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.18s; border-right:1px solid var(--border); }
+    .if-tab.active { color:var(--text); border-bottom-color:var(--teal); background:var(--teal-glow2); }
+    .if-tab:hover:not(.active) { color:var(--text-dim); background:var(--bg-3); }
+    .intel-feed-body { flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .intel-feed-body::-webkit-scrollbar { width:4px; }
+    .intel-feed-body::-webkit-scrollbar-thumb { background:var(--border); }
+    .news-loading { padding:2rem; text-align:center; font-family:var(--font-head); font-size:0.55rem; color:var(--text-muted); letter-spacing:0.12em; }
+    @keyframes feedPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+    .news-loading span { animation:feedPulse 1.4s ease-in-out infinite; }
+    .news-card { display:flex; gap:0.7rem; padding:0.65rem 1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.14s; text-decoration:none; }
+    .news-card:hover { background:var(--bg-3); }
+    .news-card-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:0.28rem; }
+    .news-card-body { flex:1; min-width:0; }
+    .news-headline { font-size:0.68rem; font-weight:600; color:var(--text); line-height:1.45; margin-bottom:0.22rem; }
+    .news-meta-row { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .news-domain { font-family:var(--font-head); font-size:0.42rem; color:var(--text-muted); letter-spacing:0.06em; }
+    .news-time   { font-family:var(--font-head); font-size:0.42rem; color:var(--text-muted); }
+    .news-tag    { padding:0.08rem 0.38rem; border-radius:3px; font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.08em; }
+    .nt-geo  { background:rgba(255,59,59,0.15); color:#ff5c5c; border:1px solid rgba(255,59,59,0.3); }
+    .nt-mkts { background:rgba(245,200,66,0.15); color:var(--gold); border:1px solid rgba(245,200,66,0.3); }
+    .nt-cyber{ background:rgba(57,255,20,0.12); color:#39ff14; border:1px solid rgba(57,255,20,0.25); }
+    .nt-energy{ background:rgba(255,179,50,0.15); color:#ffb332; border:1px solid rgba(255,179,50,0.3); }
+    .nt-cb   { background:rgba(0,212,255,0.12); color:var(--teal); border:1px solid rgba(0,212,255,0.28); }
+    .news-sentiment { font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.06em; padding:0.07rem 0.35rem; border-radius:3px; }
+    .sent-pos { background:rgba(0,230,118,0.12); color:#00e676; border:1px solid rgba(0,230,118,0.25); }
+    .sent-neg { background:rgba(255,59,59,0.12); color:#ff5c5c; border:1px solid rgba(255,59,59,0.25); }
+    .sent-neu { background:rgba(120,130,160,0.12); color:var(--text-muted); border:1px solid var(--border); }
+    .news-error { padding:2rem; text-align:center; font-family:var(--font-head); font-size:0.5rem; color:var(--text-muted); }
 
     /* ══ Responsive ══ */
     @media (max-width:1100px) { .wt-sidebar-left { width:160px; } }
@@ -394,6 +486,7 @@
         <button class="layer-btn active" data-layer="sanctions" onclick="filterLayer('sanctions',this)" title="Sanctioned states"><span class="layer-dot" style="background:#ff2d55"></span>SANCTIONS</button>
         <button class="layer-btn active" data-layer="shipping"  onclick="filterLayer('shipping',this)"  title="Shipping lanes, canals & chokepoints"><span class="layer-dot" style="background:#4fc3f7"></span>SHIPPING</button>
         <button class="layer-btn active" data-layer="intel"     onclick="filterLayer('intel',this)"     title="Intelligence agency HQs"><span class="layer-dot" style="background:#e040fb"></span>INTEL</button>
+        <button class="layer-btn active" data-layer="metals"    onclick="filterLayer('metals',this)"    title="Gold &amp; silver exchanges and mines"><span class="layer-dot" style="background:#ffd700"></span>METALS</button>
       </div>
 
       <!-- Leaflet map -->
@@ -451,6 +544,7 @@
           <div class="feed-tab-btn"        data-feed="sanctions" onclick="switchFeed('sanctions',this)">🚫 SANCTIONS</div>
           <div class="feed-tab-btn"        data-feed="intel"     onclick="switchFeed('intel',this)">👁 INTEL</div>
           <div class="feed-tab-btn"        data-feed="shipping"  onclick="switchFeed('shipping',this)">⚓ SHIPPING</div>
+          <div class="feed-tab-btn"        data-feed="metals"    onclick="switchFeed('metals',this)">⬡ METALS</div>
         </div>
         <div class="feed-list" id="feed-list"></div>
       </div>
@@ -458,34 +552,62 @@
 
     <!-- ── MARKETS PANEL ── -->
     <div class="main-panel" id="panel-markets">
-      <div class="markets-grid">
 
-        <!-- Fear & Greed -->
-        <div class="intel-panel">
-          <div class="intel-panel-head">
-            <span class="intel-panel-title">Fear &amp; Greed</span>
-            <span class="badge-live">Live</span>
-          </div>
-          <div class="fg-value">
-            <div class="fg-number" id="fg-number">—</div>
-            <div class="fg-text"   id="fg-text" style="color:var(--text-dim)">Loading…</div>
-          </div>
-          <div class="fg-meter" style="margin-top:0.7rem">
-            <div class="fg-needle" id="fg-needle" style="left:50%"></div>
-          </div>
-          <div class="fg-labels">
-            <span class="fg-label" style="color:var(--red)">Extreme Fear</span>
-            <span class="fg-label">Neutral</span>
-            <span class="fg-label" style="color:var(--green)">Greed</span>
-          </div>
+      <!-- Live metals + key indicators bar -->
+      <div class="metals-bar">
+        <div class="mb-item gold">
+          <span class="mb-label">Gold (XAU)</span>
+          <span class="mb-price" id="mb-xau">—</span>
+          <span class="mb-chg flat" id="mb-xau-chg">—</span>
         </div>
+        <div class="mb-item silver">
+          <span class="mb-label">Silver (XAG)</span>
+          <span class="mb-price" id="mb-xag">—</span>
+          <span class="mb-chg flat" id="mb-xag-chg">—</span>
+        </div>
+        <div class="mb-item" style="min-width:70px">
+          <span class="mb-label">Au/Ag Ratio</span>
+          <span class="mb-price" id="mb-ratio" style="color:#e0c040">—</span>
+          <span class="mb-chg flat" style="color:var(--text-muted);font-size:0.38rem">GOLD/SILVER</span>
+        </div>
+        <div class="mb-item dxy">
+          <span class="mb-label">DXY</span>
+          <span class="mb-price" id="mb-dxy">—</span>
+          <span class="mb-chg flat" id="mb-dxy-chg">—</span>
+        </div>
+        <div class="mb-item vix">
+          <span class="mb-label">VIX</span>
+          <span class="mb-price" id="mb-vix">—</span>
+          <span class="mb-chg flat" id="mb-vix-chg">—</span>
+        </div>
+        <div class="mb-item yield">
+          <span class="mb-label">US 10Y</span>
+          <span class="mb-price" id="mb-us10y">—</span>
+          <span class="mb-chg flat" id="mb-us10y-chg">—</span>
+        </div>
+        <div class="mb-item" style="min-width:70px">
+          <span class="mb-label">WTI Crude</span>
+          <span class="mb-price" id="mb-wti" style="color:#ff9500">—</span>
+          <span class="mb-chg flat" id="mb-wti-chg">—</span>
+        </div>
+        <div class="mb-item" style="min-width:70px">
+          <span class="mb-label">Brent Crude</span>
+          <span class="mb-price" id="mb-brent" style="color:#ffb332">—</span>
+          <span class="mb-chg flat" id="mb-brent-chg">—</span>
+        </div>
+      </div>
 
-        <!-- Crypto Intel -->
-        <div class="intel-panel">
-          <div class="intel-panel-head">
-            <span class="intel-panel-title">Crypto Intel</span>
-            <span class="badge-live">Live</span>
-          </div>
+      <!-- Row 1: Sessions · Crypto Command · Fear & Greed -->
+      <div class="term-grid">
+        <!-- Market Sessions -->
+        <div class="term-panel">
+          <div class="tp-head"><span class="tp-title">⏱ Market Sessions</span><span class="badge-live">Live UTC</span></div>
+          <div class="utc-clock" id="utc-clock">00:00:00</div>
+          <div class="sessions-list" id="sessions-list"></div>
+        </div>
+        <!-- Crypto Command -->
+        <div class="term-panel">
+          <div class="tp-head"><span class="tp-title">₿ Crypto Command</span><span class="badge-live">Live</span></div>
           <div class="crypto-row">
             <div class="crypto-left"><div class="crypto-logo">₿</div><div><div class="crypto-sym">BTC</div><div class="crypto-name">Bitcoin</div></div></div>
             <div class="crypto-right"><div class="crypto-price" id="btc-price">—</div><div class="crypto-chg" id="btc-chg">—</div></div>
@@ -495,59 +617,90 @@
             <div class="crypto-right"><div class="crypto-price" id="eth-price">—</div><div class="crypto-chg" id="eth-chg">—</div></div>
           </div>
           <div class="crypto-row">
-            <div class="crypto-left"><div class="crypto-logo" style="font-size:0.5rem">SOL</div><div><div class="crypto-sym">SOL</div><div class="crypto-name">Solana</div></div></div>
+            <div class="crypto-left"><div class="crypto-logo" style="font-size:0.45rem">SOL</div><div><div class="crypto-sym">SOL</div><div class="crypto-name">Solana</div></div></div>
             <div class="crypto-right"><div class="crypto-price" id="sol-price">—</div><div class="crypto-chg" id="sol-chg">—</div></div>
           </div>
-          <div class="crypto-stats">
-            <div class="crypto-stat"><div class="cs-label">Market Cap</div><div class="cs-value" id="market-cap">—</div></div>
-            <div class="crypto-stat"><div class="cs-label">24h Volume</div><div class="cs-value" id="market-vol">—</div></div>
+          <div class="crypto-dom-row">
+            <div class="crypto-dom-item"><div class="cd-label">Total MCap</div><div class="cd-value" id="cg-total-mcap">—</div></div>
+            <div class="crypto-dom-item"><div class="cd-label">BTC Dom</div><div class="cd-value" id="cg-btc-dom">—</div></div>
+            <div class="crypto-dom-item"><div class="cd-label">24h Vol</div><div class="cd-value" id="cg-total-vol">—</div></div>
           </div>
         </div>
-
-        <!-- S&P Sectors -->
-        <div class="intel-panel">
-          <div class="intel-panel-head">
-            <span class="intel-panel-title">S&amp;P Sectors</span>
-            <span class="badge-tag gold">EST</span>
+        <!-- Fear & Greed -->
+        <div class="term-panel no-right">
+          <div class="tp-head"><span class="tp-title">⚡ Fear &amp; Greed</span><span class="badge-live">Live</span></div>
+          <div class="fg-value">
+            <div class="fg-number" id="fg-number">—</div>
+            <div class="fg-text" id="fg-text" style="color:var(--text-dim)">Loading…</div>
           </div>
+          <div class="fg-meter" style="margin-top:0.6rem">
+            <div class="fg-needle" id="fg-needle" style="left:50%"></div>
+          </div>
+          <div class="fg-labels">
+            <span class="fg-label" style="color:var(--red)">Fear</span>
+            <span class="fg-label">Neutral</span>
+            <span class="fg-label" style="color:var(--green)">Greed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: FX Command · Commodities -->
+      <div class="term-grid two-col">
+        <!-- FX Command -->
+        <div class="term-panel">
+          <div class="tp-head"><span class="tp-title">💱 FX Command</span><span class="badge-live">Live</span></div>
+          <div class="fx-pairs-grid" id="fx-pairs-grid"></div>
+        </div>
+        <!-- Commodities -->
+        <div class="term-panel no-right">
+          <div class="tp-head"><span class="tp-title">🛢 Commodities</span><span class="badge-tag">EST</span></div>
+          <div class="commod-list" id="commod-list"></div>
+        </div>
+      </div>
+
+      <!-- Row 3: S&P Sectors · Bond Yields -->
+      <div class="term-grid two-col">
+        <!-- S&P Sectors -->
+        <div class="term-panel">
+          <div class="tp-head"><span class="tp-title">📊 S&amp;P Sectors</span><span class="badge-tag gold">EST</span></div>
           <div class="sp-grid" id="sp-grid"></div>
         </div>
-
-        <!-- FX -->
-        <div class="intel-panel">
-          <div class="intel-panel-head">
-            <span class="intel-panel-title">FX Matrix</span>
-            <span class="badge-live">Live</span>
-          </div>
-          <table class="fx-table">
-            <thead><tr><th></th><th>USD</th><th>EUR</th><th>GBP</th><th>JPY</th></tr></thead>
-            <tbody id="fx-tbody"></tbody>
-          </table>
-          <div class="fx-live-row" id="fx-live-row">
-            <div class="fx-live-item"><div class="fx-pair">EUR/USD</div><div class="fx-price" id="fx-eurusd">—</div></div>
-            <div class="fx-live-item"><div class="fx-pair">GBP/USD</div><div class="fx-price" id="fx-gbpusd">—</div></div>
-            <div class="fx-live-item"><div class="fx-pair">USD/JPY</div><div class="fx-price" id="fx-usdjpy">—</div></div>
-          </div>
+        <!-- Bond Yields -->
+        <div class="term-panel no-right">
+          <div class="tp-head"><span class="tp-title">📈 Bond Yields</span><span class="badge-tag">EST</span></div>
+          <div class="yields-list" id="yields-list"></div>
         </div>
+      </div>
 
-        <!-- Global Indices (full width) -->
-        <div class="intel-panel full-w">
-          <div class="intel-panel-head">
-            <span class="intel-panel-title">Global Indices</span>
-            <span class="badge-tag">EST</span>
-          </div>
-          <table class="markets-table">
-            <thead><tr><th>Market</th><th>Price</th><th>Change</th><th>Volume</th><th>Status</th></tr></thead>
+      <!-- Row 4: Global Indices full width -->
+      <div class="term-grid">
+        <div class="term-panel full-w" style="border-bottom:none">
+          <div class="tp-head"><span class="tp-title">🌍 Global Indices</span><span class="badge-tag">EST</span></div>
+          <table class="mkt-table">
+            <thead><tr><th>Market</th><th>Price</th><th>Change</th><th>Status</th></tr></thead>
             <tbody id="markets-tbody"></tbody>
           </table>
         </div>
-
       </div>
+
     </div><!-- /panel-markets -->
 
     <!-- ── INTEL FEED PANEL ── -->
     <div class="main-panel" id="panel-news">
-      <div class="news-wrap" id="news-feed"></div>
+      <div class="intel-feed-header">
+        <span class="if-title">⬡ Global Intel Feed</span>
+        <button class="if-refresh" id="if-refresh-btn" onclick="refreshIntelFeed()">↻ Refresh</button>
+      </div>
+      <div class="intel-feed-tabs">
+        <div class="if-tab active" data-iftab="geopolitical" onclick="switchIntelFeed('geopolitical',this)">🌍 GEOPOLITICAL</div>
+        <div class="if-tab" data-iftab="markets"     onclick="switchIntelFeed('markets',this)">📊 MARKETS</div>
+        <div class="if-tab" data-iftab="cyber"       onclick="switchIntelFeed('cyber',this)">⚡ CYBER</div>
+        <div class="if-tab" data-iftab="energy"      onclick="switchIntelFeed('energy',this)">🛢 ENERGY</div>
+        <div class="if-tab" data-iftab="centralbanks"onclick="switchIntelFeed('centralbanks',this)">🏦 CENTRAL BANKS</div>
+      </div>
+      <div class="intel-feed-body" id="intel-feed-body">
+        <div class="news-loading"><span>ACQUIRING INTEL SIGNAL…</span></div>
+      </div>
     </div>
 
   </main>
@@ -733,10 +886,25 @@ const SHIPPING = [
   { name:'Los Angeles Port',    region:'USA',          lat:33.73,  lng:-118.27,type:'PORT',      flow:'~10M TEU/yr',  desc:'US West Coast primary gateway — China-US trade pressure point, labour dispute risk' },
 ];
 
+const PRECIOUS_METALS_HUBS = [
+  { name:'LBMA London',          region:'UK',           lat:51.51, lng:-0.09,  type:'EXCHANGE', metal:'GOLD+SILVER', desc:'London Bullion Market Association — global benchmark for gold & silver pricing, ~$35B/day cleared' },
+  { name:'COMEX New York',       region:'USA',          lat:40.71, lng:-74.01, type:'EXCHANGE', metal:'GOLD+SILVER', desc:'CME Group COMEX — world\'s largest gold futures exchange, 1oz gold contract benchmark' },
+  { name:'Shanghai Gold Exchange',region:'China',       lat:31.22, lng:121.47, type:'EXCHANGE', metal:'GOLD',        desc:'SGE — largest physical gold exchange globally, primary price discovery for Asian demand' },
+  { name:'Tokyo TOCOM',          region:'Japan',        lat:35.68, lng:139.76, type:'EXCHANGE', metal:'GOLD+SILVER', desc:'Tokyo Commodity Exchange — yen-denominated gold and silver futures for Asian session' },
+  { name:'Dubai Gold Souk',      region:'UAE',          lat:25.27, lng:55.30,  type:'TRADING',  metal:'GOLD',        desc:'Dubai gold souk & DGCX — hub for Middle East & South Asian physical gold trade' },
+  { name:'Perth Mint',           region:'Australia',    lat:-31.95,lng:115.86, type:'MINT',     metal:'GOLD+SILVER', desc:'Perth Mint — largest gold coin & bar producer in Southern Hemisphere, 300+ t/yr refined' },
+  { name:'South Deep Mine',      region:'S. Africa',    lat:-26.42,lng:27.67,  type:'MINE',     metal:'GOLD',        desc:'Gold Fields South Deep — largest gold mine in S. Africa, ~316 koz/yr, ultra-deep at 3.4km' },
+  { name:'Muruntau Mine',        region:'Uzbekistan',   lat:41.55, lng:64.60,  type:'MINE',     metal:'GOLD',        desc:'Navoi Mining — Muruntau open-pit, world\'s largest gold mine by production, ~2M oz/yr' },
+  { name:'Grasberg Mine',        region:'Indonesia',    lat:-4.05, lng:137.18, type:'MINE',     metal:'GOLD+COPPER', desc:'Freeport-McMoRan Grasberg — world\'s 2nd largest gold mine, ~1M oz/yr + copper byproduct' },
+  { name:'Fresnillo Mexico',     region:'Mexico',       lat:23.17, lng:-102.87,type:'MINE',     metal:'SILVER',      desc:'Fresnillo PLC — world\'s largest primary silver producer, ~56 Moz/yr silver output' },
+  { name:'Nevada Silver Mines',  region:'USA',          lat:39.83, lng:-117.73,type:'MINE',     metal:'SILVER',      desc:'Coeur & First Majestic Nevada operations — major US silver supply, Comstock district legacy' },
+];
+
 /* ══ Map setup ══ */
 let map;
-let layers = {};   // { conflicts, hotspots, markets, energy, nuclear, quakes, cyber, sanctions, shipping, intel }
-let activeLayers = new Set(['conflicts','hotspots','markets','energy','nuclear','quakes','cyber','sanctions','shipping','intel']);
+let layers = {};   // { conflicts, hotspots, markets, energy, nuclear, quakes, cyber, sanctions, shipping, intel, metals }
+let activeLayers = new Set(['conflicts','hotspots','markets','energy','nuclear','quakes','cyber','sanctions','shipping','intel','metals']);
+let metalMarkerRefs = {};  // sym → marker ref for live price updates
 let quakeData   = [];
 
 function mkIcon(cls, mc) {
@@ -791,6 +959,7 @@ function initMap() {
   layers.sanctions = L.layerGroup();
   layers.shipping  = L.layerGroup();
   layers.intel     = L.layerGroup();
+  layers.metals    = L.layerGroup();
 
   /* CONFLICTS */
   CONFLICTS.forEach(c => {
@@ -892,6 +1061,34 @@ function initMap() {
   ];
   shipRoutes.forEach(r => L.polyline(r, {color:'rgba(79,195,247,0.18)',weight:1.2,dashArray:'6 10'}).addTo(layers.shipping));
 
+  /* PRECIOUS METALS */
+  PRECIOUS_METALS_HUBS.forEach(m => {
+    const isGold   = m.metal.includes('GOLD');
+    const isSilver = m.metal === 'SILVER';
+    const col = m.type === 'EXCHANGE' ? '#ffd700' : m.type === 'MINT' ? '#ffe680' : m.type === 'TRADING' ? '#ffec8b' : isSilver ? '#c0c0c0' : '#ffd700';
+    const glyph = m.type === 'EXCHANGE' ? '⬡' : m.type === 'MINT' ? '♦' : m.type === 'TRADING' ? '◈' : '⛏';
+    const ico = L.divIcon({
+      html:`<div class="m-metals" style="background:rgba(255,215,0,0.1);border:1.5px solid ${col};color:${col};box-shadow:0 0 8px ${col}50">${glyph}</div>`,
+      className:'', iconSize:[22,22], iconAnchor:[11,11]
+    });
+    const AP = window.ArcanePrices;
+    const xauPrice = AP ? AP.fmt('XAU', 2) : '—';
+    const xagPrice = AP ? AP.fmt('XAG', 3) : '—';
+    const priceStr = isGold ? `XAU $${xauPrice}` : (isSilver ? `XAG $${xagPrice}` : `XAU $${xauPrice} | XAG $${xagPrice}`);
+    const marker = L.marker([m.lat, m.lng], {icon:ico})
+      .bindPopup(`<div class="map-popup">
+        <div class="mp-title">${m.name}</div>
+        <div class="mp-region">${m.region} · ${m.type}</div>
+        <div class="mp-desc">${m.desc}</div>
+        <div class="mp-row">
+          <span class="mp-badge b-moderate">${m.metal}</span>
+          <span class="mp-extra" id="mp-price-${m.name.replace(/\s/g,'')}">${priceStr}</span>
+        </div>
+      </div>`, {maxWidth:270})
+      .addTo(layers.metals);
+    metalMarkerRefs[m.name] = marker;
+  });
+
   /* Add all layers to map initially */
   Object.values(layers).forEach(lg => lg.addTo(map));
 
@@ -986,7 +1183,7 @@ async function fetchEarthquakes() {
     });
 
     document.getElementById('stat-quakes').textContent = quakeData.length;
-    if (activeLayer === 'quakes' || activeLayer === 'all') {
+    if (activeLayers.has('quakes')) {
       if (!map.hasLayer(layers.quakes)) layers.quakes.addTo(map);
     }
     // Refresh current feed if on quakes tab
@@ -1166,6 +1363,9 @@ function renderFeed(type) {
         </div>
       </div>`;
     }).join('');
+
+  } else if (type === 'metals') {
+    renderMetalsFeed();
   }
 }
 
@@ -1187,22 +1387,202 @@ async function fetchFearGreed() {
   } catch(e) {}
 }
 
-/* ══ Crypto Intel — via arcane-prices.js ══ */
-function bindCryptoPrices() {
+/* ══ Metals feed tab ══ */
+function renderMetalsFeed() {
+  const list = document.getElementById('feed-list');
+  if (!list) return;
+  const AP = window.ArcanePrices;
+  const xau = AP ? AP.get('XAU') : null;
+  const xag = AP ? AP.get('XAG') : null;
+  list.innerHTML = PRECIOUS_METALS_HUBS.map(m => {
+    const col = m.type === 'EXCHANGE' ? '#ffd700' : m.type === 'MINT' ? '#ffe680' : m.type === 'TRADING' ? '#ffec8b' : m.metal === 'SILVER' ? '#c0c0c0' : '#ffd700';
+    const isGold = m.metal.includes('GOLD');
+    const isSilver = m.metal === 'SILVER';
+    const priceEl = isGold && xau ? `$${AP.fmtPrice(xau.price,2)}` : (isSilver && xag ? `$${AP.fmtPrice(xag.price,3)}` : '');
+    const typeCls = m.type === 'EXCHANGE' ? 'b-moderate' : m.type === 'MINE' ? 'b-field' : 'b-teal';
+    return `<div class="feed-item" onclick="map.setView([${m.lat},${m.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+      <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
+      <div class="feed-body">
+        <div class="fi-name">⬡ ${m.name}</div>
+        <div class="fi-desc">${m.desc}</div>
+        <div class="fi-meta">
+          <span class="fi-region">${m.region}${priceEl ? ' · ' + priceEl : ''}</span>
+          <span class="fi-badge ${typeCls}">${m.type}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ MARKETS terminal binding ══ */
+function bindMarketsPanel() {
   const AP = window.ArcanePrices;
   if (!AP) return;
+
   AP.subscribe(data => {
-    const fP = (n,d=2)=>n!=null?'$'+n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
-    const fC = n=>n!=null?(n>=0?'+':'')+n.toFixed(2)+'%':'—';
-    const upd = (id,txt,cls)=>{ const el=document.getElementById(id); if(el){if(txt!=null)el.textContent=txt; if(cls)el.className=cls;} };
-    const btc=data.BTC, eth=data.ETH, sol=data.SOL;
-    if(btc){ upd('btc-price',fP(btc.price,0),null); upd('btc-chg',fC(btc.change),'crypto-chg '+btc.dir); if(btc.mcap)upd('market-cap',btc.mcap,null); if(btc.vol)upd('market-vol',btc.vol,null); }
-    if(eth){ upd('eth-price',fP(eth.price),null); upd('eth-chg',fC(eth.change),'crypto-chg '+eth.dir); }
-    if(sol){ upd('sol-price',fP(sol.price),null); upd('sol-chg',fC(sol.change),'crypto-chg '+sol.dir); }
-    // Live FX rates
-    const fX = (id, sym, dec) => { const d=data[sym]; const el=document.getElementById(id); if(el&&d) el.textContent=AP.fmtPrice(d.price,dec); };
-    fX('fx-eurusd','EURUSD',4); fX('fx-gbpusd','GBPUSD',4); fX('fx-usdjpy','USDJPY',2);
+    /* Metals bar */
+    function mbSet(id, sym, dec) {
+      const d = data[sym];
+      const priceEl = document.getElementById('mb-' + id);
+      const chgEl   = document.getElementById('mb-' + id + '-chg');
+      if (d && priceEl) priceEl.textContent = AP.fmtPrice(d.price, dec);
+      if (d && chgEl) { chgEl.textContent = AP.fmtChg(d.change); chgEl.className = 'mb-chg ' + d.dir; }
+    }
+    mbSet('xau',   'XAU',   2);
+    mbSet('xag',   'XAG',   3);
+    mbSet('dxy',   'DXY',   2);
+    mbSet('vix',   'VIX',   2);
+    mbSet('us10y', 'US10Y', 3);
+    mbSet('wti',   'WTI',   2);
+    mbSet('brent', 'BRENT', 2);
+
+    /* Au/Ag ratio */
+    const ratioEl = document.getElementById('mb-ratio');
+    if (ratioEl && data.XAU && data.XAG && data.XAG.price) {
+      ratioEl.textContent = (data.XAU.price / data.XAG.price).toFixed(1);
+    }
+
+    /* Crypto */
+    function cSet(id, sym, dec) {
+      const d = data[sym];
+      const priceEl = document.getElementById(id + '-price');
+      const chgEl   = document.getElementById(id + '-chg');
+      if (d && priceEl) priceEl.textContent = '$' + AP.fmtPrice(d.price, dec);
+      if (d && chgEl) { chgEl.textContent = AP.fmtChg(d.change); chgEl.className = 'crypto-chg ' + d.dir; }
+    }
+    cSet('btc', 'BTC', 0);
+    cSet('eth', 'ETH', 2);
+    cSet('sol', 'SOL', 2);
+
+    /* Crypto global */
+    const cg = data.CRYPTO_GLOBAL;
+    if (cg) {
+      const e1 = document.getElementById('cg-total-mcap'), e2 = document.getElementById('cg-btc-dom'), e3 = document.getElementById('cg-total-vol');
+      if (e1) e1.textContent = cg.totalMcap || '—';
+      if (e2) e2.textContent = cg.btcDom    || '—';
+      if (e3) e3.textContent = cg.totalVol  || '—';
+    }
+
+    /* FX pairs */
+    const FX_PAIRS = [
+      {sym:'EURUSD', label:'EUR/USD', dec:4},
+      {sym:'GBPUSD', label:'GBP/USD', dec:4},
+      {sym:'USDJPY', label:'USD/JPY', dec:2},
+      {sym:'AUDUSD', label:'AUD/USD', dec:4},
+      {sym:'USDCAD', label:'USD/CAD', dec:4},
+      {sym:'USDCHF', label:'USD/CHF', dec:4},
+      {sym:'EURGBP', label:'EUR/GBP', dec:4},
+    ];
+    const fxGrid = document.getElementById('fx-pairs-grid');
+    if (fxGrid) {
+      fxGrid.innerHTML = FX_PAIRS.map(p => {
+        const d = data[p.sym];
+        const price = d ? AP.fmtPrice(d.price, p.dec) : '—';
+        const chg   = d ? AP.fmtChg(d.change)         : '';
+        const cls   = d ? d.dir : 'flat';
+        return `<div class="fx-pair-card">
+          <div class="fxc-pair">${p.label}</div>
+          <div class="fxc-price">${price}</div>
+          ${chg ? `<div class="fxc-chg ${cls}">${chg}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    /* Commodities */
+    const COMMODS = [
+      {sym:'WTI',    label:'WTI Crude',    unit:'USD/bbl', dec:2},
+      {sym:'BRENT',  label:'Brent Crude',  unit:'USD/bbl', dec:2},
+      {sym:'NATGAS', label:'Natural Gas',  unit:'USD/MMBtu',dec:3},
+      {sym:'COPPER', label:'Copper',       unit:'USD/lb',  dec:3},
+    ];
+    const commodList = document.getElementById('commod-list');
+    if (commodList) {
+      commodList.innerHTML = COMMODS.map(c => {
+        const d = data[c.sym];
+        const price = d ? AP.fmtPrice(d.price, c.dec) : '—';
+        const chg   = d ? AP.fmtChg(d.change)         : '—';
+        const cls   = d ? d.dir : 'flat';
+        return `<div class="commod-row">
+          <div><div class="commod-name">${c.label}</div><div class="commod-unit">${c.unit}</div></div>
+          <div class="commod-right">
+            <div class="commod-price">$${price}</div>
+            <div class="commod-chg ${cls}">${chg}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    /* Bond yields */
+    const YIELDS = [
+      {sym:'US10Y', label:'US 10Y',   flag:'🇺🇸', suffix:'%'},
+      {sym:'UK10Y', label:'UK Gilt',  flag:'🇬🇧', suffix:'%'},
+      {sym:'DE10Y', label:'DE Bund',  flag:'🇩🇪', suffix:'%'},
+      {sym:'JP10Y', label:'JP JGB',   flag:'🇯🇵', suffix:'%'},
+    ];
+    const yieldsList = document.getElementById('yields-list');
+    if (yieldsList) {
+      yieldsList.innerHTML = YIELDS.map(y => {
+        const d = data[y.sym];
+        const val = d ? AP.fmtPrice(d.price, 3) + y.suffix : '—';
+        // change for yields is absolute bps-like delta, not percentage
+        const chgVal = d && d.change != null ? ((d.change >= 0 ? '+' : '') + d.change.toFixed(3) + y.suffix) : '—';
+        const cls = d ? d.dir : 'flat';
+        return `<div class="yield-row">
+          <div><span class="yield-flag">${y.flag}</span><span class="yield-name">${y.label}</span></div>
+          <div class="yield-right">
+            <div class="yield-val">${val}</div>
+            <div class="yield-chg ${cls}">${chgVal}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    /* Global indices — live SPX + simulated others */
+    renderGlobalIndices(data);
+
+    /* Update metals map popup prices on next open */
+    // (prices stored in ArcanePrices, read live on popup open)
   });
+}
+
+/* ══ Global Indices ══ */
+function renderGlobalIndices(data) {
+  const AP = window.ArcanePrices;
+  const spx  = data && data.SPX  ? AP.fmtPrice(data.SPX.price,  2) : '5,871.50';
+  const dow   = data && data.DOW  ? AP.fmtPrice(data.DOW.price,  2) : '43,820.00';
+  const ndq   = data && data.NDQ  ? AP.fmtPrice(data.NDQ.price,  2) : '18,820.00';
+  const spxC  = data && data.SPX  ? AP.fmtChg(data.SPX.change)  : '+0.61%';
+  const dowC  = data && data.DOW  ? AP.fmtChg(data.DOW.change)  : '+0.44%';
+  const ndqC  = data && data.NDQ  ? AP.fmtChg(data.NDQ.change)  : '+0.77%';
+  const spxD  = data && data.SPX  ? data.SPX.dir  : 'up';
+  const dowD  = data && data.DOW  ? data.DOW.dir  : 'up';
+  const ndqD  = data && data.NDQ  ? data.NDQ.dir  : 'up';
+
+  const utcHour = new Date().getUTCHours();
+  function isOpen(openH, closeH) { return utcHour >= openH && utcHour < closeH; }
+
+  const markets = [
+    {name:'S&P 500',    flag:'🇺🇸', country:'USA',        price:spx,   chg:spxC, dir:spxD, open:isOpen(13,21)},
+    {name:'Dow Jones',  flag:'🇺🇸', country:'USA',        price:dow,   chg:dowC, dir:dowD, open:isOpen(13,21)},
+    {name:'NASDAQ 100', flag:'🇺🇸', country:'USA',        price:ndq,   chg:ndqC, dir:ndqD, open:isOpen(13,21)},
+    {name:'FTSE 100',   flag:'🇬🇧', country:'UK',         price:'8,242',chg:'-0.12%',dir:'down',open:isOpen(7,16)},
+    {name:'DAX',        flag:'🇩🇪', country:'Germany',    price:'19,241',chg:'+0.34%',dir:'up',open:isOpen(7,16)},
+    {name:'CAC 40',     flag:'🇫🇷', country:'France',     price:'7,801', chg:'+0.19%',dir:'up',open:isOpen(7,16)},
+    {name:'Nikkei 225', flag:'🇯🇵', country:'Japan',      price:'38,814',chg:'+1.02%',dir:'up',open:isOpen(0,6)},
+    {name:'Hang Seng',  flag:'🇭🇰', country:'HK',         price:'20,423',chg:'-0.55%',dir:'down',open:isOpen(1,8)},
+    {name:'Shanghai',   flag:'🇨🇳', country:'China',      price:'3,282', chg:'-0.91%',dir:'down',open:isOpen(1,7)},
+    {name:'ASX 200',    flag:'🇦🇺', country:'Australia',  price:'8,124', chg:'+0.28%',dir:'up',open:isOpen(23,5)},
+  ];
+  const tbody = document.getElementById('markets-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = markets.map(m =>
+    `<tr>
+      <td><div class="mkt-name">${m.flag} ${m.name}</div><div class="mkt-country">${m.country}</div></td>
+      <td class="mkt-price">${m.price}</td>
+      <td class="mkt-chg ${m.dir}">${m.chg}</td>
+      <td><span class="sess-badge ${m.open ? 'sb-open' : 'sb-closed'}">${m.open ? 'OPEN' : 'CLOSED'}</span></td>
+    </tr>`
+  ).join('');
 }
 
 /* ══ S&P Sectors ══ */
@@ -1213,94 +1593,205 @@ function renderSPHeatmap() {
     {name:'Industrl',pct:+0.73},{name:'Materials',pct:-0.44},{name:'Real Est',pct:-1.02},
   ];
   const grid = document.getElementById('sp-grid');
-  if(!grid) return;
+  if (!grid) return;
   grid.innerHTML = sectors.map(s => {
-    const n = Math.min(Math.abs(s.pct)/3,1);
-    const bg = s.pct>=0
-      ? `rgba(0,${Math.floor(100+n*130)},${Math.floor(n*80)},${0.5+n*0.4})`
-      : `rgba(${Math.floor(150+n*105)},${Math.floor(n*20)},${Math.floor(n*20)},${0.5+n*0.4})`;
-    return `<div class="sp-cell" style="background:${bg}"><div class="sp-name">${s.name}</div><div class="sp-pct">${s.pct>0?'+':''}${s.pct.toFixed(2)}%</div></div>`;
+    const n = Math.min(Math.abs(s.pct) / 3, 1);
+    const bg = s.pct >= 0
+      ? `rgba(0,${Math.floor(100 + n * 130)},${Math.floor(n * 80)},${0.5 + n * 0.4})`
+      : `rgba(${Math.floor(150 + n * 105)},${Math.floor(n * 20)},${Math.floor(n * 20)},${0.5 + n * 0.4})`;
+    return `<div class="sp-cell" style="background:${bg}"><div class="sp-name">${s.name}</div><div class="sp-pct">${s.pct > 0 ? '+' : ''}${s.pct.toFixed(2)}%</div></div>`;
   }).join('');
 }
 
-/* ══ FX Matrix ══ */
-function renderFXMatrix() {
-  const currencies = ['USD','EUR','GBP','JPY'];
-  const rates = { 'USD/EUR':-0.31,'USD/GBP':+0.22,'USD/JPY':+0.65,'EUR/USD':+0.31,'EUR/GBP':+0.15,'EUR/JPY':+0.42,'GBP/USD':-0.22,'GBP/EUR':-0.15,'GBP/JPY':+0.18,'JPY/USD':-0.65,'JPY/EUR':-0.42,'JPY/GBP':-0.18 };
-  const tbody = document.getElementById('fx-tbody');
-  if(!tbody) return;
-  tbody.innerHTML = currencies.map(base =>
-    `<tr><td class="fx-row-label">${base}</td>${currencies.map(quote=>{
-      if(base===quote) return `<td class="fx-cell" style="background:var(--bg-3);color:var(--text-muted)">—</td>`;
-      const key=`${base}/${quote}`, pct=rates[key]??0;
-      const bg=pct>0?`rgba(0,230,118,${0.12+Math.abs(pct)*0.08})`:`rgba(255,59,59,${0.12+Math.abs(pct)*0.08})`;
-      const col=pct>0?'#00e676':'#ff3b3b';
-      return `<td class="fx-cell" style="background:${bg};color:${col}">${pct>0?'+':''}${pct.toFixed(2)}%</td>`;
-    }).join('')}</tr>`
-  ).join('');
-}
+/* ══ Market Sessions clock ══ */
+const SESSIONS = [
+  { name:'Tokyo',   openH:0, closeH:6,  color:'#ff9500', tzLabel:'JST' },
+  { name:'London',  openH:7, closeH:16, color:'#00d4ff', tzLabel:'GMT' },
+  { name:'New York',openH:13,closeH:21, color:'#00e676', tzLabel:'EST' },
+  { name:'Sydney',  openH:22,closeH:29, color:'#a064ff', tzLabel:'AEST' }, // wraps midnight
+];
 
-/* ══ Global Indices ══ */
-function renderMarketsTable() {
-  const markets = [
-    {name:'S&P 500',    country:'🇺🇸 USA',       price:'5,871.50',chg:'+0.61%',vol:'4.2B',open:true},
-    {name:'FTSE 100',   country:'🇬🇧 UK',        price:'8,242.10',chg:'-0.12%',vol:'1.1B',open:true},
-    {name:'Nikkei 225', country:'🇯🇵 Japan',     price:'38,814',  chg:'+1.02%',vol:'2.8B',open:false},
-    {name:'DAX',        country:'🇩🇪 Germany',   price:'19,241',  chg:'+0.34%',vol:'0.9B',open:true},
-    {name:'Hang Seng',  country:'🇭🇰 HK',        price:'20,423',  chg:'-0.55%',vol:'1.7B',open:false},
-    {name:'ASX 200',    country:'🇦🇺 Australia', price:'8,124',   chg:'+0.28%',vol:'0.6B',open:false},
-    {name:'CAC 40',     country:'🇫🇷 France',    price:'7,801',   chg:'+0.19%',vol:'0.8B',open:true},
-    {name:'Shanghai',   country:'🇨🇳 China',     price:'3,282',   chg:'-0.91%',vol:'5.4B',open:false},
-  ];
-  const tbody = document.getElementById('markets-tbody');
-  if(!tbody) return;
-  tbody.innerHTML = markets.map(m=>{
-    const up=m.chg.startsWith('+');
-    return `<tr><td><div class="mkt-name">${m.name}</div><div class="mkt-country">${m.country}</div></td><td class="mkt-price">${m.price}</td><td class="mkt-chg ${up?'up':'down'}">${m.chg}</td><td style="color:var(--text-dim);font-size:0.62rem">${m.vol}</td><td><span class="badge-tag ${m.open?'green':'red'}" style="font-size:0.4rem">${m.open?'OPEN':'CLOSED'}</span></td></tr>`;
-  }).join('');
-}
+function updateSessionClock() {
+  const now    = new Date();
+  const utcH   = now.getUTCHours();
+  const utcM   = now.getUTCMinutes();
+  const utcS   = now.getUTCSeconds();
+  const totalMin = utcH * 60 + utcM;
 
-/* ══ Intel News Feed ══ */
-function renderNewsFeed() {
-  const news = [
-    {title:'Federal Reserve holds rates at 4.25–4.5% — inflation data still sticky',time:'2 min ago',tag:'MACRO'},
-    {title:'Bitcoin surges past $73K — bulls target all-time high psychological levels',time:'8 min ago',tag:'CRYPTO'},
-    {title:'Gold consolidates near record high as USD weakens on payroll data miss',time:'15 min ago',tag:'COMMODITIES'},
-    {title:'OPEC+ signals production cut extension through Q2 — Brent climbs 2.1%',time:'22 min ago',tag:'ENERGY'},
-    {title:'FTSE 100 edges lower as UK GDP disappoints — GBP/USD dips below 1.26',time:'35 min ago',tag:'FX'},
-    {title:'Nvidia reports record earnings — AI infrastructure spending accelerates',time:'1 hr ago',tag:'TECH'},
-    {title:'Bank of Japan hints at further rate hikes — Yen strengthens against peers',time:'1.5 hr ago',tag:'MACRO'},
-    {title:'Red Sea shipping disruptions push global container rates to 18-month high',time:'2 hr ago',tag:'GEOPOLITICAL'},
-    {title:'North Korea fires ballistic missile — lands in Japan\'s EEZ, Tokyo protests',time:'3 hr ago',tag:'GEOPOLITICAL'},
-    {title:'EU announces new sanctions package on Russia — energy sector targeted',time:'4 hr ago',tag:'MACRO'},
-  ];
-  const feed = document.getElementById('news-feed');
-  if(!feed) return;
-  feed.innerHTML = news.map(n=>`
-    <div class="news-item">
-      <div class="news-dot"></div>
-      <div>
-        <div class="news-title">${n.title}</div>
-        <div class="news-meta">${n.time} &nbsp;·&nbsp; <span style="color:var(--teal)">${n.tag}</span></div>
+  /* UTC clock */
+  const clk = document.getElementById('utc-clock');
+  if (clk) clk.textContent = `${String(utcH).padStart(2,'0')}:${String(utcM).padStart(2,'0')}:${String(utcS).padStart(2,'0')} UTC`;
+
+  const list = document.getElementById('sessions-list');
+  if (!list) return;
+
+  list.innerHTML = SESSIONS.map(s => {
+    const sessionMin = s.closeH * 60 - s.openH * 60; // duration in minutes
+    let elapsed = totalMin - s.openH * 60;
+    if (s.openH >= 22) {
+      // Sydney wraps: open from 22:00 to 05:00 next day
+      const adjTotal = totalMin < s.openH * 60 ? totalMin + 1440 : totalMin;
+      elapsed = adjTotal - s.openH * 60;
+    }
+    const isOpen = elapsed >= 0 && elapsed < sessionMin;
+    const pct = isOpen ? Math.min(100, Math.round(elapsed / sessionMin * 100)) : (elapsed >= sessionMin ? 100 : 0);
+
+    const openUTC  = `${String(s.openH  % 24).padStart(2,'0')}:00`;
+    const closeUTC = `${String(s.closeH % 24).padStart(2,'0')}:00`;
+
+    return `<div class="session-row">
+      <div class="sess-dot" style="background:${isOpen ? s.color : 'var(--border)'};${isOpen ? `box-shadow:0 0 5px ${s.color}` : ''}"></div>
+      <span class="sess-name">${s.name}</span>
+      <div class="sess-bar-wrap">
+        <div class="sess-bar-fill" style="width:${pct}%;background:${s.color}40;border-right:${isOpen?`2px solid ${s.color}`:'none'}"></div>
       </div>
-    </div>`).join('');
+      <span class="sess-time">${openUTC}–${closeUTC}</span>
+      <span class="sess-status ${isOpen ? 'sess-open' : 'sess-closed'}">${isOpen ? 'OPEN' : 'CLOSED'}</span>
+    </div>`;
+  }).join('');
 }
+
+/* ══ GDELT Intel Feed ══ */
+const GDELT_QUERIES = {
+  geopolitical: 'war OR conflict OR sanctions OR military OR nato OR ukraine OR russia OR china OR iran',
+  markets:      'stock OR market OR federal reserve OR inflation OR gdp OR earnings OR banking',
+  cyber:        'cyberattack OR ransomware OR hacking OR data breach OR malware OR APT OR espionage',
+  energy:       'oil OR gas OR OPEC OR energy OR pipeline OR LNG OR crude',
+  centralbanks: '"central bank" OR "federal reserve" OR "interest rate" OR "monetary policy" OR ECB OR BOJ',
+};
+let _intelFeedTab = 'geopolitical';
+let _intelFeedCache = {};
+
+async function fetchIntelFeed(tab) {
+  const body = document.getElementById('intel-feed-body');
+  if (!body) return;
+
+  if (_intelFeedCache[tab]) {
+    renderNewsArticles(_intelFeedCache[tab], tab);
+    return;
+  }
+
+  body.innerHTML = '<div class="news-loading"><span>ACQUIRING INTEL SIGNAL…</span></div>';
+
+  const q = encodeURIComponent(GDELT_QUERIES[tab] || 'geopolitics');
+  const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=25&format=json&timespan=6h&sort=DateDesc`;
+
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('GDELT ' + r.status);
+    const d = await r.json();
+    const articles = d.articles || [];
+    _intelFeedCache[tab] = articles;
+    // Expire cache after 5 min
+    setTimeout(() => { delete _intelFeedCache[tab]; }, 300000);
+    renderNewsArticles(articles, tab);
+  } catch(e) {
+    body.innerHTML = `<div class="news-error">⚠ Intel feed offline — check connection<br><br><span style="font-size:0.42rem;color:var(--text-muted)">${e.message}</span></div>`;
+  }
+}
+
+const TAG_MAP = {
+  geopolitical: { cls:'nt-geo',   label:'GEO' },
+  markets:      { cls:'nt-mkts',  label:'MKTS' },
+  cyber:        { cls:'nt-cyber', label:'CYBER' },
+  energy:       { cls:'nt-energy',label:'ENERGY' },
+  centralbanks: { cls:'nt-cb',    label:'CB' },
+};
+const SENT_WORDS_POS = ['surge','rise','rally','gain','strong','bullish','record','growth','beat','soar'];
+const SENT_WORDS_NEG = ['fall','drop','crash','war','attack','sanction','crisis','slump','miss','threat'];
+
+function classifySentiment(title) {
+  const t = title.toLowerCase();
+  const pos = SENT_WORDS_POS.some(w => t.includes(w));
+  const neg = SENT_WORDS_NEG.some(w => t.includes(w));
+  if (pos && !neg) return {cls:'sent-pos', label:'BULLISH'};
+  if (neg && !pos) return {cls:'sent-neg', label:'BEARISH'};
+  return {cls:'sent-neu', label:'NEUTRAL'};
+}
+
+function fmtGDELTTime(seendate) {
+  // GDELT seendate format: "20260304T123456Z"
+  try {
+    const s = seendate.replace('T','').replace('Z','');
+    const y = s.substr(0,4), mo = s.substr(4,2), d = s.substr(6,2);
+    const h = s.substr(8,2), m = s.substr(10,2);
+    const then = new Date(Date.UTC(+y,+mo-1,+d,+h,+m));
+    const diffMs = Date.now() - then.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1)   return 'just now';
+    if (diffMin < 60)  return diffMin + 'm ago';
+    if (diffMin < 1440)return Math.floor(diffMin / 60) + 'h ago';
+    return Math.floor(diffMin / 1440) + 'd ago';
+  } catch(e) { return ''; }
+}
+
+function renderNewsArticles(articles, tab) {
+  const body = document.getElementById('intel-feed-body');
+  if (!body) return;
+  const tag = TAG_MAP[tab] || TAG_MAP.geopolitical;
+  const dotColor = {geopolitical:'#ff5c5c',markets:'#f5c842',cyber:'#39ff14',energy:'#ffb332',centralbanks:'#00d4ff'}[tab] || '#00d4ff';
+
+  if (!articles.length) {
+    body.innerHTML = '<div class="news-error">No articles found for this query in the last 6 hours.</div>';
+    return;
+  }
+
+  body.innerHTML = articles.map(a => {
+    const title = (a.title || a.seentitle || 'Untitled').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const domain = (a.domain || '').replace('www.','');
+    const timeStr = fmtGDELTTime(a.seendate || '');
+    const sent = classifySentiment(title);
+    const url = a.url ? `href="${a.url}" target="_blank" rel="noopener"` : '';
+    return `<a class="news-card" ${url}>
+      <div class="news-card-dot" style="background:${dotColor};box-shadow:0 0 5px ${dotColor}"></div>
+      <div class="news-card-body">
+        <div class="news-headline">${title}</div>
+        <div class="news-meta-row">
+          ${domain ? `<span class="news-domain">${domain}</span>` : ''}
+          ${timeStr ? `<span class="news-time">${timeStr}</span>` : ''}
+          <span class="news-tag ${tag.cls}">${tag.label}</span>
+          <span class="news-sentiment ${sent.cls}">${sent.label}</span>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function switchIntelFeed(tab, el) {
+  document.querySelectorAll('.if-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  _intelFeedTab = tab;
+  fetchIntelFeed(tab);
+}
+window.switchIntelFeed = switchIntelFeed;
+
+function refreshIntelFeed() {
+  delete _intelFeedCache[_intelFeedTab];
+  const btn = document.getElementById('if-refresh-btn');
+  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 1200); }
+  fetchIntelFeed(_intelFeedTab);
+}
+window.refreshIntelFeed = refreshIntelFeed;
 
 /* ══ Init ══ */
 function initPage() {
   initMap();
   fetchFearGreed();
-  bindCryptoPrices();
+  bindMarketsPanel();
   renderSPHeatmap();
-  renderFXMatrix();
-  renderMarketsTable();
-  renderNewsFeed();
-  renderFeed('conflicts');   // default feed tab
+  updateSessionClock();
+  renderFeed('conflicts');
+  fetchIntelFeed('geopolitical');
+
+  // Initial global indices (before prices loaded)
+  renderGlobalIndices(null);
 
   document.getElementById('online-count').textContent = Math.floor(Math.random() * 60 + 20);
 
-  setInterval(fetchFearGreed, 300000);
-  setInterval(fetchEarthquakes, 600000);  // re-fetch quakes every 10 min
+  setInterval(fetchFearGreed,  300000);
+  setInterval(fetchEarthquakes,600000);
+  setInterval(updateSessionClock, 1000);
+  setInterval(renderSPHeatmap, 300000);
 }
 
 if (document.readyState === 'loading') {
