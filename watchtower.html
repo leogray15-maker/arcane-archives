@@ -1668,14 +1668,37 @@ function updateSessionClock() {
   }).join('');
 }
 
-/* ══ GDELT Intel Feed ══ */
-const GDELT_QUERIES = {
-  geopolitical: 'war OR conflict OR sanctions OR military OR nato OR ukraine OR russia OR china OR iran',
-  markets:      'stock OR market OR federal reserve OR inflation OR gdp OR earnings OR banking',
-  cyber:        'cyberattack OR ransomware OR hacking OR data breach OR malware OR APT OR espionage',
-  energy:       'oil OR gas OR OPEC OR energy OR pipeline OR LNG OR crude',
-  centralbanks: '"central bank" OR "federal reserve" OR "interest rate" OR "monetary policy" OR ECB OR BOJ',
+/* ══ Intel Feed — multi-source RSS via rss2json.com ══ */
+const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?count=20&rss_url=';
+
+const INTEL_RSS = {
+  geopolitical: [
+    { url:'https://feeds.bbci.co.uk/news/world/rss.xml',                        src:'BBC World' },
+    { url:'https://www.aljazeera.com/xml/rss/all.xml',                          src:'Al Jazeera' },
+    { url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',             src:'NY Times' },
+  ],
+  markets: [
+    { url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',              src:'CNBC' },
+    { url:'https://feeds.bbci.co.uk/news/business/rss.xml',                     src:'BBC Business' },
+    { url:'https://www.cnbc.com/id/10000664/device/rss/rss.html',               src:'CNBC Markets' },
+  ],
+  cyber: [
+    { url:'https://feeds.arstechnica.com/arstechnica/security',                  src:'Ars Technica' },
+    { url:'https://krebsonsecurity.com/feed/',                                    src:'Krebs Security' },
+    { url:'https://www.darkreading.com/rss.xml',                                  src:'Dark Reading' },
+  ],
+  energy: [
+    { url:'https://oilprice.com/rss/main',                                        src:'OilPrice' },
+    { url:'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',       src:'BBC Energy' },
+    { url:'https://www.cnbc.com/id/10000867/device/rss/rss.html',                src:'CNBC Energy' },
+  ],
+  centralbanks: [
+    { url:'https://www.cnbc.com/id/20910258/device/rss/rss.html',                src:'CNBC Economy' },
+    { url:'https://feeds.bbci.co.uk/news/business/economy/rss.xml',              src:'BBC Economy' },
+    { url:'https://www.cnbc.com/id/10000108/device/rss/rss.html',                src:'CNBC Finance' },
+  ],
 };
+
 let _intelFeedTab = 'geopolitical';
 let _intelFeedCache = {};
 
@@ -1683,28 +1706,58 @@ async function fetchIntelFeed(tab) {
   const body = document.getElementById('intel-feed-body');
   if (!body) return;
 
-  if (_intelFeedCache[tab]) {
-    renderNewsArticles(_intelFeedCache[tab], tab);
+  // Serve from 5-min cache
+  const cached = _intelFeedCache[tab];
+  if (cached && Date.now() - cached.ts < 300000) {
+    renderNewsArticles(cached.items, tab);
     return;
   }
 
   body.innerHTML = '<div class="news-loading"><span>ACQUIRING INTEL SIGNAL…</span></div>';
 
-  const q = encodeURIComponent(GDELT_QUERIES[tab] || 'geopolitics');
-  const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=25&format=json&timespan=6h&sort=DateDesc`;
+  const sources = INTEL_RSS[tab] || INTEL_RSS.geopolitical;
+  const all = [];
 
-  try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('GDELT ' + r.status);
-    const d = await r.json();
-    const articles = d.articles || [];
-    _intelFeedCache[tab] = articles;
-    // Expire cache after 5 min
-    setTimeout(() => { delete _intelFeedCache[tab]; }, 300000);
-    renderNewsArticles(articles, tab);
-  } catch(e) {
-    body.innerHTML = `<div class="news-error">⚠ Intel feed offline — check connection<br><br><span style="font-size:0.42rem;color:var(--text-muted)">${e.message}</span></div>`;
+  // Fetch all feeds in parallel; skip any that fail
+  await Promise.allSettled(
+    sources.map(async ({ url, src }) => {
+      try {
+        const r = await fetch(RSS_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d.status !== 'ok' || !Array.isArray(d.items)) return;
+        d.items.forEach(item => {
+          let domain = '';
+          try { domain = new URL(item.link).hostname.replace('www.',''); } catch(_) {}
+          all.push({
+            title:   (item.title   || '').trim(),
+            url:     item.link     || '#',
+            domain:  domain,
+            source:  src,
+            pubDate: item.pubDate  || '',
+          });
+        });
+      } catch(_) { /* source failed — continue */ }
+    })
+  );
+
+  // Sort newest first, deduplicate by title
+  all.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
+  const seen = new Set();
+  const deduped = all.filter(a => {
+    const key = a.title.slice(0,60);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  if (!deduped.length) {
+    body.innerHTML = '<div class="news-error">⚠ Intel feed offline — retrying sources…</div>';
+    return;
   }
+
+  _intelFeedCache[tab] = { items: deduped, ts: Date.now() };
+  renderNewsArticles(deduped, tab);
 }
 
 const TAG_MAP = {
@@ -1714,8 +1767,8 @@ const TAG_MAP = {
   energy:       { cls:'nt-energy',label:'ENERGY' },
   centralbanks: { cls:'nt-cb',    label:'CB' },
 };
-const SENT_WORDS_POS = ['surge','rise','rally','gain','strong','bullish','record','growth','beat','soar'];
-const SENT_WORDS_NEG = ['fall','drop','crash','war','attack','sanction','crisis','slump','miss','threat'];
+const SENT_WORDS_POS = ['surge','rise','rally','gain','strong','bullish','record','growth','beat','soar','boost','jump','high'];
+const SENT_WORDS_NEG = ['fall','drop','crash','war','attack','sanction','crisis','slump','miss','threat','cut','ban','suspend','collapse','kill','dead','fire'];
 
 function classifySentiment(title) {
   const t = title.toLowerCase();
@@ -1726,18 +1779,13 @@ function classifySentiment(title) {
   return {cls:'sent-neu', label:'NEUTRAL'};
 }
 
-function fmtGDELTTime(seendate) {
-  // GDELT seendate format: "20260304T123456Z"
+function fmtNewsTime(pubDate) {
   try {
-    const s = seendate.replace('T','').replace('Z','');
-    const y = s.substr(0,4), mo = s.substr(4,2), d = s.substr(6,2);
-    const h = s.substr(8,2), m = s.substr(10,2);
-    const then = new Date(Date.UTC(+y,+mo-1,+d,+h,+m));
-    const diffMs = Date.now() - then.getTime();
+    const diffMs  = Date.now() - new Date(pubDate).getTime();
     const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1)   return 'just now';
-    if (diffMin < 60)  return diffMin + 'm ago';
-    if (diffMin < 1440)return Math.floor(diffMin / 60) + 'h ago';
+    if (diffMin < 1)    return 'just now';
+    if (diffMin < 60)   return diffMin + 'm ago';
+    if (diffMin < 1440) return Math.floor(diffMin / 60) + 'h ago';
     return Math.floor(diffMin / 1440) + 'd ago';
   } catch(e) { return ''; }
 }
@@ -1749,23 +1797,22 @@ function renderNewsArticles(articles, tab) {
   const dotColor = {geopolitical:'#ff5c5c',markets:'#f5c842',cyber:'#39ff14',energy:'#ffb332',centralbanks:'#00d4ff'}[tab] || '#00d4ff';
 
   if (!articles.length) {
-    body.innerHTML = '<div class="news-error">No articles found for this query in the last 6 hours.</div>';
+    body.innerHTML = '<div class="news-error">No intel articles found.</div>';
     return;
   }
 
-  body.innerHTML = articles.map(a => {
-    const title = (a.title || a.seentitle || 'Untitled').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const domain = (a.domain || '').replace('www.','');
-    const timeStr = fmtGDELTTime(a.seendate || '');
-    const sent = classifySentiment(title);
-    const url = a.url ? `href="${a.url}" target="_blank" rel="noopener"` : '';
-    return `<a class="news-card" ${url}>
+  body.innerHTML = articles.slice(0,25).map(a => {
+    const title   = (a.title || 'Untitled').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const display = a.source || a.domain || '';
+    const timeStr = fmtNewsTime(a.pubDate);
+    const sent    = classifySentiment(title);
+    return `<a class="news-card" href="${a.url}" target="_blank" rel="noopener">
       <div class="news-card-dot" style="background:${dotColor};box-shadow:0 0 5px ${dotColor}"></div>
       <div class="news-card-body">
         <div class="news-headline">${title}</div>
         <div class="news-meta-row">
-          ${domain ? `<span class="news-domain">${domain}</span>` : ''}
-          ${timeStr ? `<span class="news-time">${timeStr}</span>` : ''}
+          ${display  ? `<span class="news-domain">${display}</span>`   : ''}
+          ${timeStr  ? `<span class="news-time">${timeStr}</span>`     : ''}
           <span class="news-tag ${tag.cls}">${tag.label}</span>
           <span class="news-sentiment ${sent.cls}">${sent.label}</span>
         </div>
