@@ -255,6 +255,103 @@
       50%      { transform: translateY(-12px); opacity: 1; }
     }
 
+    /* ── Locked Card State ─────────────────────────────────────── */
+    .module-card.locked {
+      cursor: default;
+    }
+    .module-card.locked:hover {
+      transform: none !important;
+      border-color: var(--border) !important;
+      box-shadow: none !important;
+    }
+    .module-card.locked .card-visual {
+      filter: blur(4px);
+      opacity: 0.25;
+    }
+    .module-card.locked .card-footer {
+      opacity: 0.4;
+      filter: blur(0.5px);
+    }
+    .lock-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .lock-glyph {
+      font-size: 2.2rem;
+      animation: lockPulse 3s ease-in-out infinite;
+    }
+    .lock-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .lock-sub {
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.38);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.04em;
+    }
+    @keyframes lockPulse {
+      0%,100% { opacity: 0.7; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.12); }
+    }
+
+    /* ── Upgrade Banner ─────────────────────────────────────────── */
+    .upgrade-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: linear-gradient(90deg, rgba(245,200,66,0.07) 0%, rgba(245,200,66,0.02) 100%);
+      border: 1px solid rgba(245,200,66,0.25);
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin-bottom: 1.5rem;
+    }
+    .upgrade-banner.visible { display: flex; }
+    .upgrade-banner-copy {}
+    .upgrade-banner-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .upgrade-banner-sub {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .upgrade-banner-btn {
+      flex-shrink: 0;
+      background: var(--gold);
+      color: #0a0a0f;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 9px 18px;
+      border-radius: 6px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .upgrade-banner-btn:hover { opacity: 0.88; }
+    @media (max-width: 500px) {
+      .upgrade-banner { flex-direction: column; align-items: flex-start; }
+    }
+
     /* Card center icon */
     .card-icon-wrap {
       position: absolute;
@@ -668,6 +765,15 @@
       <div class="badge-live">Live</div>
     </div>
 
+    <!-- Upgrade banner — shown to free tier users only -->
+    <div class="upgrade-banner" id="upgrade-banner">
+      <div class="upgrade-banner-copy">
+        <div class="upgrade-banner-title">⚡ Command Modules Locked</div>
+        <div class="upgrade-banner-sub">Upgrade to unlock Watchtower, Trading Floor, War Room &amp; more</div>
+      </div>
+      <a href="arcane-store.html" class="upgrade-banner-btn">UPGRADE NOW</a>
+    </div>
+
     <div class="carousel-outer">
       <div class="carousel-track" id="carousel-track">
 
@@ -965,17 +1071,41 @@
     return rank;
   }
 
+  // Lock all module cards for free-tier users
+  function lockModuleCards() {
+    document.getElementById('upgrade-banner')?.classList.add('visible');
+    document.querySelectorAll('.module-card').forEach(card => {
+      card.classList.add('locked');
+      // Inject lock overlay
+      const visual = card.querySelector('.card-visual');
+      if (visual && !visual.querySelector('.lock-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'lock-overlay';
+        overlay.innerHTML = `
+          <div class="lock-glyph">🔒</div>
+          <div class="lock-label">Members Only</div>
+          <div class="lock-sub">Upgrade to access</div>`;
+        visual.appendChild(overlay);
+      }
+      // Redirect to store on click instead of following href
+      card.addEventListener('click', e => {
+        e.preventDefault();
+        location.href = 'arcane-store.html';
+      });
+    });
+  }
+
   onAuthStateChanged(auth, async user => {
     if (!user) { location.href = 'login.html'; return; }
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
 
-      // ── Subscription gate ─────────────────────────────────────────
+      // ── Subscription check ────────────────────────────────────────
       const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
       const isAdmin = ADMIN_UIDS.includes(user.uid);
       const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
-      if (!isAdmin && !isPaid) { location.href = 'arcane-store.html'; return; }
+      if (!isAdmin && !isPaid) lockModuleCards();
       // ─────────────────────────────────────────────────────────────
 
       // Update UI
@@ -993,7 +1123,7 @@
       rankEl.textContent = rank.label;
       rankEl.style.color = rank.color;
 
-      if (data.isPaid === true || data.subscriptionStatus === 'active') {
+      if (isPaid) {
         document.getElementById('member-plan').textContent = 'PREMIUM MEMBER';
       }
 
@@ -1004,7 +1134,8 @@
       document.getElementById('nav-online').classList.remove('offline');
     } catch(e) {
       console.error('Auth guard error:', e);
-      location.href = 'arcane-store.html';
+      // On Firestore error, lock cards as safe default (don't boot them out)
+      lockModuleCards();
     }
   });
 
