@@ -745,14 +745,19 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { location.href = 'login.html'; return; }
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      const data = snap.exists() ? snap.data() : {};
-      // ── Subscription gate ──────────────────────────────────────────
-      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
-      const isAdmin = ADMIN_UIDS.includes(user.uid);
-      const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
-      if (!isAdmin && !isPaid) { location.href = 'arcane-store.html'; return; }
-      // ──────────────────────────────────────────────────────────────
+      try {
+        const snap = await getDoc(doc(db, 'Users', user.uid));
+        const data = snap.exists() ? snap.data() : {};
+        // ── Subscription gate ─────────────────────────────────────────
+        const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
+        const isAdmin = ADMIN_UIDS.includes(user.uid);
+        const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
+        if (!isAdmin && !isPaid) { location.href = 'arcane-store.html'; return; }
+        // ─────────────────────────────────────────────────────────────
+      } catch(e) {
+        console.error('Auth guard error:', e);
+        location.href = 'arcane-store.html';
+      }
     });
 
     document.getElementById("applyBtn").addEventListener("click", (e) => {
