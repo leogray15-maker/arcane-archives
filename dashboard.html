@@ -265,13 +265,14 @@
       box-shadow: none !important;
     }
     .module-card.locked .card-visual {
-      filter: blur(4px);
-      opacity: 0.25;
+      filter: blur(5px);
+      opacity: 0.2;
     }
     .module-card.locked .card-footer {
-      opacity: 0.4;
-      filter: blur(0.5px);
+      opacity: 0.35;
+      filter: blur(1px);
     }
+    /* Overlay sits on .module-card itself (above blurred children) */
     .lock-overlay {
       position: absolute;
       inset: 0;
@@ -280,30 +281,43 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       pointer-events: none;
+      background: rgba(10, 10, 15, 0.55);
+      backdrop-filter: none; /* don't re-blur */
+    }
+    .lock-icon-ring {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(245,200,66,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(245,200,66,0.08);
+      animation: lockRingPulse 3s ease-in-out infinite;
     }
     .lock-glyph {
-      font-size: 2.2rem;
-      animation: lockPulse 3s ease-in-out infinite;
+      font-size: 1.6rem;
+      line-height: 1;
     }
     .lock-label {
       font-family: 'Orbitron', monospace;
-      font-size: 0.6rem;
+      font-size: 0.62rem;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.16em;
       color: var(--gold);
       text-transform: uppercase;
     }
     .lock-sub {
-      font-size: 0.62rem;
-      color: rgba(255,255,255,0.38);
+      font-size: 0.63rem;
+      color: rgba(255,255,255,0.45);
       font-family: 'Inter', sans-serif;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
     }
-    @keyframes lockPulse {
-      0%,100% { opacity: 0.7; transform: scale(1); }
-      50%      { opacity: 1;   transform: scale(1.12); }
+    @keyframes lockRingPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(245,200,66,0); transform: scale(1); }
+      50%      { box-shadow: 0 0 16px 4px rgba(245,200,66,0.15); transform: scale(1.06); }
     }
 
     /* ── Upgrade Banner ─────────────────────────────────────────── */
@@ -1076,16 +1090,15 @@
     document.getElementById('upgrade-banner')?.classList.add('visible');
     document.querySelectorAll('.module-card').forEach(card => {
       card.classList.add('locked');
-      // Inject lock overlay
-      const visual = card.querySelector('.card-visual');
-      if (visual && !visual.querySelector('.lock-overlay')) {
+      // Append overlay directly to card (NOT card-visual) so it isn't blurred
+      if (!card.querySelector('.lock-overlay')) {
         const overlay = document.createElement('div');
         overlay.className = 'lock-overlay';
         overlay.innerHTML = `
-          <div class="lock-glyph">🔒</div>
+          <div class="lock-icon-ring"><span class="lock-glyph">🔒</span></div>
           <div class="lock-label">Members Only</div>
           <div class="lock-sub">Upgrade to access</div>`;
-        visual.appendChild(overlay);
+        card.appendChild(overlay);
       }
       // Redirect to store on click instead of following href
       card.addEventListener('click', e => {
