@@ -645,6 +645,52 @@
       flex-shrink: 0;
     }
 
+    /* ── Admin Cards ── */
+    .admin-card::before {
+      background: linear-gradient(135deg, transparent 60%, rgba(255,59,59,0.05));
+    }
+    .admin-card:hover {
+      border-color: var(--red) !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 14px rgba(255,59,59,0.18) !important;
+    }
+    .admin-card:hover .free-icon {
+      border-color: var(--red);
+      background: rgba(255,59,59,0.1);
+    }
+    .admin-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .admin-section-title {
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    .badge-admin {
+      font-family: var(--font-head);
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,59,59,0.35);
+      color: var(--red);
+      background: rgba(255,59,59,0.07);
+    }
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    @media (max-width: 700px) { .admin-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .admin-grid { grid-template-columns: 1fr; } }
+
     /* ── Logout ── */
     .dash-footer {
       padding: 0 1.5rem;
@@ -979,6 +1025,81 @@
     </div>
   </section>
 
+  <!-- ── Admin Operations (admins only — shown via JS) ── -->
+  <section class="free-section" id="admin-section" style="display:none">
+    <div class="admin-section-header">
+      <div class="admin-section-title">⚡ Admin Operations</div>
+      <span class="badge-admin">Admin Only</span>
+    </div>
+    <div class="admin-grid">
+
+      <a class="free-card admin-card" href="admin-panel.html">
+        <div class="free-icon">🛡️</div>
+        <div class="free-info">
+          <div class="free-title">Admin Panel</div>
+          <div class="free-desc">Trades, alerts &amp; signals</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="arcane-crm.html">
+        <div class="free-icon">👥</div>
+        <div class="free-info">
+          <div class="free-title">Member CRM</div>
+          <div class="free-desc">Members &amp; subscriptions</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="arcane-consulting-crm.html">
+        <div class="free-icon">💼</div>
+        <div class="free-info">
+          <div class="free-title">Consulting CRM</div>
+          <div class="free-desc">Leads, pipeline &amp; payments</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="affiliate-admin.html">
+        <div class="free-icon">🔗</div>
+        <div class="free-info">
+          <div class="free-title">Affiliates</div>
+          <div class="free-desc">Referrals &amp; commissions</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="stock-picks-admin.html">
+        <div class="free-icon">📊</div>
+        <div class="free-info">
+          <div class="free-title">Stock Picks</div>
+          <div class="free-desc">Manage investment picks</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="arcane-insight-admin.html">
+        <div class="free-icon">🧠</div>
+        <div class="free-info">
+          <div class="free-title">Arcane Insights</div>
+          <div class="free-desc">Posts &amp; intel updates</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="store-admin.html">
+        <div class="free-icon">🏪</div>
+        <div class="free-info">
+          <div class="free-title">Store Admin</div>
+          <div class="free-desc">Products &amp; orders</div>
+        </div>
+      </a>
+
+      <a class="free-card admin-card" href="bullion-admin.html">
+        <div class="free-icon">🥇</div>
+        <div class="free-info">
+          <div class="free-title">Bullion Admin</div>
+          <div class="free-desc">Products &amp; enquiries</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
   <!-- ── Free Access Grid ── -->
   <section class="free-section">
     <div class="section-header" style="margin-bottom:1rem">
@@ -1002,15 +1123,6 @@
           <div class="free-title">Bullion</div>
           <div class="free-desc">Gold &amp; Silver products</div>
         </div>
-      </a>
-
-      <a class="free-card" href="stock-picks.html">
-        <div class="free-icon">📊</div>
-        <div class="free-info">
-          <div class="free-title">Stock Picks</div>
-          <div class="free-desc">Long-term investment ideas</div>
-        </div>
-        <div class="free-badge">✦</div>
       </a>
 
       <a class="free-card" href="free-signals.html">
@@ -1114,11 +1226,12 @@
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
 
-      // ── Subscription check ────────────────────────────────────────
+      // ── Subscription & admin check ────────────────────────────────
       const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
       const isAdmin = ADMIN_UIDS.includes(user.uid);
       const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
       if (!isAdmin && !isPaid) lockModuleCards();
+      if (isAdmin) document.getElementById('admin-section').style.display = 'block';
       // ─────────────────────────────────────────────────────────────
 
       // Update UI
