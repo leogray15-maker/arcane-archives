@@ -562,6 +562,12 @@
     if (!user) { location.href='login.html'; return; }
     const snap = await getDoc(doc(db,'users',user.uid));
     const data = snap.exists() ? snap.data() : {};
+    // ── Subscription gate ──────────────────────────────────────────
+    const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
+    const isAdmin = ADMIN_UIDS.includes(user.uid);
+    const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
+    if (!isAdmin && !isPaid) { location.href = 'arcane-store.html'; return; }
+    // ──────────────────────────────────────────────────────────────
     const xp = data.xp ?? 0;
     document.getElementById('nav-balance').textContent = `£${(data.balance??0).toFixed(2)}`;
     document.getElementById('nav-xp').textContent = xp.toLocaleString();

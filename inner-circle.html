@@ -728,7 +728,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    import { getFirestore, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -743,10 +743,16 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        location.href = "login.html";
-      }
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { location.href = 'login.html'; return; }
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      const data = snap.exists() ? snap.data() : {};
+      // ── Subscription gate ──────────────────────────────────────────
+      const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
+      const isAdmin = ADMIN_UIDS.includes(user.uid);
+      const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
+      if (!isAdmin && !isPaid) { location.href = 'arcane-store.html'; return; }
+      // ──────────────────────────────────────────────────────────────
     });
 
     document.getElementById("applyBtn").addEventListener("click", (e) => {
