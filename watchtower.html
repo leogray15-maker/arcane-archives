@@ -1668,39 +1668,68 @@ function updateSessionClock() {
   }).join('');
 }
 
-/* ══ Intel Feed — multi-source RSS via rss2json.com ══ */
-const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?count=20&rss_url=';
+/* ══ Intel Feed — multi-source RSS via allorigins.win CORS proxy + DOMParser ══ */
+// allorigins.win: free, no API key, no rate limit, returns {contents:'<xml>'}
+const CORS_PROXY = 'https://api.allorigins.win/get?url=';
 
 const INTEL_RSS = {
   geopolitical: [
-    { url:'https://feeds.bbci.co.uk/news/world/rss.xml',                        src:'BBC World' },
-    { url:'https://www.aljazeera.com/xml/rss/all.xml',                          src:'Al Jazeera' },
-    { url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',             src:'NY Times' },
+    { url:'https://feeds.bbci.co.uk/news/world/rss.xml',                   src:'BBC World' },
+    { url:'https://www.theguardian.com/world/rss',                          src:'The Guardian' },
+    { url:'https://feeds.skynews.com/feeds/rss/world.xml',                  src:'Sky News' },
   ],
   markets: [
-    { url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',              src:'CNBC' },
-    { url:'https://feeds.bbci.co.uk/news/business/rss.xml',                     src:'BBC Business' },
-    { url:'https://www.cnbc.com/id/10000664/device/rss/rss.html',               src:'CNBC Markets' },
+    { url:'https://feeds.bbci.co.uk/news/business/rss.xml',                src:'BBC Business' },
+    { url:'https://www.theguardian.com/uk/business/rss',                    src:'Guardian Business' },
+    { url:'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', src:'MarketWatch' },
   ],
   cyber: [
-    { url:'https://feeds.arstechnica.com/arstechnica/security',                  src:'Ars Technica' },
-    { url:'https://krebsonsecurity.com/feed/',                                    src:'Krebs Security' },
-    { url:'https://www.darkreading.com/rss.xml',                                  src:'Dark Reading' },
+    { url:'https://feeds.arstechnica.com/arstechnica/security',             src:'Ars Technica' },
+    { url:'https://krebsonsecurity.com/feed/',                               src:'Krebs Security' },
+    { url:'https://www.darkreading.com/rss.xml',                             src:'Dark Reading' },
   ],
   energy: [
-    { url:'https://oilprice.com/rss/main',                                        src:'OilPrice' },
-    { url:'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',       src:'BBC Energy' },
-    { url:'https://www.cnbc.com/id/10000867/device/rss/rss.html',                src:'CNBC Energy' },
+    { url:'https://oilprice.com/rss/main',                                   src:'OilPrice' },
+    { url:'https://www.theguardian.com/environment/energy/rss',              src:'Guardian Energy' },
+    { url:'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',  src:'BBC Environment' },
   ],
   centralbanks: [
-    { url:'https://www.cnbc.com/id/20910258/device/rss/rss.html',                src:'CNBC Economy' },
-    { url:'https://feeds.bbci.co.uk/news/business/economy/rss.xml',              src:'BBC Economy' },
-    { url:'https://www.cnbc.com/id/10000108/device/rss/rss.html',                src:'CNBC Finance' },
+    { url:'https://feeds.bbci.co.uk/news/business/economy/rss.xml',         src:'BBC Economy' },
+    { url:'https://www.theguardian.com/business/economics/rss',              src:'Guardian Economics' },
+    { url:'https://feeds.bbci.co.uk/news/business/rss.xml',                 src:'BBC Business' },
   ],
 };
 
 let _intelFeedTab = 'geopolitical';
 let _intelFeedCache = {};
+
+// Parse an RSS/Atom feed XML string into article objects
+function parseRSSXML(xmlText, sourceName) {
+  try {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlText, 'text/xml');
+    // Support both RSS <item> and Atom <entry>
+    const items = [...xml.querySelectorAll('item, entry')];
+    return items.slice(0, 15).map(item => {
+      // RSS uses <link> text; Atom uses <link href="...">
+      const linkEl = item.querySelector('link');
+      const link = (linkEl?.textContent?.trim() ||
+                    linkEl?.getAttribute('href') || '#').trim();
+      let domain = '';
+      try { domain = new URL(link).hostname.replace('www.', ''); } catch(_) {}
+      const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
+      return {
+        title:   (item.querySelector('title')?.textContent || '').trim(),
+        url:     link,
+        domain,
+        source:  sourceName,
+        pubDate,
+      };
+    }).filter(a => a.title && a.url !== '#');
+  } catch(e) {
+    return [];
+  }
+}
 
 async function fetchIntelFeed(tab) {
   const body = document.getElementById('intel-feed-body');
@@ -1718,34 +1747,28 @@ async function fetchIntelFeed(tab) {
   const sources = INTEL_RSS[tab] || INTEL_RSS.geopolitical;
   const all = [];
 
-  // Fetch all feeds in parallel; skip any that fail
+  // Fetch all feeds in parallel via CORS proxy; skip any that fail
   await Promise.allSettled(
     sources.map(async ({ url, src }) => {
       try {
-        const r = await fetch(RSS_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+        const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
         if (!r.ok) return;
-        const d = await r.json();
-        if (d.status !== 'ok' || !Array.isArray(d.items)) return;
-        d.items.forEach(item => {
-          let domain = '';
-          try { domain = new URL(item.link).hostname.replace('www.',''); } catch(_) {}
-          all.push({
-            title:   (item.title   || '').trim(),
-            url:     item.link     || '#',
-            domain:  domain,
-            source:  src,
-            pubDate: item.pubDate  || '',
-          });
-        });
-      } catch(_) { /* source failed — continue */ }
+        const data = await r.json();
+        if (!data.contents) return;
+        const articles = parseRSSXML(data.contents, src);
+        all.push(...articles);
+      } catch(e) {
+        console.warn(`Intel [${src}] failed:`, e.message);
+      }
     })
   );
 
-  // Sort newest first, deduplicate by title
+  // Sort newest first, deduplicate by title prefix
   all.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
   const seen = new Set();
   const deduped = all.filter(a => {
-    const key = a.title.slice(0,60);
+    const key = a.title.slice(0, 60).toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
