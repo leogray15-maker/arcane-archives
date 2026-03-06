@@ -80,8 +80,9 @@
     .sit-count { margin-left: auto; font-family: var(--font-head); font-size: 0.46rem; color: var(--text-muted); letter-spacing: 0.06em; }
 
     /* Layer filter bar */
-    .layer-filters { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; flex-shrink: 0; background: rgba(9,9,14,0.92); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .layer-filters { display: flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; flex-shrink: 0; background: rgba(9,9,14,0.92); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .layer-filters::-webkit-scrollbar { display: none; }
+    .layer-btn { flex-shrink: 0; }
     .layer-btn { display: flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 20px; flex-shrink: 0; font-family: var(--font-head); font-size: 0.46rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.18s; border: 1px solid var(--border); background: var(--bg-3); color: var(--text-dim); white-space: nowrap; }
     .layer-btn.active { color: #fff; }
     .layer-btn[data-layer="all"].active      { border-color:rgba(210,215,235,0.5); background:rgba(210,215,235,0.1); color:var(--text); }
@@ -380,7 +381,7 @@
       .wt-nav-section { display:none; }
       .wt-online-count { border-top:none; padding:0 0.75rem; font-size:0.46rem; margin-left:auto; flex-shrink:0; }
       .wt-main { flex:none; width:100%; overflow:visible; }
-      #world-map { width:100%; height:56vw; min-height:220px; max-height:340px; flex:none; }
+      #world-map { width:100%; height:62vw; min-height:260px; max-height:420px; flex:none; }
       .feed-section { flex:0 0 150px; }
       .map-toolbar { overflow-x:auto; scrollbar-width:none; }
       .map-toolbar::-webkit-scrollbar { display:none; }
@@ -958,10 +959,27 @@ function sevColor(sev) {
 }
 
 function initMap() {
-  map = L.map('world-map', { center:[20,10], zoom:2, minZoom:1, maxZoom:10, zoomControl:true, attributionControl:false });
+  // maxBounds + noWrap prevent the world from repeating horizontally
+  const WORLD_BOUNDS = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+  map = L.map('world-map', {
+    center: [20, 10],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 10,
+    zoomControl: true,
+    attributionControl: false,
+    worldCopyJump: false,
+    maxBounds: WORLD_BOUNDS,
+    maxBoundsViscosity: 1.0,   // hard boundary — no elastic pan past edge
+  });
 
+  // noWrap: true stops tiles beyond ±180° being rendered
   // light_all → CSS invert+hue-rotate converts to: dark charcoal land, navy blue ocean
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:20 }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '',
+    maxZoom: 20,
+    noWrap: true,
+  }).addTo(map);
 
   /* ── Build layer groups ── */
   layers.conflicts = L.layerGroup();
