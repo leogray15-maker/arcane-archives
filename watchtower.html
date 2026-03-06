@@ -381,7 +381,7 @@
       .wt-nav-section { display:none; }
       .wt-online-count { border-top:none; padding:0 0.75rem; font-size:0.46rem; margin-left:auto; flex-shrink:0; }
       .wt-main { flex:none; width:100%; overflow:visible; }
-      #world-map { width:100%; height:62vw; min-height:260px; max-height:420px; flex:none; }
+      #world-map { width:100%; height:72vw; min-height:300px; max-height:480px; flex:none; }
       .feed-section { flex:0 0 150px; }
       .map-toolbar { overflow-x:auto; scrollbar-width:none; }
       .map-toolbar::-webkit-scrollbar { display:none; }
@@ -959,18 +959,23 @@ function sevColor(sev) {
 }
 
 function initMap() {
-  // maxBounds + noWrap prevent the world from repeating horizontally
-  const WORLD_BOUNDS = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+  // noWrap + maxBounds prevents world repeating. minZoom:1 lets mobile fully zoom out.
+  // At zoom 1 the world tile is 512px — smaller than desktop viewport but fits mobile fine.
+  // noWrap means the area beyond ±180° just shows the container background (navy), not a copy.
+  const WORLD_BOUNDS = L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180));
+  const isMobile = window.innerWidth < 768;
+
   map = L.map('world-map', {
-    center: [20, 10],
-    zoom: 2,
-    minZoom: 2,
+    center: isMobile ? [20, 15] : [20, 10],
+    zoom: isMobile ? 1 : 2,
+    minZoom: 1,            // zoom 1 = world at 512px wide; fits any device without repeating
     maxZoom: 10,
     zoomControl: true,
     attributionControl: false,
     worldCopyJump: false,
     maxBounds: WORLD_BOUNDS,
-    maxBoundsViscosity: 1.0,   // hard boundary — no elastic pan past edge
+    maxBoundsViscosity: 0.7,  // slightly elastic edge — doesn't snap harshly on pinch
+    tap: false,               // prevents iOS double-tap quirks
   });
 
   // noWrap: true stops tiles beyond ±180° being rendered
