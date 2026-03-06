@@ -100,7 +100,10 @@
 
     /* ── Leaflet map ── */
     #world-map { flex: 1; width: 100%; min-height: 200px; }
-    .leaflet-container { background: #050510; }
+    /* Invert light CartoDB tiles → dark charcoal land + navy blue ocean.
+       hue-rotate(180deg) converts the inverted orange ocean back to deep blue. */
+    .leaflet-container { background: #0d2b52; }
+    .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.05) saturate(1.15); }
     .leaflet-control-zoom a { background: var(--bg-4) !important; border-color: var(--border) !important; color: var(--text-dim) !important; }
     .leaflet-control-zoom a:hover { color: var(--teal) !important; }
     .leaflet-control-attribution { display: none; }
@@ -957,7 +960,8 @@ function sevColor(sev) {
 function initMap() {
   map = L.map('world-map', { center:[20,10], zoom:2, minZoom:1, maxZoom:10, zoomControl:true, attributionControl:false });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:20 }).addTo(map);
+  // light_all → CSS invert+hue-rotate converts to: dark charcoal land, navy blue ocean
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'', maxZoom:20 }).addTo(map);
 
   /* ── Build layer groups ── */
   layers.conflicts = L.layerGroup();
