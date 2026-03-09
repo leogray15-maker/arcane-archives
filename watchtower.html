@@ -980,3 +980,1022 @@ const SUBMARINE_CABLES = [
   { name:'AEConnect-1',       capacity:'~18 Tbps',  desc:'US–Ireland–UK direct northern transatlantic route',                     color:'#00ffc8', path:[[40.7,-74.0],[53.3,-6.3],[51.5,-0.1]] },
   { name:'Arctic Fibre / POLAR',capacity:'20 Tbps', desc:'Arctic route UK–Japan — geopolitically sensitive high-latitude cable',  color:'#a0d4ff', path:[[51.5,-0.1],[60.0,-3.0],[68.0,-20.0],[71.0,-25.0],[70.0,25.0],[68.0,60.0],[65.0,120.0],[50.0,140.0],[35.7,139.8]] },
 ];
+<script>
+// ─── State variables ───────────────────────────────────────────────────────
+let map, layers = {}, activeLayers = new Set(), quakeData = [], eonetData = [], metalMarkerRefs = {}, _intelFeedTab = 'geopolitical', _intelTabLoaded = false, _satelliteMode = false;
+
+// ─── Helper: marker icon ───────────────────────────────────────────────────
+function mkIcon(cls, mc) {
+  return L.divIcon({ html:`<div class="${cls}" style="--mc:${mc}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
+}
+
+// ─── Helper: popup HTML ────────────────────────────────────────────────────
+function popup(title, region, desc, badgeTxt, badgeCls, extra) {
+  return `<div class="map-popup">
+    <div class="mp-title">${title}</div>
+    <div class="mp-region">${region}</div>
+    <div class="mp-desc">${desc}</div>
+    <div class="mp-row">
+      <span class="mp-badge ${badgeCls}">${badgeTxt}</span>
+      ${extra ? `<span class="mp-extra">${extra}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+// ─── Helper: severity CSS class ───────────────────────────────────────────
+function sevClass(sev) {
+  const m = { CRITICAL:'b-critical', HIGH:'b-high', MODERATE:'b-moderate', LOW:'b-low',
+    ACTIVE:'b-active', ALERT:'b-alert', ESCALATING:'b-escalating', EXPANDING:'b-expanding',
+    UNDECLARED:'b-undeclared', CHOKEPOINT:'b-chokepoint', FIELD:'b-field',
+    STATE:'b-state', ALLIANCE:'b-alliance', CRIMINAL:'b-criminal', NEUTRAL:'b-neutral',
+    CANAL:'b-canal', PORT:'b-port', ROUTE:'b-route', AGENCY:'b-agency', SIGINT:'b-sigint',
+    SEVERE:'b-severe', US:'b-us', NATO:'b-nato', Russia:'b-russia', China:'b-china' };
+  return m[sev] || 'b-moderate';
+}
+
+// ─── Helper: severity color ────────────────────────────────────────────────
+function sevColor(sev) {
+  const m = { CRITICAL:'#ff3b3b', HIGH:'#ff6b35', MODERATE:'#f5c842', LOW:'#7a8499',
+    ACTIVE:'#ff4040', ALERT:'#ff3030', ESCALATING:'#ff5020', EXPANDING:'#ff9500',
+    UNDECLARED:'#00d4ff', CHOKEPOINT:'#ffb332', FIELD:'#5abe50',
+    STATE:'#39ff14', ALLIANCE:'#f5c842', CRIMINAL:'#ff6432', NEUTRAL:'#a0b0c8',
+    CANAL:'#4fc3f7', PORT:'#00d4ff', ROUTE:'#00e676', AGENCY:'#e040fb', SIGINT:'#e040fb',
+    SEVERE:'#ff2d55', US:'#64b4ff', NATO:'#00b4dc', Russia:'#ff3b3b', China:'#ff5050' };
+  return m[sev] || '#f5c842';
+}
+
+// ─── Solar Terminator (worldmonitor.app signature) ────────────────────────
+function getSolarTerminator() {
+  const now = new Date();
+  const JD = now / 86400000 + 2440587.5;
+  const n = JD - 2451545.0;
+  const L = (280.46 + 0.9856474 * n) % 360;
+  const g = ((357.528 + 0.9856003 * n) % 360) * Math.PI / 180;
+  const lam = (L + 1.915 * Math.sin(g) + 0.02 * Math.sin(2*g)) * Math.PI / 180;
+  const eps = 23.439 * Math.PI / 180;
+  const sinDec = Math.sin(eps) * Math.sin(lam);
+  const dec = Math.asin(sinDec);
+  const RA = Math.atan2(Math.cos(eps) * Math.sin(lam), Math.cos(lam));
+  const GMST = (18.697375 + 24.065709824279 * n) % 24;
+  const subsolarLng = -(GMST * 15 - RA * 180 / Math.PI + 180) % 360 - 180;
+  const subsolarLat = dec * 180 / Math.PI;
+  return { lat: subsolarLat, lng: subsolarLng };
+}
+
+let terminatorLayer = null;
+function updateSolarTerminator() {
+  if (!map) return;
+  const { lat: sLat, lng: sLng } = getSolarTerminator();
+  const DEG = Math.PI / 180;
+
+  // Build terminator ring
+  const ring = [];
+  for (let lng = -180; lng <= 180; lng += 2) {
+    const lngRad = (lng - sLng) * DEG;
+    const latRad = Math.atan(-Math.cos(lngRad) / Math.tan(sLat * DEG));
+    ring.push([latRad / DEG, lng]);
+  }
+
+  // Sort ring by longitude
+  ring.sort((a,b) => a[1] - b[1]);
+
+  // Determine if north or south pole is in night
+  const nightNorth = sLat < 0;
+
+  // Add cap vertices
+  const polyPoints = nightNorth
+    ? [[90,-180], ...ring, [90,180]]
+    : [[-90,-180], ...ring, [-90,180]];
+
+  if (terminatorLayer) map.removeLayer(terminatorLayer);
+  terminatorLayer = L.polygon(polyPoints, {
+    color: 'none',
+    fillColor: '#000020',
+    fillOpacity: 0.35,
+    interactive: false,
+    className: 'solar-terminator'
+  }).addTo(map);
+}
+
+// ─── Pipelines data (NEW) ──────────────────────────────────────────────────
+const PIPELINES = [
+  { name:'Nord Stream (damaged)', region:'Baltic Sea', color:'#ff4040', weight:3, dashArray:'8 6', path:[[54.5,18.0],[55.5,20.0],[55.0,26.0],[54.5,28.0],[54.0,30.0],[53.5,32.5],[54.1,35.0],[54.4,37.2],[54.0,39.0],[54.8,40.6],[55.9,41.0],[59.9,30.3]] },
+  { name:'TurkStream', region:'Black Sea', color:'#ff9500', weight:2, dashArray:'6 4', path:[[41.0,28.5],[41.5,30.0],[41.8,34.0],[41.9,38.0],[41.7,40.5],[41.0,42.0],[41.8,44.0],[42.5,44.5]] },
+  { name:'Trans-Anatolian (TANAP)', region:'Turkey/Caucasus', color:'#ffb332', weight:2, dashArray:'', path:[[40.5,49.8],[40.8,46.0],[40.5,43.0],[41.5,40.0],[40.5,36.0],[37.5,31.5],[26.7,27.9]] },
+  { name:'Druzhba Pipeline', region:'Russia/Europe', color:'#ff6432', weight:2, dashArray:'5 5', path:[[55.75,37.6],[52.7,33.0],[51.5,30.5],[50.6,27.0],[51.2,24.0],[50.9,22.0],[48.7,21.5],[47.6,19.0],[47.5,16.5],[48.2,14.5]] },
+  { name:'BTC Pipeline', region:'Caucasus', color:'#ffd700', weight:2, dashArray:'', path:[[40.5,49.8],[40.4,47.5],[41.7,44.5],[41.7,42.0],[41.5,40.5],[40.8,38.0],[37.0,35.5],[36.5,36.1]] },
+  { name:'East Siberia-Pacific', region:'Russia/Asia', color:'#ff9500', weight:2, dashArray:'5 3', path:[[55.0,58.0],[55.5,65.0],[56.0,73.0],[56.5,82.0],[56.0,92.0],[55.0,100.0],[53.0,109.0],[50.3,116.5],[48.5,119.5],[47.8,130.0],[43.1,131.9]] },
+  { name:'Trans-Arabian Pipeline', region:'Middle East', color:'#f5c842', weight:2, dashArray:'', path:[[26.3,50.1],[26.0,46.0],[27.0,42.0],[29.5,38.0],[32.5,35.0],[33.0,35.1]] },
+  { name:'Keystone XL (cancelled)', region:'N. America', color:'#7a8499', weight:1.5, dashArray:'8 6', path:[[49.5,-111.4],[47.5,-106.0],[46.0,-100.5],[44.5,-96.5],[42.8,-96.0],[41.2,-95.9],[39.0,-96.5],[37.2,-97.5]] },
+  { name:'Colonial Pipeline', region:'USA', color:'#00e676', weight:2, dashArray:'4 4', path:[[29.7,-95.4],[33.1,-88.5],[34.7,-86.8],[33.9,-84.4],[36.1,-80.3],[38.9,-77.0],[40.7,-74.0]] },
+  { name:'West-East Gas Pipeline', region:'China', color:'#00d4ff', weight:2, dashArray:'4 4', path:[[40.0,75.0],[40.5,80.0],[40.5,86.0],[39.0,92.0],[38.0,100.0],[36.0,107.0],[34.0,113.0],[31.2,121.5]] },
+];
+
+// ─── EONET natural disasters (NEW) ────────────────────────────────────────
+async function fetchEONET() {
+  try {
+    const r = await fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=50');
+    const d = await r.json();
+    layers.weather = layers.weather || L.layerGroup();
+    layers.weather.clearLayers();
+    eonetData = [];
+    d.events.forEach(ev => {
+      if (!ev.geometry || !ev.geometry.length) return;
+      const geo = ev.geometry[ev.geometry.length - 1];
+      if (geo.type !== 'Point') return;
+      const [lng, lat] = geo.coordinates;
+      const cat = ev.categories[0]?.title || 'Natural';
+      const glyph = cat.includes('Volcano') ? '🌋' : cat.includes('Storm') ? '🌀' : cat.includes('Wildfire') ? '🔥' : cat.includes('Flood') ? '💧' : cat.includes('Earthquake') ? '⚡' : '⚠';
+      const col = cat.includes('Volcano') ? '#ff4040' : cat.includes('Storm') ? '#a064ff' : cat.includes('Wildfire') ? '#ff6432' : '#00d4ff';
+      const ico = L.divIcon({ html:`<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:12px;filter:drop-shadow(0 0 4px ${col})">${glyph}</div>`, className:'', iconSize:[18,18], iconAnchor:[9,9] });
+      eonetData.push({ lat, lng, title: ev.title, cat, glyph });
+      L.marker([lat, lng], { icon: ico })
+        .bindPopup(popup(ev.title, cat, `Active natural event — last updated ${new Date(ev.geometry[ev.geometry.length-1].date).toLocaleDateString()}`, 'LIVE', 'b-alert'), {maxWidth:240})
+        .addTo(layers.weather);
+    });
+    if (activeLayers.has('weather')) layers.weather.addTo(map);
+  } catch(e) { console.warn('EONET fetch failed:', e); }
+}
+
+// ─── Regional preset views (NEW) ──────────────────────────────────────────
+const REGIONS = {
+  global:   { center:[20,10],    zoom:2 },
+  americas: { center:[10,-85],   zoom:3 },
+  europe:   { center:[52,15],    zoom:4 },
+  mena:     { center:[27,42],    zoom:4 },
+  asia:     { center:[25,100],   zoom:3 },
+  africa:   { center:[5,22],     zoom:3 },
+  samerica: { center:[-15,-55],  zoom:3 },
+  oceania:  { center:[-25,140],  zoom:4 },
+};
+function jumpToRegion(r) {
+  const v = REGIONS[r];
+  if (v && map) map.setView(v.center, v.zoom, {animate:true});
+}
+window.jumpToRegion = jumpToRegion;
+
+// ─── Satellite mode toggle ─────────────────────────────────────────────────
+function toggleSatellite() {
+  _satelliteMode = !_satelliteMode;
+  const tp = document.querySelector('.leaflet-tile-pane');
+  const btn = document.getElementById('tile-toggle-btn');
+  if (_satelliteMode) {
+    tp.classList.add('satellite-mode');
+    if (btn) { btn.style.color = 'var(--teal)'; btn.style.borderColor = 'var(--teal)'; }
+  } else {
+    tp.classList.remove('satellite-mode');
+    if (btn) { btn.style.color = ''; btn.style.borderColor = ''; }
+  }
+}
+window.toggleSatellite = toggleSatellite;
+
+// ─── Fullscreen toggle ─────────────────────────────────────────────────────
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.getElementById('world-map').requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen();
+  }
+  setTimeout(() => { if(map) map.invalidateSize(); }, 300);
+}
+window.toggleFullscreen = toggleFullscreen;
+
+// ─── Reset map view ────────────────────────────────────────────────────────
+function resetMapView() {
+  if (map) map.setView([20, 10], 2, { animate: true });
+}
+window.resetMapView = resetMapView;
+
+// ─── Search ────────────────────────────────────────────────────────────────
+function buildSearchIndex() {
+  const idx = [];
+  CONFLICTS.forEach(x => idx.push({ label:x.name, cat:'CONFLICT', lat:x.lat, lng:x.lng }));
+  HOTSPOTS.forEach(x => idx.push({ label:x.name, cat:'HOTSPOT', lat:x.lat, lng:x.lng }));
+  ENERGY.forEach(x => idx.push({ label:x.name, cat:'ENERGY', lat:x.lat, lng:x.lng }));
+  NUCLEAR.forEach(x => idx.push({ label:x.name, cat:'NUCLEAR', lat:x.lat, lng:x.lng }));
+  MARKETS_CENTRES.forEach(x => idx.push({ label:x.name, cat:'MARKET', lat:x.lat, lng:x.lng }));
+  CYBER.forEach(x => idx.push({ label:x.name, cat:'CYBER', lat:x.lat, lng:x.lng }));
+  SANCTIONS.forEach(x => idx.push({ label:x.name, cat:'SANCTIONS', lat:x.lat, lng:x.lng }));
+  INTEL_HUBS.forEach(x => idx.push({ label:x.name, cat:'INTEL', lat:x.lat, lng:x.lng }));
+  SHIPPING.forEach(x => idx.push({ label:x.name, cat:'SHIPPING', lat:x.lat, lng:x.lng }));
+  PRECIOUS_METALS_HUBS.forEach(x => idx.push({ label:x.name, cat:'METALS', lat:x.lat, lng:x.lng }));
+  MILITARY_BASES.forEach(x => idx.push({ label:x.name, cat:'MILITARY', lat:x.lat, lng:x.lng }));
+  return idx;
+}
+let searchIndex = [];
+
+function initSearch() {
+  searchIndex = buildSearchIndex();
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  if (!searchInput || !searchResults) return;
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    if (q.length < 2) { searchResults.classList.remove('open'); return; }
+    const hits = searchIndex.filter(x => x.label.toLowerCase().includes(q)).slice(0, 8);
+    if (!hits.length) { searchResults.classList.remove('open'); return; }
+    searchResults.innerHTML = hits.map(h => `<div class="sr-item" onclick="flyTo(${h.lat},${h.lng},'${h.label.replace(/'/g,"\\'")}');document.getElementById('search-results').classList.remove('open');document.getElementById('search-input').value=''">
+      ${h.label}<span class="sr-cat">${h.cat}</span>
+    </div>`).join('');
+    const rect = searchInput.getBoundingClientRect();
+    searchResults.style.top = (rect.bottom + 4) + 'px';
+    searchResults.style.left = rect.left + 'px';
+    searchResults.classList.add('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) searchResults.classList.remove('open');
+  });
+
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+}
+
+function flyTo(lat, lng, name) {
+  switchTab('map', document.querySelector('[data-tab=map]'));
+  map.setView([lat, lng], 5, { animate: true });
+}
+window.flyTo = flyTo;
+
+function doSearch() {
+  const searchInput = document.getElementById('search-input');
+  if (!searchInput) return;
+  const q = searchInput.value.toLowerCase().trim();
+  if (!q) return;
+  const hit = searchIndex.find(x => x.label.toLowerCase().includes(q));
+  if (hit) flyTo(hit.lat, hit.lng, hit.label);
+}
+window.doSearch = doSearch;
+
+// ─── Breaking news ticker ──────────────────────────────────────────────────
+function populateTicker() {
+  const items = [
+    { dot: '#ff3b3b', text: 'UKRAINE · Russian offensive continues Kharkiv sector — 3rd year of full-scale war' },
+    { dot: '#ff3b3b', text: 'TAIWAN STRAIT · PRC military exercises intensify — US carrier group repositioned' },
+    { dot: '#ff9500', text: 'RED SEA · Houthi drone swarm intercepted — commercial rerouting via Cape persists' },
+    { dot: '#00d4ff', text: 'NORTH KOREA · ICBM test window open — satellite imagery shows new activity' },
+    { dot: '#ffb332', text: 'HORMUZ · Iranian IRGC intercepts tanker — oil futures +2.4% in Asia session' },
+    { dot: '#39ff14', text: 'CYBER · Volt Typhoon pre-positioning detected in US critical infrastructure — CISA advisory' },
+    { dot: '#ff3b3b', text: 'SUDAN · RSF-SAF ceasefire collapsed — Port Sudan airport targeted' },
+    { dot: '#f5c842', text: 'MARKETS · VIX elevated — geopolitical risk premium priced into equity options' },
+    { dot: '#a064ff', text: 'QUAKES · M6.2 earthquake near Tokyo — JMA issues tsunami advisory' },
+    { dot: '#ff2d55', text: 'SANCTIONS · OFAC issues new Russia designations — 200+ entities added to SDN list' },
+  ];
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+  const html = [...items, ...items].map(i => `
+    <span class="ticker-item">
+      <span class="ticker-dot" style="background:${i.dot}"></span>
+      ${i.text}
+    </span>
+    <span class="ticker-sep">//</span>
+  `).join('');
+  track.innerHTML = html;
+}
+
+// ─── Coordinate display ────────────────────────────────────────────────────
+function initCoordDisplay() {
+  const cd = document.getElementById('coord-display');
+  if (!cd || !map) return;
+  map.on('mousemove', e => {
+    cd.textContent = `${e.latlng.lat.toFixed(4)}°, ${e.latlng.lng.toFixed(4)}°`;
+  });
+}
+
+// ─── Fetch Earthquakes (USGS) ──────────────────────────────────────────────
+async function fetchEarthquakes() {
+  try {
+    const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson');
+    const d = await r.json();
+    quakeData = d.features.map(f => ({
+      lat:   f.geometry.coordinates[1],
+      lng:   f.geometry.coordinates[0],
+      mag:   f.properties.mag,
+      place: f.properties.place,
+      time:  new Date(f.properties.time).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+      depth: Math.round(f.geometry.coordinates[2]),
+      url:   f.properties.url,
+    })).sort((a,b) => b.mag - a.mag);
+
+    layers.quakes.clearLayers();
+    quakeData.forEach(q => {
+      const sz  = Math.max(4, Math.min(14, (q.mag - 4) * 3.5));
+      const col = q.mag >= 7 ? '#ff3b3b' : q.mag >= 6 ? '#ff6432' : q.mag >= 5.5 ? '#ff9500' : '#a064ff';
+      const ico = L.divIcon({ html:`<div class="m-quake" style="width:${sz*2}px;height:${sz*2}px;background:${col}30;border:1.5px solid ${col};color:${col}"></div>`, className:'', iconSize:[sz*2,sz*2], iconAnchor:[sz,sz] });
+      L.marker([q.lat,q.lng], {icon:ico})
+        .bindPopup(popup(q.place, 'Seismic Event', `M${q.mag.toFixed(1)} · Depth: ${q.depth}km · ${q.time}`, `M${q.mag.toFixed(1)}`, q.mag>=6?'b-critical':q.mag>=5.5?'b-high':'b-moderate'), {maxWidth:240})
+        .addTo(layers.quakes);
+    });
+    const statQ = document.getElementById('stat-quakes');
+    if (statQ) statQ.textContent = quakeData.length;
+  } catch(e) {
+    console.warn('USGS fetch failed:', e);
+    const statQ = document.getElementById('stat-quakes');
+    if (statQ) statQ.textContent = '—';
+  }
+}
+
+// ─── Filter layer toggle ───────────────────────────────────────────────────
+function filterLayer(key) {
+  if (!map) return;
+
+  // "all" button resets to all layers visible
+  if (key === 'all') {
+    Object.keys(layers).forEach(k => {
+      activeLayers.add(k);
+      layers[k].addTo(map);
+    });
+    document.querySelectorAll('.layer-btn').forEach(b => b.classList.add('active'));
+    return;
+  }
+
+  const btn = document.querySelector(`.layer-btn[data-layer="${key}"]`);
+  if (activeLayers.has(key)) {
+    activeLayers.delete(key);
+    if (layers[key]) map.removeLayer(layers[key]);
+    if (btn) btn.classList.remove('active');
+  } else {
+    activeLayers.add(key);
+    if (layers[key]) layers[key].addTo(map);
+    if (btn) btn.classList.add('active');
+  }
+}
+window.filterLayer = filterLayer;
+
+// ─── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('panel-' + tab);
+  if (panel) panel.classList.add('active');
+  if (el) el.classList.add('active');
+  if (tab === 'map' && map) setTimeout(() => map.invalidateSize(), 100);
+  if (tab === 'intel' && !_intelTabLoaded) {
+    _intelTabLoaded = true;
+    fetchIntelFeed(_intelFeedTab);
+  }
+}
+window.switchTab = switchTab;
+
+// ─── Feed switcher (bottom feed on MAP tab) ────────────────────────────────
+function switchFeed(type, el) {
+  document.querySelectorAll('.feed-tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderFeed(type);
+}
+window.switchFeed = switchFeed;
+
+function renderFeed(type) {
+  const el = document.getElementById('feed-list');
+  if (!el) return;
+  let list = '';
+  switch(type) {
+    case 'conflicts':
+      list = CONFLICTS.map(c => `<div class="feed-item" onclick="map.setView([${c.lat},${c.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(c.severity)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${c.name}</div>
+          <div class="fi-desc">${c.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${c.region}</span><span class="fi-badge ${sevClass(c.severity)}">${c.severity}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'hotspots':
+      list = HOTSPOTS.map(h => `<div class="feed-item" onclick="map.setView([${h.lat},${h.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(h.status)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${h.name}</div>
+          <div class="fi-desc">${h.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${h.region}</span><span class="fi-badge ${sevClass(h.status)}">${h.status}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'quakes':
+      list = quakeData.slice(0,30).map(q => `<div class="feed-item" onclick="map.setView([${q.lat},${q.lng}],6,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${q.mag>=7?'#ff3b3b':q.mag>=6?'#ff6432':q.mag>=5.5?'#ff9500':'#a064ff'}"></div>
+        <div class="feed-body">
+          <div class="fi-name">M${q.mag.toFixed(1)} — ${q.place}</div>
+          <div class="fi-desc">Depth ${q.depth}km · ${q.time}</div>
+          <div class="fi-meta"><span class="fi-badge ${q.mag>=6?'b-critical':q.mag>=5.5?'b-high':'b-moderate'}">M${q.mag.toFixed(1)}</span></div>
+        </div>
+      </div>`).join('') || '<div class="feed-empty">Loading seismic data…</div>';
+      break;
+    case 'energy':
+      list = ENERGY.map(e => `<div class="feed-item" onclick="map.setView([${e.lat},${e.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(e.type)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${e.name}</div>
+          <div class="fi-desc">${e.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${e.country}</span><span class="fi-badge b-moderate">${e.type}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'nuclear':
+      list = NUCLEAR.map(n => `<div class="feed-item" onclick="map.setView([${n.lat},${n.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:#39ff14"></div>
+        <div class="feed-body">
+          <div class="fi-name">${n.name}</div>
+          <div class="fi-desc">${n.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${n.country}</span><span class="fi-badge b-undeclared">${n.type}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'cyber':
+      list = CYBER.map(c => `<div class="feed-item" onclick="map.setView([${c.lat},${c.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(c.type)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${c.name}</div>
+          <div class="fi-desc">${c.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${c.country}</span><span class="fi-badge ${sevClass(c.type)}">${c.type}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'sanctions':
+      list = SANCTIONS.map(s => `<div class="feed-item" onclick="map.setView([${s.lat},${s.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(s.regime)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${s.name}</div>
+          <div class="fi-desc">${s.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${s.country}</span><span class="fi-badge b-critical">${s.regime}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'shipping':
+      list = SHIPPING.map(s => `<div class="feed-item" onclick="map.setView([${s.lat},${s.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(s.type)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${s.name}</div>
+          <div class="fi-desc">${s.desc}</div>
+          <div class="fi-meta"><span class="fi-badge ${sevClass(s.type)}">${s.type}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'intel':
+      list = INTEL_HUBS.map(h => `<div class="feed-item" onclick="map.setView([${h.lat},${h.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:${sevColor(h.type)}"></div>
+        <div class="feed-body">
+          <div class="fi-name">${h.name}</div>
+          <div class="fi-desc">${h.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${h.country}</span><span class="fi-badge ${sevClass(h.type)}">${h.type}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'metals':
+      list = PRECIOUS_METALS_HUBS.map(m => `<div class="feed-item" onclick="map.setView([${m.lat},${m.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:#ffd700"></div>
+        <div class="feed-body">
+          <div class="fi-name">${m.name}</div>
+          <div class="fi-desc">${m.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${m.country}</span><span class="fi-badge b-moderate">${m.type}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'military':
+      list = MILITARY_BASES.map(b => {
+        const col = b.type==='US'?'#64b4ff':b.type==='NATO'?'#00b4dc':b.type==='Russia'?'#ff3b3b':'#ff5050';
+        return `<div class="feed-item" onclick="map.setView([${b.lat},${b.lng}],6,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+          <div class="feed-icon" style="background:${col}"></div>
+          <div class="feed-body">
+            <div class="fi-name">${b.name}</div>
+            <div class="fi-desc">${b.desc}</div>
+            <div class="fi-meta"><span class="fi-region">${b.country}</span><span class="fi-badge ${sevClass(b.type)}">${b.type}</span></div>
+          </div>
+        </div>`;
+      }).join('');
+      break;
+    case 'cables':
+      list = SUBMARINE_CABLES.map(c => `<div class="feed-item">
+        <div class="feed-icon" style="background:#00ffc8"></div>
+        <div class="feed-body">
+          <div class="fi-name">${c.name}</div>
+          <div class="fi-desc">${c.desc}</div>
+          <div class="fi-meta"><span class="fi-badge b-cable">${c.capacity}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    default:
+      list = '<div class="feed-empty">Select a category above.</div>';
+  }
+  el.innerHTML = list || '<div class="feed-empty">No data available.</div>';
+}
+
+// ─── Intel feed tab switcher ───────────────────────────────────────────────
+function switchIntelFeed(tab, el) {
+  _intelFeedTab = tab;
+  document.querySelectorAll('.intel-tab-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  fetchIntelFeed(tab);
+}
+window.switchIntelFeed = switchIntelFeed;
+
+// ─── RSS feeds config ──────────────────────────────────────────────────────
+const RSS_FEEDS = {
+  geopolitical: [
+    'https://feeds.bbci.co.uk/news/world/rss.xml',
+    'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+  ],
+  markets: [
+    'https://feeds.bloomberg.com/markets/news.rss',
+    'https://www.ft.com/rss/home/uk',
+  ],
+  cyber: [
+    'https://feeds.feedburner.com/TheHackersNews',
+    'https://krebsonsecurity.com/feed/',
+  ],
+  energy: [
+    'https://oilprice.com/rss/main',
+    'https://www.ft.com/rss/companies/energy',
+  ],
+  centralbanks: [
+    'https://feeds.bbci.co.uk/news/business/rss.xml',
+  ],
+  military: [
+    'https://www.defensenews.com/arc/outboundfeeds/rss/',
+    'https://feeds.bbci.co.uk/news/world/rss.xml',
+  ],
+  health: [
+    'https://www.who.int/rss-feeds/news-english.xml',
+    'https://www.cdc.gov/media/rss/rssfeeds.xml',
+  ],
+};
+
+function classifySentiment(title) {
+  const t = title.toLowerCase();
+  const neg = ['attack','killed','war','crisis','conflict','sanction','strike','threat','collapse','explosion','dead','disaster','emergency','escalat','bomb','missile','rocket','hostage','terrorism','surge','plunge','crash','fall','drop','decline'];
+  const pos = ['peace','deal','agree','recovery','growth','ceasefire','diplomatic','aid','relief','progress','rise','gain','rally','boost'];
+  const negScore = neg.filter(w => t.includes(w)).length;
+  const posScore = pos.filter(w => t.includes(w)).length;
+  if (negScore > posScore) return { label: 'RISK', cls: 'sent-neg' };
+  if (posScore > negScore) return { label: 'STABLE', cls: 'sent-pos' };
+  return { label: 'NEUTRAL', cls: 'sent-neu' };
+}
+
+function fmtNewsTime(pubDate) {
+  if (!pubDate) return '';
+  const d = new Date(pubDate);
+  if (isNaN(d)) return pubDate;
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+function parseRSSXML(xmlText, sourceName) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'text/xml');
+  const items = Array.from(doc.querySelectorAll('item'));
+  return items.slice(0, 15).map(item => ({
+    title: item.querySelector('title')?.textContent?.trim() || '',
+    link: item.querySelector('link')?.textContent?.trim() || '',
+    pubDate: item.querySelector('pubDate')?.textContent?.trim() || '',
+    description: item.querySelector('description')?.textContent?.trim() || '',
+    source: sourceName,
+  }));
+}
+
+async function fetchIntelFeed(tab) {
+  const container = document.getElementById('intel-feed-list');
+  if (!container) return;
+  container.innerHTML = '<div class="feed-loading">Fetching intelligence feeds…</div>';
+
+  const feeds = RSS_FEEDS[tab] || RSS_FEEDS.geopolitical;
+  let allItems = [];
+
+  for (const url of feeds) {
+    try {
+      const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=20`;
+      const resp = await fetch(proxyUrl);
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (data.status !== 'ok' || !data.items) continue;
+      const sourceName = data.feed?.title || new URL(url).hostname;
+      data.items.forEach(item => {
+        allItems.push({
+          title: item.title || '',
+          link: item.link || '',
+          pubDate: item.pubDate || '',
+          description: item.description || '',
+          source: sourceName,
+        });
+      });
+    } catch(e) {
+      console.warn('RSS fetch failed for', url, e);
+    }
+  }
+
+  if (!allItems.length) {
+    container.innerHTML = `<div class="feed-empty">Unable to load live feeds — check network or CORS restrictions.</div>`;
+    return;
+  }
+
+  // Sort by date descending
+  allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  container.innerHTML = allItems.map(item => {
+    const sent = classifySentiment(item.title);
+    const domain = (() => { try { return new URL(item.link).hostname.replace('www.',''); } catch(e){ return item.source; } })();
+    const timeStr = fmtNewsTime(item.pubDate);
+    const desc = item.description ? item.description.replace(/<[^>]+>/g,'').slice(0,120) + '…' : '';
+    return `<div class="news-card" onclick="window.open('${item.link}','_blank')">
+      <div class="nc-header">
+        <span class="nc-source">${domain}</span>
+        <span class="nc-time">${timeStr}</span>
+        <span class="nc-sent ${sent.cls}">${sent.label}</span>
+      </div>
+      <div class="nc-title">${item.title}</div>
+      ${desc ? `<div class="nc-desc">${desc}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─── Metals feed render ────────────────────────────────────────────────────
+function renderMetalsFeed() {
+  const el = document.getElementById('metals-feed');
+  if (!el) return;
+  el.innerHTML = PRECIOUS_METALS_HUBS.map(m => `<div class="feed-item">
+    <div class="feed-icon" style="background:#ffd700"></div>
+    <div class="feed-body">
+      <div class="fi-name">${m.name}</div>
+      <div class="fi-desc">${m.desc}</div>
+      <div class="fi-meta"><span class="fi-region">${m.country}</span><span class="fi-badge b-moderate">${m.type}</span></div>
+    </div>
+  </div>`).join('');
+}
+
+// ─── Fear & Greed index ────────────────────────────────────────────────────
+async function fetchFearGreed() {
+  try {
+    const r = await fetch('https://api.alternative.me/fng/');
+    const d = await r.json();
+    const val = d.data?.[0];
+    if (!val) return;
+    const fgEl = document.getElementById('fear-greed-val');
+    const fgLabel = document.getElementById('fear-greed-label');
+    if (fgEl) fgEl.textContent = val.value;
+    if (fgLabel) fgLabel.textContent = val.value_classification;
+  } catch(e) { console.warn('Fear/Greed fetch failed:', e); }
+}
+
+// ─── FX + Markets panel ────────────────────────────────────────────────────
+function renderGlobalIndices(data) {
+  const indices = [
+    { id:'idx-spx', name:'S&P 500', val: data.spx || '5,892', chg: data.spxChg || '+0.42%', up: true },
+    { id:'idx-ndx', name:'NDX 100', val: data.ndx || '20,841', chg: data.ndxChg || '+0.61%', up: true },
+    { id:'idx-dji', name:'DJIA', val: data.dji || '44,312', chg: data.djiChg || '+0.18%', up: true },
+    { id:'idx-ftse', name:'FTSE 100', val: data.ftse || '8,671', chg: data.ftseChg || '-0.23%', up: false },
+    { id:'idx-dax', name:'DAX', val: data.dax || '22,104', chg: data.daxChg || '+0.54%', up: true },
+    { id:'idx-n225', name:'Nikkei 225', val: data.n225 || '38,902', chg: data.n225Chg || '-0.71%', up: false },
+    { id:'idx-sse', name:'SSE Comp', val: data.sse || '3,321', chg: data.sseChg || '+0.12%', up: true },
+  ];
+  indices.forEach(idx => {
+    const el = document.getElementById(idx.id);
+    if (el) el.innerHTML = `<span class="idx-name">${idx.name}</span><span class="idx-val">${idx.val}</span><span class="idx-chg ${idx.up?'up':'dn'}">${idx.chg}</span>`;
+  });
+}
+
+function renderSPHeatmap() {
+  const el = document.getElementById('sp-heatmap');
+  if (!el) return;
+  const sectors = [
+    { name:'Tech', chg: +1.24 }, { name:'Energy', chg: -0.43 }, { name:'Finance', chg: +0.67 },
+    { name:'Health', chg: +0.31 }, { name:'Materials', chg: -0.18 }, { name:'Utilities', chg: +0.09 },
+    { name:'Industrials', chg: +0.52 }, { name:'Cons.Disc', chg: -0.72 }, { name:'Cons.Stap', chg: +0.15 },
+    { name:'Comm.Svcs', chg: +0.88 }, { name:'RE', chg: -0.35 },
+  ];
+  el.innerHTML = sectors.map(s => {
+    const intensity = Math.min(1, Math.abs(s.chg) / 1.5);
+    const bg = s.chg > 0
+      ? `rgba(0,230,118,${0.15 + intensity * 0.6})`
+      : `rgba(255,59,59,${0.15 + intensity * 0.6})`;
+    return `<div class="hm-cell" style="background:${bg};color:${s.chg>0?'#00e676':'#ff3b3b'}">
+      <div class="hm-name">${s.name}</div>
+      <div class="hm-chg">${s.chg>0?'+':''}${s.chg.toFixed(2)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Session clock ─────────────────────────────────────────────────────────
+function updateSessionClock() {
+  const el = document.getElementById('session-clock');
+  const sessEl = document.getElementById('session-status');
+  if (!el) return;
+  const now = new Date();
+  const utcH = now.getUTCHours();
+  const utcM = now.getUTCMinutes();
+  const utcS = now.getUTCSeconds();
+  el.textContent = `UTC ${String(utcH).padStart(2,'0')}:${String(utcM).padStart(2,'0')}:${String(utcS).padStart(2,'0')}`;
+
+  // Market session detection
+  if (sessEl) {
+    let sess = [];
+    if (utcH >= 8 && utcH < 17) sess.push('LONDON');
+    if (utcH >= 13 && utcH < 22) sess.push('NEW YORK');
+    if ((utcH >= 23 || utcH < 7)) sess.push('TOKYO');
+    if (utcH >= 1 && utcH < 9) sess.push('SYDNEY');
+    sessEl.textContent = sess.length ? sess.join(' + ') + ' OPEN' : 'ALL CLOSED';
+    sessEl.style.color = sess.length ? 'var(--green)' : 'var(--text-dim)';
+  }
+}
+
+// ─── Markets panel binding ─────────────────────────────────────────────────
+function bindMarketsPanel() {
+  // Set static/estimated values for display
+  const staticPrices = {
+    'btc-price': '$84,210', 'eth-price': '$3,241', 'gold-price': '$2,687/oz', 'silver-price': '$31.42/oz',
+    'oil-price': '$78.84/bbl', 'ng-price': '$2.71/MMBtu', 'copper-price': '$4.18/lb',
+    'dxy-price': '104.32', 'vix-price': '18.74',
+  };
+  Object.entries(staticPrices).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
+
+  // Fetch FX rates
+  fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,JPY,CHF,AUD,CAD,CNY')
+    .then(r => r.json())
+    .then(d => {
+      const rates = d.rates || {};
+      const fxMap = {
+        'mb-eurusd': rates.EUR ? `${rates.EUR.toFixed(4)}` : '0.9231',
+        'mb-gbpusd': rates.GBP ? `${rates.GBP.toFixed(4)}` : '0.7891',
+        'mb-usdjpy': rates.JPY ? `${rates.JPY.toFixed(2)}` : '149.82',
+        'mb-usdchf': rates.CHF ? `${rates.CHF.toFixed(4)}` : '0.8924',
+        'mb-audusd': rates.AUD ? `${rates.AUD.toFixed(4)}` : '0.6412',
+        'mb-usdcad': rates.CAD ? `${rates.CAD.toFixed(4)}` : '1.3621',
+        'mb-usdcny': rates.CNY ? `${rates.CNY.toFixed(4)}` : '7.2341',
+      };
+      Object.entries(fxMap).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      });
+    })
+    .catch(() => {});
+
+  renderGlobalIndices({});
+  renderSPHeatmap();
+
+  // Online count
+  const oc = document.getElementById('online-count');
+  if (oc) oc.textContent = (1200 + Math.floor(Math.random() * 800)).toLocaleString();
+}
+
+// ─── initMap — main map initialization ────────────────────────────────────
+function initMap() {
+  map = L.map('world-map', {
+    center: [20, 10],
+    zoom: 2,
+    minZoom: 1,
+    maxZoom: 10,
+    worldCopyJump: false,
+    maxBounds: [[-90, -220], [90, 220]],
+    maxBoundsViscosity: 0.8,
+    zoomControl: false,
+  });
+
+  // CartoDB Dark tiles with custom filter
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // Labels layer on top
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    attribution: '',
+    subdomains: 'abcd',
+    maxZoom: 19,
+    pane: 'shadowPane',
+  }).addTo(map);
+
+  // Zoom control custom position
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // ── Create all layer groups ─────────────────────────────────────────────
+  const layerKeys = ['conflicts','hotspots','markets','energy','nuclear','quakes','cyber','sanctions','shipping','intel','metals','military','cables','pipelines','weather'];
+  layerKeys.forEach(k => { layers[k] = L.layerGroup(); });
+
+  // ── CONFLICTS ─────────────────────────────────────────────────────────
+  CONFLICTS.forEach(c => {
+    const col = sevColor(c.severity);
+    const ico = L.divIcon({
+      html: `<div class="m-conflict" style="background:${col}30;border:2px solid ${col};box-shadow:0 0 8px ${col}60;animation:pulse 2s infinite"></div>`,
+      className: '', iconSize:[16,16], iconAnchor:[8,8]
+    });
+    L.marker([c.lat, c.lng], { icon: ico })
+      .bindPopup(popup(c.name, c.region, c.desc, c.severity, sevClass(c.severity), c.type), { maxWidth:260 })
+      .addTo(layers.conflicts);
+  });
+
+  // ── HOTSPOTS ──────────────────────────────────────────────────────────
+  HOTSPOTS.forEach(h => {
+    const col = sevColor(h.status);
+    const ico = L.divIcon({
+      html: `<div class="m-hotspot" style="background:${col}25;border:1.5px solid ${col};box-shadow:0 0 6px ${col}50;animation:pulse 2.5s infinite"></div>`,
+      className: '', iconSize:[14,14], iconAnchor:[7,7]
+    });
+    L.marker([h.lat, h.lng], { icon: ico })
+      .bindPopup(popup(h.name, h.region, h.desc, h.status, sevClass(h.status)), { maxWidth:240 })
+      .addTo(layers.hotspots);
+  });
+
+  // ── MARKETS ───────────────────────────────────────────────────────────
+  MARKETS_CENTRES.forEach(m => {
+    const ico = L.divIcon({
+      html: `<div style="width:10px;height:10px;background:#f5c842;border:1px solid #ffd700;border-radius:50%;box-shadow:0 0 6px #f5c84260"></div>`,
+      className: '', iconSize:[10,10], iconAnchor:[5,5]
+    });
+    L.marker([m.lat, m.lng], { icon: ico })
+      .bindPopup(popup(m.name, m.country, m.desc, m.type, sevClass(m.type)), { maxWidth:240 })
+      .addTo(layers.markets);
+  });
+
+  // ── ENERGY ────────────────────────────────────────────────────────────
+  ENERGY.forEach(e => {
+    const ico = L.divIcon({
+      html: `<div style="width:12px;height:12px;background:#ff9500;border:1.5px solid #ffb332;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 0 6px #ff950060">⚡</div>`,
+      className: '', iconSize:[12,12], iconAnchor:[6,6]
+    });
+    L.marker([e.lat, e.lng], { icon: ico })
+      .bindPopup(popup(e.name, e.country, e.desc, e.type, 'b-moderate'), { maxWidth:240 })
+      .addTo(layers.energy);
+  });
+
+  // ── NUCLEAR ───────────────────────────────────────────────────────────
+  NUCLEAR.forEach(n => {
+    const ico = L.divIcon({
+      html: `<div style="width:14px;height:14px;background:#39ff1420;border:1.5px solid #39ff14;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;box-shadow:0 0 8px #39ff1480">☢</div>`,
+      className: '', iconSize:[14,14], iconAnchor:[7,7]
+    });
+    L.marker([n.lat, n.lng], { icon: ico })
+      .bindPopup(popup(n.name, n.country, n.desc, n.type, 'b-undeclared'), { maxWidth:240 })
+      .addTo(layers.nuclear);
+  });
+
+  // ── CYBER ─────────────────────────────────────────────────────────────
+  CYBER.forEach(c => {
+    const ico = L.divIcon({
+      html: `<div style="width:12px;height:12px;background:#a064ff20;border:1.5px solid #a064ff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 0 6px #a064ff60">⚡</div>`,
+      className: '', iconSize:[12,12], iconAnchor:[6,6]
+    });
+    L.marker([c.lat, c.lng], { icon: ico })
+      .bindPopup(popup(c.name, c.country, c.desc, c.type, sevClass(c.type)), { maxWidth:240 })
+      .addTo(layers.cyber);
+  });
+
+  // ── SANCTIONS ─────────────────────────────────────────────────────────
+  SANCTIONS.forEach(s => {
+    const ico = L.divIcon({
+      html: `<div style="width:12px;height:12px;background:#ff2d5520;border:1.5px solid #ff2d55;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;box-shadow:0 0 5px #ff2d5560">🚫</div>`,
+      className: '', iconSize:[12,12], iconAnchor:[6,6]
+    });
+    L.marker([s.lat, s.lng], { icon: ico })
+      .bindPopup(popup(s.name, s.country, s.desc, s.regime, 'b-critical'), { maxWidth:240 })
+      .addTo(layers.sanctions);
+  });
+
+  // ── SHIPPING ──────────────────────────────────────────────────────────
+  SHIPPING.forEach(s => {
+    const col = sevColor(s.type);
+    const ico = L.divIcon({
+      html: `<div style="width:12px;height:12px;background:${col}20;border:1.5px solid ${col};border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:7px;box-shadow:0 0 5px ${col}50">⚓</div>`,
+      className: '', iconSize:[12,12], iconAnchor:[6,6]
+    });
+    L.marker([s.lat, s.lng], { icon: ico })
+      .bindPopup(popup(s.name, '', s.desc, s.type, sevClass(s.type)), { maxWidth:240 })
+      .addTo(layers.shipping);
+    if (s.path && s.path.length > 1) {
+      L.polyline(s.path, { color: col, weight: 1, opacity: 0.4, dashArray: '6 8' })
+        .addTo(layers.shipping);
+    }
+  });
+
+  // ── INTEL ─────────────────────────────────────────────────────────────
+  INTEL_HUBS.forEach(h => {
+    const col = sevColor(h.type);
+    const ico = L.divIcon({
+      html: `<div style="width:11px;height:11px;background:${col}25;border:1px solid ${col};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;box-shadow:0 0 5px ${col}50">👁</div>`,
+      className: '', iconSize:[11,11], iconAnchor:[5.5,5.5]
+    });
+    L.marker([h.lat, h.lng], { icon: ico })
+      .bindPopup(popup(h.name, h.country, h.desc, h.type, sevClass(h.type)), { maxWidth:240 })
+      .addTo(layers.intel);
+  });
+
+  // ── METALS ────────────────────────────────────────────────────────────
+  PRECIOUS_METALS_HUBS.forEach(m => {
+    const ico = L.divIcon({
+      html: `<div style="width:11px;height:11px;background:#ffd70030;border:1px solid #ffd700;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);box-shadow:0 0 5px #ffd70060"></div>`,
+      className: '', iconSize:[11,11], iconAnchor:[5.5,5.5]
+    });
+    L.marker([m.lat, m.lng], { icon: ico })
+      .bindPopup(popup(m.name, m.country, m.desc, m.type, 'b-moderate'), { maxWidth:240 })
+      .addTo(layers.metals);
+    metalMarkerRefs[m.name] = [m.lat, m.lng];
+  });
+
+  // ── MILITARY ──────────────────────────────────────────────────────────
+  MILITARY_BASES.forEach(b => {
+    const col = b.type==='US' ? '#64b4ff' : b.type==='NATO' ? '#00b4dc' : b.type==='Russia' ? '#ff3b3b' : '#ff5050';
+    const glyph = b.type==='US' ? '🎖' : b.type==='NATO' ? '⊞' : b.type==='Russia' ? '★' : '⬟';
+    const ico = L.divIcon({
+      html: `<div style="width:12px;height:12px;background:${col}25;border:1.5px solid ${col};border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 0 6px ${col}60">${glyph}</div>`,
+      className: '', iconSize:[12,12], iconAnchor:[6,6]
+    });
+    L.marker([b.lat, b.lng], { icon: ico })
+      .bindPopup(popup(b.name, b.country, b.desc, b.type, sevClass(b.type)), { maxWidth:260 })
+      .addTo(layers.military);
+  });
+
+  // ── CABLES ────────────────────────────────────────────────────────────
+  SUBMARINE_CABLES.forEach(cable => {
+    L.polyline(cable.path, {
+      color: cable.color || '#00ffc8',
+      weight: 1.5,
+      opacity: 0.6,
+      dashArray: '4 6',
+    })
+      .bindPopup(`<div class="map-popup"><div class="mp-title">${cable.name}</div><div class="mp-desc">${cable.desc}</div><div class="mp-row"><span class="mp-badge b-moderate">${cable.capacity}</span></div></div>`, { maxWidth:220 })
+      .addTo(layers.cables);
+  });
+
+  // ── PIPELINES ─────────────────────────────────────────────────────────
+  PIPELINES.forEach(pipe => {
+    L.polyline(pipe.path, {
+      color: pipe.color,
+      weight: pipe.weight,
+      opacity: 0.7,
+      dashArray: pipe.dashArray || '',
+    })
+      .bindPopup(`<div class="map-popup"><div class="mp-title">${pipe.name}</div><div class="mp-region">${pipe.region}</div><div class="mp-row"><span class="mp-badge b-moderate">PIPELINE</span></div></div>`, { maxWidth:220 })
+      .addTo(layers.pipelines);
+  });
+
+  // ── Add all layers to map ─────────────────────────────────────────────
+  Object.keys(layers).forEach(k => {
+    activeLayers.add(k);
+    layers[k].addTo(map);
+  });
+
+  // ── Layer button bindings ────────────────────────────────────────────
+  document.querySelectorAll('.layer-btn').forEach(btn => {
+    const layerKey = btn.getAttribute('data-layer');
+    if (layerKey && layerKey !== 'all') {
+      btn.classList.add('active');
+    }
+  });
+
+  // ── Update stats ─────────────────────────────────────────────────────
+  const setStatSafe = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setStatSafe('stat-conflicts', CONFLICTS.length);
+  setStatSafe('stat-hotspots', HOTSPOTS.length);
+  setStatSafe('stat-energy', ENERGY.length);
+  setStatSafe('stat-cyber', CYBER.length);
+  setStatSafe('stat-sanctions', SANCTIONS.length);
+  setStatSafe('stat-shipping', SHIPPING.length);
+  setStatSafe('stat-intel', INTEL_HUBS.length);
+  setStatSafe('stat-military', MILITARY_BASES.length);
+  setStatSafe('stat-quakes', '…');
+
+  // ── Solar terminator ─────────────────────────────────────────────────
+  updateSolarTerminator();
+  setInterval(updateSolarTerminator, 60000);
+
+  // ── Regional preset bar overlay ───────────────────────────────────────
+  const regionBar = document.createElement('div');
+  regionBar.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;gap:4px;pointer-events:all;';
+  regionBar.innerHTML = `
+    <button onclick="jumpToRegion('global')"   style="padding:3px 8px;background:rgba(9,9,14,0.9);border:1px solid rgba(0,212,255,0.3);border-radius:12px;color:var(--text-dim);font-family:var(--font-head);font-size:0.42rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s" onmouseover="this.style.color='var(--teal)';this.style.borderColor='var(--teal)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='rgba(0,212,255,0.3)'">🌍 GLOBAL</button>
+    <button onclick="jumpToRegion('americas')" style="padding:3px 8px;background:rgba(9,9,14,0.9);border:1px solid rgba(0,212,255,0.3);border-radius:12px;color:var(--text-dim);font-family:var(--font-head);font-size:0.42rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s" onmouseover="this.style.color='var(--teal)';this.style.borderColor='var(--teal)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='rgba(0,212,255,0.3)'">🌎 AMERICAS</button>
+    <button onclick="jumpToRegion('europe')"   style="padding:3px 8px;background:rgba(9,9,14,0.9);border:1px solid rgba(0,212,255,0.3);border-radius:12px;color:var(--text-dim);font-family:var(--font-head);font-size:0.42rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s" onmouseover="this.style.color='var(--teal)';this.style.borderColor='var(--teal)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='rgba(0,212,255,0.3)'">🏛 EUROPE</button>
+    <button onclick="jumpToRegion('mena')"     style="padding:3px 8px;background:rgba(9,9,14,0.9);border:1px solid rgba(0,212,255,0.3);border-radius:12px;color:var(--text-dim);font-family:var(--font-head);font-size:0.42rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s" onmouseover="this.style.color='var(--teal)';this.style.borderColor='var(--teal)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='rgba(0,212,255,0.3)'">🕌 MENA</button>
+    <button onclick="jumpToRegion('asia')"     style="padding:3px 8px;background:rgba(9,9,14,0.9);border:1px solid rgba(0,212,255,0.3);border-radius:12px;color:var(--text-dim);font-family:var(--font-head);font-size:0.42rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s" onmouseover="this.style.color='var(--teal)';this.style.borderColor='var(--teal)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='rgba(0,212,255,0.3)'">🏯 ASIA</button>
+    <button onclick="jumpToRegion('africa')"   style="padding:3px 8px;background:rgba(9,9,14,0.9);border:1px solid rgba(0,212,255,0.3);border-radius:12px;color:var(--text-dim);font-family:var(--font-head);font-size:0.42rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s" onmouseover="this.style.color='var(--teal)';this.style.borderColor='var(--teal)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='rgba(0,212,255,0.3)'">🌍 AFRICA</button>
+  `;
+  const mapDiv = document.getElementById('world-map');
+  if (mapDiv) mapDiv.appendChild(regionBar);
+
+  // ── Async data fetches ────────────────────────────────────────────────
+  fetchEarthquakes();
+  fetchEONET();
+  populateTicker();
+  initCoordDisplay();
+  initSearch();
+}
+
+// ─── Initialization sequence ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  searchIndex = buildSearchIndex();
+  initMap();
+  bindMarketsPanel();
+  updateSessionClock();
+  setInterval(updateSessionClock, 1000);
+  renderSPHeatmap();
+  fetchFearGreed();
+});
+</script>
+</body>
+</html>
