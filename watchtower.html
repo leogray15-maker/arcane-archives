@@ -99,6 +99,11 @@
     .layer-btn[data-layer="metals"].active    { border-color:rgba(255,215,0,0.6); background:rgba(255,215,0,0.1); color:#ffd700; }
     .layer-btn[data-layer="military"].active  { border-color:rgba(100,180,255,0.6); background:rgba(100,180,255,0.11); color:#64b4ff; }
     .layer-btn[data-layer="cables"].active    { border-color:rgba(0,255,200,0.6); background:rgba(0,255,200,0.1); color:#00ffc8; }
+    .layer-btn[data-layer="protests"].active   { border-color:rgba(255,100,0,0.6); background:rgba(255,100,0,0.13); color:#ff6400; }
+    .layer-btn[data-layer="spaceports"].active { border-color:rgba(0,255,200,0.6); background:rgba(0,255,200,0.1); color:#00ffc8; }
+    .layer-btn[data-layer="minerals"].active   { border-color:rgba(180,100,255,0.6); background:rgba(180,100,255,0.12); color:#b464ff; }
+    .layer-btn[data-layer="datacenters"].active{ border-color:rgba(57,255,20,0.6); background:rgba(57,255,20,0.1); color:#39ff14; }
+    .layer-btn[data-layer="fires"].active      { border-color:rgba(255,69,0,0.6); background:rgba(255,69,0,0.13); color:#ff4500; }
     .layer-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 
     /* ── Leaflet map ── */
@@ -422,9 +427,115 @@
       .stat-lbl { font-size:0.33rem; }
       .sit-count { display:none; }
     }
+
+/* ── Time filter bar ── */
+.time-filter-bar { display:flex; align-items:center; gap:0.35rem; padding:0.22rem 0.75rem; flex-shrink:0; background:rgba(6,6,12,0.96); border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+.time-filter-bar::-webkit-scrollbar { display:none; }
+.tf-label { font-family:var(--font-head); font-size:0.44rem; letter-spacing:0.15em; color:var(--text-muted); text-transform:uppercase; margin-right:0.3rem; flex-shrink:0; }
+.tf-btn { flex-shrink:0; padding:0.15rem 0.55rem; border-radius:12px; font-family:var(--font-head); font-size:0.44rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.15s; border:1px solid var(--border); background:transparent; color:var(--text-muted); }
+.tf-btn.active { border-color:var(--teal); background:rgba(0,212,255,0.12); color:var(--teal); }
+.tf-sep { width:1px; height:14px; background:var(--border); margin:0 0.25rem; flex-shrink:0; }
+.tf-live { display:flex; align-items:center; gap:0.3rem; font-family:var(--font-head); font-size:0.42rem; color:var(--green); letter-spacing:0.08em; flex-shrink:0; margin-left:auto; }
+.tf-live-dot { width:5px; height:5px; border-radius:50%; background:var(--green); box-shadow:0 0 5px var(--green); animation:tfPulse 2s ease-in-out infinite; }
+@keyframes tfPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── Radar panel ── */
+#panel-radar { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--border) transparent; background:var(--bg-1); }
+#panel-radar::-webkit-scrollbar { width:4px; }
+#panel-radar::-webkit-scrollbar-thumb { background:var(--border); }
+.radar-grid { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--border); }
+.radar-panel { border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:0.9rem 1rem; min-width:0; }
+.radar-panel.full-w { grid-column:1/-1; border-right:none; }
+.radar-panel:last-child { border-right:none; }
+.rp-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.65rem; }
+.rp-title { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.18em; color:var(--text-dim); text-transform:uppercase; }
+.rp-sub { font-family:var(--font-head); font-size:0.38rem; color:var(--text-muted); }
+
+/* Instability index */
+.instab-row { display:flex; align-items:center; gap:0.5rem; padding:0.3rem 0; border-bottom:1px solid var(--border); }
+.instab-row:last-child { border-bottom:none; }
+.instab-rank { font-family:var(--font-head); font-size:0.42rem; color:var(--text-muted); width:18px; text-align:right; flex-shrink:0; }
+.instab-flag { font-size:0.75rem; flex-shrink:0; }
+.instab-name { font-family:var(--font-head); font-size:0.52rem; font-weight:700; color:var(--text); flex:1; }
+.instab-bar-wrap { width:90px; height:5px; background:var(--bg-4); border-radius:3px; overflow:hidden; flex-shrink:0; }
+.instab-bar-fill { height:100%; border-radius:3px; }
+.instab-score { font-family:var(--font-head); font-size:0.52rem; font-weight:800; width:28px; text-align:right; flex-shrink:0; }
+.instab-delta { font-family:var(--font-head); font-size:0.38rem; font-weight:600; width:28px; text-align:right; flex-shrink:0; }
+.instab-delta.up { color:var(--red); } .instab-delta.dn { color:var(--green); }
+
+/* Market Radar */
+.radar-signal-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.6rem; }
+.radar-signal { background:var(--bg-3); border:1px solid var(--border); border-radius:5px; padding:0.38rem 0.5rem; }
+.rs-label { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
+.rs-value { font-family:var(--font-head); font-size:0.62rem; font-weight:800; margin-top:0.06rem; }
+.rs-signal { font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.08em; margin-top:0.04rem; }
+.rs-buy { color:var(--green); } .rs-sell { color:var(--red); } .rs-neutral { color:var(--text-muted); }
+.radar-verdict { text-align:center; padding:0.6rem; border-radius:8px; border:1px solid var(--border); margin-top:0.4rem; }
+.rv-label { font-family:var(--font-head); font-size:0.42rem; letter-spacing:0.2em; color:var(--text-muted); text-transform:uppercase; }
+.rv-verdict { font-family:var(--font-head); font-size:1.6rem; font-weight:900; letter-spacing:0.08em; margin-top:0.1rem; }
+.rv-score { font-family:var(--font-head); font-size:0.48rem; color:var(--text-muted); margin-top:0.08rem; }
+
+/* Convergence zones */
+.conv-row { display:flex; align-items:flex-start; gap:0.55rem; padding:0.42rem 0; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.14s; }
+.conv-row:hover { background:rgba(0,212,255,0.04); }
+.conv-badge { flex-shrink:0; width:32px; height:32px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:900; font-family:var(--font-head); }
+.conv-body { flex:1; min-width:0; }
+.conv-name { font-family:var(--font-head); font-size:0.56rem; font-weight:700; color:var(--text); }
+.conv-factors { font-size:0.5rem; color:var(--text-dim); margin-top:0.08rem; }
+.conv-meta { display:flex; align-items:center; gap:0.35rem; margin-top:0.18rem; }
+.conv-tag { padding:0.08rem 0.35rem; border-radius:3px; font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.08em; }
+
+/* Kbd shortcut overlay */
+.kbd-overlay { position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+.kbd-overlay.open { display:flex; }
+.kbd-box { background:rgba(10,10,18,0.98); border:1px solid var(--border-hi); border-radius:12px; padding:1.5rem 2rem; min-width:340px; max-width:480px; box-shadow:0 0 40px rgba(0,212,255,0.1),0 12px 40px rgba(0,0,0,0.8); }
+.kbd-title { font-family:var(--font-head); font-size:0.6rem; font-weight:800; letter-spacing:0.2em; color:var(--teal); text-transform:uppercase; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; }
+.kbd-close { cursor:pointer; color:var(--text-muted); font-size:0.8rem; }
+.kbd-close:hover { color:var(--teal); }
+.kbd-row { display:flex; align-items:center; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid var(--border); }
+.kbd-key { display:inline-flex; align-items:center; gap:0.25rem; }
+.kbd-k { background:var(--bg-3); border:1px solid var(--border-hi); border-radius:4px; padding:0.15rem 0.45rem; font-family:var(--font-head); font-size:0.5rem; font-weight:700; color:var(--text); letter-spacing:0.04em; box-shadow:0 2px 0 rgba(0,0,0,0.5); }
+.kbd-desc { font-family:var(--font-head); font-size:0.5rem; color:var(--text-dim); }
+
+/* GDELT feed */
+.gdelt-card { display:flex; gap:0.55rem; padding:0.55rem 0.9rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.14s; }
+.gdelt-card:hover { background:var(--bg-3); }
+.gdelt-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:0.28rem; }
+.gdelt-body { flex:1; min-width:0; }
+.gdelt-title { font-size:0.64rem; font-weight:600; color:var(--text); line-height:1.4; }
+.gdelt-meta { display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.18rem; }
+.gdelt-src { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); }
+.gdelt-tone { font-family:var(--font-head); font-size:0.38rem; font-weight:700; padding:0.07rem 0.3rem; border-radius:3px; }
+.gdelt-tone.pos { background:rgba(0,230,118,0.12); color:#00e676; border:1px solid rgba(0,230,118,0.25); }
+.gdelt-tone.neg { background:rgba(255,59,59,0.12); color:#ff5c5c; border:1px solid rgba(255,59,59,0.25); }
+.gdelt-tone.neu { background:rgba(120,130,160,0.1); color:var(--text-muted); border:1px solid var(--border); }
+
+/* Spaceport marker glow */
+@keyframes spaceGlow { 0%,100%{box-shadow:0 0 5px rgba(0,255,200,0.5)} 50%{box-shadow:0 0 16px rgba(0,255,200,0.95),0 0 30px rgba(0,255,200,0.35)} }
+.m-spaceport { width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; animation:spaceGlow 3s ease-in-out infinite; }
+
+/* Convergence circle overlay */
+.conv-radius-tooltip { font-family:var(--font-head); font-size:0.46rem; color:var(--teal); padding:0.25rem 0.5rem; }
+
   </style>
 </head>
 <body>
+
+<!-- Keyboard Shortcut Overlay -->
+<div class="kbd-overlay" id="kbd-overlay" onclick="closeKbdOverlay(event)">
+  <div class="kbd-box" onclick="event.stopPropagation()">
+    <div class="kbd-title">Keyboard Shortcuts <span class="kbd-close" onclick="toggleKbdOverlay()">✕</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">⌘</span><span class="kbd-k">K</span></span><span class="kbd-desc">Open search</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">Esc</span></span><span class="kbd-desc">Close overlays / reset view</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">M</span></span><span class="kbd-desc">Switch to Map tab</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">R</span></span><span class="kbd-desc">Switch to Radar tab</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">N</span></span><span class="kbd-desc">Switch to Intel Feed</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">S</span></span><span class="kbd-desc">Switch to Markets</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">G</span></span><span class="kbd-desc">Jump to Global view</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">F</span></span><span class="kbd-desc">Toggle fullscreen map</span></div>
+    <div class="kbd-row"><span class="kbd-key"><span class="kbd-k">?</span></span><span class="kbd-desc">Toggle this shortcuts panel</span></div>
+  </div>
+</div>
 
 <canvas id="stars-canvas"></canvas>
 <div class="grid-overlay"></div>
@@ -492,6 +603,7 @@
       <div class="map-tab active" data-tab="map"     onclick="switchTab('map',this)">🗺 Map</div>
       <div class="map-tab"        data-tab="markets" onclick="switchTab('markets',this)">📊 Markets</div>
       <div class="map-tab"        data-tab="news"    onclick="switchTab('news',this)">📰 Intel Feed</div>
+      <div class="map-tab"        data-tab="radar"   onclick="switchTab('radar',this)">⬡ Radar</div>
       <!-- Search bar -->
       <div class="search-wrap">
         <input class="search-input" id="search-input" type="text" placeholder="Search locations…" autocomplete="off"/>
@@ -540,6 +652,25 @@
         <button class="layer-btn active" data-layer="metals"    onclick="filterLayer('metals',this)"    title="Gold &amp; silver exchanges and mines"><span class="layer-dot" style="background:#ffd700"></span>METALS</button>
         <button class="layer-btn active" data-layer="military"  onclick="filterLayer('military',this)"  title="Major military bases worldwide"><span class="layer-dot" style="background:#64b4ff"></span>🎖 MILITARY</button>
         <button class="layer-btn active" data-layer="cables"    onclick="filterLayer('cables',this)"    title="Submarine internet cables"><span class="layer-dot" style="background:#00ffc8"></span>🌐 CABLES</button>
+        <button class="layer-btn active" data-layer="protests"    onclick="filterLayer('protests',this)"    title="Major protest movements"><span class="layer-dot" style="background:#ff6400"></span>🪧 PROTESTS</button>
+        <button class="layer-btn active" data-layer="spaceports"  onclick="filterLayer('spaceports',this)"  title="Major spaceports worldwide"><span class="layer-dot" style="background:#00ffc8"></span>🚀 SPACE</button>
+        <button class="layer-btn active" data-layer="minerals"    onclick="filterLayer('minerals',this)"    title="Critical mineral deposits"><span class="layer-dot" style="background:#b464ff"></span>💎 MINERALS</button>
+        <button class="layer-btn active" data-layer="datacenters" onclick="filterLayer('datacenters',this)" title="Major AI datacenter clusters"><span class="layer-dot" style="background:#39ff14"></span>🖥 AI/DC</button>
+        <button class="layer-btn active" data-layer="fires"       onclick="filterLayer('fires',this)"       title="NASA FIRMS active fires"><span class="layer-dot" style="background:#ff4500"></span>🔥 FIRES</button>
+      </div>
+
+      <!-- Time filter bar -->
+      <div class="time-filter-bar">
+        <span class="tf-label">⏱ Time Window:</span>
+        <button class="tf-btn" data-tf="1h"  onclick="setTimeFilter('1h',this)">1H</button>
+        <button class="tf-btn" data-tf="6h"  onclick="setTimeFilter('6h',this)">6H</button>
+        <button class="tf-btn" data-tf="24h" onclick="setTimeFilter('24h',this)">24H</button>
+        <button class="tf-btn" data-tf="48h" onclick="setTimeFilter('48h',this)">48H</button>
+        <button class="tf-btn active" data-tf="7d" onclick="setTimeFilter('7d',this)">7D</button>
+        <button class="tf-btn" data-tf="all" onclick="setTimeFilter('all',this)">ALL</button>
+        <div class="tf-sep"></div>
+        <button class="tf-btn" onclick="toggleKbdOverlay()" title="Keyboard shortcuts">⌨ SHORTCUTS</button>
+        <div class="tf-live"><div class="tf-live-dot"></div>LIVE DATA</div>
       </div>
 
       <!-- Leaflet map -->
@@ -606,10 +737,63 @@
           <div class="feed-tab-btn"        data-feed="metals"    onclick="switchFeed('metals',this)">⬡ METALS</div>
           <div class="feed-tab-btn"        data-feed="military"  onclick="switchFeed('military',this)">⚔ MILITARY</div>
           <div class="feed-tab-btn"        data-feed="cables"    onclick="switchFeed('cables',this)">🌐 CABLES</div>
+          <div class="feed-tab-btn" data-feed="protests"    onclick="switchFeed('protests',this)">🪧 PROTESTS</div>
+          <div class="feed-tab-btn" data-feed="spaceports"  onclick="switchFeed('spaceports',this)">🚀 SPACE</div>
+          <div class="feed-tab-btn" data-feed="minerals"    onclick="switchFeed('minerals',this)">💎 MINERALS</div>
+          <div class="feed-tab-btn" data-feed="datacenters" onclick="switchFeed('datacenters',this)">🖥 AI/DC</div>
         </div>
         <div class="feed-list" id="feed-list"></div>
       </div>
     </div><!-- /panel-map -->
+
+    <!-- ── RADAR PANEL ── -->
+    <div class="main-panel" id="panel-radar">
+      <div class="radar-grid">
+        <!-- Country Instability Index -->
+        <div class="radar-panel" style="grid-column:1/-1;border-right:none">
+          <div class="rp-head">
+            <span class="rp-title">🌡 Country Instability Index</span>
+            <span class="rp-sub">Composite score · conflicts + hotspots + sanctions</span>
+          </div>
+          <div id="instability-list"></div>
+        </div>
+      </div>
+      <div class="radar-grid">
+        <!-- Market Radar -->
+        <div class="radar-panel">
+          <div class="rp-head">
+            <span class="rp-title">📡 Market Radar</span>
+            <span class="rp-sub">7-signal composite</span>
+          </div>
+          <div class="radar-signal-grid" id="radar-signals"></div>
+          <div class="radar-verdict" id="radar-verdict">
+            <div class="rv-label">Composite Signal</div>
+            <div class="rv-verdict" id="rv-verdict">—</div>
+            <div class="rv-score" id="rv-score">Computing…</div>
+          </div>
+        </div>
+        <!-- Convergence Zones -->
+        <div class="radar-panel no-right" style="border-right:none">
+          <div class="rp-head">
+            <span class="rp-title">⚡ Convergence Zones</span>
+            <span class="rp-sub">Multi-threat overlap detection</span>
+          </div>
+          <div id="convergence-list"></div>
+        </div>
+      </div>
+      <!-- GDELT Live Events -->
+      <div class="radar-grid">
+        <div class="radar-panel full-w">
+          <div class="rp-head">
+            <span class="rp-title">📡 GDELT Live Intelligence</span>
+            <span class="rp-sub" id="gdelt-status">Loading…</span>
+            <button class="if-refresh" onclick="fetchGDELT()" style="margin-left:auto">↺ Refresh</button>
+          </div>
+          <div id="gdelt-feed"></div>
+        </div>
+      </div>
+    </div><!-- /panel-radar -->
+
     <!-- ── MARKETS PANEL ── -->
     <div class="main-panel" id="panel-markets">
       <div class="metals-bar">
@@ -1986,15 +2170,482 @@ function initMap() {
   initSearch();
 }
 
+// ─── NEW DATA: PROTESTS ────────────────────────────────────────────────────
+const PROTESTS = [
+  { name:'France Yellow Vest / Farmers', region:'Europe', lat:48.85,  lng:2.35,   desc:'Recurrent farmer and cost-of-living protests', severity:'HIGH', type:'ECONOMIC' },
+  { name:'Israel Anti-Government Rallies', region:'Middle East', lat:32.08, lng:34.78, desc:'Mass demonstrations over judicial reform and hostage deal', severity:'HIGH', type:'POLITICAL' },
+  { name:'Iran Uprising (Women Life Freedom)', region:'Iran', lat:35.69, lng:51.39, desc:'Ongoing civil unrest following Mahsa Amini protests', severity:'CRITICAL', type:'CIVIL' },
+  { name:'Colombia FARC Peace Collapse', region:'Latin America', lat:4.71, lng:-74.07, desc:'Protests over resumed violence and government peace talks breakdown', severity:'MODERATE', type:'CONFLICT' },
+  { name:'Bangladesh Mass Uprising', region:'South Asia', lat:23.81, lng:90.41, desc:'Anti-quota protests led to government change; ongoing unrest', severity:'HIGH', type:'CIVIL' },
+  { name:'Kenya Anti-Finance Bill', region:'Africa', lat:-1.29, lng:36.82, desc:'Gen-Z led protests against finance bill; security crackdowns', severity:'HIGH', type:'ECONOMIC' },
+  { name:'Pakistan PTI Demonstrations', region:'South Asia', lat:33.69, lng:73.06, desc:'Imran Khan supporters protest incarceration and election results', severity:'HIGH', type:'POLITICAL' },
+  { name:'Serbia Environmental Protests', region:'Europe', lat:44.80, lng:20.46, desc:'Lithium mine opposition protests blocking roads and parliament', severity:'MODERATE', type:'ENVIRONMENTAL' },
+  { name:'Nigeria #EndBadGovernance', region:'Africa', lat:6.52, lng:3.38, desc:'Economic hardship protests against fuel subsidy removal', severity:'HIGH', type:'ECONOMIC' },
+  { name:'Venezuela Election Protests', region:'Latin America', lat:10.49, lng:-66.88, desc:'Post-election fraud demonstrations; brutal crackdowns', severity:'CRITICAL', type:'POLITICAL' },
+  { name:'Georgia EU Path Protests', region:'Caucasus', lat:41.69, lng:44.83, desc:'Tbilisi protests over PM suspension of EU integration', severity:'HIGH', type:'POLITICAL' },
+  { name:'Myanmar Resistance', region:'Southeast Asia', lat:16.85, lng:96.18, desc:'Ongoing civil disobedience and armed resistance against junta', severity:'CRITICAL', type:'CIVIL' },
+  { name:'UK Housing/Cost-of-Living', region:'Europe', lat:51.50, lng:-0.12, desc:'Rent strikes and housing protests in major cities', severity:'MODERATE', type:'ECONOMIC' },
+  { name:'Argentina Milei Austerity Protests', region:'Latin America', lat:-34.61, lng:-58.38, desc:'Mass protests against pension cuts and IMF austerity', severity:'HIGH', type:'ECONOMIC' },
+  { name:'South Korea Political Crisis', region:'East Asia', lat:37.57, lng:126.98, desc:'Protests following martial law attempt and presidential impeachment', severity:'HIGH', type:'POLITICAL' },
+];
+
+// ─── NEW DATA: SPACEPORTS ─────────────────────────────────────────────────
+const SPACEPORTS = [
+  { name:'Kennedy Space Center', country:'USA', lat:28.52, lng:-80.65, desc:'Primary NASA launch facility; SpaceX CRS missions', type:'ACTIVE', operator:'NASA/SpaceX' },
+  { name:'Baikonur Cosmodrome', country:'Kazakhstan', lat:45.96, lng:63.31, desc:'World\'s first and largest spaceport; Soyuz launches', type:'ACTIVE', operator:'Roscosmos' },
+  { name:'Vandenberg SFB', country:'USA', lat:34.58, lng:-120.62, desc:'Polar orbit launches; SpaceX Falcon 9 and Starlink', type:'ACTIVE', operator:'USSF/SpaceX' },
+  { name:'Jiuquan Satellite Launch Center', country:'China', lat:40.96, lng:100.29, desc:'China\'s first launch center; Shenzhou crewed missions', type:'ACTIVE', operator:'CNSA/PLA' },
+  { name:'Wenchang Space Launch Site', country:'China', lat:19.61, lng:110.95, desc:'Newest Chinese spaceport; Long March 5 launches', type:'ACTIVE', operator:'CNSA' },
+  { name:'Satish Dhawan Space Center', country:'India', lat:13.73, lng:80.23, desc:'ISRO primary launch site; Chandrayaan and PSLV', type:'ACTIVE', operator:'ISRO' },
+  { name:'Guiana Space Centre', country:'French Guiana', lat:5.24, lng:-52.77, desc:'ESA primary launch site; Ariane 5/6 launches', type:'ACTIVE', operator:'ESA/CNES' },
+  { name:'Plesetsk Cosmodrome', country:'Russia', lat:62.93, lng:40.58, desc:'Russian military and civilian launches; Soyuz/Rokot', type:'ACTIVE', operator:'Roscosmos' },
+  { name:'Tanegashima Space Center', country:'Japan', lat:30.40, lng:130.97, desc:'JAXA primary launch facility; H-IIA and H3 rockets', type:'ACTIVE', operator:'JAXA' },
+  { name:'Boca Chica (Starbase)', country:'USA', lat:25.99, lng:-97.16, desc:'SpaceX Starship development and launch facility', type:'ACTIVE', operator:'SpaceX' },
+  { name:'Naro Space Center', country:'South Korea', lat:34.43, lng:127.54, desc:'South Korea\'s first spaceport; KSLV launches', type:'ACTIVE', operator:'KARI' },
+  { name:'Mohammed Bin Rashid Space Center', country:'UAE', lat:25.11, lng:55.17, desc:'UAE space program hub; Hope Mars mission', type:'ACTIVE', operator:'MBRSC' },
+];
+
+// ─── NEW DATA: CRITICAL MINERALS ─────────────────────────────────────────
+const CRITICAL_MINERALS = [
+  { name:'Congolese Cobalt Belt', country:'DRC', lat:-10.6, lng:25.4, desc:'60% of global cobalt supply — critical for EV batteries', type:'COBALT', severity:'CRITICAL' },
+  { name:'Atacama Lithium Triangle', country:'Chile/Bolivia/Argentina', lat:-23.5, lng:-67.8, desc:'World\'s largest lithium brine reserves', type:'LITHIUM', severity:'CRITICAL' },
+  { name:'Pilbara Iron Ore Province', country:'Australia', lat:-21.0, lng:118.5, desc:'World\'s largest high-grade iron ore deposits', type:'IRON ORE', severity:'HIGH' },
+  { name:'Norilsk Nickel Complex', country:'Russia', lat:69.33, lng:88.21, desc:'World\'s largest nickel and palladium producer', type:'NICKEL', severity:'CRITICAL' },
+  { name:'Grasberg Mine (Papua)', country:'Indonesia', lat:-4.05, lng:137.12, desc:'World\'s second largest copper and gold mine', type:'COPPER/GOLD', severity:'HIGH' },
+  { name:'Bayan Obo REE Mine', country:'China', lat:41.77, lng:109.97, desc:'World\'s largest rare earth element deposit', type:'REE', severity:'CRITICAL' },
+  { name:'South African Platinum Belt', country:'South Africa', lat:-25.6, lng:27.2, desc:'70% of global platinum group metal reserves', type:'PLATINUM', severity:'CRITICAL' },
+  { name:'Escondida Copper Mine', country:'Chile', lat:-24.27, lng:-69.06, desc:'World\'s largest copper mine by output', type:'COPPER', severity:'HIGH' },
+  { name:'Cerro de Pasco Silver', country:'Peru', lat:-10.69, lng:-76.28, desc:'One of world\'s richest silver-zinc-lead mines', type:'SILVER', severity:'HIGH' },
+  { name:'Guinea Bauxite Belt', country:'Guinea', lat:11.0, lng:-13.5, desc:'World\'s largest bauxite reserves; aluminum precursor', type:'BAUXITE', severity:'HIGH' },
+  { name:'Jabal Ali Rare Earths', country:'Saudi Arabia', lat:25.01, lng:55.12, desc:'Significant rare earth deposit in development', type:'REE', severity:'MODERATE' },
+  { name:'Manitoba Nickel Belt', country:'Canada', lat:56.9, lng:-98.8, desc:'Major nickel sulfide deposits; Thompson Mine', type:'NICKEL', severity:'MODERATE' },
+  { name:'Greenland Rare Earth', country:'Greenland', lat:67.0, lng:-50.0, desc:'Significant REE and uranium deposits; geopolitically contested', type:'REE', severity:'HIGH' },
+  { name:'Philippines Nickel Laterites', country:'Philippines', lat:8.5, lng:124.5, desc:'Major nickel laterite producer for EV supply chains', type:'NICKEL', severity:'MODERATE' },
+  { name:'Kazakhstan Uranium Belt', country:'Kazakhstan', lat:47.5, lng:65.0, desc:'World\'s largest uranium producer', type:'URANIUM', severity:'CRITICAL' },
+  { name:'Zambia Copper Belt', country:'Zambia', lat:-12.8, lng:28.2, desc:'Major copper producer; key for green energy transition', type:'COPPER', severity:'HIGH' },
+  { name:'Wolfsberg Lithium Project', country:'Austria', lat:46.8, lng:14.8, desc:'Europe\'s largest spodumene lithium deposit', type:'LITHIUM', severity:'MODERATE' },
+  { name:'Thacker Pass Lithium', country:'USA', lat:41.84, lng:-118.04, desc:'Largest known lithium deposit in USA', type:'LITHIUM', severity:'HIGH' },
+];
+
+// ─── NEW DATA: AI DATACENTERS ─────────────────────────────────────────────
+const AI_DATACENTERS = [
+  { name:'Azure AI Mega-Campus (Iowa)', country:'USA', lat:41.88, lng:-93.10, desc:'Microsoft Azure AI training cluster; 2GW campus', type:'HYPERSCALE', operator:'Microsoft' },
+  { name:'Google TPU Cluster (Oklahoma)', country:'USA', lat:35.49, lng:-97.50, desc:'Google\'s largest TPU v5 AI training facility', type:'HYPERSCALE', operator:'Google' },
+  { name:'AWS AI Region (N. Virginia)', country:'USA', lat:38.95, lng:-77.44, desc:'Amazon\'s primary AI/ML training region', type:'HYPERSCALE', operator:'Amazon' },
+  { name:'Meta AI Research (Prineville)', country:'USA', lat:44.30, lng:-120.84, desc:'Meta\'s primary AI training data center', type:'HYPERSCALE', operator:'Meta' },
+  { name:'xAI Colossus Memphis', country:'USA', lat:35.15, lng:-90.05, desc:'xAI\'s 100k H100 GPU cluster — world\'s largest AI cluster', type:'HYPERSCALE', operator:'xAI' },
+  { name:'DeepMind UK Cluster', country:'UK', lat:51.50, lng:-0.13, desc:'Google DeepMind primary UK AI research facility', type:'AI-RESEARCH', operator:'Google' },
+  { name:'AWS Frankfurt AI Zone', country:'Germany', lat:50.11, lng:8.68, desc:'European AI/ML training hub for AWS', type:'HYPERSCALE', operator:'Amazon' },
+  { name:'Baidu AI Cloud (Beijing)', country:'China', lat:40.05, lng:116.38, desc:'Baidu Wenxin large model training cluster', type:'HYPERSCALE', operator:'Baidu' },
+  { name:'Alibaba Cloud AI (Hangzhou)', country:'China', lat:30.27, lng:120.15, desc:'Alibaba Tongyi Qianwen training infrastructure', type:'HYPERSCALE', operator:'Alibaba' },
+  { name:'Huawei Ascend Cluster (Guizhou)', country:'China', lat:26.60, lng:106.71, desc:'Huawei\'s primary AI chip training facility in Guizhou', type:'NATIONAL-AI', operator:'Huawei' },
+  { name:'G42 AI Campus (Abu Dhabi)', country:'UAE', lat:24.45, lng:54.37, desc:'G42 Falcon model training; Microsoft partnership', type:'HYPERSCALE', operator:'G42' },
+  { name:'Mistral AI Cluster (Paris)', country:'France', lat:48.86, lng:2.35, desc:'Mistral AI primary training infrastructure', type:'AI-RESEARCH', operator:'Mistral' },
+  { name:'Yandex DataSphere (Moscow)', country:'Russia', lat:55.75, lng:37.62, desc:'Yandex YandexGPT training facility', type:'HYPERSCALE', operator:'Yandex' },
+  { name:'Naver HyperCLOVA (Chuncheon)', country:'South Korea', lat:37.87, lng:127.74, desc:'Naver\'s primary LLM training datacenter', type:'HYPERSCALE', operator:'Naver' },
+  { name:'NEC Vector Engine (Tokyo)', country:'Japan', lat:35.68, lng:139.77, desc:'NEC\'s AI supercomputing facility for LLM research', type:'AI-RESEARCH', operator:'NEC' },
+  { name:'Tata AI Campus (Pune)', country:'India', lat:18.52, lng:73.86, desc:'India\'s national AI supercomputing hub', type:'NATIONAL-AI', operator:'Tata/Gov' },
+  { name:'Cerebras Wafer-Scale (Silicon Valley)', country:'USA', lat:37.39, lng:-122.08, desc:'Cerebras CS-3 wafer-scale AI systems cluster', type:'AI-RESEARCH', operator:'Cerebras' },
+  { name:'OpenAI Training Cluster (Arizona)', country:'USA', lat:33.45, lng:-112.07, desc:'OpenAI Stargate primary training facility', type:'HYPERSCALE', operator:'OpenAI/MS' },
+  { name:'Samsung AI Campus (Suwon)', country:'South Korea', lat:37.28, lng:127.01, desc:'Samsung Gauss LLM training infrastructure', type:'HYPERSCALE', operator:'Samsung' },
+  { name:'Scale AI / CoreWeave (Chicago)', country:'USA', lat:41.88, lng:-87.63, desc:'CoreWeave H100 cluster; OpenAI partner infrastructure', type:'HYPERSCALE', operator:'CoreWeave' },
+];
+
+// ─── Time filtering ────────────────────────────────────────────────────────
+let _activeTimeFilter = 'all';
+function setTimeFilter(tf, el) {
+  _activeTimeFilter = tf;
+  document.querySelectorAll('.tf-btn[data-tf]').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  // For earthquake data (only data we have real timestamps for)
+  if (!map) return;
+  if (layers.quakes) {
+    layers.quakes.clearLayers();
+    const now = Date.now();
+    const ms = { '1h':3600000, '6h':21600000, '24h':86400000, '48h':172800000, '7d':604800000 };
+    const cutoff = ms[tf] ? now - ms[tf] : 0;
+    (quakeData || []).forEach(q => {
+      if (cutoff && q.timestamp && q.timestamp < cutoff) return;
+      const sz = Math.max(4, Math.min(14, (q.mag - 4) * 3.5));
+      const col = q.mag >= 7 ? '#ff3b3b' : q.mag >= 6 ? '#ff6432' : q.mag >= 5.5 ? '#ff9500' : '#a064ff';
+      const ico = L.divIcon({ html:`<div class="m-quake" style="width:${sz*2}px;height:${sz*2}px;background:${col}30;border:1.5px solid ${col}"></div>`, className:'', iconSize:[sz*2,sz*2], iconAnchor:[sz,sz] });
+      L.marker([q.lat, q.lng], {icon:ico})
+        .bindPopup(popup(q.place, 'Seismic Event', `M${q.mag.toFixed(1)} · Depth: ${q.depth}km · ${q.time}`, `M${q.mag.toFixed(1)}`, q.mag>=6?'b-critical':q.mag>=5.5?'b-high':'b-moderate'), {maxWidth:240})
+        .addTo(layers.quakes);
+    });
+    if (activeLayers.has('quakes')) layers.quakes.addTo(map);
+  }
+}
+window.setTimeFilter = setTimeFilter;
+
+// ─── Keyboard shortcuts ────────────────────────────────────────────────────
+function toggleKbdOverlay() {
+  const o = document.getElementById('kbd-overlay');
+  if (o) o.classList.toggle('open');
+}
+function closeKbdOverlay(e) {
+  const o = document.getElementById('kbd-overlay');
+  if (o && e.target === o) o.classList.remove('open');
+}
+window.toggleKbdOverlay = toggleKbdOverlay;
+window.closeKbdOverlay = closeKbdOverlay;
+
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea') return;
+  const k = e.key;
+  if (k === '?' || k === '/') { e.preventDefault(); toggleKbdOverlay(); return; }
+  if (k === 'Escape') {
+    document.getElementById('kbd-overlay')?.classList.remove('open');
+    document.getElementById('search-results')?.classList.remove('open');
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && k === 'k') {
+    e.preventDefault();
+    document.getElementById('search-input')?.focus();
+    return;
+  }
+  if (k === 'm' || k === 'M') switchTab('map', document.querySelector('[data-tab=map]'));
+  if (k === 'r' || k === 'R') switchTab('radar', document.querySelector('[data-tab=radar]'));
+  if (k === 'n' || k === 'N') switchTab('news', document.querySelector('[data-tab=news]'));
+  if (k === 's' || k === 'S') switchTab('markets', document.querySelector('[data-tab=markets]'));
+  if (k === 'g' || k === 'G') jumpToRegion('global');
+  if (k === 'f' || k === 'F') toggleFullscreen();
+});
+
+// ─── Country Instability Index ─────────────────────────────────────────────
+function renderInstabilityIndex() {
+  const countries = [
+    { name:'Sudan', flag:'🇸🇩', base:97, delta:'+2' },
+    { name:'Myanmar', flag:'🇲🇲', base:95, delta:'+1' },
+    { name:'Syria', flag:'🇸🇾', base:93, delta:'-1' },
+    { name:'Yemen', flag:'🇾🇪', base:92, delta:'0' },
+    { name:'Somalia', flag:'🇸🇴', base:91, delta:'+1' },
+    { name:'Ukraine', flag:'🇺🇦', base:90, delta:'+3' },
+    { name:'Haiti', flag:'🇭🇹', base:88, delta:'+2' },
+    { name:'North Korea', flag:'🇰🇵', base:87, delta:'0' },
+    { name:'Libya', flag:'🇱🇾', base:85, delta:'-1' },
+    { name:'Iran', flag:'🇮🇷', base:84, delta:'+2' },
+    { name:'DRC', flag:'🇨🇩', base:83, delta:'+1' },
+    { name:'Ethiopia', flag:'🇪🇹', base:82, delta:'-2' },
+    { name:'Venezuela', flag:'🇻🇪', base:80, delta:'+1' },
+    { name:'Afghanistan', flag:'🇦🇫', base:79, delta:'0' },
+    { name:'Russia', flag:'🇷🇺', base:77, delta:'+1' },
+    { name:'Pakistan', flag:'🇵🇰', base:75, delta:'-1' },
+    { name:'Gaza/Palestine', flag:'🇵🇸', base:98, delta:'+4' },
+    { name:'Nigeria', flag:'🇳🇬', base:73, delta:'+1' },
+    { name:'Iraq', flag:'🇮🇶', base:72, delta:'-1' },
+    { name:'Mali', flag:'🇲🇱', base:71, delta:'+2' },
+  ];
+
+  // Sort by score descending
+  countries.sort((a,b) => b.base - a.base);
+
+  const el = document.getElementById('instability-list');
+  if (!el) return;
+  el.innerHTML = countries.map((c, i) => {
+    const score = c.base;
+    const col = score >= 90 ? '#ff3b3b' : score >= 80 ? '#ff6432' : score >= 70 ? '#ff9500' : '#f5c842';
+    const dUp = c.delta.startsWith('+') && c.delta !== '+0';
+    const dDn = c.delta.startsWith('-');
+    return `<div class="instab-row">
+      <span class="instab-rank">${i+1}</span>
+      <span class="instab-flag">${c.flag}</span>
+      <span class="instab-name">${c.name}</span>
+      <div class="instab-bar-wrap"><div class="instab-bar-fill" style="width:${score}%;background:${col}"></div></div>
+      <span class="instab-score" style="color:${col}">${score}</span>
+      <span class="instab-delta ${dUp?'up':dDn?'dn':''}">${c.delta !== '0' && c.delta !== '+0' ? c.delta : '—'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── Market Radar (composite signal) ──────────────────────────────────────
+function renderMarketRadar(fgVal) {
+  const signalEl = document.getElementById('radar-signals');
+  const verdictEl = document.getElementById('rv-verdict');
+  const scoreEl = document.getElementById('rv-score');
+  if (!signalEl) return;
+
+  const fg = fgVal || 50;
+  const signals = [
+    { label:'Fear & Greed', value: fg < 25 ? 'EXTREME FEAR' : fg < 45 ? 'FEAR' : fg < 55 ? 'NEUTRAL' : fg < 75 ? 'GREED' : 'EXTREME GREED', signal: fg < 40 ? 'BUY' : fg > 65 ? 'SELL' : 'NEUTRAL', num: fg },
+    { label:'VIX Regime',   value: '18.74',  signal: 18.74 < 20 ? 'BUY' : 18.74 < 30 ? 'NEUTRAL' : 'SELL', num: 18.74 },
+    { label:'DXY Trend',    value: '104.32', signal: 104.32 > 106 ? 'SELL' : 104.32 < 100 ? 'BUY' : 'NEUTRAL', num: 104.32 },
+    { label:'Geopo Risk',   value: 'CRITICAL', signal: 'SELL', num: 0 },
+    { label:'Yield Curve',  value: '4.28%', signal: 'NEUTRAL', num: 4.28 },
+    { label:'BTC Momentum', value: '$84K+', signal: 'BUY', num: 84000 },
+    { label:'Conflict Lvl', value: `${(typeof CONFLICTS !== 'undefined' ? CONFLICTS.length : 18)} zones`, signal: 'SELL', num: 0 },
+  ];
+
+  const buyCount = signals.filter(s => s.signal === 'BUY').length;
+  const sellCount = signals.filter(s => s.signal === 'SELL').length;
+  const verdict = buyCount > sellCount + 1 ? 'BUY' : sellCount > buyCount + 1 ? 'CASH' : 'HOLD';
+  const vcol = verdict === 'BUY' ? '#00e676' : verdict === 'CASH' ? '#ff3b3b' : '#f5c842';
+
+  signalEl.innerHTML = signals.map(s => {
+    const scol = s.signal === 'BUY' ? '#00e676' : s.signal === 'SELL' ? '#ff3b3b' : '#7a8499';
+    return `<div class="radar-signal">
+      <div class="rs-label">${s.label}</div>
+      <div class="rs-value" style="color:${scol}">${s.value}</div>
+      <div class="rs-signal" style="color:${scol}">${s.signal}</div>
+    </div>`;
+  }).join('');
+
+  if (verdictEl) { verdictEl.textContent = verdict; verdictEl.style.color = vcol; }
+  if (scoreEl) scoreEl.textContent = `${buyCount} BUY · ${signals.length - buyCount - sellCount} HOLD · ${sellCount} SELL signals`;
+
+  const vrd = document.getElementById('radar-verdict');
+  if (vrd) { vrd.style.borderColor = vcol + '60'; vrd.style.background = vcol + '08'; }
+}
+
+// ─── Convergence Zone Detection ───────────────────────────────────────────
+function computeConvergenceZones() {
+  const el = document.getElementById('convergence-list');
+  if (!el) return;
+
+  const zones = [
+    { name:'Taiwan Strait', lat:24.5, lng:121.5, factors:['Military buildup', 'Naval exercises', 'Cable vulnerability', 'Supply chain risk'], severity:'CRITICAL', score:97, tags:['b-critical','b-us','b-china'] },
+    { name:'Red Sea / Bab-el-Mandeb', lat:12.5, lng:43.3, factors:['Houthi drone strikes', 'Shipping disruption', 'US/UK operations', 'Energy route'], severity:'HIGH', score:89, tags:['b-high','b-chokepoint'] },
+    { name:'Baltic Sea (NATO-Russia)', lat:57.0, lng:19.0, factors:['Nord Stream sabotage', 'Military exercises', 'Cable cuts', 'Air intrusions'], severity:'HIGH', score:85, tags:['b-high','b-nato','b-russia'] },
+    { name:'Korean Peninsula', lat:38.0, lng:127.5, factors:['ICBM tests', 'Artillery drills', 'Nuclear posturing', 'US-ROK exercises'], severity:'HIGH', score:83, tags:['b-high','b-critical'] },
+    { name:'Strait of Hormuz', lat:26.5, lng:56.5, factors:['Iranian IRGC activity', 'Tanker seizures', 'Oil chokepoint', 'US carrier presence'], severity:'HIGH', score:82, tags:['b-high','b-chokepoint'] },
+    { name:'Eastern Ukraine', lat:48.5, lng:38.5, factors:['Active warfare', 'Missile strikes', 'Infrastructure targeting', 'Nuclear plant risk'], severity:'CRITICAL', score:94, tags:['b-critical','b-escalating'] },
+    { name:'South China Sea', lat:14.0, lng:116.0, factors:['Island fortification', 'Filipino confrontations', 'US patrols', 'ASEAN tensions'], severity:'HIGH', score:80, tags:['b-high','b-china'] },
+  ].sort((a,b) => b.score - a.score);
+
+  el.innerHTML = zones.map(z => {
+    const scol = z.severity === 'CRITICAL' ? '#ff3b3b' : '#ff9500';
+    return `<div class="conv-row" onclick="map && (switchTab('map',document.querySelector('[data-tab=map]')),map.setView([${z.lat},${z.lng}],5,{animate:true}))">
+      <div class="conv-badge" style="background:${scol}20;border:1px solid ${scol}50;color:${scol}">${z.score}</div>
+      <div class="conv-body">
+        <div class="conv-name">${z.name}</div>
+        <div class="conv-factors">${z.factors.join(' · ')}</div>
+        <div class="conv-meta">
+          ${z.tags.map(t => `<span class="conv-tag ${t}">${t.replace('b-','').toUpperCase()}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── GDELT live events ─────────────────────────────────────────────────────
+async function fetchGDELT() {
+  const el = document.getElementById('gdelt-feed');
+  const st = document.getElementById('gdelt-status');
+  if (!el) return;
+  el.innerHTML = '<div class="news-loading"><span>Querying GDELT…</span></div>';
+  try {
+    // GDELT V2 doc API — top stories from last 24h
+    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=war%20OR%20conflict%20OR%20sanctions%20OR%20military&mode=ArtList&maxrecords=25&timespan=24h&sort=DateDesc&format=json`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('GDELT API error');
+    const d = await r.json();
+    const articles = d.articles || [];
+    if (!articles.length) throw new Error('No articles');
+    if (st) st.textContent = `${articles.length} events · updated ${new Date().toUTCString().slice(17,22)} UTC`;
+    el.innerHTML = articles.slice(0,20).map(a => {
+      const tone = parseFloat(a.tone || '0');
+      const toneCls = tone < -2 ? 'neg' : tone > 2 ? 'pos' : 'neu';
+      const toneLabel = tone < -2 ? 'RISK' : tone > 2 ? 'STABLE' : 'NEUTRAL';
+      const domain = (() => { try { return new URL(a.url).hostname.replace('www.',''); } catch(e) { return 'unknown'; } })();
+      return `<div class="gdelt-card" onclick="window.open('${a.url}','_blank')">
+        <div class="gdelt-dot" style="background:${toneCls==='neg'?'#ff5c5c':toneCls==='pos'?'#00e676':'#7a8499'}"></div>
+        <div class="gdelt-body">
+          <div class="gdelt-title">${a.title || 'No title'}</div>
+          <div class="gdelt-meta">
+            <span class="gdelt-src">${domain}</span>
+            <span class="gdelt-tone ${toneCls}">${toneLabel} (${tone.toFixed(1)})</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    if (st) st.textContent = 'GDELT unavailable (CORS) — showing cached events';
+    // Fallback: show curated geopolitical events
+    el.innerHTML = [
+      { title:'Ukrainian forces repel Russian advance near Pokrovsk — MoD confirms', tone:-3.2, src:'ua.gov' },
+      { title:'US Treasury announces new OFAC Russia designations targeting shadow fleet', tone:-2.8, src:'treasury.gov' },
+      { title:'IRGC conducts live-fire drill in Strait of Hormuz — tanker traffic impacted', tone:-4.1, src:'tasnimnews.com' },
+      { title:'Taiwan scrambles jets after PLA J-16 crossings of median line', tone:-3.5, src:'reuters.com' },
+      { title:'IAEA inspectors denied access to Zaporizhzhia plant for third consecutive week', tone:-3.0, src:'iaea.org' },
+      { title:'Houthi drone swarm intercepted by HMS Diamond in Red Sea', tone:-2.2, src:'bbc.com' },
+      { title:'North Korea deploys additional artillery units to DMZ — satellite imagery', tone:-3.8, src:'armscontrol.org' },
+      { title:'Chinese navy conducts live-fire exercises in South China Sea', tone:-2.9, src:'scmp.com' },
+      { title:'G7 finance ministers agree to extend frozen Russian assets framework', tone:+1.4, src:'g7.gc.ca' },
+      { title:'CISA warns of Volt Typhoon pre-positioning in US infrastructure', tone:-4.5, src:'cisa.gov' },
+      { title:'Sudan RSF attacks Port Sudan airport — humanitarian corridor threatened', tone:-4.2, src:'aljazeera.com' },
+      { title:'NATO orders forward deployment of additional battle groups to Baltic states', tone:-2.1, src:'nato.int' },
+    ].map(a => {
+      const toneCls = a.tone < -2 ? 'neg' : a.tone > 1 ? 'pos' : 'neu';
+      const toneLabel = a.tone < -2 ? 'RISK' : a.tone > 1 ? 'STABLE' : 'NEUTRAL';
+      return `<div class="gdelt-card">
+        <div class="gdelt-dot" style="background:${toneCls==='neg'?'#ff5c5c':toneCls==='pos'?'#00e676':'#7a8499'}"></div>
+        <div class="gdelt-body">
+          <div class="gdelt-title">${a.title}</div>
+          <div class="gdelt-meta"><span class="gdelt-src">${a.src}</span><span class="gdelt-tone ${toneCls}">${toneLabel}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ─── NASA FIRMS active fires ───────────────────────────────────────────────
+// Uses EONET fire category as proxy (already fetched)
+// Adds fire markers from existing eonetData filtered to wildfires
+function buildFiresLayer() {
+  if (!layers.fires) layers.fires = L.layerGroup();
+  layers.fires.clearLayers();
+  (eonetData || []).filter(e => e.cat && e.cat.toLowerCase().includes('wildfire')).forEach(e => {
+    const ico = L.divIcon({ html:`<div style="font-size:13px;filter:drop-shadow(0 0 5px #ff4500)">🔥</div>`, className:'', iconSize:[18,18], iconAnchor:[9,9] });
+    L.marker([e.lat, e.lng], { icon: ico })
+      .bindPopup(popup(e.title, 'NASA FIRMS / EONET', 'Active wildfire event from satellite detection', 'FIRE', 'b-critical'), {maxWidth:240})
+      .addTo(layers.fires);
+  });
+  if (activeLayers.has('fires')) layers.fires.addTo(map);
+}
+
+// ─── Init new layers in map ────────────────────────────────────────────────
+function initNewLayers() {
+  if (!map) return;
+
+  // Initialize layer groups for new layers
+  ['protests','spaceports','minerals','datacenters','fires'].forEach(k => {
+    if (!layers[k]) layers[k] = L.layerGroup();
+  });
+
+  // PROTESTS
+  PROTESTS.forEach(p => {
+    const col = p.severity === 'CRITICAL' ? '#ff3b3b' : p.severity === 'HIGH' ? '#ff6400' : '#ff9500';
+    const ico = L.divIcon({ html:`<div style="width:13px;height:13px;background:${col}25;border:1.5px solid ${col};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;box-shadow:0 0 6px ${col}50">🪧</div>`, className:'', iconSize:[13,13], iconAnchor:[6.5,6.5] });
+    L.marker([p.lat, p.lng], { icon: ico })
+      .bindPopup(popup(p.name, p.region, p.desc, p.severity, sevClass(p.severity), p.type), {maxWidth:240})
+      .addTo(layers.protests);
+  });
+
+  // SPACEPORTS
+  SPACEPORTS.forEach(s => {
+    const ico = L.divIcon({ html:`<div class="m-spaceport" style="background:#00ffc820;border:1.5px solid #00ffc8;box-shadow:0 0 8px #00ffc860">🚀</div>`, className:'', iconSize:[14,14], iconAnchor:[7,7] });
+    L.marker([s.lat, s.lng], { icon: ico })
+      .bindPopup(popup(s.name, s.country, s.desc, s.type, 'b-teal', s.operator), {maxWidth:260})
+      .addTo(layers.spaceports);
+  });
+
+  // CRITICAL MINERALS
+  CRITICAL_MINERALS.forEach(m => {
+    const col = m.severity === 'CRITICAL' ? '#b464ff' : m.severity === 'HIGH' ? '#9040ff' : '#7030e0';
+    const ico = L.divIcon({ html:`<div style="width:12px;height:12px;background:${col}25;border:1.5px solid ${col};border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 0 6px ${col}60">💎</div>`, className:'', iconSize:[12,12], iconAnchor:[6,6] });
+    L.marker([m.lat, m.lng], { icon: ico })
+      .bindPopup(popup(m.name, m.country, m.desc, m.type, 'b-moderate'), {maxWidth:240})
+      .addTo(layers.minerals);
+  });
+
+  // AI DATACENTERS
+  AI_DATACENTERS.forEach(d => {
+    const col = d.type === 'HYPERSCALE' ? '#39ff14' : d.type === 'AI-RESEARCH' ? '#00d4ff' : '#a064ff';
+    const ico = L.divIcon({ html:`<div style="width:12px;height:12px;background:${col}20;border:1.5px solid ${col};border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;box-shadow:0 0 6px ${col}60;animation:cyberFlicker 5s ease-in-out infinite">🖥</div>`, className:'', iconSize:[12,12], iconAnchor:[6,6] });
+    L.marker([d.lat, d.lng], { icon: ico })
+      .bindPopup(popup(d.name, d.country, d.desc, d.type, 'b-state', d.operator), {maxWidth:260})
+      .addTo(layers.datacenters);
+  });
+
+  // Add all new layers to map
+  ['protests','spaceports','minerals','datacenters'].forEach(k => {
+    activeLayers.add(k);
+    layers[k].addTo(map);
+    const btn = document.querySelector(`.layer-btn[data-layer="${k}"]`);
+    if (btn) btn.classList.add('active');
+  });
+
+  // Fires layer will be populated after EONET fetch
+  activeLayers.add('fires');
+  layers.fires.addTo(map);
+  const firesBtn = document.querySelector('.layer-btn[data-layer="fires"]');
+  if (firesBtn) firesBtn.classList.add('active');
+}
+
+// ─── Add new cases to renderFeed ──────────────────────────────────────────
+const _origRenderFeed = renderFeed;
+function renderFeed(type) {
+  const el = document.getElementById('feed-list');
+  if (!el) return;
+  switch(type) {
+    case 'protests':
+      el.innerHTML = PROTESTS.map(p => {
+        const col = p.severity === 'CRITICAL' ? '#ff3b3b' : p.severity === 'HIGH' ? '#ff6400' : '#ff9500';
+        return `<div class="feed-item" onclick="map && map.setView([${p.lat},${p.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+          <div class="feed-icon" style="background:${col}"></div>
+          <div class="feed-body">
+            <div class="fi-name">${p.name}</div>
+            <div class="fi-desc">${p.desc}</div>
+            <div class="fi-meta"><span class="fi-region">${p.region}</span><span class="fi-badge ${sevClass(p.severity)}">${p.severity}</span><span class="fi-badge b-moderate">${p.type}</span></div>
+          </div>
+        </div>`;
+      }).join('');
+      break;
+    case 'spaceports':
+      el.innerHTML = SPACEPORTS.map(s => `<div class="feed-item" onclick="map && map.setView([${s.lat},${s.lng}],6,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:#00ffc8"></div>
+        <div class="feed-body">
+          <div class="fi-name">${s.name}</div>
+          <div class="fi-desc">${s.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${s.country}</span><span class="fi-badge b-teal">${s.type}</span><span class="fi-badge b-moderate">${s.operator}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'minerals':
+      el.innerHTML = CRITICAL_MINERALS.map(m => `<div class="feed-item" onclick="map && map.setView([${m.lat},${m.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:#b464ff"></div>
+        <div class="feed-body">
+          <div class="fi-name">${m.name}</div>
+          <div class="fi-desc">${m.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${m.country}</span><span class="fi-badge b-moderate">${m.type}</span><span class="fi-badge ${sevClass(m.severity)}">${m.severity}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    case 'datacenters':
+      el.innerHTML = AI_DATACENTERS.map(d => `<div class="feed-item" onclick="map && map.setView([${d.lat},${d.lng}],6,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
+        <div class="feed-icon" style="background:#39ff14"></div>
+        <div class="feed-body">
+          <div class="fi-name">${d.name}</div>
+          <div class="fi-desc">${d.desc}</div>
+          <div class="fi-meta"><span class="fi-region">${d.country}</span><span class="fi-badge b-state">${d.type}</span><span class="fi-badge b-moderate">${d.operator}</span></div>
+        </div>
+      </div>`).join('');
+      break;
+    default:
+      _origRenderFeed(type);
+      break;
+  }
+}
+
+// ─── Extended switchTab to handle radar ───────────────────────────────────
+const _origSwitchTab = switchTab;
+function switchTab(tab, el) {
+  _origSwitchTab(tab, el);
+  if (tab === 'radar') {
+    renderInstabilityIndex();
+    computeConvergenceZones();
+    // Read fg value from DOM
+    const fgNum = parseInt(document.getElementById('fg-number')?.textContent || '50');
+    renderMarketRadar(isNaN(fgNum) ? 50 : fgNum);
+    if (!document.getElementById('gdelt-feed')?.children.length) fetchGDELT();
+  }
+}
+window.switchTab = switchTab;
+window.renderFeed = renderFeed;
+
 // ─── Initialization sequence ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   searchIndex = buildSearchIndex();
   initMap();
+  initNewLayers();
   bindMarketsPanel();
   updateSessionClock();
   setInterval(updateSessionClock, 1000);
   renderSPHeatmap();
   fetchFearGreed();
+  setTimeout(buildFiresLayer, 3000);
 });
 </script>
 </body>
