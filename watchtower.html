@@ -97,14 +97,15 @@
     .layer-btn[data-layer="shipping"].active  { border-color:rgba(79,195,247,0.6); background:rgba(79,195,247,0.11); color:#4fc3f7; }
     .layer-btn[data-layer="intel"].active     { border-color:rgba(224,64,251,0.6); background:rgba(224,64,251,0.11); color:#e040fb; }
     .layer-btn[data-layer="metals"].active    { border-color:rgba(255,215,0,0.6); background:rgba(255,215,0,0.1); color:#ffd700; }
+    .layer-btn[data-layer="military"].active  { border-color:rgba(100,180,255,0.6); background:rgba(100,180,255,0.11); color:#64b4ff; }
+    .layer-btn[data-layer="cables"].active    { border-color:rgba(0,255,200,0.6); background:rgba(0,255,200,0.1); color:#00ffc8; }
     .layer-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 
     /* ── Leaflet map ── */
-    #world-map { flex: 1; width: 100%; min-height: 200px; }
-    /* Invert light CartoDB tiles → dark charcoal land + navy blue ocean.
-       hue-rotate(180deg) converts the inverted orange ocean back to deep blue. */
+    #world-map { flex: 1; width: 100%; min-height: 200px; position: relative; }
     .leaflet-container { background: #0d2b52; }
     .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.05) saturate(1.15); }
+    .leaflet-tile-pane.satellite-mode { filter:brightness(0.9) saturate(1.1) !important; }
     .leaflet-control-zoom a { background: var(--bg-4) !important; border-color: var(--border) !important; color: var(--text-dim) !important; }
     .leaflet-control-zoom a:hover { color: var(--teal) !important; }
     .leaflet-control-attribution { display: none; }
@@ -142,6 +143,12 @@
     .b-agency     { background:rgba(224,64,251,0.15); color:#e040fb; border:1px solid rgba(224,64,251,0.3); }
     .b-sigint     { background:rgba(224,64,251,0.12); color:#e040fb; border:1px solid rgba(224,64,251,0.25); }
     .b-severe     { background:rgba(255,59,59,0.18);  color:#ff3b3b; border:1px solid rgba(255,59,59,0.4); }
+    .b-us     { background:rgba(100,180,255,0.18); color:#64b4ff; border:1px solid rgba(100,180,255,0.4); }
+    .b-nato   { background:rgba(0,180,220,0.18); color:#00b4dc; border:1px solid rgba(0,180,220,0.4); }
+    .b-russia { background:rgba(255,59,59,0.18); color:#ff3b3b; border:1px solid rgba(255,59,59,0.4); }
+    .b-china  { background:rgba(255,50,50,0.18); color:#ff5050; border:1px solid rgba(255,50,50,0.4); }
+    .b-other-mil { background:rgba(160,160,180,0.15); color:var(--text-dim); border:1px solid rgba(160,160,180,0.3); }
+    .b-cable  { background:rgba(0,255,200,0.12); color:#00ffc8; border:1px solid rgba(0,255,200,0.28); }
 
     /* ── Custom marker animations ── */
     @keyframes conflictPulse { 0%{transform:scale(0.85);opacity:0.7} 100%{transform:scale(2.8);opacity:0} }
@@ -150,6 +157,7 @@
     @keyframes cyberFlicker  { 0%,89%,91%,94%,100%{opacity:1} 90%{opacity:0.15} 92%{opacity:0.8} 93%{opacity:0.1} 95%{opacity:1} }
     @keyframes sanctionPulse { 0%,100%{box-shadow:0 0 4px rgba(255,45,85,0.5)} 50%{box-shadow:0 0 12px rgba(255,45,85,0.9),0 0 22px rgba(255,45,85,0.3)} }
     @keyframes intelPing     { 0%{transform:scale(0.9);opacity:1} 100%{transform:scale(2.6);opacity:0} }
+    @keyframes militaryPulse { 0%,100%{box-shadow:0 0 4px rgba(100,180,255,0.5)} 50%{box-shadow:0 0 12px rgba(100,180,255,0.9),0 0 22px rgba(100,180,255,0.3)} }
 
     .m-conflict  { width:11px; height:11px; border-radius:50%; position:relative; }
     .m-conflict::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1.5px solid var(--mc,#ff3b3b); opacity:0.6; animation:conflictPulse 2.3s ease-out infinite; }
@@ -167,6 +175,7 @@
     .m-shipping  { width:13px; height:13px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:8px; }
     @keyframes metalShimmer { 0%,100%{box-shadow:0 0 5px rgba(255,215,0,0.5)} 50%{box-shadow:0 0 14px rgba(255,215,0,0.95),0 0 28px rgba(255,215,0,0.35)} }
     .m-metals    { width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; animation:metalShimmer 3.5s ease-in-out infinite; }
+    .m-military  { width:14px; height:14px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:9px; animation:militaryPulse 3.5s ease-in-out infinite; }
 
     /* ── Intel stats bar ── */
     .intel-stats { display:flex; align-items:stretch; flex-shrink:0; height:36px; background:rgba(9,9,14,0.94); border-top:1px solid var(--border); }
@@ -183,6 +192,7 @@
     .stat-block.s-sanctions .stat-num { color:#ff2d55; }
     .stat-block.s-shipping  .stat-num { color:#4fc3f7; }
     .stat-block.s-intel     .stat-num { color:#e040fb; }
+    .stat-block.s-military  .stat-num { color:#64b4ff; }
     .stat-block.s-risk { flex:0 0 auto; padding:0 0.9rem; }
     .risk-pill  { padding:0.18rem 0.55rem; border-radius:4px; font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
     .rp-critical { background:rgba(255,59,59,0.18); color:#ff3b3b; border:1px solid rgba(255,59,59,0.45); }
@@ -208,13 +218,12 @@
     .fi-badge  { padding:0.1rem 0.38rem; border-radius:3px; font-family:var(--font-head); font-size:0.4rem; font-weight:700; letter-spacing:0.1em; }
 
     /* ════════════════
-       MARKETS PANEL — Bloomberg Terminal
+       MARKETS PANEL
     ════════════════ */
     #panel-markets { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--border) transparent; background:var(--bg-1); }
     #panel-markets::-webkit-scrollbar { width:4px; }
     #panel-markets::-webkit-scrollbar-thumb { background:var(--border); }
 
-    /* Metals / key data bar */
     .metals-bar { display:flex; align-items:stretch; background:rgba(6,6,12,0.98); border-bottom:1px solid rgba(255,215,0,0.2); flex-shrink:0; overflow-x:auto; scrollbar-width:none; }
     .metals-bar::-webkit-scrollbar { display:none; }
     .mb-item { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0.45rem 1rem; border-right:1px solid var(--border); gap:0.07rem; min-width:80px; flex-shrink:0; }
@@ -228,7 +237,6 @@
     .mb-item.dxy   .mb-price { color:var(--teal); }
     .mb-item.yield .mb-price { color:#a0c8ff; }
 
-    /* Terminal grid */
     .term-grid { display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid var(--border); }
     .term-grid.two-col { grid-template-columns:1fr 1fr; }
     .term-panel { border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:0.8rem 0.9rem; min-width:0; }
@@ -238,7 +246,6 @@
     .tp-title { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.18em; color:var(--text-dim); text-transform:uppercase; }
     .tp-sub { font-family:var(--font-head); font-size:0.38rem; color:var(--text-muted); letter-spacing:0.06em; }
 
-    /* Market Sessions */
     .sessions-list { display:flex; flex-direction:column; gap:0.38rem; }
     .session-row { display:flex; align-items:center; gap:0.5rem; }
     .sess-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
@@ -250,7 +257,6 @@
     .sess-open { color:var(--green); } .sess-closed { color:var(--text-muted); }
     .utc-clock { font-family:var(--font-head); font-size:1.1rem; font-weight:800; color:var(--teal); text-align:center; margin-bottom:0.5rem; letter-spacing:0.08em; }
 
-    /* Fear & Greed */
     .fg-meter { position:relative; height:8px; border-radius:6px; background:linear-gradient(90deg,#ff3b3b 0%,#ff9500 25%,#f5c842 50%,#00e676 75%,#00d4ff 100%); margin:0.4rem 0 0.25rem; overflow:visible; }
     .fg-needle { position:absolute; top:-4px; width:3px; height:16px; background:white; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 8px rgba(255,255,255,0.6); transition:left 1s ease; }
     .fg-labels { display:flex; justify-content:space-between; margin-top:0.28rem; }
@@ -259,7 +265,6 @@
     .fg-number { font-family:var(--font-head); font-size:1.6rem; font-weight:800; color:var(--text); }
     .fg-text   { font-family:var(--font-head); font-size:0.5rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-top:0.05rem; }
 
-    /* Crypto command */
     .crypto-row { display:flex; align-items:center; justify-content:space-between; padding:0.3rem 0; border-bottom:1px solid var(--border); }
     .crypto-row:last-child { border-bottom:none; }
     .crypto-left { display:flex; align-items:center; gap:0.4rem; }
@@ -275,7 +280,6 @@
     .cd-label { font-family:var(--font-head); font-size:0.38rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
     .cd-value { font-family:var(--font-head); font-size:0.55rem; font-weight:700; color:var(--teal); margin-top:0.08rem; }
 
-    /* FX Command */
     .fx-pairs-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.3rem; }
     .fx-pair-card { background:var(--bg-3); border:1px solid var(--border); border-radius:5px; padding:0.32rem 0.45rem; }
     .fxc-pair  { font-family:var(--font-head); font-size:0.4rem; color:var(--text-muted); letter-spacing:0.1em; }
@@ -283,7 +287,6 @@
     .fxc-chg   { font-family:var(--font-head); font-size:0.4rem; font-weight:600; }
     .fxc-chg.up { color:var(--green); } .fxc-chg.down { color:var(--red); } .fxc-chg.flat { color:var(--text-muted); }
 
-    /* Commodities */
     .commod-list { display:flex; flex-direction:column; gap:0.3rem; }
     .commod-row { display:flex; align-items:center; justify-content:space-between; padding:0.28rem 0; border-bottom:1px solid var(--border); }
     .commod-row:last-child { border-bottom:none; }
@@ -294,14 +297,12 @@
     .commod-chg   { font-family:var(--font-head); font-size:0.42rem; font-weight:600; }
     .commod-chg.up { color:var(--green); } .commod-chg.down { color:var(--red); }
 
-    /* S&P Sectors */
     .sp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; }
     .sp-cell { padding:0.28rem 0.12rem; border-radius:4px; text-align:center; transition:filter 0.2s; cursor:default; }
     .sp-cell:hover { filter:brightness(1.2); }
     .sp-name { font-family:var(--font-head); font-size:0.38rem; color:rgba(255,255,255,0.8); }
     .sp-pct  { font-family:var(--font-head); font-size:0.5rem; font-weight:700; color:white; margin-top:0.08rem; }
 
-    /* Bond Yields */
     .yields-list { display:flex; flex-direction:column; gap:0; }
     .yield-row { display:flex; align-items:center; justify-content:space-between; padding:0.3rem 0; border-bottom:1px solid var(--border); }
     .yield-row:last-child { border-bottom:none; }
@@ -310,9 +311,8 @@
     .yield-right { text-align:right; }
     .yield-val  { font-family:var(--font-head); font-size:0.64rem; font-weight:800; color:#a0c8ff; }
     .yield-chg  { font-family:var(--font-head); font-size:0.42rem; font-weight:600; }
-    .yield-chg.up { color:var(--red); } .yield-chg.down { color:var(--green); } /* inverted: higher yield = tighter, worse for bonds */
+    .yield-chg.up { color:var(--red); } .yield-chg.down { color:var(--green); }
 
-    /* Global Indices table */
     .mkt-table { width:100%; border-collapse:collapse; }
     .mkt-table th { font-family:var(--font-head); font-size:0.46rem; font-weight:700; letter-spacing:0.1em; color:var(--text-dim); text-align:left; padding:0.4rem 0.6rem; border-bottom:1px solid var(--border); text-transform:uppercase; }
     .mkt-table td { padding:0.42rem 0.6rem; border-bottom:1px solid var(--border); }
@@ -327,7 +327,7 @@
     .sb-closed{ background:rgba(120,130,160,0.12); color:var(--text-muted); border:1px solid var(--border); }
 
     /* ════════════════
-       INTEL FEED PANEL — GDELT-powered
+       INTEL FEED PANEL
     ════════════════ */
     #panel-news { overflow:hidden; background:var(--bg-1); }
     .intel-feed-header { display:flex; align-items:center; justify-content:space-between; padding:0.55rem 1rem; background:rgba(6,6,12,0.98); border-bottom:1px solid var(--border-hi); flex-shrink:0; }
@@ -361,15 +361,46 @@
     .nt-cyber{ background:rgba(57,255,20,0.12); color:#39ff14; border:1px solid rgba(57,255,20,0.25); }
     .nt-energy{ background:rgba(255,179,50,0.15); color:#ffb332; border:1px solid rgba(255,179,50,0.3); }
     .nt-cb   { background:rgba(0,212,255,0.12); color:var(--teal); border:1px solid rgba(0,212,255,0.28); }
+    .nt-mil  { background:rgba(100,180,255,0.12); color:#64b4ff; border:1px solid rgba(100,180,255,0.28); }
+    .nt-health { background:rgba(0,230,118,0.12); color:#00e676; border:1px solid rgba(0,230,118,0.28); }
     .news-sentiment { font-family:var(--font-head); font-size:0.38rem; font-weight:700; letter-spacing:0.06em; padding:0.07rem 0.35rem; border-radius:3px; }
     .sent-pos { background:rgba(0,230,118,0.12); color:#00e676; border:1px solid rgba(0,230,118,0.25); }
     .sent-neg { background:rgba(255,59,59,0.12); color:#ff5c5c; border:1px solid rgba(255,59,59,0.25); }
     .sent-neu { background:rgba(120,130,160,0.12); color:var(--text-muted); border:1px solid var(--border); }
     .news-error { padding:2rem; text-align:center; font-family:var(--font-head); font-size:0.5rem; color:var(--text-muted); }
 
+    /* Breaking ticker */
+    .breaking-ticker { display:flex; align-items:center; flex-shrink:0; background:rgba(255,59,59,0.08); border-bottom:1px solid rgba(255,59,59,0.2); height:26px; overflow:hidden; }
+    .ticker-label { flex-shrink:0; padding:0 0.75rem; font-family:var(--font-head); font-size:0.44rem; font-weight:800; letter-spacing:0.18em; color:#ff3b3b; text-transform:uppercase; border-right:1px solid rgba(255,59,59,0.3); height:100%; display:flex; align-items:center; background:rgba(255,59,59,0.12); gap:0.4rem; }
+    .ticker-blink { animation:tickerBlink 1.4s step-end infinite; }
+    @keyframes tickerBlink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .ticker-track-wrap { flex:1; overflow:hidden; }
+    .ticker-track { display:flex; align-items:center; white-space:nowrap; animation:tickerScroll 80s linear infinite; }
+    .ticker-track:hover { animation-play-state:paused; }
+    @keyframes tickerScroll { 0%{transform:translateX(100vw)} 100%{transform:translateX(-100%)} }
+    .ticker-item { display:inline-flex; align-items:center; gap:0.4rem; padding:0 1.5rem; font-family:var(--font-head); font-size:0.46rem; color:var(--text-dim); letter-spacing:0.04em; }
+    .ticker-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .ticker-sep { color:rgba(255,59,59,0.4); padding:0 0.5rem; }
+
+    /* Search */
+    .search-wrap { display:flex; align-items:center; border-right:1px solid var(--border); padding:0 0.5rem; position:relative; }
+    .search-input { background:transparent; border:none; outline:none; font-family:var(--font-head); font-size:0.52rem; color:var(--text); width:150px; padding:0.3rem 0.4rem; letter-spacing:0.04em; }
+    .search-input::placeholder { color:var(--text-muted); }
+    .search-btn { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:0.75rem; padding:0.2rem 0.3rem; transition:color 0.15s; line-height:1; }
+    .search-btn:hover { color:var(--teal); }
+    .search-results { position:fixed; z-index:9999; background:rgba(9,9,14,0.97); border:1px solid var(--border-hi); border-radius:6px; min-width:260px; max-width:340px; box-shadow:0 8px 32px rgba(0,0,0,0.7); display:none; }
+    .search-results.open { display:block; }
+    .sr-item { padding:0.5rem 0.75rem; font-family:var(--font-head); font-size:0.52rem; color:var(--text-dim); cursor:pointer; border-bottom:1px solid var(--border); transition:all 0.14s; display:flex; align-items:center; gap:0.5rem; }
+    .sr-item:last-child { border-bottom:none; }
+    .sr-item:hover { background:var(--bg-3); color:var(--teal); }
+    .sr-cat { font-size:0.38rem; letter-spacing:0.1em; color:var(--text-muted); margin-left:auto; text-transform:uppercase; }
+
+    /* Coord display */
+    .coord-display { position:absolute; bottom:42px; right:8px; z-index:1000; background:rgba(9,9,14,0.85); border:1px solid var(--border); border-radius:4px; padding:0.18rem 0.5rem; font-family:var(--font-head); font-size:0.42rem; color:var(--text-muted); letter-spacing:0.06em; pointer-events:none; backdrop-filter:blur(8px); }
+
     /* ══ Responsive ══ */
     @media (max-width:1100px) { .wt-sidebar-left { width:160px; } }
-    @media (max-width:900px)  { .markets-grid { grid-template-columns:1fr; } .intel-panel:nth-child(2n) { border-right:none; } .intel-panel.full-w { border-right:none; } }
+    @media (max-width:900px)  { .markets-grid { grid-template-columns:1fr; } }
 
     @media (max-width:768px) {
       body { overflow-y:auto; overflow-x:hidden; }
@@ -461,7 +492,15 @@
       <div class="map-tab active" data-tab="map"     onclick="switchTab('map',this)">🗺 Map</div>
       <div class="map-tab"        data-tab="markets" onclick="switchTab('markets',this)">📊 Markets</div>
       <div class="map-tab"        data-tab="news"    onclick="switchTab('news',this)">📰 Intel Feed</div>
+      <!-- Search bar -->
+      <div class="search-wrap">
+        <input class="search-input" id="search-input" type="text" placeholder="Search locations…" autocomplete="off"/>
+        <button class="search-btn" onclick="doSearch()" title="Search">🔍</button>
+        <div class="search-results" id="search-results"></div>
+      </div>
       <div class="map-toolbar-right">
+        <button class="map-action-btn" onclick="toggleSatellite()" id="tile-toggle-btn" title="Toggle satellite/dark map">🛰 Satellite</button>
+        <button class="map-action-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶ Fullscreen</button>
         <button class="map-action-btn" onclick="resetMapView()">⊕ Reset View</button>
       </div>
     </div>
@@ -469,32 +508,44 @@
     <!-- ── MAP PANEL ── -->
     <div class="main-panel active" id="panel-map">
 
+      <!-- Breaking Ticker -->
+      <div class="breaking-ticker">
+        <div class="ticker-label"><span class="ticker-blink">⬤</span> BREAKING</div>
+        <div class="ticker-track-wrap">
+          <div class="ticker-track" id="ticker-track"></div>
+        </div>
+      </div>
+
       <!-- Situation header -->
       <div class="sit-header">
         <span class="sit-title">⬡ Global Situation</span>
-        <span class="sit-risk">⬤ Critical</span>
+        <span class="sit-risk" id="global-risk-badge">⬤ CRITICAL · RISK 94</span>
         <span class="badge-live" style="font-size:0.42rem;padding:0.15rem 0.5rem">LIVE</span>
         <span class="sit-count" id="sit-summary">18 Conflicts · 12 Hotspots · 9 Nuclear States</span>
       </div>
 
-      <!-- Layer filter buttons — click to toggle each layer on/off independently -->
+      <!-- Layer filter buttons -->
       <div class="layer-filters">
         <button class="layer-btn active" data-layer="all"       onclick="filterLayer('all',this)"       title="Toggle all layers"><span class="layer-dot" style="background:rgba(200,210,235,0.7)"></span>ALL</button>
         <button class="layer-btn active" data-layer="conflicts" onclick="filterLayer('conflicts',this)" title="Active conflict zones"><span class="layer-dot" style="background:#ff3b3b"></span>CONFLICTS</button>
         <button class="layer-btn active" data-layer="hotspots"  onclick="filterLayer('hotspots',this)"  title="Geopolitical flashpoints"><span class="layer-dot" style="background:#ff9500"></span>HOTSPOTS</button>
         <button class="layer-btn active" data-layer="markets"   onclick="filterLayer('markets',this)"   title="Financial centres"><span class="layer-dot" style="background:#f5c842"></span>MARKETS</button>
-        <button class="layer-btn active" data-layer="energy"    onclick="filterLayer('energy',this)"    title="Energy chokepoints & fields"><span class="layer-dot" style="background:#ffb332"></span>ENERGY</button>
+        <button class="layer-btn active" data-layer="energy"    onclick="filterLayer('energy',this)"    title="Energy chokepoints &amp; fields"><span class="layer-dot" style="background:#ffb332"></span>ENERGY</button>
         <button class="layer-btn active" data-layer="nuclear"   onclick="filterLayer('nuclear',this)"   title="Nuclear-armed states"><span class="layer-dot" style="background:#00d4ff"></span>NUCLEAR</button>
         <button class="layer-btn active" data-layer="quakes"    onclick="filterLayer('quakes',this)"    title="Live earthquakes M4.5+"><span class="layer-dot" style="background:#a064ff"></span>QUAKES</button>
-        <button class="layer-btn active" data-layer="cyber"     onclick="filterLayer('cyber',this)"     title="State cyber operations & APT groups"><span class="layer-dot" style="background:#39ff14"></span>CYBER</button>
+        <button class="layer-btn active" data-layer="cyber"     onclick="filterLayer('cyber',this)"     title="State cyber operations &amp; APT groups"><span class="layer-dot" style="background:#39ff14"></span>CYBER</button>
         <button class="layer-btn active" data-layer="sanctions" onclick="filterLayer('sanctions',this)" title="Sanctioned states"><span class="layer-dot" style="background:#ff2d55"></span>SANCTIONS</button>
-        <button class="layer-btn active" data-layer="shipping"  onclick="filterLayer('shipping',this)"  title="Shipping lanes, canals & chokepoints"><span class="layer-dot" style="background:#4fc3f7"></span>SHIPPING</button>
+        <button class="layer-btn active" data-layer="shipping"  onclick="filterLayer('shipping',this)"  title="Shipping lanes, canals &amp; chokepoints"><span class="layer-dot" style="background:#4fc3f7"></span>SHIPPING</button>
         <button class="layer-btn active" data-layer="intel"     onclick="filterLayer('intel',this)"     title="Intelligence agency HQs"><span class="layer-dot" style="background:#e040fb"></span>INTEL</button>
         <button class="layer-btn active" data-layer="metals"    onclick="filterLayer('metals',this)"    title="Gold &amp; silver exchanges and mines"><span class="layer-dot" style="background:#ffd700"></span>METALS</button>
+        <button class="layer-btn active" data-layer="military"  onclick="filterLayer('military',this)"  title="Major military bases worldwide"><span class="layer-dot" style="background:#64b4ff"></span>🎖 MILITARY</button>
+        <button class="layer-btn active" data-layer="cables"    onclick="filterLayer('cables',this)"    title="Submarine internet cables"><span class="layer-dot" style="background:#00ffc8"></span>🌐 CABLES</button>
       </div>
 
       <!-- Leaflet map -->
-      <div id="world-map"></div>
+      <div id="world-map">
+        <div class="coord-display" id="coord-display">0.0000, 0.0000</div>
+      </div>
 
       <!-- Stats bar -->
       <div class="intel-stats">
@@ -510,11 +561,11 @@
           <span class="stat-num" id="stat-quakes">—</span>
           <span class="stat-lbl">Quakes</span>
         </div>
-        <div class="stat-block s-energy" title="Energy chokepoints & oil fields">
+        <div class="stat-block s-energy" title="Energy chokepoints &amp; oil fields">
           <span class="stat-num" id="stat-energy">10</span>
           <span class="stat-lbl">Energy</span>
         </div>
-        <div class="stat-block s-cyber" title="State APT groups & cyber operations">
+        <div class="stat-block s-cyber" title="State APT groups &amp; cyber operations">
           <span class="stat-num" id="stat-cyber">10</span>
           <span class="stat-lbl">Cyber</span>
         </div>
@@ -522,13 +573,17 @@
           <span class="stat-num" id="stat-sanctions">10</span>
           <span class="stat-lbl">Sanctions</span>
         </div>
-        <div class="stat-block s-shipping" title="Shipping chokepoints, canals & ports">
+        <div class="stat-block s-shipping" title="Shipping chokepoints, canals &amp; ports">
           <span class="stat-num" id="stat-shipping">10</span>
           <span class="stat-lbl">Shipping</span>
         </div>
         <div class="stat-block s-intel" title="Intelligence agency HQs">
           <span class="stat-num" id="stat-intel">12</span>
           <span class="stat-lbl">Intel HQs</span>
+        </div>
+        <div class="stat-block s-military" title="Major military bases worldwide">
+          <span class="stat-num" id="stat-military">18</span>
+          <span class="stat-lbl">Mil Bases</span>
         </div>
         <div class="stat-block s-risk" title="Global risk assessment">
           <span class="stat-lbl" style="margin-bottom:0.12rem">Global Risk</span>
@@ -549,15 +604,14 @@
           <div class="feed-tab-btn"        data-feed="intel"     onclick="switchFeed('intel',this)">👁 INTEL</div>
           <div class="feed-tab-btn"        data-feed="shipping"  onclick="switchFeed('shipping',this)">⚓ SHIPPING</div>
           <div class="feed-tab-btn"        data-feed="metals"    onclick="switchFeed('metals',this)">⬡ METALS</div>
+          <div class="feed-tab-btn"        data-feed="military"  onclick="switchFeed('military',this)">⚔ MILITARY</div>
+          <div class="feed-tab-btn"        data-feed="cables"    onclick="switchFeed('cables',this)">🌐 CABLES</div>
         </div>
         <div class="feed-list" id="feed-list"></div>
       </div>
     </div><!-- /panel-map -->
-
     <!-- ── MARKETS PANEL ── -->
     <div class="main-panel" id="panel-markets">
-
-      <!-- Live metals + key indicators bar -->
       <div class="metals-bar">
         <div class="mb-item gold">
           <span class="mb-label">Gold (XAU)</span>
@@ -600,16 +654,12 @@
           <span class="mb-chg flat" id="mb-brent-chg">—</span>
         </div>
       </div>
-
-      <!-- Row 1: Sessions · Crypto Command · Fear & Greed -->
       <div class="term-grid">
-        <!-- Market Sessions -->
         <div class="term-panel">
           <div class="tp-head"><span class="tp-title">⏱ Market Sessions</span><span class="badge-live">Live UTC</span></div>
           <div class="utc-clock" id="utc-clock">00:00:00</div>
           <div class="sessions-list" id="sessions-list"></div>
         </div>
-        <!-- Crypto Command -->
         <div class="term-panel">
           <div class="tp-head"><span class="tp-title">₿ Crypto Command</span><span class="badge-live">Live</span></div>
           <div class="crypto-row">
@@ -630,7 +680,6 @@
             <div class="crypto-dom-item"><div class="cd-label">24h Vol</div><div class="cd-value" id="cg-total-vol">—</div></div>
           </div>
         </div>
-        <!-- Fear & Greed -->
         <div class="term-panel no-right">
           <div class="tp-head"><span class="tp-title">⚡ Fear &amp; Greed</span><span class="badge-live">Live</span></div>
           <div class="fg-value">
@@ -647,36 +696,26 @@
           </div>
         </div>
       </div>
-
-      <!-- Row 2: FX Command · Commodities -->
       <div class="term-grid two-col">
-        <!-- FX Command -->
         <div class="term-panel">
           <div class="tp-head"><span class="tp-title">💱 FX Command</span><span class="badge-live">Live</span></div>
           <div class="fx-pairs-grid" id="fx-pairs-grid"></div>
         </div>
-        <!-- Commodities -->
         <div class="term-panel no-right">
           <div class="tp-head"><span class="tp-title">🛢 Commodities</span><span class="badge-tag">EST</span></div>
           <div class="commod-list" id="commod-list"></div>
         </div>
       </div>
-
-      <!-- Row 3: S&P Sectors · Bond Yields -->
       <div class="term-grid two-col">
-        <!-- S&P Sectors -->
         <div class="term-panel">
           <div class="tp-head"><span class="tp-title">📊 S&amp;P Sectors</span><span class="badge-tag gold">EST</span></div>
           <div class="sp-grid" id="sp-grid"></div>
         </div>
-        <!-- Bond Yields -->
         <div class="term-panel no-right">
           <div class="tp-head"><span class="tp-title">📈 Bond Yields</span><span class="badge-tag">EST</span></div>
           <div class="yields-list" id="yields-list"></div>
         </div>
       </div>
-
-      <!-- Row 4: Global Indices full width -->
       <div class="term-grid">
         <div class="term-panel full-w" style="border-bottom:none">
           <div class="tp-head"><span class="tp-title">🌍 Global Indices</span><span class="badge-tag">EST</span></div>
@@ -686,7 +725,6 @@
           </table>
         </div>
       </div>
-
     </div><!-- /panel-markets -->
 
     <!-- ── INTEL FEED PANEL ── -->
@@ -697,10 +735,12 @@
       </div>
       <div class="intel-feed-tabs">
         <div class="if-tab active" data-iftab="geopolitical" onclick="switchIntelFeed('geopolitical',this)">🌍 GEOPOLITICAL</div>
-        <div class="if-tab" data-iftab="markets"     onclick="switchIntelFeed('markets',this)">📊 MARKETS</div>
-        <div class="if-tab" data-iftab="cyber"       onclick="switchIntelFeed('cyber',this)">⚡ CYBER</div>
-        <div class="if-tab" data-iftab="energy"      onclick="switchIntelFeed('energy',this)">🛢 ENERGY</div>
-        <div class="if-tab" data-iftab="centralbanks"onclick="switchIntelFeed('centralbanks',this)">🏦 CENTRAL BANKS</div>
+        <div class="if-tab" data-iftab="markets"      onclick="switchIntelFeed('markets',this)">📊 MARKETS</div>
+        <div class="if-tab" data-iftab="cyber"        onclick="switchIntelFeed('cyber',this)">⚡ CYBER</div>
+        <div class="if-tab" data-iftab="energy"       onclick="switchIntelFeed('energy',this)">🛢 ENERGY</div>
+        <div class="if-tab" data-iftab="centralbanks" onclick="switchIntelFeed('centralbanks',this)">🏦 CENTRAL BANKS</div>
+        <div class="if-tab" data-iftab="military"     onclick="switchIntelFeed('military',this)">⚔ MILITARY</div>
+        <div class="if-tab" data-iftab="health"       onclick="switchIntelFeed('health',this)">🏥 HEALTH</div>
       </div>
       <div class="intel-feed-body" id="intel-feed-body">
         <div class="news-loading"><span>ACQUIRING INTEL SIGNAL…</span></div>
@@ -709,7 +749,6 @@
 
   </main>
 </div><!-- /wt-layout -->
-
 <!-- ══════════════ SCRIPTS ══════════════ -->
 <script type="module">
   import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -731,12 +770,10 @@
     try {
       const snap = await getDoc(doc(db,'Users',user.uid));
       const data = snap.exists() ? snap.data() : {};
-      // ── Subscription gate ─────────────────────────────────────────
       const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
       const isAdmin = ADMIN_UIDS.includes(user.uid);
       const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
       if (!isAdmin && !isPaid) { location.href = 'arcane-store.html'; return; }
-      // ─────────────────────────────────────────────────────────────
       const xp = data.xp ?? 0;
       document.getElementById('nav-balance').textContent = `£${(data.balance??0).toFixed(2)}`;
       document.getElementById('nav-xp').textContent = xp.toLocaleString();
@@ -762,8 +799,6 @@
   resize(); initS(); draw();
   window.addEventListener('resize',()=>{ resize(); initS(); });
 })();
-
-/* ══ Ticker — handled by arcane-prices.js ══ */
 
 /* ══════════════════════════════════════════════
    DATA — Global Intelligence Layers
@@ -915,1004 +950,33 @@ const PRECIOUS_METALS_HUBS = [
   { name:'Nevada Silver Mines',  region:'USA',          lat:39.83, lng:-117.73,type:'MINE',     metal:'SILVER',      desc:'Coeur & First Majestic Nevada operations — major US silver supply, Comstock district legacy' },
 ];
 
-/* ══ Map setup ══ */
-let map;
-let layers = {};   // { conflicts, hotspots, markets, energy, nuclear, quakes, cyber, sanctions, shipping, intel, metals }
-let activeLayers = new Set(['conflicts','hotspots','markets','energy','nuclear','quakes','cyber','sanctions','shipping','intel','metals']);
-let metalMarkerRefs = {};  // sym → marker ref for live price updates
-let quakeData   = [];
-
-function mkIcon(cls, mc) {
-  return L.divIcon({ html:`<div class="${cls}" style="--mc:${mc}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-}
-
-function popup(title, region, desc, badgeTxt, badgeCls, extra) {
-  return `<div class="map-popup">
-    <div class="mp-title">${title}</div>
-    <div class="mp-region">${region}</div>
-    <div class="mp-desc">${desc}</div>
-    <div class="mp-row">
-      <span class="mp-badge ${badgeCls}">${badgeTxt}</span>
-      ${extra ? `<span class="mp-extra">${extra}</span>` : ''}
-    </div>
-  </div>`;
-}
-
-function sevClass(sev) {
-  const m = { CRITICAL:'b-critical', HIGH:'b-high', MODERATE:'b-moderate', LOW:'b-low',
-    ACTIVE:'b-active', ALERT:'b-alert', ESCALATING:'b-escalating', EXPANDING:'b-expanding',
-    UNDECLARED:'b-undeclared', CHOKEPOINT:'b-chokepoint', FIELD:'b-field',
-    STATE:'b-state', ALLIANCE:'b-alliance', CRIMINAL:'b-criminal', NEUTRAL:'b-neutral',
-    CANAL:'b-canal', PORT:'b-port', ROUTE:'b-route', AGENCY:'b-agency', SIGINT:'b-sigint',
-    SEVERE:'b-severe' };
-  return m[sev] || 'b-moderate';
-}
-
-function sevColor(sev) {
-  const m = { CRITICAL:'#ff3b3b', HIGH:'#ff6b35', MODERATE:'#f5c842', LOW:'#7a8499',
-    ACTIVE:'#ff4040', ALERT:'#ff3030', ESCALATING:'#ff5020', EXPANDING:'#ff9500',
-    UNDECLARED:'#00d4ff', CHOKEPOINT:'#ffb332', FIELD:'#5abe50',
-    STATE:'#39ff14', ALLIANCE:'#f5c842', CRIMINAL:'#ff6432', NEUTRAL:'#a0b0c8',
-    CANAL:'#4fc3f7', PORT:'#00d4ff', ROUTE:'#00e676', AGENCY:'#e040fb', SIGINT:'#e040fb',
-    SEVERE:'#ff2d55' };
-  return m[sev] || '#f5c842';
-}
-
-function initMap() {
-  // noWrap + maxBounds prevents world repeating. minZoom:1 lets mobile fully zoom out.
-  // At zoom 1 the world tile is 512px — smaller than desktop viewport but fits mobile fine.
-  // noWrap means the area beyond ±180° just shows the container background (navy), not a copy.
-  const WORLD_BOUNDS = L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180));
-  const isMobile = window.innerWidth < 768;
-
-  map = L.map('world-map', {
-    center: isMobile ? [20, 15] : [20, 10],
-    zoom: isMobile ? 1 : 2,
-    minZoom: 1,            // zoom 1 = world at 512px wide; fits any device without repeating
-    maxZoom: 10,
-    zoomControl: true,
-    attributionControl: false,
-    worldCopyJump: false,
-    maxBounds: WORLD_BOUNDS,
-    maxBoundsViscosity: 0.7,  // slightly elastic edge — doesn't snap harshly on pinch
-    tap: false,               // prevents iOS double-tap quirks
-  });
-
-  // noWrap: true stops tiles beyond ±180° being rendered
-  // light_all → CSS invert+hue-rotate converts to: dark charcoal land, navy blue ocean
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '',
-    maxZoom: 20,
-    noWrap: true,
-  }).addTo(map);
-
-  /* ── Build layer groups ── */
-  layers.conflicts = L.layerGroup();
-  layers.hotspots  = L.layerGroup();
-  layers.markets   = L.layerGroup();
-  layers.energy    = L.layerGroup();
-  layers.nuclear   = L.layerGroup();
-  layers.quakes    = L.layerGroup();
-  layers.cyber     = L.layerGroup();
-  layers.sanctions = L.layerGroup();
-  layers.shipping  = L.layerGroup();
-  layers.intel     = L.layerGroup();
-  layers.metals    = L.layerGroup();
-
-  /* CONFLICTS */
-  CONFLICTS.forEach(c => {
-    const col = sevColor(c.sev);
-    const ico = L.divIcon({ html:`<div class="m-conflict" style="background:${col};box-shadow:0 0 8px ${col};--mc:${col}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-    L.marker([c.lat,c.lng], {icon:ico})
-      .bindPopup(popup(c.name, c.region, c.desc, c.sev, sevClass(c.sev)), {maxWidth:240})
-      .addTo(layers.conflicts);
-  });
-
-  /* HOTSPOTS */
-  HOTSPOTS.forEach(h => {
-    const col = sevColor(h.sev);
-    const ico = L.divIcon({ html:`<div class="m-hotspot" style="background:${col};box-shadow:0 0 7px ${col};--mc:${col}"></div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-    L.marker([h.lat,h.lng], {icon:ico})
-      .bindPopup(popup(h.name, h.region, h.desc, h.sev, sevClass(h.sev)), {maxWidth:240})
-      .addTo(layers.hotspots);
-  });
-
-  /* MARKETS */
-  const mktSz = { major:10, mid:7, small:5 };
-  MARKETS_CENTRES.forEach(m => {
-    const sz = mktSz[m.type] || 5;
-    L.circleMarker([m.lat,m.lng], { radius:sz, fillColor:m.color, color:m.color, weight:1, opacity:0.9, fillOpacity:0.75 })
-      .bindPopup(popup(m.name,'Financial Centre','Global trading hub — 24h market operations','MARKET','b-teal'), {maxWidth:220})
-      .addTo(layers.markets);
-    if (m.type === 'major') {
-      L.circleMarker([m.lat,m.lng], { radius:sz+5, fillColor:'none', color:m.color, weight:1, opacity:0.25, fillOpacity:0 }).addTo(layers.markets);
-    }
-  });
-  // Trade routes
-  [[51.51,-0.13],[40.71,-74.01]].join('|');
-  const routes = [[[51.51,-0.13],[40.71,-74.01]],[[40.71,-74.01],[35.68,139.76]],[[51.51,-0.13],[50.11,8.68]],[[22.32,114.17],[1.35,103.82]],[[35.68,139.76],[22.32,114.17]],[[25.2,55.27],[1.35,103.82]]];
-  routes.forEach(r => L.polyline(r, {color:'rgba(0,212,255,0.18)',weight:1,dashArray:'4 8'}).addTo(layers.markets));
-
-  /* ENERGY */
-  ENERGY.forEach(e => {
-    const col = e.type==='CHOKEPOINT' ? '#ffb332' : '#5abe50';
-    const ico = e.type==='CHOKEPOINT'
-      ? L.divIcon({ html:`<div class="m-energy" style="background:rgba(255,179,50,0.22);border:1px solid ${col};box-shadow:0 0 6px ${col}">⚓</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] })
-      : L.divIcon({ html:`<div class="m-energy" style="background:rgba(90,190,80,0.18);border:1px solid ${col}">🛢</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-    L.marker([e.lat,e.lng], {icon:ico})
-      .bindPopup(popup(e.name, e.region, e.desc, e.type, sevClass(e.type), e.flow), {maxWidth:240})
-      .addTo(layers.energy);
-  });
-
-  /* NUCLEAR */
-  NUCLEAR.forEach(n => {
-    const col = n.status==='ALERT' ? '#ff3b3b' : n.status==='ESCALATING' ? '#ff6432' : '#00d4ff';
-    const ico = L.divIcon({ html:`<div class="m-nuclear" style="background:rgba(0,212,255,0.12);border:1.5px solid ${col};color:${col};box-shadow:0 0 8px ${col}40">☢</div>`, className:'', iconSize:[22,22], iconAnchor:[11,11] });
-    L.marker([n.lat,n.lng], {icon:ico})
-      .bindPopup(popup(n.name, n.region, n.desc, n.status, sevClass(n.status), `~${n.warheads.toLocaleString()} warheads`), {maxWidth:250})
-      .addTo(layers.nuclear);
-  });
-
-  /* CYBER */
-  CYBER.forEach(c => {
-    const col = c.type==='STATE' ? '#39ff14' : c.type==='ALLIANCE' ? '#f5c842' : '#ff6432';
-    const ico = L.divIcon({ html:`<div class="m-cyber" style="background:rgba(57,255,20,0.1);border:1px solid ${col};color:${col};box-shadow:0 0 7px ${col}50;--mc:${col}">⚡</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-    L.marker([c.lat,c.lng], {icon:ico})
-      .bindPopup(popup(c.name, c.group, c.desc, c.type, sevClass(c.type), c.threat+' THREAT'), {maxWidth:260})
-      .addTo(layers.cyber);
-  });
-
-  /* SANCTIONS */
-  SANCTIONS.forEach(s => {
-    const col = s.impact==='SEVERE' ? '#ff2d55' : s.impact==='HIGH' ? '#ff6432' : '#f5c842';
-    const ico = L.divIcon({ html:`<div class="m-sanctions" style="background:rgba(255,45,85,0.1);border:1.5px solid ${col};color:${col};box-shadow:0 0 7px ${col}50">🚫</div>`, className:'', iconSize:[22,22], iconAnchor:[11,11] });
-    const impactClass = s.impact==='SEVERE' ? 'b-critical' : s.impact==='HIGH' ? 'b-high' : 'b-moderate';
-    L.marker([s.lat,s.lng], {icon:ico})
-      .bindPopup(popup(s.name, s.region, s.desc, s.impact, impactClass, s.sanction), {maxWidth:270})
-      .addTo(layers.sanctions);
-  });
-
-  /* INTEL */
-  INTEL_HUBS.forEach(i => {
-    const col = i.type==='NEUTRAL' ? '#a0b0c8' : '#e040fb';
-    const ico = L.divIcon({ html:`<div class="m-intel" style="background:rgba(224,64,251,0.09);border:1.5px solid ${col};color:${col};box-shadow:0 0 8px ${col}50;--mc:${col}">👁</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-    L.marker([i.lat,i.lng], {icon:ico})
-      .bindPopup(popup(i.name, i.country, i.desc, i.agency, sevClass(i.type), i.type), {maxWidth:270})
-      .addTo(layers.intel);
-  });
-
-  /* SHIPPING — markers + route polylines */
-  SHIPPING.forEach(s => {
-    const col = s.type==='CANAL' ? '#4fc3f7' : s.type==='PORT' ? '#00d4ff' : s.type==='ROUTE' ? '#00e676' : '#4fc3f7';
-    const glyph = s.type==='PORT' ? '⬡' : s.type==='ROUTE' ? '◉' : '⚓';
-    const ico = L.divIcon({ html:`<div class="m-shipping" style="background:rgba(79,195,247,0.1);border:1px solid ${col};color:${col};box-shadow:0 0 6px ${col}40">${glyph}</div>`, className:'', iconSize:[20,20], iconAnchor:[10,10] });
-    L.marker([s.lat,s.lng], {icon:ico})
-      .bindPopup(popup(s.name, s.region, s.desc, s.type, sevClass(s.type), s.flow), {maxWidth:270})
-      .addTo(layers.shipping);
-  });
-  // Major shipping route polylines
-  const shipRoutes = [
-    [[31.24,121.70],[1.26,104.00],[30.58,32.34],[35.99,-5.60],[51.02,1.47],[51.92,4.48]],  // Asia→Suez→Dover→Rotterdam
-    [[1.26,104.00],[-34.36,18.47],[51.92,4.48]],                                             // Asia→Cape→Rotterdam (diversion)
-    [[51.92,4.48],[35.99,-5.60],[30.58,32.34],[1.26,104.00],[33.73,-118.27]],               // Rotterdam→Suez→Singapore→LA
-    [[39.11,-76.77],[9.08,-79.68],[33.73,-118.27]],                                          // US East→Panama→US West
-  ];
-  shipRoutes.forEach(r => L.polyline(r, {color:'rgba(79,195,247,0.18)',weight:1.2,dashArray:'6 10'}).addTo(layers.shipping));
-
-  /* PRECIOUS METALS */
-  PRECIOUS_METALS_HUBS.forEach(m => {
-    const isGold   = m.metal.includes('GOLD');
-    const isSilver = m.metal === 'SILVER';
-    const col = m.type === 'EXCHANGE' ? '#ffd700' : m.type === 'MINT' ? '#ffe680' : m.type === 'TRADING' ? '#ffec8b' : isSilver ? '#c0c0c0' : '#ffd700';
-    const glyph = m.type === 'EXCHANGE' ? '⬡' : m.type === 'MINT' ? '♦' : m.type === 'TRADING' ? '◈' : '⛏';
-    const ico = L.divIcon({
-      html:`<div class="m-metals" style="background:rgba(255,215,0,0.1);border:1.5px solid ${col};color:${col};box-shadow:0 0 8px ${col}50">${glyph}</div>`,
-      className:'', iconSize:[22,22], iconAnchor:[11,11]
-    });
-    const AP = window.ArcanePrices;
-    const xauPrice = AP ? AP.fmt('XAU', 2) : '—';
-    const xagPrice = AP ? AP.fmt('XAG', 3) : '—';
-    const priceStr = isGold ? `XAU $${xauPrice}` : (isSilver ? `XAG $${xagPrice}` : `XAU $${xauPrice} | XAG $${xagPrice}`);
-    const marker = L.marker([m.lat, m.lng], {icon:ico})
-      .bindPopup(`<div class="map-popup">
-        <div class="mp-title">${m.name}</div>
-        <div class="mp-region">${m.region} · ${m.type}</div>
-        <div class="mp-desc">${m.desc}</div>
-        <div class="mp-row">
-          <span class="mp-badge b-moderate">${m.metal}</span>
-          <span class="mp-extra" id="mp-price-${m.name.replace(/\s/g,'')}">${priceStr}</span>
-        </div>
-      </div>`, {maxWidth:270})
-      .addTo(layers.metals);
-    metalMarkerRefs[m.name] = marker;
-  });
-
-  /* Add all layers to map initially */
-  Object.values(layers).forEach(lg => lg.addTo(map));
-
-  /* Invalidate size */
-  setTimeout(() => map.invalidateSize(), 100);
-  setTimeout(() => map.invalidateSize(), 500);
-
-  /* Fetch quakes */
-  fetchEarthquakes();
-}
-
-window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
-window.addEventListener('orientationchange', () => { setTimeout(() => { if(map) map.invalidateSize(); }, 350); });
-
-/* ══ Layer filter — independent toggle ══ */
-function filterLayer(type, el) {
-  const allKeys = Object.keys(layers);
-
-  if (type === 'all') {
-    const allOn = allKeys.every(k => activeLayers.has(k));
-    if (allOn) {
-      // All active → deactivate everything
-      activeLayers.clear();
-      document.querySelectorAll('.layer-btn:not([data-layer="all"])').forEach(b => b.classList.remove('active'));
-      el.classList.remove('active');
-    } else {
-      // Some off → activate everything
-      allKeys.forEach(k => activeLayers.add(k));
-      document.querySelectorAll('.layer-btn:not([data-layer="all"])').forEach(b => b.classList.add('active'));
-      el.classList.add('active');
-    }
-  } else {
-    // Toggle the clicked layer independently
-    if (activeLayers.has(type)) {
-      activeLayers.delete(type);
-      el.classList.remove('active');
-    } else {
-      activeLayers.add(type);
-      el.classList.add('active');
-    }
-    // Keep ALL button in sync
-    document.querySelector('.layer-btn[data-layer="all"]').classList.toggle('active', allKeys.every(k => activeLayers.has(k)));
-  }
-
-  // Apply visibility to map
-  allKeys.forEach(key => {
-    if (activeLayers.has(key)) {
-      if (!map.hasLayer(layers[key])) layers[key].addTo(map);
-    } else {
-      if (map.hasLayer(layers[key])) map.removeLayer(layers[key]);
-    }
-  });
-}
-window.filterLayer = filterLayer;
-
-/* ══ Tab switching ══ */
-let _intelTabLoaded = false;
-function switchTab(tab, el) {
-  document.querySelectorAll('.map-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-  if (tab === 'map') setTimeout(() => { if(map) map.invalidateSize(); }, 50);
-  // Lazy-load intel feed on first visit
-  if (tab === 'news' && !_intelTabLoaded) {
-    _intelTabLoaded = true;
-    fetchIntelFeed(_intelFeedTab);
-  }
-}
-window.switchTab = switchTab;
-
-function resetMapView() { map.setView([20,10], 2, {animate:true}); }
-window.resetMapView = resetMapView;
-
-/* ══ Earthquakes (USGS live) ══ */
-async function fetchEarthquakes() {
-  try {
-    const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson');
-    const d = await r.json();
-    quakeData = d.features.map(f => ({
-      lat:  f.geometry.coordinates[1],
-      lng:  f.geometry.coordinates[0],
-      mag:  f.properties.mag,
-      place:f.properties.place,
-      time: new Date(f.properties.time).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
-      depth:Math.round(f.geometry.coordinates[2]),
-      url:  f.properties.url,
-    })).sort((a,b) => b.mag - a.mag);
-
-    layers.quakes.clearLayers();
-    quakeData.forEach(q => {
-      const sz  = Math.max(4, Math.min(14, (q.mag - 4) * 3.5));
-      const col = q.mag >= 7 ? '#ff3b3b' : q.mag >= 6 ? '#ff6432' : q.mag >= 5.5 ? '#ff9500' : '#a064ff';
-      const ico = L.divIcon({ html:`<div class="m-quake" style="width:${sz*2}px;height:${sz*2}px;background:${col}30;border:1.5px solid ${col};color:${col}"></div>`, className:'', iconSize:[sz*2,sz*2], iconAnchor:[sz,sz] });
-      L.marker([q.lat,q.lng], {icon:ico})
-        .bindPopup(`<div class="map-popup"><div class="mp-title">M${q.mag.toFixed(1)} Earthquake</div><div class="mp-region">${q.place}</div><div class="mp-desc">Depth: ${q.depth} km · ${q.time}</div><div class="mp-row"><span class="mp-badge ${q.mag>=7?'b-critical':q.mag>=6?'b-high':'b-moderate'}">M${q.mag.toFixed(1)}</span><span class="mp-extra">${q.depth}km deep</span></div></div>`, {maxWidth:240})
-        .addTo(layers.quakes);
-    });
-
-    document.getElementById('stat-quakes').textContent = quakeData.length;
-    if (activeLayers.has('quakes')) {
-      if (!map.hasLayer(layers.quakes)) layers.quakes.addTo(map);
-    }
-    // Refresh current feed if on quakes tab
-    const activeBtn = document.querySelector('.feed-tab-btn.active');
-    if (activeBtn && activeBtn.dataset.feed === 'quakes') renderFeed('quakes');
-  } catch(e) {
-    document.getElementById('stat-quakes').textContent = '—';
-  }
-}
-
-/* ══ Feed rendering ══ */
-function switchFeed(type, el) {
-  document.querySelectorAll('.feed-tab-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  renderFeed(type);
-}
-window.switchFeed = switchFeed;
-
-function renderFeed(type) {
-  const list = document.getElementById('feed-list');
-  if (!list) return;
-
-  if (type === 'conflicts') {
-    list.innerHTML = CONFLICTS.map(c => {
-      const col = sevColor(c.sev);
-      const bc  = sevClass(c.sev);
-      return `<div class="feed-item" onclick="map.setView([${c.lat},${c.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">${c.name}</div>
-          <div class="fi-desc">${c.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${c.region}</span>
-            <span class="fi-badge ${bc}">${c.sev}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'hotspots') {
-    list.innerHTML = HOTSPOTS.map(h => {
-      const col = sevColor(h.sev);
-      const bc  = sevClass(h.sev);
-      return `<div class="feed-item" onclick="map.setView([${h.lat},${h.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">${h.name}</div>
-          <div class="fi-desc">${h.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${h.region}</span>
-            <span class="fi-badge ${bc}">${h.sev}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'quakes') {
-    if (!quakeData.length) {
-      list.innerHTML = '<div style="padding:1rem;font-family:var(--font-head);font-size:0.55rem;color:var(--text-muted);text-align:center">Loading earthquake data…</div>';
-      return;
-    }
-    list.innerHTML = quakeData.slice(0,30).map(q => {
-      const col = q.mag >= 7 ? '#ff3b3b' : q.mag >= 6 ? '#ff6432' : q.mag >= 5.5 ? '#ff9500' : '#a064ff';
-      const bc  = q.mag >= 7 ? 'b-critical' : q.mag >= 6 ? 'b-high' : 'b-moderate';
-      return `<div class="feed-item" onclick="map.setView([${q.lat},${q.lng}],6,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">M${q.mag.toFixed(1)} — ${q.place.split(',')[0]}</div>
-          <div class="fi-desc">${q.place}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${q.time} · ${q.depth}km depth</span>
-            <span class="fi-badge ${bc}">M${q.mag.toFixed(1)}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'energy') {
-    list.innerHTML = ENERGY.map(e => {
-      const col = e.type==='CHOKEPOINT' ? '#ffb332' : '#5abe50';
-      const bc  = sevClass(e.type);
-      const ico = e.type==='CHOKEPOINT' ? '⚓' : '🛢';
-      return `<div class="feed-item" onclick="map.setView([${e.lat},${e.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">${ico} ${e.name}</div>
-          <div class="fi-desc">${e.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${e.region} · ${e.flow}</span>
-            <span class="fi-badge ${bc}">${e.type}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'nuclear') {
-    list.innerHTML = NUCLEAR.map(n => {
-      const col = n.status==='ALERT'?'#ff3b3b':n.status==='ESCALATING'?'#ff6432':'#00d4ff';
-      const bc  = sevClass(n.status);
-      return `<div class="feed-item" onclick="map.setView([${n.lat},${n.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">☢ ${n.name}</div>
-          <div class="fi-desc">${n.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${n.region} · ~${n.warheads.toLocaleString()} warheads</span>
-            <span class="fi-badge ${bc}">${n.status}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'cyber') {
-    list.innerHTML = CYBER.map(c => {
-      const col = c.type==='STATE' ? '#39ff14' : c.type==='ALLIANCE' ? '#f5c842' : '#ff6432';
-      const bc  = sevClass(c.type);
-      return `<div class="feed-item" onclick="map.setView([${c.lat},${c.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">⚡ ${c.name}</div>
-          <div class="fi-desc">${c.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${c.group}</span>
-            <span class="fi-badge ${bc}">${c.threat}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'sanctions') {
-    list.innerHTML = SANCTIONS.map(s => {
-      const col = s.impact==='SEVERE' ? '#ff2d55' : s.impact==='HIGH' ? '#ff6432' : '#f5c842';
-      const bc  = s.impact==='SEVERE' ? 'b-critical' : s.impact==='HIGH' ? 'b-high' : 'b-moderate';
-      return `<div class="feed-item" onclick="map.setView([${s.lat},${s.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">🚫 ${s.name}</div>
-          <div class="fi-desc">${s.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${s.region} · ${s.sanction}</span>
-            <span class="fi-badge ${bc}">${s.impact}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'intel') {
-    list.innerHTML = INTEL_HUBS.map(i => {
-      const col = i.type==='NEUTRAL' ? '#a0b0c8' : '#e040fb';
-      const bc  = sevClass(i.type);
-      return `<div class="feed-item" onclick="map.setView([${i.lat},${i.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">👁 ${i.name}</div>
-          <div class="fi-desc">${i.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${i.country} · ${i.agency}</span>
-            <span class="fi-badge ${bc}">${i.type}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'shipping') {
-    list.innerHTML = SHIPPING.map(s => {
-      const col = s.type==='CANAL' ? '#4fc3f7' : s.type==='PORT' ? '#00d4ff' : s.type==='ROUTE' ? '#00e676' : '#4fc3f7';
-      const bc  = sevClass(s.type);
-      return `<div class="feed-item" onclick="map.setView([${s.lat},${s.lng}],4,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-        <div class="feed-icon" style="background:${col}"></div>
-        <div class="feed-body">
-          <div class="fi-name">⚓ ${s.name}</div>
-          <div class="fi-desc">${s.desc}</div>
-          <div class="fi-meta">
-            <span class="fi-region">${s.region} · ${s.flow}</span>
-            <span class="fi-badge ${bc}">${s.type}</span>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  } else if (type === 'metals') {
-    renderMetalsFeed();
-  }
-}
-
-/* ══ Fear & Greed ══ */
-async function fetchFearGreed() {
-  try {
-    const r = await fetch('https://api.alternative.me/fng/?limit=1');
-    const d = await r.json();
-    const val  = parseInt(d.data[0].value);
-    const text = d.data[0].value_classification;
-    const cols = { 'Extreme Fear':'#ff3b3b','Fear':'#ff9500','Neutral':'#f5c842','Greed':'#00e676','Extreme Greed':'#00d4ff' };
-    const col  = cols[text] || '#e6e9f2';
-    const fg_n = document.getElementById('fg-number');
-    const fg_t = document.getElementById('fg-text');
-    const fg_nd= document.getElementById('fg-needle');
-    if(fg_n){ fg_n.textContent=val; fg_n.style.color=col; }
-    if(fg_t){ fg_t.textContent=text.toUpperCase(); fg_t.style.color=col; }
-    if(fg_nd) fg_nd.style.left=val+'%';
-  } catch(e) {}
-}
-
-/* ══ Metals feed tab ══ */
-function renderMetalsFeed() {
-  const list = document.getElementById('feed-list');
-  if (!list) return;
-  const AP = window.ArcanePrices;
-  const xau = AP ? AP.get('XAU') : null;
-  const xag = AP ? AP.get('XAG') : null;
-  list.innerHTML = PRECIOUS_METALS_HUBS.map(m => {
-    const col = m.type === 'EXCHANGE' ? '#ffd700' : m.type === 'MINT' ? '#ffe680' : m.type === 'TRADING' ? '#ffec8b' : m.metal === 'SILVER' ? '#c0c0c0' : '#ffd700';
-    const isGold = m.metal.includes('GOLD');
-    const isSilver = m.metal === 'SILVER';
-    const priceEl = isGold && xau ? `$${AP.fmtPrice(xau.price,2)}` : (isSilver && xag ? `$${AP.fmtPrice(xag.price,3)}` : '');
-    const typeCls = m.type === 'EXCHANGE' ? 'b-moderate' : m.type === 'MINE' ? 'b-field' : 'b-teal';
-    return `<div class="feed-item" onclick="map.setView([${m.lat},${m.lng}],5,{animate:true});switchTab('map',document.querySelector('[data-tab=map]'))">
-      <div class="feed-icon" style="background:${col};box-shadow:0 0 5px ${col}"></div>
-      <div class="feed-body">
-        <div class="fi-name">⬡ ${m.name}</div>
-        <div class="fi-desc">${m.desc}</div>
-        <div class="fi-meta">
-          <span class="fi-region">${m.region}${priceEl ? ' · ' + priceEl : ''}</span>
-          <span class="fi-badge ${typeCls}">${m.type}</span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ══ MARKETS terminal binding ══ */
-function bindMarketsPanel() {
-  const AP = window.ArcanePrices;
-  if (!AP) return;
-
-  AP.subscribe(data => {
-    /* Metals bar */
-    function mbSet(id, sym, dec) {
-      const d = data[sym];
-      const priceEl = document.getElementById('mb-' + id);
-      const chgEl   = document.getElementById('mb-' + id + '-chg');
-      if (d && priceEl) priceEl.textContent = AP.fmtPrice(d.price, dec);
-      if (d && chgEl) { chgEl.textContent = AP.fmtChg(d.change); chgEl.className = 'mb-chg ' + d.dir; }
-    }
-    mbSet('xau',   'XAU',   2);
-    mbSet('xag',   'XAG',   3);
-    mbSet('dxy',   'DXY',   2);
-    mbSet('vix',   'VIX',   2);
-    mbSet('us10y', 'US10Y', 3);
-    mbSet('wti',   'WTI',   2);
-    mbSet('brent', 'BRENT', 2);
-
-    /* Au/Ag ratio */
-    const ratioEl = document.getElementById('mb-ratio');
-    if (ratioEl && data.XAU && data.XAG && data.XAG.price) {
-      ratioEl.textContent = (data.XAU.price / data.XAG.price).toFixed(1);
-    }
-
-    /* Crypto */
-    function cSet(id, sym, dec) {
-      const d = data[sym];
-      const priceEl = document.getElementById(id + '-price');
-      const chgEl   = document.getElementById(id + '-chg');
-      if (d && priceEl) priceEl.textContent = '$' + AP.fmtPrice(d.price, dec);
-      if (d && chgEl) { chgEl.textContent = AP.fmtChg(d.change); chgEl.className = 'crypto-chg ' + d.dir; }
-    }
-    cSet('btc', 'BTC', 0);
-    cSet('eth', 'ETH', 2);
-    cSet('sol', 'SOL', 2);
-
-    /* Crypto global */
-    const cg = data.CRYPTO_GLOBAL;
-    if (cg) {
-      const e1 = document.getElementById('cg-total-mcap'), e2 = document.getElementById('cg-btc-dom'), e3 = document.getElementById('cg-total-vol');
-      if (e1) e1.textContent = cg.totalMcap || '—';
-      if (e2) e2.textContent = cg.btcDom    || '—';
-      if (e3) e3.textContent = cg.totalVol  || '—';
-    }
-
-    /* FX pairs */
-    const FX_PAIRS = [
-      {sym:'EURUSD', label:'EUR/USD', dec:4},
-      {sym:'GBPUSD', label:'GBP/USD', dec:4},
-      {sym:'USDJPY', label:'USD/JPY', dec:2},
-      {sym:'AUDUSD', label:'AUD/USD', dec:4},
-      {sym:'USDCAD', label:'USD/CAD', dec:4},
-      {sym:'USDCHF', label:'USD/CHF', dec:4},
-      {sym:'EURGBP', label:'EUR/GBP', dec:4},
-    ];
-    const fxGrid = document.getElementById('fx-pairs-grid');
-    if (fxGrid) {
-      fxGrid.innerHTML = FX_PAIRS.map(p => {
-        const d = data[p.sym];
-        const price = d ? AP.fmtPrice(d.price, p.dec) : '—';
-        const chg   = d ? AP.fmtChg(d.change)         : '';
-        const cls   = d ? d.dir : 'flat';
-        return `<div class="fx-pair-card">
-          <div class="fxc-pair">${p.label}</div>
-          <div class="fxc-price">${price}</div>
-          ${chg ? `<div class="fxc-chg ${cls}">${chg}</div>` : ''}
-        </div>`;
-      }).join('');
-    }
-
-    /* Commodities */
-    const COMMODS = [
-      {sym:'WTI',    label:'WTI Crude',    unit:'USD/bbl', dec:2},
-      {sym:'BRENT',  label:'Brent Crude',  unit:'USD/bbl', dec:2},
-      {sym:'NATGAS', label:'Natural Gas',  unit:'USD/MMBtu',dec:3},
-      {sym:'COPPER', label:'Copper',       unit:'USD/lb',  dec:3},
-    ];
-    const commodList = document.getElementById('commod-list');
-    if (commodList) {
-      commodList.innerHTML = COMMODS.map(c => {
-        const d = data[c.sym];
-        const price = d ? AP.fmtPrice(d.price, c.dec) : '—';
-        const chg   = d ? AP.fmtChg(d.change)         : '—';
-        const cls   = d ? d.dir : 'flat';
-        return `<div class="commod-row">
-          <div><div class="commod-name">${c.label}</div><div class="commod-unit">${c.unit}</div></div>
-          <div class="commod-right">
-            <div class="commod-price">$${price}</div>
-            <div class="commod-chg ${cls}">${chg}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    /* Bond yields */
-    const YIELDS = [
-      {sym:'US10Y', label:'US 10Y',   flag:'🇺🇸', suffix:'%'},
-      {sym:'UK10Y', label:'UK Gilt',  flag:'🇬🇧', suffix:'%'},
-      {sym:'DE10Y', label:'DE Bund',  flag:'🇩🇪', suffix:'%'},
-      {sym:'JP10Y', label:'JP JGB',   flag:'🇯🇵', suffix:'%'},
-    ];
-    const yieldsList = document.getElementById('yields-list');
-    if (yieldsList) {
-      yieldsList.innerHTML = YIELDS.map(y => {
-        const d = data[y.sym];
-        const val = d ? AP.fmtPrice(d.price, 3) + y.suffix : '—';
-        // change for yields is absolute bps-like delta, not percentage
-        const chgVal = d && d.change != null ? ((d.change >= 0 ? '+' : '') + d.change.toFixed(3) + y.suffix) : '—';
-        const cls = d ? d.dir : 'flat';
-        return `<div class="yield-row">
-          <div><span class="yield-flag">${y.flag}</span><span class="yield-name">${y.label}</span></div>
-          <div class="yield-right">
-            <div class="yield-val">${val}</div>
-            <div class="yield-chg ${cls}">${chgVal}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    /* Global indices — live SPX + simulated others */
-    renderGlobalIndices(data);
-
-    /* Update metals map popup prices on next open */
-    // (prices stored in ArcanePrices, read live on popup open)
-  });
-}
-
-/* ══ Global Indices ══ */
-function renderGlobalIndices(data) {
-  const AP = window.ArcanePrices;
-  const spx  = data && data.SPX  ? AP.fmtPrice(data.SPX.price,  2) : '5,871.50';
-  const dow   = data && data.DOW  ? AP.fmtPrice(data.DOW.price,  2) : '43,820.00';
-  const ndq   = data && data.NDQ  ? AP.fmtPrice(data.NDQ.price,  2) : '18,820.00';
-  const spxC  = data && data.SPX  ? AP.fmtChg(data.SPX.change)  : '+0.61%';
-  const dowC  = data && data.DOW  ? AP.fmtChg(data.DOW.change)  : '+0.44%';
-  const ndqC  = data && data.NDQ  ? AP.fmtChg(data.NDQ.change)  : '+0.77%';
-  const spxD  = data && data.SPX  ? data.SPX.dir  : 'up';
-  const dowD  = data && data.DOW  ? data.DOW.dir  : 'up';
-  const ndqD  = data && data.NDQ  ? data.NDQ.dir  : 'up';
-
-  const utcHour = new Date().getUTCHours();
-  function isOpen(openH, closeH) { return utcHour >= openH && utcHour < closeH; }
-
-  const markets = [
-    {name:'S&P 500',    flag:'🇺🇸', country:'USA',        price:spx,   chg:spxC, dir:spxD, open:isOpen(13,21)},
-    {name:'Dow Jones',  flag:'🇺🇸', country:'USA',        price:dow,   chg:dowC, dir:dowD, open:isOpen(13,21)},
-    {name:'NASDAQ 100', flag:'🇺🇸', country:'USA',        price:ndq,   chg:ndqC, dir:ndqD, open:isOpen(13,21)},
-    {name:'FTSE 100',   flag:'🇬🇧', country:'UK',         price:'8,242',chg:'-0.12%',dir:'down',open:isOpen(7,16)},
-    {name:'DAX',        flag:'🇩🇪', country:'Germany',    price:'19,241',chg:'+0.34%',dir:'up',open:isOpen(7,16)},
-    {name:'CAC 40',     flag:'🇫🇷', country:'France',     price:'7,801', chg:'+0.19%',dir:'up',open:isOpen(7,16)},
-    {name:'Nikkei 225', flag:'🇯🇵', country:'Japan',      price:'38,814',chg:'+1.02%',dir:'up',open:isOpen(0,6)},
-    {name:'Hang Seng',  flag:'🇭🇰', country:'HK',         price:'20,423',chg:'-0.55%',dir:'down',open:isOpen(1,8)},
-    {name:'Shanghai',   flag:'🇨🇳', country:'China',      price:'3,282', chg:'-0.91%',dir:'down',open:isOpen(1,7)},
-    {name:'ASX 200',    flag:'🇦🇺', country:'Australia',  price:'8,124', chg:'+0.28%',dir:'up',open:isOpen(23,5)},
-  ];
-  const tbody = document.getElementById('markets-tbody');
-  if (!tbody) return;
-  tbody.innerHTML = markets.map(m =>
-    `<tr>
-      <td><div class="mkt-name">${m.flag} ${m.name}</div><div class="mkt-country">${m.country}</div></td>
-      <td class="mkt-price">${m.price}</td>
-      <td class="mkt-chg ${m.dir}">${m.chg}</td>
-      <td><span class="sess-badge ${m.open ? 'sb-open' : 'sb-closed'}">${m.open ? 'OPEN' : 'CLOSED'}</span></td>
-    </tr>`
-  ).join('');
-}
-
-/* ══ S&P Sectors ══ */
-function renderSPHeatmap() {
-  const sectors = [
-    {name:'Tech',pct:+1.82},{name:'Finance',pct:+0.54},{name:'Health',pct:-0.23},
-    {name:'Energy',pct:+2.11},{name:'Consumer',pct:-0.87},{name:'Utilities',pct:+0.12},
-    {name:'Industrl',pct:+0.73},{name:'Materials',pct:-0.44},{name:'Real Est',pct:-1.02},
-  ];
-  const grid = document.getElementById('sp-grid');
-  if (!grid) return;
-  grid.innerHTML = sectors.map(s => {
-    const n = Math.min(Math.abs(s.pct) / 3, 1);
-    const bg = s.pct >= 0
-      ? `rgba(0,${Math.floor(100 + n * 130)},${Math.floor(n * 80)},${0.5 + n * 0.4})`
-      : `rgba(${Math.floor(150 + n * 105)},${Math.floor(n * 20)},${Math.floor(n * 20)},${0.5 + n * 0.4})`;
-    return `<div class="sp-cell" style="background:${bg}"><div class="sp-name">${s.name}</div><div class="sp-pct">${s.pct > 0 ? '+' : ''}${s.pct.toFixed(2)}%</div></div>`;
-  }).join('');
-}
-
-/* ══ Market Sessions clock ══ */
-const SESSIONS = [
-  { name:'Tokyo',   openH:0, closeH:6,  color:'#ff9500', tzLabel:'JST' },
-  { name:'London',  openH:7, closeH:16, color:'#00d4ff', tzLabel:'GMT' },
-  { name:'New York',openH:13,closeH:21, color:'#00e676', tzLabel:'EST' },
-  { name:'Sydney',  openH:22,closeH:29, color:'#a064ff', tzLabel:'AEST' }, // wraps midnight
+const MILITARY_BASES = [
+  { name:'Camp Lemonnier',     country:'Djibouti',      lat:11.55,  lng:43.15,   type:'US',     desc:'Only permanent US base in Africa — AFRICOM drone hub, key Red Sea position' },
+  { name:'Al Udeid Air Base',  country:'Qatar',          lat:25.12,  lng:51.32,   type:'US',     desc:'Largest US air base in Middle East — CENTCOM forward HQ, 10,000 personnel' },
+  { name:'Ramstein Air Base',  country:'Germany',        lat:49.44,  lng:7.60,    type:'NATO',   desc:'USAF Europe HQ — primary air gateway to European theatre, key Ukraine aid hub' },
+  { name:'Yokosuka Naval Base',country:'Japan',           lat:35.29,  lng:139.67,  type:'US',     desc:'7th Fleet HQ — largest US naval base in Pacific, carrier strike group port' },
+  { name:'Diego Garcia',       country:'Indian Ocean',   lat:-7.32,  lng:72.42,   type:'US',     desc:'BIOT strategic hub — B-52/B-2 base, nuclear capable, Indian Ocean command' },
+  { name:'Andersen AFB Guam',  country:'Guam',           lat:13.58,  lng:144.93,  type:'US',     desc:'Pacific strategic bomber hub — B-1B/B-52 rotations, First Island Chain defence' },
+  { name:'Kadena Air Base',    country:'Japan',           lat:26.36,  lng:127.77,  type:'US',     desc:'Largest USAF base in Asia-Pacific — F-22/F-15 fighters, Taiwan Strait coverage' },
+  { name:'Camp Humphreys',     country:'South Korea',    lat:36.97,  lng:127.03,  type:'US',     desc:'USFK HQ — largest US overseas base by area, 36,000 personnel, North Korea deterrence' },
+  { name:'Tartus Naval Base',  country:'Syria',           lat:34.89,  lng:35.88,   type:'Russia', desc:'Russia\'s only Mediterranean naval base — permanent presence since 1971, logistics hub' },
+  { name:'Hmeimim Air Base',   country:'Syria',           lat:35.40,  lng:35.95,   type:'Russia', desc:'Russian aerospace forces — Su-35/Su-34 operations, Tu-160 bomber visits, Syria campaign HQ' },
+  { name:'Sevastopol Fleet HQ',country:'Crimea',          lat:44.62,  lng:33.52,   type:'Russia', desc:'Black Sea Fleet home port — degraded by Ukrainian strikes, Moskva cruiser sunk 2022' },
+  { name:'Sanya Naval Base',   country:'China',           lat:18.24,  lng:109.57,  type:'China',  desc:'PLAN South Sea Fleet — nuclear submarine base, aircraft carrier berths, South China Sea ops' },
+  { name:'Zhanjiang Naval Base',country:'China',          lat:21.27,  lng:110.35,  type:'China',  desc:'PLAN South Sea Fleet HQ — expanding carrier strike group capabilities, blue-water projection' },
+  { name:'Djibouti PLAN Base', country:'Djibouti',       lat:11.57,  lng:43.16,   type:'China',  desc:'China\'s first overseas military base — logistics hub, Red Sea access, Belt & Road security' },
+  { name:'NATO SHAPE HQ',      country:'Belgium',         lat:50.71,  lng:4.57,    type:'NATO',   desc:'Supreme HQ Allied Powers Europe — NATO command nerve centre, coordinates 32-nation defence' },
+  { name:'Incirlik Air Base',  country:'Turkey',          lat:37.00,  lng:35.43,   type:'NATO',   desc:'Key NATO forward base — US B61 nuclear weapons stored, Patriot systems, AWACS operations' },
+  { name:'Al-Tanf Garrison',   country:'Syria',           lat:33.47,  lng:38.65,   type:'US',     desc:'US garrison at Syrian-Iraqi-Jordanian tri-border — counters Iran land corridor, Deconfliction Zone' },
+  { name:'Ain al-Asad Air Base',country:'Iraq',           lat:33.38,  lng:42.44,   type:'US',     desc:'Key CENTCOM base in western Iraq — targeted by Iranian ballistic missiles January 2020' },
 ];
 
-function updateSessionClock() {
-  const now    = new Date();
-  const utcH   = now.getUTCHours();
-  const utcM   = now.getUTCMinutes();
-  const utcS   = now.getUTCSeconds();
-  const totalMin = utcH * 60 + utcM;
-
-  /* UTC clock */
-  const clk = document.getElementById('utc-clock');
-  if (clk) clk.textContent = `${String(utcH).padStart(2,'0')}:${String(utcM).padStart(2,'0')}:${String(utcS).padStart(2,'0')} UTC`;
-
-  const list = document.getElementById('sessions-list');
-  if (!list) return;
-
-  list.innerHTML = SESSIONS.map(s => {
-    const sessionMin = s.closeH * 60 - s.openH * 60; // duration in minutes
-    let elapsed = totalMin - s.openH * 60;
-    if (s.openH >= 22) {
-      // Sydney wraps: open from 22:00 to 05:00 next day
-      const adjTotal = totalMin < s.openH * 60 ? totalMin + 1440 : totalMin;
-      elapsed = adjTotal - s.openH * 60;
-    }
-    const isOpen = elapsed >= 0 && elapsed < sessionMin;
-    const pct = isOpen ? Math.min(100, Math.round(elapsed / sessionMin * 100)) : (elapsed >= sessionMin ? 100 : 0);
-
-    const openUTC  = `${String(s.openH  % 24).padStart(2,'0')}:00`;
-    const closeUTC = `${String(s.closeH % 24).padStart(2,'0')}:00`;
-
-    return `<div class="session-row">
-      <div class="sess-dot" style="background:${isOpen ? s.color : 'var(--border)'};${isOpen ? `box-shadow:0 0 5px ${s.color}` : ''}"></div>
-      <span class="sess-name">${s.name}</span>
-      <div class="sess-bar-wrap">
-        <div class="sess-bar-fill" style="width:${pct}%;background:${s.color}40;border-right:${isOpen?`2px solid ${s.color}`:'none'}"></div>
-      </div>
-      <span class="sess-time">${openUTC}–${closeUTC}</span>
-      <span class="sess-status ${isOpen ? 'sess-open' : 'sess-closed'}">${isOpen ? 'OPEN' : 'CLOSED'}</span>
-    </div>`;
-  }).join('');
-}
-
-/* ══ Intel Feed — multi-source RSS via allorigins.win CORS proxy + DOMParser ══ */
-// allorigins.win: free, no API key, no rate limit, returns {contents:'<xml>'}
-const CORS_PROXY = 'https://api.allorigins.win/get?url=';
-
-const INTEL_RSS = {
-  geopolitical: [
-    { url:'https://feeds.bbci.co.uk/news/world/rss.xml',                   src:'BBC World' },
-    { url:'https://www.theguardian.com/world/rss',                          src:'The Guardian' },
-    { url:'https://feeds.skynews.com/feeds/rss/world.xml',                  src:'Sky News' },
-  ],
-  markets: [
-    { url:'https://feeds.bbci.co.uk/news/business/rss.xml',                src:'BBC Business' },
-    { url:'https://www.theguardian.com/uk/business/rss',                    src:'Guardian Business' },
-    { url:'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', src:'MarketWatch' },
-  ],
-  cyber: [
-    { url:'https://feeds.arstechnica.com/arstechnica/security',             src:'Ars Technica' },
-    { url:'https://krebsonsecurity.com/feed/',                               src:'Krebs Security' },
-    { url:'https://www.darkreading.com/rss.xml',                             src:'Dark Reading' },
-  ],
-  energy: [
-    { url:'https://oilprice.com/rss/main',                                   src:'OilPrice' },
-    { url:'https://www.theguardian.com/environment/energy/rss',              src:'Guardian Energy' },
-    { url:'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',  src:'BBC Environment' },
-  ],
-  centralbanks: [
-    { url:'https://feeds.bbci.co.uk/news/business/economy/rss.xml',         src:'BBC Economy' },
-    { url:'https://www.theguardian.com/business/economics/rss',              src:'Guardian Economics' },
-    { url:'https://feeds.bbci.co.uk/news/business/rss.xml',                 src:'BBC Business' },
-  ],
-};
-
-let _intelFeedTab = 'geopolitical';
-let _intelFeedCache = {};
-
-// Parse an RSS/Atom feed XML string into article objects
-function parseRSSXML(xmlText, sourceName) {
-  try {
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, 'text/xml');
-    // Support both RSS <item> and Atom <entry>
-    const items = [...xml.querySelectorAll('item, entry')];
-    return items.slice(0, 15).map(item => {
-      // RSS uses <link> text; Atom uses <link href="...">
-      const linkEl = item.querySelector('link');
-      const link = (linkEl?.textContent?.trim() ||
-                    linkEl?.getAttribute('href') || '#').trim();
-      let domain = '';
-      try { domain = new URL(link).hostname.replace('www.', ''); } catch(_) {}
-      const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
-      return {
-        title:   (item.querySelector('title')?.textContent || '').trim(),
-        url:     link,
-        domain,
-        source:  sourceName,
-        pubDate,
-      };
-    }).filter(a => a.title && a.url !== '#');
-  } catch(e) {
-    return [];
-  }
-}
-
-async function fetchIntelFeed(tab) {
-  const body = document.getElementById('intel-feed-body');
-  if (!body) return;
-
-  // Serve from 5-min cache
-  const cached = _intelFeedCache[tab];
-  if (cached && Date.now() - cached.ts < 300000) {
-    renderNewsArticles(cached.items, tab);
-    return;
-  }
-
-  body.innerHTML = '<div class="news-loading"><span>ACQUIRING INTEL SIGNAL…</span></div>';
-
-  const sources = INTEL_RSS[tab] || INTEL_RSS.geopolitical;
-  const all = [];
-
-  // Fetch all feeds in parallel via CORS proxy; skip any that fail
-  await Promise.allSettled(
-    sources.map(async ({ url, src }) => {
-      try {
-        const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-        const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
-        if (!r.ok) return;
-        const data = await r.json();
-        if (!data.contents) return;
-        const articles = parseRSSXML(data.contents, src);
-        all.push(...articles);
-      } catch(e) {
-        console.warn(`Intel [${src}] failed:`, e.message);
-      }
-    })
-  );
-
-  // Sort newest first, deduplicate by title prefix
-  all.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
-  const seen = new Set();
-  const deduped = all.filter(a => {
-    const key = a.title.slice(0, 60).toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  if (!deduped.length) {
-    body.innerHTML = '<div class="news-error">⚠ Intel feed offline — retrying sources…</div>';
-    return;
-  }
-
-  _intelFeedCache[tab] = { items: deduped, ts: Date.now() };
-  renderNewsArticles(deduped, tab);
-}
-
-const TAG_MAP = {
-  geopolitical: { cls:'nt-geo',   label:'GEO' },
-  markets:      { cls:'nt-mkts',  label:'MKTS' },
-  cyber:        { cls:'nt-cyber', label:'CYBER' },
-  energy:       { cls:'nt-energy',label:'ENERGY' },
-  centralbanks: { cls:'nt-cb',    label:'CB' },
-};
-const SENT_WORDS_POS = ['surge','rise','rally','gain','strong','bullish','record','growth','beat','soar','boost','jump','high'];
-const SENT_WORDS_NEG = ['fall','drop','crash','war','attack','sanction','crisis','slump','miss','threat','cut','ban','suspend','collapse','kill','dead','fire'];
-
-function classifySentiment(title) {
-  const t = title.toLowerCase();
-  const pos = SENT_WORDS_POS.some(w => t.includes(w));
-  const neg = SENT_WORDS_NEG.some(w => t.includes(w));
-  if (pos && !neg) return {cls:'sent-pos', label:'BULLISH'};
-  if (neg && !pos) return {cls:'sent-neg', label:'BEARISH'};
-  return {cls:'sent-neu', label:'NEUTRAL'};
-}
-
-function fmtNewsTime(pubDate) {
-  try {
-    const diffMs  = Date.now() - new Date(pubDate).getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1)    return 'just now';
-    if (diffMin < 60)   return diffMin + 'm ago';
-    if (diffMin < 1440) return Math.floor(diffMin / 60) + 'h ago';
-    return Math.floor(diffMin / 1440) + 'd ago';
-  } catch(e) { return ''; }
-}
-
-function renderNewsArticles(articles, tab) {
-  const body = document.getElementById('intel-feed-body');
-  if (!body) return;
-  const tag = TAG_MAP[tab] || TAG_MAP.geopolitical;
-  const dotColor = {geopolitical:'#ff5c5c',markets:'#f5c842',cyber:'#39ff14',energy:'#ffb332',centralbanks:'#00d4ff'}[tab] || '#00d4ff';
-
-  if (!articles.length) {
-    body.innerHTML = '<div class="news-error">No intel articles found.</div>';
-    return;
-  }
-
-  body.innerHTML = articles.slice(0,25).map(a => {
-    const title   = (a.title || 'Untitled').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const display = a.source || a.domain || '';
-    const timeStr = fmtNewsTime(a.pubDate);
-    const sent    = classifySentiment(title);
-    return `<a class="news-card" href="${a.url}" target="_blank" rel="noopener">
-      <div class="news-card-dot" style="background:${dotColor};box-shadow:0 0 5px ${dotColor}"></div>
-      <div class="news-card-body">
-        <div class="news-headline">${title}</div>
-        <div class="news-meta-row">
-          ${display  ? `<span class="news-domain">${display}</span>`   : ''}
-          ${timeStr  ? `<span class="news-time">${timeStr}</span>`     : ''}
-          <span class="news-tag ${tag.cls}">${tag.label}</span>
-          <span class="news-sentiment ${sent.cls}">${sent.label}</span>
-        </div>
-      </div>
-    </a>`;
-  }).join('');
-}
-
-function switchIntelFeed(tab, el) {
-  document.querySelectorAll('.if-tab').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  _intelFeedTab = tab;
-  fetchIntelFeed(tab);
-}
-window.switchIntelFeed = switchIntelFeed;
-
-function refreshIntelFeed() {
-  delete _intelFeedCache[_intelFeedTab];
-  const btn = document.getElementById('if-refresh-btn');
-  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 1200); }
-  fetchIntelFeed(_intelFeedTab);
-}
-window.refreshIntelFeed = refreshIntelFeed;
-
-/* ══ Init ══ */
-function initPage() {
-  initMap();
-  fetchFearGreed();
-  bindMarketsPanel();
-  renderSPHeatmap();
-  updateSessionClock();
-  renderFeed('conflicts');
-
-  // Initial global indices (before prices loaded)
-  renderGlobalIndices(null);
-
-  document.getElementById('online-count').textContent = Math.floor(Math.random() * 60 + 20);
-
-  setInterval(fetchFearGreed,  300000);
-  setInterval(fetchEarthquakes,600000);
-  setInterval(updateSessionClock, 1000);
-  setInterval(renderSPHeatmap, 300000);
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPage);
-} else {
-  initPage();
-}
-</script>
-
-</body>
-</html>
+const SUBMARINE_CABLES = [
+  { name:'SEA-ME-WE 3',       capacity:'~2 Tbps',   desc:'Europe–Asia via Middle East, 39,000km backbone',                       color:'#00ffc8', path:[[51.5,-0.1],[36.0,-5.6],[38.0,14.0],[30.0,32.3],[12.5,43.3],[1.3,103.8],[22.3,114.2],[35.7,139.8]] },
+  { name:'MAREA',             capacity:'160 Tbps',  desc:'Microsoft/Facebook US–Spain 8-pair transatlantic',                     color:'#00ffc8', path:[[39.0,-76.0],[43.4,-8.0]] },
+  { name:'2Africa',           capacity:'180 Tbps',  desc:'Facebook-led 45,000km circling Africa, 33 countries',                   color:'#00ffc8', path:[[51.5,-0.1],[36.0,-5.6],[30.0,-9.0],[5.0,-3.0],[-34.4,18.5],[1.0,39.0],[12.5,43.3],[30.0,32.3]] },
+  { name:'PEACE Cable',       capacity:'16 Tbps',   desc:'Pakistan–E.Africa–Europe, Chinese-built Belt & Road',                   color:'#a0d4ff', path:[[24.9,67.0],[11.5,43.2],[2.0,45.0],[-4.0,39.6],[-26.0,32.0],[36.0,-5.6]] },
+  { name:'Trans-Pacific (NCP)',capacity:'~56 Tbps', desc:'US West Coast to Asia — critical Pacific internet backbone',            color:'#00ffc8', path:[[37.8,-122.4],[21.3,-157.8],[13.5,144.8],[1.3,103.8],[35.7,139.8]] },
+  { name:'AEConnect-1',       capacity:'~18 Tbps',  desc:'US–Ireland–UK direct northern transatlantic route',                     color:'#00ffc8', path:[[40.7,-74.0],[53.3,-6.3],[51.5,-0.1]] },
+  { name:'Arctic Fibre / POLAR',capacity:'20 Tbps', desc:'Arctic route UK–Japan — geopolitically sensitive high-latitude cable',  color:'#a0d4ff', path:[[51.5,-0.1],[60.0,-3.0],[68.0,-20.0],[71.0,-25.0],[70.0,25.0],[68.0,60.0],[65.0,120.0],[50.0,140.0],[35.7,139.8]] },
+];
