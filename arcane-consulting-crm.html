@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Consulting CRM | The Arcane Archives</title>
+    <title>Arcane Consulting CRM | The Arcane Archives</title>
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
 
@@ -137,6 +137,7 @@
 
         /* ========== MAIN ========== */
         .main-content { margin-left:var(--sidebar-width); flex:1; padding:2rem; min-height:100vh; overflow-x: hidden; }
+        .main-content.kanban-active { overflow-x: auto; }
         .page-header { margin-bottom:2rem; }
         .page-title { font-size:2rem; font-weight:900; letter-spacing:-0.02em; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--text),var(--purple-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         .page-subtitle { font-size:1rem; color:var(--text-secondary); font-weight:500; }
@@ -272,26 +273,26 @@
         .qual-badge.not_qualified { background:rgba(113,113,122,0.15); color:var(--text-muted); }
 
         /* ========== KANBAN ========== */
-        /* The kanban view wrapper must not clip horizontal scroll */
+        /* The kanban view wrapper — let it grow naturally, scroll handled by .main-content.kanban-active */
         #view-kanban {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            /* no overflow clipping here; .main-content.kanban-active handles scroll */
         }
         .kanban-board {
             display: flex;
             gap: 1rem;
-            overflow-x: auto;
             overflow-y: visible;
             padding-bottom: 1.25rem;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-x;
-            /* Ensure board can always grow wider than viewport */
-            min-width: min-content;
+            /* Let the board be as wide as its columns need */
+            width: max-content;
+            min-width: 100%;
         }
-        .kanban-board::-webkit-scrollbar { height: 8px; }
-        .kanban-board::-webkit-scrollbar-track { background:var(--bg-secondary); border-radius:4px; }
-        .kanban-board::-webkit-scrollbar-thumb { background:var(--purple-primary); border-radius:4px; }
-        .kanban-board::-webkit-scrollbar-thumb:hover { background:var(--purple-dark); }
+        /* Scrollbar styled on the scrolling container (.main-content.kanban-active) */
+        .main-content.kanban-active::-webkit-scrollbar { height: 8px; }
+        .main-content.kanban-active::-webkit-scrollbar-track { background:var(--bg-secondary); border-radius:4px; }
+        .main-content.kanban-active::-webkit-scrollbar-thumb { background:var(--purple-primary); border-radius:4px; }
+        .main-content.kanban-active::-webkit-scrollbar-thumb:hover { background:var(--purple-dark); }
         .kanban-column {
             min-width:280px; max-width:280px; flex-shrink:0;
             background:var(--bg-secondary); border:1px solid var(--border);
@@ -423,7 +424,8 @@
             .sidebar-overlay { display:block; }
             .main-content { margin-left:0; padding:1.5rem; padding-top:calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1.5rem); }
             .metrics-grid { grid-template-columns:repeat(2,1fr); }
-            .kanban-board { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:0.5rem; }
+            .kanban-board { padding-bottom:0.5rem; }
+            .main-content.kanban-active { overflow-x:auto; -webkit-overflow-scrolling:touch; }
             .kanban-column { min-width:280px; max-width:280px; flex-shrink:0; }
             .form-grid { grid-template-columns:1fr; }
             .inbox-ratings { grid-template-columns:1fr; }
@@ -508,6 +510,77 @@
             .kanban-card { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
         }
 
+        /* ========== SALES SCRIPT PANEL ========== */
+        .script-panel {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:16px;
+            padding:1.5rem; margin-bottom:1.5rem;
+        }
+        .script-panel-title {
+            font-size:0.875rem; font-weight:800; margin-bottom:1rem;
+            display:flex; align-items:center; gap:0.5rem;
+            background:linear-gradient(135deg,var(--purple-light),var(--gold));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+        .script-phases { display:flex; flex-direction:column; gap:0.5rem; }
+        .script-phase {
+            border-left:2px solid var(--purple-primary); padding:0.75rem 1rem;
+            background:rgba(139,92,246,0.05); border-radius:0 10px 10px 0;
+            cursor:pointer; transition:all 0.2s; user-select:text;
+        }
+        .script-phase:hover { background:rgba(139,92,246,0.1); border-left-color:var(--gold); }
+        .script-phase-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; }
+        .script-phase-num { font-size:0.625rem; font-weight:900; font-family:'JetBrains Mono',monospace; color:var(--purple-light); }
+        .script-phase-name { font-size:0.8rem; font-weight:700; }
+        .script-phase-text { font-size:0.75rem; color:var(--text-muted); line-height:1.5; }
+        .script-verbatim {
+            margin-top:0.4rem; padding:0.5rem 0.75rem;
+            background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.15);
+            border-radius:6px; font-size:0.72rem; color:var(--text-secondary);
+            line-height:1.5; font-style:italic;
+        }
+
+        /* ========== QUICK ACTIONS STRIP ========== */
+        .quick-strip {
+            display:flex; gap:0.75rem; margin-bottom:1.5rem; flex-wrap:wrap;
+        }
+        .quick-card {
+            flex:1; min-width:140px; background:var(--bg-card); border:1px solid var(--border);
+            border-radius:14px; padding:1.25rem; cursor:pointer; transition:all 0.25s;
+            text-align:center;
+        }
+        .quick-card:hover { border-color:var(--purple-primary); background:rgba(139,92,246,0.07); transform:translateY(-3px); }
+        .quick-card-icon { font-size:1.5rem; margin-bottom:0.5rem; }
+        .quick-card-label { font-size:0.75rem; font-weight:700; color:var(--text-secondary); }
+        .quick-card-val { font-size:1.25rem; font-weight:900; font-family:'JetBrains Mono',monospace;
+            background:linear-gradient(135deg,var(--purple-light),var(--gold));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+
+        /* ========== 3-LAYER SCORE DISPLAY ========== */
+        .layer-scores { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; margin-bottom:1rem; }
+        .layer-score { text-align:center; padding:0.75rem 0.5rem; border-radius:10px; }
+        .layer-score.business { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.15); }
+        .layer-score.mind { background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.15); }
+        .layer-score.life { background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.15); }
+        .layer-score-label { font-size:0.6rem; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.25rem; }
+        .layer-score.business .layer-score-label { color:#ef4444; }
+        .layer-score.mind .layer-score-label { color:var(--purple-light); }
+        .layer-score.life .layer-score-label { color:var(--gold); }
+        .layer-score-val { font-size:0.8rem; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--text); }
+
+        /* ========== NSN PROFILE SECTION ========== */
+        .nsn-block {
+            background:linear-gradient(135deg,rgba(139,92,246,0.07),rgba(251,191,36,0.03));
+            border:1px solid rgba(139,92,246,0.18); border-radius:12px;
+            padding:1rem 1.25rem; margin-bottom:1rem;
+        }
+        .nsn-title { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em;
+            color:var(--purple-light); margin-bottom:0.6rem; }
+        .nsn-driver { display:flex; align-items:center; gap:0.5rem; padding:0.3rem 0;
+            font-size:0.8rem; color:var(--text-secondary); border-bottom:1px solid rgba(255,255,255,0.04); }
+        .nsn-driver:last-child { border-bottom:none; }
+        .nsn-driver-dot { width:6px; height:6px; border-radius:50%; background:var(--purple-primary); flex-shrink:0; }
+
         /* ========== SAFE AREA INSETS ========== */
         @supports (padding: max(0px)) {
             .mobile-header {
@@ -590,7 +663,10 @@
         </div>
 
         <div class="nav-section">
-            <div class="nav-section-title">Quick Links</div>
+            <div class="nav-section-title">Tools</div>
+            <div class="nav-item" onclick="switchView('script')">
+                <span class="nav-icon">&#x1F3AF;</span> Sales Script
+            </div>
             <div class="nav-item" onclick="window.location.href='arcane-crm.html'">
                 <span class="nav-icon">&#x1F4CA;</span> Member CRM
             </div>
@@ -618,7 +694,7 @@
         <div class="view-container active" id="view-dashboard">
             <div class="page-header">
                 <h1 class="page-title">Consulting Dashboard</h1>
-                <p class="page-subtitle">High-ticket transformation pipeline overview</p>
+                <p class="page-subtitle">High-ticket transformation pipeline — 3 slots per quarter</p>
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="openAddLeadModal()">+ Add Lead</button>
                     <button class="btn btn-secondary" onclick="switchView('import')">&#x1F4E4; Import CSV</button>
@@ -700,6 +776,165 @@
                 <span class="filter-chip" onclick="filterInbox('not_qualified',this)">Not Qualified</span>
             </div>
             <div id="inboxContainer"></div>
+        </div>
+
+        <!-- ==================== SALES SCRIPT VIEW ==================== -->
+        <div class="view-container" id="view-script">
+            <div class="page-header">
+                <h1 class="page-title">Sales Script</h1>
+                <p class="page-subtitle">7-Phase system — PSYOP research + CIA profiling + 2 years cold-call testing</p>
+            </div>
+
+            <div class="quick-strip">
+                <div class="quick-card" onclick="copyToClipboard('Pattern interrupt opener: Hey — is this [Name]? Quick question before you hang up — is your business pulling in consistent leads right now, or is that still a problem?')">
+                    <div class="quick-card-icon">⚡</div>
+                    <div class="quick-card-val">Phase 1</div>
+                    <div class="quick-card-label">Copy Opener</div>
+                </div>
+                <div class="quick-card" onclick="copyToClipboard('CIA 3 Questions: 1) What\'s the biggest bottleneck right now? 2) What happens in 6 months if this isn\'t solved? 3) What have you already tried?')">
+                    <div class="quick-card-icon">🎯</div>
+                    <div class="quick-card-val">Phase 2</div>
+                    <div class="quick-card-label">Copy CIA Qs</div>
+                </div>
+                <div class="quick-card" onclick="copyToClipboard('Scarcity line: I work with a small number of businesses at a time — currently have two slots this quarter.')">
+                    <div class="quick-card-icon">🔒</div>
+                    <div class="quick-card-val">Phase 5</div>
+                    <div class="quick-card-label">Copy Scarcity</div>
+                </div>
+                <div class="quick-card" onclick="copyToClipboard('Soft close: Look — this probably isn\'t for everyone. But based on what you\'ve told me, there\'s real opportunity here. Worth 30 minutes to find out?')">
+                    <div class="quick-card-icon">🤝</div>
+                    <div class="quick-card-val">Phase 6</div>
+                    <div class="quick-card-label">Copy Close</div>
+                </div>
+            </div>
+
+            <div class="script-panel">
+                <div class="script-panel-title">&#x1F3AF; The 7-Phase Sales System</div>
+                <div class="script-phases">
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 01</span>
+                            <span class="script-phase-name">Pattern Interrupt</span>
+                        </div>
+                        <div class="script-phase-text">Binary question that forces engagement before they hang up. Not a pitch — a diagnostic opener that creates a micro-commitment.</div>
+                        <div class="script-verbatim">"Hey — is this [Name]? Quick question before you hang up — is your business pulling in consistent leads right now, or is that still a problem?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 02</span>
+                            <span class="script-phase-name">Story Mapping & Profiling (CIA Framework)</span>
+                        </div>
+                        <div class="script-phase-text">3 questions. Full psychological profile in 90 seconds. Map their NSN — Goal, Conflict, Risk, Struggles.</div>
+                        <div class="script-verbatim">1. "What's the biggest bottleneck right now?" &nbsp; 2. "What happens in 6 months if this isn't solved?" &nbsp; 3. "What have you already tried?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 03</span>
+                            <span class="script-phase-name">Authority Bridge</span>
+                        </div>
+                        <div class="script-phase-text">Become the Climax Character — not the Main Character. Testimony blueprint: past struggle → conquered → mechanism → result → offer.</div>
+                        <div class="script-verbatim">"I used to [mirror their problem]. Found one thing that changed everything. Now [result]. I work with a handful of businesses to replicate this."</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 04</span>
+                            <span class="script-phase-name">Selective Withholding</span>
+                        </div>
+                        <div class="script-phase-text">Information deprivation. Flip the frame — they qualify for you, not the other way. Revenue qualification signals selectivity.</div>
+                        <div class="script-verbatim">"Before I explain what I do — I only work with businesses doing £250k+. Is that where you are?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 05</span>
+                            <span class="script-phase-name">Fear Architecture</span>
+                        </div>
+                        <div class="script-phase-text">Ambient anxiety without ultimatum. No hard sell. No desperation. The slot scarcity is real — say it once and move on.</div>
+                        <div class="script-verbatim">"I work with a small number of businesses at a time — currently have two slots this quarter."</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 06</span>
+                            <span class="script-phase-name">The Soft Close</span>
+                        </div>
+                        <div class="script-phase-text">Sell the discovery call — not the service. Binary. Low friction. "Worth 30 minutes?" is harder to say no to than a price.</div>
+                        <div class="script-verbatim">"Look — this probably isn't for everyone. But based on what you've told me, there's real opportunity here. Worth 30 minutes to find out?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header">
+                            <span class="script-phase-num">PHASE 07</span>
+                            <span class="script-phase-name">Commitment Lock</span>
+                        </div>
+                        <div class="script-phase-text">Written 3-question form post-call. Written commitment = identity commitment. Dramatically reduces ghosting and no-shows.</div>
+                        <div class="script-verbatim">Post-call form: "What's your #1 goal? What's the cost of not solving this? Are you ready to invest in the solution?"</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="script-panel">
+                <div class="script-panel-title">&#x1F6AB; Objection Responses</div>
+                <div class="script-phases">
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-name">"Not interested"</span></div>
+                        <div class="script-verbatim">"That's fair — I'm not trying to sell you anything. I'm just doing a quick diagnosis. What if I told you there might be £30k+ you're leaving on the table? Worth knowing, at least?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-name">"Already have a consultant"</span></div>
+                        <div class="script-verbatim">"Great — what kind of results have you seen from working with them? [Pause]. I ask because what I do is different — I work on the psychology driving the decisions, not just the strategy. 30 minutes to show you the difference?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-name">"What does it cost?"</span></div>
+                        <div class="script-verbatim">"Depends entirely on the opportunity. The first step is a diagnostic — that's £2,500. If I identify £100k+ in hidden profit, the program investment is obvious. If I can't find it, you've still got a 40-page roadmap. Want to see if it qualifies?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-name">"Send me an email"</span></div>
+                        <div class="script-verbatim">"Most emails go straight to the bin — and I'd rather not waste your time with another pitch deck. Give me 5 minutes now or 30 minutes next week. Which works better?"</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-name">"I don't have time"</span></div>
+                        <div class="script-verbatim">"That's actually one of the symptoms of the problem I fix. How many hours a week are you in the business doing things you shouldn't be? [Pause]. That's exactly what we'd address."</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="script-panel">
+                <div class="script-panel-title">&#x1F9E0; NSN Motive Matching — 7 Drivers</div>
+                <div class="nsn-block">
+                    <div class="nsn-title">Listen for these in first 5 minutes. Match your pitch to their dominant driver.</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#ef4444"></span> <strong>Survival</strong> — "We're struggling", "If this doesn't change..." → Frame: risk removal, stability</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#f59e0b"></span> <strong>Resources</strong> — "I want to scale", "More revenue" → Frame: profit architecture, hidden margin</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#3b82f6"></span> <strong>Connection</strong> — "My team", "My clients" → Frame: relationships, reputation, legacy</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#8b5cf6"></span> <strong>Significance</strong> — "I want to be known", "Respect" → Frame: authority, market position</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#22c55e"></span> <strong>Growth</strong> — "Level up", "Next chapter" → Frame: transformation, identity upgrade</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#fbbf24"></span> <strong>Pleasure</strong> — "I want freedom", "Travel" → Frame: time freedom, lifestyle</div>
+                    <div class="nsn-driver"><span class="nsn-driver-dot" style="background:#a78bfa"></span> <strong>Certainty</strong> — "I need a system", "Predictability" → Frame: proven process, guaranteed method</div>
+                </div>
+            </div>
+
+            <div class="script-panel">
+                <div class="script-panel-title">&#x1F4CB; Discovery Call Framework (30 minutes)</div>
+                <div class="script-phases">
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-num">0–5 MIN</span><span class="script-phase-name">Genuine Rapport</span></div>
+                        <div class="script-phase-text">Reference previous conversation specifically. Make them feel remembered and heard. Ask one genuine question about something they mentioned.</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-num">5–15 MIN</span><span class="script-phase-name">Deep Diagnosis — 70% them talking</span></div>
+                        <div class="script-phase-text">NSN framework: Goal → Conflict → Risk → Struggles. Let silence sit. Every answer reveals a motive. Take notes visibly — it signals you're taking this seriously.</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-num">15–22 MIN</span><span class="script-phase-name">The Reveal</span></div>
+                        <div class="script-phase-text">Motive match. Name the exact gap. Connect it to your mechanism. "So the problem isn't [surface issue] — it's [deeper psychological truth]. Which is exactly what we address."</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-num">22–28 MIN</span><span class="script-phase-name">Transformation Story</span></div>
+                        <div class="script-phase-text">One client example, specific and visceral. Name the problem, the mechanism, the specific result. Don't generalise — specificity implies knowledge.</div>
+                    </div>
+                    <div class="script-phase">
+                        <div class="script-phase-header"><span class="script-phase-num">28–30 MIN</span><span class="script-phase-name">The Offer — Binary Close</span></div>
+                        <div class="script-verbatim">"One option. £2,500 diagnostic. We find the opportunity or you keep the roadmap. If we find what I expect — we talk about the 90 days. Simple. Want to move forward?"</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ==================== CSV IMPORT ==================== -->
@@ -1028,17 +1263,21 @@ function switchView(view) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.getElementById(`view-${view}`).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const viewMap = { dashboard:0, kanban:1, leads:2, inbox:3, import:4, followups:5, revenue:6 };
+    const viewMap = { dashboard:0, kanban:1, leads:2, inbox:3, import:4, followups:5, revenue:6, script:7 };
     document.querySelectorAll('.nav-item')[viewMap[view]]?.classList.add('active');
     renderCurrentView(view);
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').classList.remove('active');
     document.body.style.overflow = '';
 
-    // Kanban needs overflow-x visible on main-content so the board can scroll
+    // Kanban needs overflow-x auto on main-content so the board can scroll horizontally
     const main = document.querySelector('.main-content');
     if (main) {
-        main.style.overflowX = view === 'kanban' ? 'visible' : 'hidden';
+        if (view === 'kanban') {
+            main.classList.add('kanban-active');
+        } else {
+            main.classList.remove('kanban-active');
+        }
     }
 }
 
@@ -1050,6 +1289,7 @@ function renderCurrentView(view) {
     else if (active === 'inbox') renderInbox();
     else if (active === 'followups') renderFollowups();
     else if (active === 'revenue') renderRevenue();
+    // script view is static — no render needed
 }
 
 function updateSidebar() {
@@ -1643,10 +1883,10 @@ function renderInbox() {
                 <div class="inbox-meta-item">&#x1F4DE; ${escapeHtml(a.phone || '—')}</div>
                 <div class="inbox-meta-item">&#x1F4C5; ${a.timestamp ? new Date(a.timestamp).toLocaleDateString('en-GB') : '—'}</div>
             </div>
-            <div class="inbox-ratings">
-                <div class="inbox-rating"><div class="inbox-rating-label">Business</div><div class="inbox-rating-value">${escapeHtml(a.business_rating || '—')}</div></div>
-                <div class="inbox-rating"><div class="inbox-rating-label">Mind</div><div class="inbox-rating-value">${escapeHtml(a.mind_rating || '—')}</div></div>
-                <div class="inbox-rating"><div class="inbox-rating-label">Life</div><div class="inbox-rating-value">${escapeHtml(a.life_rating || '—')}</div></div>
+            <div class="layer-scores">
+                <div class="layer-score business"><div class="layer-score-label">Business</div><div class="layer-score-val">${escapeHtml(a.business_rating || '—')}</div></div>
+                <div class="layer-score mind"><div class="layer-score-label">Mind</div><div class="layer-score-val">${escapeHtml(a.mind_rating || '—')}</div></div>
+                <div class="layer-score life"><div class="layer-score-label">Life</div><div class="layer-score-val">${escapeHtml(a.life_rating || '—')}</div></div>
             </div>
             <div class="inbox-text"><strong>Biggest issue:</strong> ${escapeHtml(a.biggest_issue || '—')}</div>
             <div class="inbox-text"><strong>Previous attempts:</strong> ${escapeHtml(a.attempts || '—')}</div>
@@ -1920,6 +2160,19 @@ function renderRevenue() {
                 <td style="color:var(--text-muted);">${escapeHtml(p.notes || '—')}</td>
             </tr>`;
         }).join('');
+}
+
+// ==================== COPY TO CLIPBOARD ====================
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+    } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); showToast('Copied'); } catch(e) {}
+        document.body.removeChild(ta);
+    }
 }
 
 // ==================== MODAL HELPERS ====================
