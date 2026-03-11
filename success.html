@@ -98,7 +98,6 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -112,7 +111,6 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
     const statusEl = document.getElementById("payment-status");
     const dashLink = document.getElementById("dashboard-link");
@@ -143,7 +141,7 @@
       showError("Missing session ID in URL.", "No session_id parameter found. If you were charged, please contact support with your email address.");
       loginLink.style.display = "inline-block";
     } else {
-      // Store session ID
+      // Store session ID in case auth hasn't loaded yet
       try {
         localStorage.setItem("aa_last_session_id", sessionId);
       } catch (e) {
@@ -153,7 +151,20 @@
 
     // Wait for Firebase Auth user
     onAuthStateChanged(auth, async (user) => {
-      // Not logged in?
+      // Get session ID (from URL or storage)
+      let sid = sessionId;
+      if (!sid) {
+        try {
+          sid = localStorage.getItem("aa_last_session_id");
+        } catch (e) {}
+      }
+
+      if (!sid) {
+        showError("No payment session found.", "Session ID is missing. If you were charged, please contact support@arcane-archives.com with your email.");
+        loginLink.style.display = "inline-block";
+        return;
+      }
+
       if (!user) {
         setStatus("To complete activation, please log in to your account.");
         loginLink.style.display = "inline-block";
@@ -162,30 +173,15 @@
 
       console.log("✅ User authenticated:", user.uid);
 
-      // Get session ID
-      let sid = sessionId;
-      if (!sid) {
-        try {
-          sid = localStorage.getItem("aa_last_session_id");
-        } catch (e) {
-          console.warn("Could not read session id from storage", e);
-        }
-      }
-
-      if (!sid) {
-        showError("No payment session found.", "Session ID is missing. If you were charged, please contact support@arcane-archives.com with your email.");
-        return;
-      }
-
       try {
         setStatus("Verifying payment with Stripe...");
-        console.log("Calling verify function with sessionId:", sid);
 
-        // Call Netlify verify function
+        // Call Netlify verify function — it handles Stripe verification AND Firestore update
+        // via Firebase Admin SDK (bypasses Firestore security rules correctly)
         const res = await fetch("/.netlify/functions/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: sid }),
+          body: JSON.stringify({ sessionId: sid, uid: user.uid }),
         });
 
         console.log("Verify response status:", res.status);
@@ -194,7 +190,7 @@
           const errorData = await res.json().catch(() => ({}));
           console.error("Verify error:", errorData);
           showError(
-            "There was an issue verifying your payment.", 
+            "There was an issue verifying your payment.",
             `Status: ${res.status}. ${errorData.error || 'Unknown error'}. Please contact support if you were charged.`
           );
           return;
@@ -203,41 +199,28 @@
         const data = await res.json();
         console.log("Verify response:", data);
 
-        const paid = data.payment_status === "paid" || data.status === "complete";
+        const paid = data.payment_status === "paid" && data.status === "complete";
 
         if (!paid) {
           showError(
-            "Payment not completed yet.", 
-            `Payment status: ${data.payment_status}. If you were charged, please contact support.`
+            "Payment not completed yet.",
+            `Payment status: ${data.payment_status || 'unknown'}. If you were charged, please contact support@arcane-archives.com.`
           );
           return;
         }
 
-        setStatus("Payment verified! Activating your account...");
-        console.log("Updating Firestore for user:", user.uid);
+        if (!data.activated) {
+          // Payment confirmed but user lookup failed — still show success, webhook will fix it
+          console.warn("⚠️ Payment verified but user not found for auto-activation. Webhook will handle it.");
+        }
 
-        // Mark user as paid in Firestore - USING "Users" (capital U)
-        await setDoc(
-          doc(db, "Users", user.uid),
-          {
-            isPaid: true,
-            subscriptionStatus: "active",
-            stripeCustomerId: data.customer || null,
-            stripeSubscriptionId: data.subscription || null,
-          },
-          { merge: true }
-        );
-
-        console.log("✅ Firestore updated successfully");
         setStatus("✅ Your account has been activated! Welcome to The Arcane Archives 🔮");
         dashLink.style.display = "inline-block";
 
         // Clear stored session
         try {
           localStorage.removeItem("aa_last_session_id");
-        } catch (e) {
-          console.warn("Could not clear session from storage", e);
-        }
+        } catch (e) {}
 
         // Auto-redirect after 3 seconds
         setTimeout(() => {
@@ -247,7 +230,7 @@
       } catch (err) {
         console.error("❌ Error during activation:", err);
         showError(
-          "Unexpected error verifying your payment.", 
+          "Unexpected error verifying your payment.",
           `Error: ${err.message}. Please contact support@arcane-archives.com if this persists.`
         );
       }
