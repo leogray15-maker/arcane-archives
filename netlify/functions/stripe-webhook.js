@@ -247,6 +247,34 @@ async function trackPendingReferral(email, referralCode, username) {
   }
 }
 
+/**
+ * Update a user's subscription fields by their Stripe customer ID.
+ * Falls back to searching by stripeCustomerId field in Users collection.
+ */
+async function updateUserByCustomerId(customerId, fields) {
+  if (!db || !customerId) {
+    console.error("❌ updateUserByCustomerId: db or customerId missing");
+    return;
+  }
+  try {
+    const snap = await db
+      .collection("Users")
+      .where("stripeCustomerId", "==", customerId)
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      console.warn("⚠️ No user found for stripeCustomerId:", customerId);
+      return;
+    }
+
+    await snap.docs[0].ref.update(fields);
+    console.log("✅ Updated user", snap.docs[0].id, "with", JSON.stringify(fields));
+  } catch (err) {
+    console.error("❌ updateUserByCustomerId error:", err.message);
+  }
+}
+
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -339,6 +367,7 @@ exports.handler = async (event) => {
           subscriptionStatus: "active",
           paidAt: admin.firestore.FieldValue.serverTimestamp(),
           stripeCustomerId: session.customer || "",
+          stripeSubscriptionId: session.subscription || "",
         });
         console.log("✅ User marked as paid:", email);
 
@@ -448,6 +477,51 @@ exports.handler = async (event) => {
           console.error("❌ Failed to create store order:", error.message);
         }
       }
+    }
+
+    // ============================================
+    // SUBSCRIPTION CANCELLED
+    // ============================================
+    if (type === "customer.subscription.deleted") {
+      const subscription = data.object;
+      const customerId = subscription.customer;
+      console.log("❌ Subscription cancelled for customer:", customerId);
+      await updateUserByCustomerId(customerId, {
+        isPaid: false,
+        subscriptionStatus: "cancelled",
+        cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // ============================================
+    // SUBSCRIPTION UPDATED (status changes)
+    // ============================================
+    if (type === "customer.subscription.updated") {
+      const subscription = data.object;
+      const customerId = subscription.customer;
+      const subStatus = subscription.status; // active, past_due, unpaid, canceled, paused, trialing
+      console.log("🔄 Subscription updated for customer:", customerId, "→", subStatus);
+
+      const isActive = subStatus === "active" || subStatus === "trialing";
+      await updateUserByCustomerId(customerId, {
+        isPaid: isActive,
+        subscriptionStatus: subStatus === "canceled" ? "cancelled" : subStatus,
+        subscriptionUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // ============================================
+    // PAYMENT FAILED (invoice)
+    // ============================================
+    if (type === "invoice.payment_failed") {
+      const invoice = data.object;
+      const customerId = invoice.customer;
+      console.log("💳 Payment failed for customer:", customerId);
+      await updateUserByCustomerId(customerId, {
+        isPaid: false,
+        subscriptionStatus: "past_due",
+        lastPaymentFailedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
     }
 
     return {
