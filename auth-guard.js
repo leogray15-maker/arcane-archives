@@ -88,6 +88,28 @@ export function protectPage(options = {}) {
             console.log('✅ Auth check passed', isAdmin ? '(Admin)' : '');
             if (onSuccess) onSuccess(user, userData);
 
+            // Background subscription sync — runs every hour as a safety net
+            // so pages lock even if Stripe webhooks were missed/misconfigured
+            if (!isAdmin && requirePayment && userData.stripeSubscriptionId) {
+                const lastSync = userData.lastSubSyncAt?.toDate?.() || null;
+                const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+                if (!lastSync || lastSync < oneHourAgo) {
+                    fetch('/.netlify/functions/sync-subscription', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: user.uid }),
+                    })
+                    .then(r => r.ok ? r.json() : null)
+                    .then(data => {
+                        if (data && !data.isPaid) {
+                            console.warn('🔒 Subscription sync: no longer active — locking page');
+                            showLockedOverlay();
+                        }
+                    })
+                    .catch(err => console.warn('⚠️ Subscription sync failed (non-critical):', err.message));
+                }
+            }
+
         } catch (error) {
             console.error('❌ Auth error:', error);
             if (onFailure) onFailure();
