@@ -253,7 +253,8 @@
     .course-dot {
       position: absolute;
       border-radius: 50%;
-      background: rgba(245,200,66,0.35);
+      background: rgba(245,200,66,0.75);
+      box-shadow: 0 0 8px rgba(245,200,66,0.4);
       animation: dotFloat 4s ease-in-out infinite;
     }
     @keyframes dotFloat {
@@ -1000,22 +1001,40 @@
         <a class="module-card green-card" href="stock-picks.html">
           <div class="card-visual stocks-bg">
             <div class="card-grid-pattern"></div>
-            <!-- Animated bar chart -->
-            <div class="ticker-bars">
-              <div class="ticker-bar up"   style="height:40%;animation-delay:0s"></div>
-              <div class="ticker-bar up"   style="height:65%;animation-delay:-0.4s"></div>
-              <div class="ticker-bar down" style="height:50%;animation-delay:-0.8s"></div>
-              <div class="ticker-bar up"   style="height:80%;animation-delay:-1.2s"></div>
-              <div class="ticker-bar up"   style="height:55%;animation-delay:-1.6s"></div>
-              <div class="ticker-bar down" style="height:45%;animation-delay:-2.0s"></div>
-              <div class="ticker-bar up"   style="height:90%;animation-delay:-0.3s"></div>
-              <div class="ticker-bar up"   style="height:70%;animation-delay:-0.9s"></div>
-              <div class="ticker-bar down" style="height:38%;animation-delay:-1.4s"></div>
-              <div class="ticker-bar up"   style="height:85%;animation-delay:-0.6s"></div>
-            </div>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-left:1.25rem">
-              <span class="card-icon" style="font-size:2.5rem;color:#00e676">📊</span>
-            </div>
+            <!-- Sniper scope + breakout chart -->
+            <svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible" viewBox="0 0 270 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="breakGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00e676" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+                </linearGradient>
+                <filter id="scopeGlow">
+                  <feGaussianBlur stdDeviation="2" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- Breakout price line fill -->
+              <path d="M10,155 L50,148 L90,138 L120,125 L150,108 L175,80 L200,55 L200,180 L10,180 Z" fill="url(#breakGrad)"/>
+              <!-- Breakout price line -->
+              <polyline points="10,155 50,148 90,138 120,125 150,108 175,80 200,55" fill="none" stroke="#00e676" stroke-width="1.5" stroke-linejoin="round"/>
+              <!-- Scope outer ring -->
+              <circle cx="185" cy="65" r="52" fill="none" stroke="#00e676" stroke-width="1" opacity="0.5" filter="url(#scopeGlow)"/>
+              <!-- Scope inner ring -->
+              <circle cx="185" cy="65" r="32" fill="none" stroke="#00e676" stroke-width="1" opacity="0.7"/>
+              <!-- Scope crosshairs -->
+              <line x1="185" y1="13" x2="185" y2="117" stroke="#00e676" stroke-width="0.7" opacity="0.6"/>
+              <line x1="133" y1="65" x2="237" y2="65" stroke="#00e676" stroke-width="0.7" opacity="0.6"/>
+              <!-- Gap in crosshairs (reticle style) -->
+              <line x1="185" y1="40" x2="185" y2="55" stroke="#0a0a0f" stroke-width="2"/>
+              <line x1="185" y1="75" x2="185" y2="90" stroke="#0a0a0f" stroke-width="2"/>
+              <line x1="158" y1="65" x2="173" y2="65" stroke="#0a0a0f" stroke-width="2"/>
+              <line x1="197" y1="65" x2="212" y2="65" stroke="#0a0a0f" stroke-width="2"/>
+              <!-- Center dot -->
+              <circle cx="185" cy="65" r="3" fill="#00e676" opacity="0.9"/>
+              <!-- Ticker label -->
+              <rect x="10" y="10" width="72" height="22" rx="4" fill="rgba(0,230,118,0.12)" stroke="rgba(0,230,118,0.3)" stroke-width="0.7"/>
+              <text x="46" y="25" fill="#00e676" font-size="9" font-family="monospace" text-anchor="middle" font-weight="bold">PICK  +12.4%</text>
+            </svg>
           </div>
           <div class="card-footer">
             <div class="card-tag" style="color:#00e676;border-color:rgba(0,230,118,0.3)">Module 05</div>
@@ -1039,13 +1058,13 @@
               <div class="course-dot" style="width:8px;height:8px;left:200px;top:90px;animation-delay:-1.05s"></div>
               <div class="course-dot" style="width:5px;height:5px;left:120px;top:160px;animation-delay:-1.75s"></div>
               <!-- Connecting lines -->
-              <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15" viewBox="0 0 270 240">
-                <line x1="55" y1="55" x2="105" y2="83" stroke="#f5c842" stroke-width="1"/>
-                <line x1="105" y1="83" x2="165" y2="58" stroke="#f5c842" stroke-width="1"/>
-                <line x1="105" y1="83" x2="75" y2="133" stroke="#f5c842" stroke-width="1"/>
-                <line x1="165" y1="58" x2="145" y2="123" stroke="#f5c842" stroke-width="1"/>
-                <line x1="145" y1="123" x2="205" y2="93" stroke="#f5c842" stroke-width="1"/>
-                <line x1="145" y1="123" x2="125" y2="163" stroke="#f5c842" stroke-width="1"/>
+              <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.5" viewBox="0 0 270 240">
+                <line x1="55" y1="55" x2="105" y2="83" stroke="#f5c842" stroke-width="1.2"/>
+                <line x1="105" y1="83" x2="165" y2="58" stroke="#f5c842" stroke-width="1.2"/>
+                <line x1="105" y1="83" x2="75" y2="133" stroke="#f5c842" stroke-width="1.2"/>
+                <line x1="165" y1="58" x2="145" y2="123" stroke="#f5c842" stroke-width="1.2"/>
+                <line x1="145" y1="123" x2="205" y2="93" stroke="#f5c842" stroke-width="1.2"/>
+                <line x1="145" y1="123" x2="125" y2="163" stroke="#f5c842" stroke-width="1.2"/>
               </svg>
             </div>
             <div class="card-icon-wrap" style="align-items:flex-end;justify-content:flex-end;padding:1.25rem">
