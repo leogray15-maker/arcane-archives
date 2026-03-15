@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Lead Agent | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-card: #1f1f23;
+            --bg-card-hover: #27272a;
+            --bg-elevated: #2d2d32;
+            --purple-primary: #8b5cf6;
+            --purple-dark: #7c3aed;
+            --purple-light: #a78bfa;
+            --gold: #fbbf24;
+            --gold-dark: #f59e0b;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: rgba(255,255,255,0.1);
+            --border-hover: rgba(255,255,255,0.2);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --sidebar-width: 280px;
+            --header-height: 72px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-primary); color:var(--text); min-height:100vh; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+        /* MOBILE HEADER */
+        .mobile-header { display:none; position:fixed; top:0; left:0; right:0; height:calc(var(--header-height) + env(safe-area-inset-top,0px)); padding-top:env(safe-area-inset-top,0px); background:rgba(9,9,11,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); z-index:200; padding-left:1rem; padding-right:1rem; align-items:center; justify-content:space-between; }
+        .mobile-header-title { font-size:1.125rem; font-weight:800; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .mobile-menu-btn { width:44px; height:44px; border-radius:12px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); font-size:1.25rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+        /* SIDEBAR */
+        .app-container { display:flex; min-height:100vh; }
+        .sidebar { width:var(--sidebar-width); background:linear-gradient(180deg,rgba(31,31,35,0.95),rgba(9,9,11,0.98)); backdrop-filter:blur(20px); border-right:1px solid var(--border); padding:1.5rem; position:fixed; height:100vh; overflow-y:auto; z-index:100; transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; }
+        .sidebar-header { margin-bottom:2rem; }
+        .sidebar-logo { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem; }
+        .sidebar-logo img { width:40px; height:40px; border-radius:10px; }
+        .sidebar-logo-text { font-size:1.25rem; font-weight:900; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-tagline { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; margin-left:3.25rem; }
+        .sidebar-back { display:flex; align-items:center; gap:0.5rem; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:0.875rem; font-weight:600; text-decoration:none; transition:all 0.2s; margin-bottom:1.5rem; }
+        .sidebar-back:hover { background:rgba(139,92,246,0.1); border-color:var(--purple-primary); color:var(--text); }
+        .nav-section { margin-bottom:1.5rem; }
+        .nav-section-title { font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.75rem; padding:0 0.75rem; }
+        .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border-radius:10px; cursor:pointer; transition:all 0.2s; font-size:0.875rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.25rem; position:relative; }
+        .nav-item:hover { background:rgba(139,92,246,0.1); color:var(--text); transform:translateX(4px); }
+        .nav-item.active { background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(251,191,36,0.1)); color:var(--text); border:1px solid rgba(139,92,246,0.3); }
+        .nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:60%; background:var(--purple-primary); border-radius:0 2px 2px 0; }
+        .nav-icon { font-size:1.125rem; width:24px; text-align:center; }
+        .sidebar-footer { margin-top:auto; }
+        .sidebar-stats { padding:1.25rem; background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(251,191,36,0.05)); border-radius:16px; border:1px solid rgba(139,92,246,0.2); margin-bottom:1rem; }
+        .sidebar-stat { margin-bottom:0.75rem; }
+        .sidebar-stat:last-child { margin-bottom:0; }
+        .sidebar-stat-label { font-size:0.6875rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem; }
+        .sidebar-stat-value { font-size:1.5rem; font-weight:900; font-family:'JetBrains Mono',monospace; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-user { font-size:0.75rem; color:var(--text-muted); text-align:center; padding:0.5rem; }
+
+        /* MAIN */
+        .main-content { margin-left:var(--sidebar-width); flex:1; padding:2rem; min-height:100vh; overflow-x:hidden; }
+        .page-header { margin-bottom:2rem; }
+        .page-title { font-size:2rem; font-weight:900; letter-spacing:-0.02em; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--text),var(--purple-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .page-subtitle { font-size:1rem; color:var(--text-secondary); font-weight:500; }
+
+        /* METRICS */
+        .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .metric-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; position:relative; overflow:hidden; }
+        .metric-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--purple-primary),var(--gold)); opacity:0; transition:opacity 0.3s; }
+        .metric-card:hover { transform:translateY(-4px); border-color:var(--border-hover); box-shadow:0 20px 40px -12px rgba(0,0,0,0.5); }
+        .metric-card:hover::before { opacity:1; }
+        .metric-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; }
+        .metric-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; background:linear-gradient(135deg,var(--purple-primary),var(--purple-dark)); box-shadow:0 4px 12px rgba(139,92,246,0.3); }
+        .metric-label { font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
+        .metric-value { font-size:2rem; font-weight:900; font-family:'JetBrains Mono',monospace; margin-bottom:0.25rem; line-height:1; }
+        .metric-sub { font-size:0.75rem; color:var(--text-muted); }
+
+        /* BUTTONS */
+        .btn { padding:0.75rem 1.25rem; border-radius:10px; border:none; font-weight:700; font-size:0.875rem; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; }
+        .btn-primary { background:linear-gradient(135deg,var(--purple-primary),var(--purple-dark)); color:white; box-shadow:0 4px 12px rgba(139,92,246,0.3); }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(139,92,246,0.4); }
+        .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+        .btn-secondary { background:var(--bg-card); color:var(--text-secondary); border:1px solid var(--border); }
+        .btn-secondary:hover { background:var(--bg-elevated); border-color:var(--purple-primary); color:var(--text); }
+        .btn-secondary:disabled { opacity:0.4; cursor:not-allowed; }
+        .btn-success { background:linear-gradient(135deg,var(--success),#16a34a); color:white; }
+        .btn-success:hover { transform:translateY(-2px); }
+        .btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#000; font-weight:800; }
+        .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(251,191,36,0.4); }
+        .btn-sm { padding:0.5rem 1rem; font-size:0.8125rem; }
+        .btn-xs { padding:0.375rem 0.75rem; font-size:0.75rem; }
+        .btn-full { width:100%; justify-content:center; }
+
+        /* CARDS */
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; }
+        .card-title { font-size:1rem; font-weight:800; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; }
+
+        /* VIEWS */
+        .view-container { display:none; animation:fadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .view-container.active { display:block; }
+        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+        /* FORMS */
+        .form-group { margin-bottom:1rem; }
+        .form-label { display:block; font-size:0.75rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.375rem; text-transform:uppercase; letter-spacing:0.05em; }
+        .form-input, .form-select, .form-textarea { width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-family:'Inter',sans-serif; font-size:0.875rem; transition:all 0.2s; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 3px rgba(139,92,246,0.15); }
+        .form-input::placeholder, .form-textarea::placeholder { color:var(--text-muted); }
+        .form-textarea { resize:vertical; min-height:80px; }
+
+        /* TWO-COL GENERATE LAYOUT */
+        .generate-layout { display:grid; grid-template-columns:420px 1fr; gap:1.5rem; align-items:start; }
+
+        /* OUTPUT PANEL */
+        .output-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:320px; gap:1rem; text-align:center; }
+        .output-empty-icon { font-size:3rem; opacity:0.4; }
+        .output-empty-text { color:var(--text-muted); font-size:0.9375rem; max-width:280px; line-height:1.6; }
+
+        /* QUAL BADGES */
+        .qual-badge { display:inline-flex; align-items:center; gap:0.375rem; padding:0.375rem 0.875rem; border-radius:999px; font-size:0.8125rem; font-weight:700; }
+        .qual-badge.highly_qualified { background:rgba(34,197,94,0.15); color:var(--success); border:1px solid rgba(34,197,94,0.3); }
+        .qual-badge.qualified { background:rgba(59,130,246,0.15); color:var(--info); border:1px solid rgba(59,130,246,0.3); }
+        .qual-badge.maybe { background:rgba(245,158,11,0.15); color:var(--warning); border:1px solid rgba(245,158,11,0.3); }
+        .qual-badge.not_qualified { background:rgba(113,113,122,0.15); color:var(--text-muted); border:1px solid rgba(113,113,122,0.3); }
+
+        /* PAIN POINTS */
+        .pain-chips { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0; }
+        .pain-chip { padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; background:rgba(139,92,246,0.12); color:var(--purple-light); border:1px solid rgba(139,92,246,0.25); }
+
+        /* SUBJECT LINE */
+        .subject-display { background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:0.875rem 1rem; font-weight:600; font-size:0.9375rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:1rem; }
+        .subject-text { flex:1; }
+        .copy-subject-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.375rem 0.75rem; font-size:0.75rem; font-weight:600; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+        .copy-subject-btn:hover { border-color:var(--purple-primary); color:var(--text); }
+
+        /* EMAIL BODY TEXTAREA */
+        .email-body-area { width:100%; padding:1rem; border-radius:10px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-family:'Inter',sans-serif; font-size:0.875rem; line-height:1.7; resize:vertical; min-height:220px; transition:all 0.2s; }
+        .email-body-area:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 3px rgba(139,92,246,0.15); }
+
+        /* ACTION BUTTONS */
+        .action-bar { display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem; }
+
+        /* DEDUP WARNING */
+        .dedup-warning { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; display:none; }
+        .dedup-warning-title { font-weight:700; color:var(--warning); font-size:0.875rem; margin-bottom:0.25rem; }
+        .dedup-warning-text { font-size:0.8125rem; color:var(--text-secondary); }
+        .dedup-warning a { color:var(--purple-light); }
+
+        /* QUEUE */
+        .queue-results { margin-top:1.5rem; display:flex; flex-direction:column; gap:1rem; }
+        .queue-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.25rem; }
+        .queue-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem; }
+        .queue-card-company { font-weight:800; font-size:1rem; }
+        .queue-card-body { display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
+        .queue-card-body.open { display:block; }
+        .queue-card-subject { font-size:0.8125rem; color:var(--text-secondary); margin-top:0.25rem; }
+        .queue-card-actions { display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem; }
+
+        /* PROGRESS BAR */
+        .progress-wrap { background:var(--bg-elevated); border-radius:999px; height:8px; margin:1rem 0; overflow:hidden; display:none; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,var(--purple-primary),var(--gold)); border-radius:999px; transition:width 0.4s ease; width:0%; }
+        .progress-label { font-size:0.8125rem; color:var(--text-muted); margin-bottom:0.5rem; }
+
+        /* FILTER BAR */
+        .filter-bar { display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+        .filter-chip { padding:0.5rem 1rem; border-radius:999px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); font-size:0.8125rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .filter-chip:hover { background:var(--bg-elevated); border-color:var(--purple-primary); color:var(--text); }
+        .filter-chip.active { background:var(--purple-primary); border-color:var(--purple-primary); color:white; }
+
+        /* TABLE */
+        .table-wrapper { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:auto; }
+        .data-table { width:100%; border-collapse:collapse; min-width:700px; }
+        .data-table th { text-align:left; padding:0.875rem 1rem; font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--bg-secondary); white-space:nowrap; }
+        .data-table td { padding:0.875rem 1rem; font-size:0.875rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+        .data-table tr:last-child td { border-bottom:none; }
+        .data-table tr { transition:background 0.15s; }
+        .data-table tr:hover td { background:rgba(139,92,246,0.04); }
+        .data-table .empty-row td { text-align:center; padding:3rem; color:var(--text-muted); }
+
+        /* STATUS BADGE */
+        .status-badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.625rem; border-radius:6px; font-size:0.75rem; font-weight:700; }
+        .status-badge.draft { background:rgba(113,113,122,0.15); color:var(--text-muted); }
+        .status-badge.approved { background:rgba(59,130,246,0.15); color:var(--info); }
+        .status-badge.sent { background:rgba(34,197,94,0.15); color:var(--success); }
+
+        /* MODAL */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:1000; align-items:flex-start; justify-content:center; padding:2rem; overflow-y:auto; }
+        .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .modal { background:var(--bg-secondary); border:1px solid var(--border); border-radius:20px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; margin-top:2rem; animation:slideUp 0.3s ease; }
+        @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.5rem 2rem; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg-secondary); z-index:1; border-radius:20px 20px 0 0; }
+        .modal-title { font-size:1.125rem; font-weight:800; }
+        .modal-close { width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem; transition:all 0.2s; }
+        .modal-close:hover { background:var(--danger); border-color:var(--danger); color:white; }
+        .modal-body { padding:2rem; }
+        .modal-footer { padding:1.5rem 2rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; justify-content:flex-end; }
+
+        /* OVERLAY */
+        .sidebar-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99; }
+        .sidebar-overlay.active { display:block; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1100px) {
+            .generate-layout { grid-template-columns:1fr; }
+        }
+        @media (max-width: 768px) {
+            .mobile-header { display:flex; }
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .main-content { margin-left:0; padding:1rem; padding-top:calc(var(--header-height) + env(safe-area-inset-top,0px) + 1rem); }
+            .metrics-grid { grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+            .metrics-grid { grid-template-columns:1fr; }
+            .action-bar { flex-direction:column; }
+            .action-bar .btn { justify-content:center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Mobile Header -->
+<div class="mobile-header" id="mobileHeader">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-header-title">Lead Agent</span>
+    <div style="width:44px;"></div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <img src="ArcaneA.png" alt="Arcane">
+                <span class="sidebar-logo-text">ARCANE</span>
+            </div>
+            <div class="sidebar-tagline">Lead Agent</div>
+        </div>
+
+        <a href="arcane-consulting-crm.html" class="sidebar-back">&#8592; Back to CRM</a>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Agent</div>
+            <div class="nav-item active" id="nav-generate" onclick="switchView('generate')">
+                <span class="nav-icon">&#x1F916;</span> Generate
+            </div>
+            <div class="nav-item" id="nav-queue" onclick="switchView('queue')">
+                <span class="nav-icon">&#x1F4CB;</span> Batch Queue
+            </div>
+            <div class="nav-item" id="nav-history" onclick="switchView('history')">
+                <span class="nav-icon">&#x1F4DA;</span> History
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Generated Today</div>
+                    <div class="sidebar-stat-value" id="stat-today">0</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Total Generated</div>
+                    <div class="sidebar-stat-value" id="stat-total">0</div>
+                </div>
+            </div>
+            <div class="sidebar-user" id="sidebar-user-email"></div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- ===== VIEW: GENERATE ===== -->
+        <div class="view-container active" id="view-generate">
+            <div class="page-header">
+                <div class="page-title">&#x1F916; AI Lead Agent</div>
+                <div class="page-subtitle">Generate hyper-personalised outreach emails in seconds</div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x26A1;</div><div class="metric-label">Total Generated</div></div>
+                    <div class="metric-value" id="metric-total">0</div>
+                    <div class="metric-sub">all time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x2B50;</div><div class="metric-label">Highly Qualified</div></div>
+                    <div class="metric-value" id="metric-hq">0</div>
+                    <div class="metric-sub">hot leads</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x1F4BC;</div><div class="metric-label">Added to CRM</div></div>
+                    <div class="metric-value" id="metric-crm">0</div>
+                    <div class="metric-sub">leads saved</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x2709;</div><div class="metric-label">Sent</div></div>
+                    <div class="metric-value" id="metric-sent">0</div>
+                    <div class="metric-sub">emails out</div>
+                </div>
+            </div>
+
+            <div class="generate-layout">
+                <!-- Input Form -->
+                <div class="card">
+                    <div class="card-title">&#x1F50D; Lead Details</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Company Name *</label>
+                        <input type="text" id="inp-company" class="form-input" placeholder="e.g. Acme Agency" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Website</label>
+                        <input type="text" id="inp-website" class="form-input" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn URL</label>
+                        <input type="text" id="inp-linkedin" class="form-input" placeholder="https://linkedin.com/in/...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Name</label>
+                        <input type="text" id="inp-contact" class="form-input" placeholder="e.g. John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Role</label>
+                        <input type="text" id="inp-role" class="form-input" placeholder="e.g. Founder, CEO, MD">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Industry</label>
+                        <input type="text" id="inp-industry" class="form-input" placeholder="e.g. Marketing Agency, E-commerce">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Revenue Estimate</label>
+                        <input type="text" id="inp-revenue" class="form-input" placeholder="e.g. £100k–£500k">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes / Context</label>
+                        <textarea id="inp-notes" class="form-textarea" placeholder="Pain points, how you found them, anything specific about their business..."></textarea>
+                    </div>
+
+                    <div class="dedup-warning" id="dedup-warning">
+                        <div class="dedup-warning-title">&#x26A0; Possible Duplicate</div>
+                        <div class="dedup-warning-text" id="dedup-warning-text"></div>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" id="btn-generate" onclick="generateEmail()">
+                        &#x26A1; Generate Email
+                    </button>
+                </div>
+
+                <!-- Output Panel -->
+                <div class="card" id="output-panel">
+                    <div id="output-empty" class="output-empty">
+                        <div class="output-empty-icon">&#x1F916;</div>
+                        <div class="output-empty-text">Enter lead details and click Generate to create a personalised email</div>
+                    </div>
+
+                    <div id="output-result" style="display:none;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+                            <div>
+                                <span class="qual-badge" id="out-qual-badge">—</span>
+                            </div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);" id="out-approach"></div>
+                        </div>
+
+                        <div style="font-size:0.8125rem;color:var(--text-secondary);margin-bottom:0.75rem;" id="out-qual-reason"></div>
+
+                        <div class="pain-chips" id="out-pain-chips"></div>
+
+                        <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin-bottom:0.5rem;margin-top:1rem;">Subject Line</div>
+                        <div class="subject-display">
+                            <span class="subject-text" id="out-subject">—</span>
+                            <button class="copy-subject-btn" onclick="copySubject()">Copy</button>
+                        </div>
+
+                        <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin-bottom:0.5rem;">Email Body</div>
+                        <textarea class="email-body-area" id="out-email-body" placeholder="Email body will appear here..."></textarea>
+
+                        <div class="action-bar">
+                            <button class="btn btn-secondary btn-sm" onclick="copyFullEmail()">&#x1F4CB; Copy Email</button>
+                            <button class="btn btn-primary btn-sm" id="btn-save-crm" onclick="saveToCRM()">&#x1F4BE; Save to CRM</button>
+                            <button class="btn btn-success btn-sm" id="btn-mark-sent" onclick="markCurrentSent()">&#x2705; Mark Sent</button>
+                            <button class="btn btn-secondary btn-sm" onclick="generateEmail()">&#x1F504; Regenerate</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== VIEW: QUEUE ===== -->
+        <div class="view-container" id="view-queue">
+            <div class="page-header">
+                <div class="page-title">&#x1F4CB; Batch Queue</div>
+                <div class="page-subtitle">Process multiple leads at once</div>
+            </div>
+
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div class="card-title">&#x1F4DD; Paste Lead List</div>
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+                    One lead per line. Format: <code style="background:var(--bg-elevated);padding:0.125rem 0.5rem;border-radius:6px;font-size:0.8125rem;">Company | Website | Contact Name | Role | Industry</code>
+                </p>
+                <p style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:1rem;font-family:'JetBrains Mono',monospace;">
+                    Example: Acme Agency | https://acme.co | John Smith | Founder | Marketing
+                </p>
+                <div class="form-group">
+                    <textarea id="queue-input" class="form-textarea" rows="10" placeholder="Paste your leads here, one per line...&#10;Company | Website | Contact | Role | Industry&#10;Company | Website | Contact | Role | Industry"></textarea>
+                </div>
+                <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="btn-process-queue" onclick="processQueue()">&#x26A1; Process Queue</button>
+                    <button class="btn btn-secondary btn-sm" onclick="clearQueue()">&#x1F5D1; Clear</button>
+                    <span id="queue-count-label" style="font-size:0.8125rem;color:var(--text-muted);"></span>
+                </div>
+                <div id="queue-progress-wrap" class="progress-wrap" style="margin-top:1rem;">
+                    <div id="queue-progress-bar" class="progress-fill"></div>
+                </div>
+                <div id="queue-progress-label" class="progress-label" style="display:none;"></div>
+            </div>
+
+            <div id="queue-results" class="queue-results"></div>
+        </div>
+
+        <!-- ===== VIEW: HISTORY ===== -->
+        <div class="view-container" id="view-history">
+            <div class="page-header">
+                <div class="page-title">&#x1F4DA; History</div>
+                <div class="page-subtitle">All AI-generated outreach emails</div>
+            </div>
+
+            <div class="metrics-grid" style="margin-bottom:1.5rem;">
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x26A1;</div><div class="metric-label">Total</div></div>
+                    <div class="metric-value" id="hist-total">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x2B50;</div><div class="metric-label">Highly Qualified</div></div>
+                    <div class="metric-value" id="hist-hq">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x1F4BC;</div><div class="metric-label">In CRM</div></div>
+                    <div class="metric-value" id="hist-crm">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header"><div class="metric-icon">&#x2709;</div><div class="metric-label">Sent</div></div>
+                    <div class="metric-value" id="hist-sent">0</div>
+                </div>
+            </div>
+
+            <div class="filter-bar" id="history-filter-bar">
+                <span class="filter-chip active" onclick="setHistoryFilter('all',this)">All</span>
+                <span class="filter-chip" onclick="setHistoryFilter('draft',this)">Draft</span>
+                <span class="filter-chip" onclick="setHistoryFilter('sent',this)">Sent</span>
+                <span class="filter-chip" onclick="setHistoryFilter('highly_qualified',this)">&#x2B50; Highly Qualified</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Contact</th>
+                            <th>Qualification</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                        <tr class="empty-row"><td colspan="7">Loading history...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Email Detail Modal -->
+<div class="modal-overlay" id="email-detail-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-company-name">Email Details</div>
+            <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap;">
+                <span class="qual-badge" id="modal-qual-badge">—</span>
+                <span style="font-size:0.8125rem;color:var(--text-secondary);" id="modal-qual-reason"></span>
+            </div>
+            <div class="pain-chips" id="modal-pain-chips"></div>
+            <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin:1rem 0 0.5rem;">Subject Line</div>
+            <div class="subject-display" style="margin-bottom:1rem;">
+                <span class="subject-text" id="modal-subject">—</span>
+            </div>
+            <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin-bottom:0.5rem;">Email Body</div>
+            <textarea class="email-body-area" id="modal-email-body" style="min-height:260px;"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="copyModalEmail()">&#x1F4CB; Copy</button>
+            <button class="btn btn-primary btn-sm" id="modal-save-crm" onclick="modalSaveToCRM()">&#x1F4BE; Save to CRM</button>
+            <button class="btn btn-success btn-sm" id="modal-mark-sent" onclick="modalMarkSent()">&#x2705; Mark Sent</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== FIREBASE ====================
+const firebaseConfig = {
+    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+    projectId: "arcane-archives-3b0f5",
+    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+    messagingSenderId: "264237235055",
+    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
+
+let currentUser = null;
+let allQueueDocs = [];
+let allCRMLeads = [];
+let currentDocId = null;   // doc id of currently shown email
+let historyFilter = 'all';
+
+// ==================== AUTH ====================
+auth.onAuthStateChanged(async (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    if (!ADMIN_UIDS.includes(user.uid)) { window.location.href = 'dashboard.html'; return; }
+    currentUser = user;
+    document.getElementById('sidebar-user-email').textContent = user.email;
+    await Promise.all([loadQueueDocs(), loadCRMLeads()]);
+    updateMetrics();
+    renderHistory();
+});
+
+// ==================== DATA ====================
+async function loadQueueDocs() {
+    const snap = await db.collection('ai_email_queue').orderBy('createdAt', 'desc').get();
+    allQueueDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function loadCRMLeads() {
+    const snap = await db.collection('consulting_leads').get();
+    allCRMLeads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// ==================== METRICS ====================
+function updateMetrics() {
+    const total = allQueueDocs.length;
+    const hq = allQueueDocs.filter(d => d.qualification === 'highly_qualified').length;
+    const crm = allQueueDocs.filter(d => d.addedToCRM).length;
+    const sent = allQueueDocs.filter(d => d.status === 'sent').length;
+
+    ['metric-total','hist-total'].forEach(id => setEl(id, total));
+    ['metric-hq','hist-hq'].forEach(id => setEl(id, hq));
+    ['metric-crm','hist-crm'].forEach(id => setEl(id, crm));
+    ['metric-sent','hist-sent'].forEach(id => setEl(id, sent));
+
+    // Sidebar stats
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayCount = allQueueDocs.filter(d => {
+        const ts = d.createdAt?.toDate ? d.createdAt.toDate() : new Date(d.createdAt || 0);
+        return ts >= today;
+    }).length;
+    setEl('stat-today', todayCount);
+    setEl('stat-total', total);
+}
+
+function setEl(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+}
+
+// ==================== VIEW SWITCHING ====================
+function switchView(view) {
+    ['generate','queue','history'].forEach(v => {
+        document.getElementById('view-' + v).classList.toggle('active', v === view);
+        document.getElementById('nav-' + v).classList.toggle('active', v === view);
+    });
+    if (view === 'history') renderHistory();
+    closeSidebar();
+}
+
+// ==================== SIDEBAR (MOBILE) ====================
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+// ==================== DEDUP CHECK ====================
+function checkDedup(companyName) {
+    if (!companyName) return null;
+    const lower = companyName.toLowerCase().trim();
+    return allCRMLeads.find(l => (l.company || '').toLowerCase().trim() === lower || (l.name || '').toLowerCase().trim() === lower);
+}
+
+// ==================== GENERATE EMAIL ====================
+async function generateEmail() {
+    const company = document.getElementById('inp-company').value.trim();
+    if (!company) { showToast('Company name is required', 'error'); return; }
+
+    const btn = document.getElementById('btn-generate');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display:inline-block;animation:spin 0.8s linear infinite;">&#x23F3;</span> Generating...';
+    document.getElementById('output-empty').style.display = 'flex';
+    document.getElementById('output-result').style.display = 'none';
+
+    // Dedup check
+    const dupe = checkDedup(company);
+    const dedupEl = document.getElementById('dedup-warning');
+    if (dupe) {
+        dedupEl.style.display = 'block';
+        document.getElementById('dedup-warning-text').innerHTML =
+            `<strong>${escapeHtml(company)}</strong> may already be in your CRM as <strong>${escapeHtml(dupe.name || dupe.company)}</strong>. <a href="arcane-consulting-crm.html">View in CRM &#8599;</a>`;
+    } else {
+        dedupEl.style.display = 'none';
+    }
+
+    const payload = {
+        companyName: company,
+        website: document.getElementById('inp-website').value.trim(),
+        linkedin: document.getElementById('inp-linkedin').value.trim(),
+        contactName: document.getElementById('inp-contact').value.trim(),
+        contactRole: document.getElementById('inp-role').value.trim(),
+        industry: document.getElementById('inp-industry').value.trim(),
+        revenueEstimate: document.getElementById('inp-revenue').value.trim(),
+        notes: document.getElementById('inp-notes').value.trim()
+    };
+
+    try {
+        const res = await fetch('/.netlify/functions/lead-agent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'API error ' + res.status);
+        }
+        const data = await res.json();
+
+        // Save to Firestore
+        const docData = {
+            ...payload,
+            subject: data.subject,
+            emailBody: data.emailBody,
+            qualification: data.qualification,
+            qualificationReason: data.qualificationReason,
+            painPoints: data.painPoints || [],
+            suggestedApproach: data.suggestedApproach || '',
+            status: 'draft',
+            addedToCRM: false,
+            leadId: null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser.email
+        };
+        const docRef = await db.collection('ai_email_queue').add(docData);
+        currentDocId = docRef.id;
+        allQueueDocs.unshift({ id: docRef.id, ...docData, createdAt: new Date() });
+        updateMetrics();
+
+        // Show output
+        showOutputResult(data);
+        document.getElementById('btn-save-crm').disabled = false;
+        document.getElementById('btn-save-crm').innerHTML = '&#x1F4BE; Save to CRM';
+        document.getElementById('btn-mark-sent').disabled = false;
+        showToast('Email generated successfully!');
+
+    } catch (err) {
+        console.error(err);
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '&#x26A1; Generate Email';
+    }
+}
+
+function showOutputResult(data) {
+    document.getElementById('output-empty').style.display = 'none';
+    document.getElementById('output-result').style.display = 'block';
+
+    // Qual badge
+    const badge = document.getElementById('out-qual-badge');
+    badge.textContent = qualLabel(data.qualification);
+    badge.className = 'qual-badge ' + (data.qualification || 'maybe');
+
+    document.getElementById('out-qual-reason').textContent = data.qualificationReason || '';
+    document.getElementById('out-approach').textContent = data.suggestedApproach || '';
+
+    // Pain chips
+    const chips = document.getElementById('out-pain-chips');
+    chips.innerHTML = (data.painPoints || []).map(p => `<span class="pain-chip">${escapeHtml(p)}</span>`).join('');
+
+    document.getElementById('out-subject').textContent = data.subject || '';
+    document.getElementById('out-email-body').value = data.emailBody || '';
+}
+
+function qualLabel(q) {
+    return { highly_qualified: '⭐ Highly Qualified', qualified: '✅ Qualified', maybe: '🤔 Maybe', not_qualified: '❌ Not Qualified' }[q] || q;
+}
+
+// ==================== COPY ====================
+function copySubject() {
+    const text = document.getElementById('out-subject').textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('Subject copied!'));
+}
+
+function copyFullEmail() {
+    const subj = document.getElementById('out-subject').textContent;
+    const body = document.getElementById('out-email-body').value;
+    navigator.clipboard.writeText('Subject: ' + subj + '\n\n' + body).then(() => showToast('Email copied!'));
+}
+
+function copyModalEmail() {
+    const subj = document.getElementById('modal-subject').textContent;
+    const body = document.getElementById('modal-email-body').value;
+    navigator.clipboard.writeText('Subject: ' + subj + '\n\n' + body).then(() => showToast('Email copied!'));
+}
+
+// ==================== SAVE TO CRM ====================
+async function saveToCRM() {
+    if (!currentDocId) return;
+    const doc = allQueueDocs.find(d => d.id === currentDocId);
+    if (!doc) return;
+
+    const btn = document.getElementById('btn-save-crm');
+    btn.disabled = true;
+    btn.innerHTML = '&#x23F3; Saving...';
+
+    try {
+        // Get latest email body (user may have edited it)
+        const emailBody = document.getElementById('out-email-body').value;
+        const subject = document.getElementById('out-subject').textContent;
+
+        const leadData = {
+            name: doc.contactName || doc.companyName,
+            company: doc.companyName,
+            email: '',
+            website: doc.website || '',
+            industry: doc.industry || '',
+            revenueEstimate: doc.revenueEstimate || '',
+            stage: 'new_lead',
+            status: 'active',
+            source: 'ai_agent',
+            qualification: doc.qualification,
+            notes: [{
+                text: `AI-generated outreach email.\nSubject: ${subject}\n\n${emailBody}`,
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser.email
+            }],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const leadRef = await db.collection('consulting_leads').add(leadData);
+
+        // Update queue doc
+        await db.collection('ai_email_queue').doc(currentDocId).update({
+            addedToCRM: true,
+            leadId: leadRef.id,
+            emailBody: emailBody
+        });
+
+        const docIdx = allQueueDocs.findIndex(d => d.id === currentDocId);
+        if (docIdx !== -1) { allQueueDocs[docIdx].addedToCRM = true; allQueueDocs[docIdx].leadId = leadRef.id; }
+
+        allCRMLeads.push({ id: leadRef.id, ...leadData });
+        updateMetrics();
+
+        btn.innerHTML = '&#x2713; Added to CRM';
+        btn.className = 'btn btn-success btn-sm';
+        showToast(doc.companyName + ' added to CRM!');
+    } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '&#x1F4BE; Save to CRM';
+        showToast('Error saving: ' + err.message, 'error');
+    }
+}
+
+async function markCurrentSent() {
+    if (!currentDocId) return;
+    await db.collection('ai_email_queue').doc(currentDocId).update({ status: 'sent' });
+    const doc = allQueueDocs.find(d => d.id === currentDocId);
+    if (doc) doc.status = 'sent';
+    updateMetrics();
+    const btn = document.getElementById('btn-mark-sent');
+    btn.innerHTML = '&#x2713; Sent';
+    btn.className = 'btn btn-success btn-sm';
+    btn.disabled = true;
+    showToast('Marked as sent!');
+}
+
+// ==================== QUEUE PROCESSING ====================
+async function processQueue() {
+    const raw = document.getElementById('queue-input').value.trim();
+    if (!raw) { showToast('Paste some leads first', 'warning'); return; }
+
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('//') && !l.startsWith('#'));
+    if (!lines.length) { showToast('No valid lines found', 'warning'); return; }
+
+    const btn = document.getElementById('btn-process-queue');
+    btn.disabled = true;
+    btn.innerHTML = '&#x23F3; Processing...';
+
+    const progressWrap = document.getElementById('queue-progress-wrap');
+    const progressBar = document.getElementById('queue-progress-bar');
+    const progressLabel = document.getElementById('queue-progress-label');
+    progressWrap.style.display = 'block';
+    progressLabel.style.display = 'block';
+
+    const resultsEl = document.getElementById('queue-results');
+    resultsEl.innerHTML = '';
+
+    for (let i = 0; i < lines.length; i++) {
+        const parts = lines[i].split('|').map(p => p.trim());
+        const payload = {
+            companyName: parts[0] || '',
+            website: parts[1] || '',
+            contactName: parts[2] || '',
+            contactRole: parts[3] || '',
+            industry: parts[4] || '',
+            revenueEstimate: parts[5] || '',
+            notes: parts[6] || '',
+            linkedin: ''
+        };
+
+        if (!payload.companyName) continue;
+
+        progressLabel.textContent = `Processing ${i + 1} of ${lines.length}: ${payload.companyName}`;
+        progressBar.style.width = ((i / lines.length) * 100) + '%';
+
+        // Placeholder card
+        const cardId = 'qcard-' + i;
+        resultsEl.insertAdjacentHTML('beforeend', `
+            <div class="queue-card" id="${cardId}">
+                <div class="queue-card-header">
+                    <div>
+                        <div class="queue-card-company">${escapeHtml(payload.companyName)}</div>
+                        <div class="queue-card-subject" style="color:var(--text-muted);">Generating...</div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <span style="font-size:0.8125rem;color:var(--text-muted);">&#x23F3;</span>
+                    </div>
+                </div>
+            </div>`);
+
+        try {
+            const res = await fetch('/.netlify/functions/lead-agent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Error');
+
+            // Save to Firestore
+            const docData = {
+                ...payload,
+                subject: data.subject,
+                emailBody: data.emailBody,
+                qualification: data.qualification,
+                qualificationReason: data.qualificationReason,
+                painPoints: data.painPoints || [],
+                suggestedApproach: data.suggestedApproach || '',
+                status: 'draft',
+                addedToCRM: false,
+                leadId: null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: currentUser.email
+            };
+            const docRef = await db.collection('ai_email_queue').add(docData);
+            const savedDoc = { id: docRef.id, ...docData, createdAt: new Date() };
+            allQueueDocs.unshift(savedDoc);
+
+            // Update card
+            const card = document.getElementById(cardId);
+            const dupe = checkDedup(payload.companyName);
+            card.innerHTML = `
+                <div class="queue-card-header">
+                    <div>
+                        <div class="queue-card-company">${escapeHtml(payload.companyName)}</div>
+                        <div class="queue-card-subject">${escapeHtml(data.subject)}</div>
+                        ${dupe ? `<div style="font-size:0.75rem;color:var(--warning);margin-top:0.25rem;">⚠️ Possible duplicate in CRM</div>` : ''}
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <span class="qual-badge ${data.qualification}">${qualLabel(data.qualification)}</span>
+                        <button class="btn btn-secondary btn-xs" onclick="toggleQueueCard('${cardId}')">View</button>
+                    </div>
+                </div>
+                <div class="queue-card-body" id="${cardId}-body">
+                    <div class="pain-chips">${(data.painPoints||[]).map(p=>`<span class="pain-chip">${escapeHtml(p)}</span>`).join('')}</div>
+                    <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;margin:0.75rem 0 0.375rem;font-weight:700;">Email Body</div>
+                    <textarea class="email-body-area" id="${cardId}-email" style="min-height:160px;">${escapeHtml(data.emailBody)}</textarea>
+                    <div class="queue-card-actions">
+                        <button class="btn btn-secondary btn-xs" onclick="copyQueueEmail('${cardId}','${escapeHtml(data.subject).replace(/'/g,'\\&apos;')}')">&#x1F4CB; Copy</button>
+                        <button class="btn btn-primary btn-xs" id="${cardId}-save" onclick="saveQueueToCRM('${docRef.id}','${cardId}')">&#x1F4BE; Save to CRM</button>
+                        <button class="btn btn-success btn-xs" id="${cardId}-sent" onclick="markQueueSent('${docRef.id}','${cardId}')">&#x2705; Mark Sent</button>
+                    </div>
+                </div>`;
+
+        } catch (err) {
+            const card = document.getElementById(cardId);
+            card.innerHTML = `
+                <div class="queue-card-header">
+                    <div class="queue-card-company">${escapeHtml(payload.companyName)}</div>
+                    <div style="font-size:0.8125rem;color:var(--danger);">Error: ${escapeHtml(err.message)}</div>
+                </div>`;
+        }
+    }
+
+    progressBar.style.width = '100%';
+    progressLabel.textContent = `Done! Processed ${lines.length} leads.`;
+    btn.disabled = false;
+    btn.innerHTML = '&#x26A1; Process Queue';
+    updateMetrics();
+    showToast('Queue processed! ' + lines.length + ' leads done.');
+}
+
+function toggleQueueCard(cardId) {
+    const body = document.getElementById(cardId + '-body');
+    if (body) body.classList.toggle('open');
+}
+
+function copyQueueEmail(cardId, subject) {
+    const body = document.getElementById(cardId + '-email').value;
+    navigator.clipboard.writeText('Subject: ' + subject + '\n\n' + body).then(() => showToast('Copied!'));
+}
+
+async function saveQueueToCRM(docId, cardId) {
+    const doc = allQueueDocs.find(d => d.id === docId);
+    if (!doc) return;
+    const btn = document.getElementById(cardId + '-save');
+    btn.disabled = true; btn.innerHTML = '&#x23F3; Saving...';
+    try {
+        const emailBody = document.getElementById(cardId + '-email').value;
+        const leadData = {
+            name: doc.contactName || doc.companyName,
+            company: doc.companyName,
+            email: '',
+            website: doc.website || '',
+            industry: doc.industry || '',
+            revenueEstimate: doc.revenueEstimate || '',
+            stage: 'new_lead',
+            status: 'active',
+            source: 'ai_agent',
+            qualification: doc.qualification,
+            notes: [{ text: `AI Email: ${emailBody}`, createdAt: new Date().toISOString(), createdBy: currentUser.email }],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        const leadRef = await db.collection('consulting_leads').add(leadData);
+        await db.collection('ai_email_queue').doc(docId).update({ addedToCRM: true, leadId: leadRef.id });
+        doc.addedToCRM = true;
+        allCRMLeads.push({ id: leadRef.id, ...leadData });
+        btn.innerHTML = '&#x2713; In CRM'; btn.className = 'btn btn-success btn-xs';
+        updateMetrics();
+        showToast(doc.companyName + ' added to CRM!');
+    } catch (err) {
+        btn.disabled = false; btn.innerHTML = '&#x1F4BE; Save to CRM';
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+async function markQueueSent(docId, cardId) {
+    await db.collection('ai_email_queue').doc(docId).update({ status: 'sent' });
+    const doc = allQueueDocs.find(d => d.id === docId);
+    if (doc) doc.status = 'sent';
+    const btn = document.getElementById(cardId + '-sent');
+    if (btn) { btn.innerHTML = '&#x2713; Sent'; btn.className = 'btn btn-success btn-xs'; btn.disabled = true; }
+    updateMetrics();
+    showToast('Marked as sent!');
+}
+
+function clearQueue() {
+    document.getElementById('queue-input').value = '';
+    document.getElementById('queue-results').innerHTML = '';
+    document.getElementById('queue-progress-wrap').style.display = 'none';
+    document.getElementById('queue-progress-label').style.display = 'none';
+    document.getElementById('queue-count-label').textContent = '';
+}
+
+// ==================== HISTORY ====================
+function setHistoryFilter(filter, el) {
+    historyFilter = filter;
+    document.querySelectorAll('#history-filter-bar .filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderHistory();
+}
+
+function renderHistory() {
+    let docs = [...allQueueDocs];
+    if (historyFilter === 'draft') docs = docs.filter(d => d.status === 'draft');
+    else if (historyFilter === 'sent') docs = docs.filter(d => d.status === 'sent');
+    else if (historyFilter === 'highly_qualified') docs = docs.filter(d => d.qualification === 'highly_qualified');
+
+    const tbody = document.getElementById('history-tbody');
+    if (!docs.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No emails yet. Start generating from the Generate tab.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = docs.map(d => {
+        const date = d.createdAt?.toDate ? d.createdAt.toDate() : (d.createdAt instanceof Date ? d.createdAt : new Date());
+        const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' });
+        return `
+        <tr>
+            <td><strong>${escapeHtml(d.companyName || '—')}</strong>${d.addedToCRM ? ' <span style="font-size:0.7rem;color:var(--success);">&#x2713; CRM</span>' : ''}</td>
+            <td>${escapeHtml(d.contactName || '—')}<br><span style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(d.contactRole || '')}</span></td>
+            <td><span class="qual-badge ${d.qualification || 'maybe'}" style="font-size:0.7rem;padding:0.2rem 0.5rem;">${qualLabel(d.qualification)}</span></td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(d.subject || '—')}</td>
+            <td><span class="status-badge ${d.status || 'draft'}">${d.status || 'draft'}</span></td>
+            <td style="white-space:nowrap;color:var(--text-muted);">${dateStr}</td>
+            <td>
+                <div style="display:flex;gap:0.375rem;">
+                    <button class="btn btn-secondary btn-xs" onclick="openEmailModal('${d.id}')">View</button>
+                    ${!d.addedToCRM ? `<button class="btn btn-primary btn-xs" onclick="modalDocId='${d.id}';openEmailModal('${d.id}')">+CRM</button>` : ''}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ==================== MODAL ====================
+let modalDocId = null;
+
+function openEmailModal(docId) {
+    const doc = allQueueDocs.find(d => d.id === docId);
+    if (!doc) return;
+    modalDocId = docId;
+
+    document.getElementById('modal-company-name').textContent = doc.companyName || 'Email Details';
+    const badge = document.getElementById('modal-qual-badge');
+    badge.textContent = qualLabel(doc.qualification);
+    badge.className = 'qual-badge ' + (doc.qualification || 'maybe');
+    document.getElementById('modal-qual-reason').textContent = doc.qualificationReason || '';
+    document.getElementById('modal-pain-chips').innerHTML = (doc.painPoints || []).map(p => `<span class="pain-chip">${escapeHtml(p)}</span>`).join('');
+    document.getElementById('modal-subject').textContent = doc.subject || '';
+    document.getElementById('modal-email-body').value = doc.emailBody || '';
+
+    const saveBtn = document.getElementById('modal-save-crm');
+    const sentBtn = document.getElementById('modal-mark-sent');
+    if (doc.addedToCRM) { saveBtn.innerHTML = '&#x2713; In CRM'; saveBtn.disabled = true; saveBtn.className = 'btn btn-success btn-sm'; }
+    else { saveBtn.innerHTML = '&#x1F4BE; Save to CRM'; saveBtn.disabled = false; saveBtn.className = 'btn btn-primary btn-sm'; }
+    if (doc.status === 'sent') { sentBtn.innerHTML = '&#x2713; Sent'; sentBtn.disabled = true; sentBtn.className = 'btn btn-success btn-sm'; }
+    else { sentBtn.innerHTML = '&#x2705; Mark Sent'; sentBtn.disabled = false; sentBtn.className = 'btn btn-success btn-sm'; }
+
+    document.getElementById('email-detail-modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('email-detail-modal').classList.remove('active');
+    modalDocId = null;
+}
+
+async function modalSaveToCRM() {
+    if (!modalDocId) return;
+    const doc = allQueueDocs.find(d => d.id === modalDocId);
+    if (!doc || doc.addedToCRM) return;
+    const btn = document.getElementById('modal-save-crm');
+    btn.disabled = true; btn.innerHTML = '&#x23F3; Saving...';
+    try {
+        const emailBody = document.getElementById('modal-email-body').value;
+        const leadData = {
+            name: doc.contactName || doc.companyName,
+            company: doc.companyName,
+            email: '',
+            website: doc.website || '',
+            industry: doc.industry || '',
+            revenueEstimate: doc.revenueEstimate || '',
+            stage: 'new_lead',
+            status: 'active',
+            source: 'ai_agent',
+            qualification: doc.qualification,
+            notes: [{ text: `AI Email:\n${emailBody}`, createdAt: new Date().toISOString(), createdBy: currentUser.email }],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        const leadRef = await db.collection('consulting_leads').add(leadData);
+        await db.collection('ai_email_queue').doc(modalDocId).update({ addedToCRM: true, leadId: leadRef.id, emailBody });
+        doc.addedToCRM = true; doc.leadId = leadRef.id;
+        allCRMLeads.push({ id: leadRef.id, ...leadData });
+        btn.innerHTML = '&#x2713; In CRM'; btn.className = 'btn btn-success btn-sm';
+        updateMetrics();
+        renderHistory();
+        showToast(doc.companyName + ' added to CRM!');
+    } catch (err) {
+        btn.disabled = false; btn.innerHTML = '&#x1F4BE; Save to CRM';
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+async function modalMarkSent() {
+    if (!modalDocId) return;
+    await db.collection('ai_email_queue').doc(modalDocId).update({ status: 'sent' });
+    const doc = allQueueDocs.find(d => d.id === modalDocId);
+    if (doc) doc.status = 'sent';
+    const btn = document.getElementById('modal-mark-sent');
+    btn.innerHTML = '&#x2713; Sent'; btn.className = 'btn btn-success btn-sm'; btn.disabled = true;
+    updateMetrics();
+    renderHistory();
+    showToast('Marked as sent!');
+}
+
+// ==================== UTILS ====================
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function showToast(msg, type = 'success') {
+    const t = document.createElement('div');
+    const bg = type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#22c55e';
+    t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;padding:1rem 1.5rem;border-radius:12px;font-weight:600;font-size:0.875rem;z-index:9999;color:white;background:${bg};box-shadow:0 8px 24px rgba(0,0,0,0.4);max-width:320px;animation:slideInRight 0.3s ease;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3200);
+}
+
+// Queue input — update count label
+document.getElementById('queue-input').addEventListener('input', function() {
+    const lines = this.value.split('\n').filter(l => l.trim() && !l.startsWith('//'));
+    document.getElementById('queue-count-label').textContent = lines.length ? lines.length + ' lead' + (lines.length > 1 ? 's' : '') + ' detected' : '';
+});
+
+// Spin keyframe
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes slideInRight{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
