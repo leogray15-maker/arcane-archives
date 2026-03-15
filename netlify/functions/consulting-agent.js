@@ -3,7 +3,7 @@
 // Handles all pipeline stages: follow-up sequences, call prep, post-call processing,
 // proposals, onboarding plans, and case studies.
 
-const ACTIONS = ['follow_up_sequence', 'call_prep', 'post_call', 'proposal', 'onboarding', 'case_study', 'reply_analysis'];
+const ACTIONS = ['follow_up_sequence', 'call_prep', 'post_call', 'proposal', 'onboarding', 'case_study', 'reply_analysis', 'cold_call_brief'];
 
 exports.handler = async (event) => {
   const headers = {
@@ -224,6 +224,38 @@ Return JSON:
   },
   "recommendedAction": "specific next action to take",
   "urgency": "high|medium|low"
+}`
+    };
+
+    case 'cold_call_brief': return {
+      systemPrompt: `${base} You are an elite cold call coach for high-ticket B2B sales. Generate a complete cold call battle card for a 90-day business transformation offer. The opener must be a pattern interrupt — NOT "how are you?" or "is this a bad time?". The pitch must be under 30 seconds when spoken aloud. Everything must be punchy, direct, and natural — written exactly as it should be spoken, not corporate. The goal of the call is NOT to close on the spot — it's to qualify and book a discovery call or get them interested in the diagnostic.`,
+      userPrompt: `Generate a complete cold call brief for this prospect:
+
+${leadContext(lead)}
+${context ? `\nExtra context: ${context}` : ''}
+
+Return JSON:
+{
+  "whyThisLead": "1 sentence — why this specific company is a strong fit",
+  "openingLine": "exact word-for-word opener — pattern interrupt, states who you are and why you're calling in under 10 seconds",
+  "permissionAsk": "the permission-based question after the opener (e.g. 'caught you at a bad time?')",
+  "problemStatement": "the pain/problem framed for their specific business type — spoken naturally, 1-2 sentences",
+  "qualifyingQuestions": ["Q1 — decision maker check", "Q2 — pain/problem check", "Q3 — motivation/timing check"],
+  "thirtySecondPitch": "full pitch spoken naturally — what Arcane does, who it's for, what outcome they get — max 30 seconds",
+  "closeLine": "the exact ask to book the next step",
+  "altCloseLines": ["alternative close 1", "alternative close 2"],
+  "objections": [
+    {"trigger": "I'm busy / bad time", "response": "..."},
+    {"trigger": "Not interested", "response": "..."},
+    {"trigger": "Already working with someone", "response": "..."},
+    {"trigger": "How much does it cost?", "response": "..."},
+    {"trigger": "Send me an email", "response": "..."},
+    {"trigger": "I need to think about it", "response": "..."}
+  ],
+  "voicemailScript": "15-second voicemail — leaves curiosity, not a pitch",
+  "talkingPoints": ["key point 1", "key point 2", "key point 3"],
+  "redFlags": ["thing to watch out for 1", "thing to watch out for 2"],
+  "callGoal": "the specific outcome to aim for on this call"
 }`
     };
 

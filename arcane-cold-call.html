@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcane Cold Call Engine</title>
+<style>
+  :root {
+    --bg-primary: #09090b;
+    --bg-secondary: #111113;
+    --bg-card: #18181b;
+    --bg-hover: #27272a;
+    --border: #27272a;
+    --border-light: #3f3f46;
+    --text-primary: #fafafa;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --purple-primary: #8b5cf6;
+    --purple-hover: #7c3aed;
+    --purple-dim: rgba(139,92,246,0.15);
+    --gold: #fbbf24;
+    --gold-dim: rgba(251,191,36,0.15);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.15);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.15);
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* NAV */
+  .nav { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+  .nav-brand-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--purple-primary), #a855f7); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+  .nav-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .nav-btn.active { background: var(--purple-dim); color: var(--purple-primary); }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-label { font-size: 12px; color: var(--text-secondary); }
+
+  /* VIEWS */
+  .view { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* QUEUE VIEW */
+  .queue-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .queue-title { font-size: 22px; font-weight: 700; }
+  .queue-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .queue-actions { display: flex; gap: 8px; }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--purple-primary); color: white; }
+  .btn-primary:hover { background: var(--purple-hover); }
+  .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border-light); }
+  .btn-secondary:hover { border-color: var(--purple-primary); color: var(--purple-primary); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-gold:hover { background: #f59e0b; }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-green:hover { background: #16a34a; }
+  .btn-red { background: var(--red); color: white; }
+  .btn-red:hover { background: #dc2626; }
+  .btn-orange { background: var(--orange); color: white; }
+  .btn-orange:hover { background: #ea6c00; }
+  .btn-blue { background: var(--blue); color: white; }
+  .btn-blue:hover { background: #2563eb; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-pill { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .filter-pill.active { border-color: var(--purple-primary); background: var(--purple-dim); color: var(--purple-primary); }
+
+  .queue-list { display: flex; flex-direction: column; gap: 8px; }
+  .queue-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: all 0.2s; position: relative; }
+  .queue-card:hover { border-color: var(--border-light); background: var(--bg-hover); }
+  .queue-card.priority { border-left: 3px solid var(--gold); }
+  .queue-card.generating .brief-status { color: var(--gold); }
+  .queue-card.ready .brief-status { color: var(--green); }
+  .queue-rank { font-size: 18px; font-weight: 800; color: var(--text-muted); min-width: 28px; text-align: center; }
+  .queue-rank.top { color: var(--gold); }
+  .queue-info { flex: 1; }
+  .queue-company { font-weight: 700; font-size: 15px; }
+  .queue-contact { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .queue-phone { font-size: 13px; color: var(--purple-primary); font-weight: 500; margin-top: 2px; }
+  .queue-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-hq { background: var(--gold-dim); color: var(--gold); }
+  .tag-q { background: var(--green-dim); color: var(--green); }
+  .tag-m { background: var(--orange-dim); color: var(--orange); }
+  .tag-nq { background: var(--red-dim); color: var(--red); }
+  .tag-stage { background: var(--purple-dim); color: var(--purple-primary); }
+  .tag-industry { background: var(--bg-hover); color: var(--text-secondary); }
+  .brief-status { font-size: 12px; font-weight: 600; }
+  .queue-actions-right { display: flex; gap: 6px; align-items: center; }
+
+  /* DIALER VIEW */
+  .dialer-container { display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: calc(100vh - 104px); }
+  .dialer-sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .dialer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .dialer-card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .dialer-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); }
+  .dialer-card-body { padding: 16px; }
+
+  .lead-hero { text-align: center; padding: 20px 16px; }
+  .lead-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple-primary), #a855f7); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; margin: 0 auto 12px; }
+  .lead-name { font-size: 18px; font-weight: 800; }
+  .lead-role { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .lead-company { font-size: 15px; font-weight: 600; color: var(--purple-primary); margin-top: 4px; }
+  .lead-phone-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--green-dim); border: 1px solid var(--green); color: var(--green); border-radius: 8px; padding: 10px 16px; margin-top: 14px; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; transition: all 0.2s; }
+  .lead-phone-btn:hover { background: var(--green); color: #000; }
+
+  .call-timer { text-align: center; font-size: 32px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; margin: 4px 0; }
+  .call-status { text-align: center; font-size: 13px; color: var(--text-secondary); }
+  .timer-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .timer-btns .btn { flex: 1; justify-content: center; }
+
+  .outcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .outcome-btn { padding: 10px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-hover); cursor: pointer; text-align: center; transition: all 0.2s; }
+  .outcome-btn:hover { transform: translateY(-1px); }
+  .outcome-btn .outcome-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .outcome-btn .outcome-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+  .outcome-btn .outcome-key { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
+  .outcome-voicemail { border-color: var(--text-muted); color: var(--text-secondary); }
+  .outcome-voicemail:hover { border-color: var(--text-primary); background: var(--bg-card); color: var(--text-primary); }
+  .outcome-no { border-color: var(--red); color: var(--red); }
+  .outcome-no:hover { background: var(--red-dim); }
+  .outcome-callback { border-color: var(--orange); color: var(--orange); }
+  .outcome-callback:hover { background: var(--orange-dim); }
+  .outcome-interested { border-color: var(--blue); color: var(--blue); }
+  .outcome-interested:hover { background: var(--blue-dim); }
+  .outcome-qualified { border-color: var(--gold); color: var(--gold); }
+  .outcome-qualified:hover { background: var(--gold-dim); }
+  .outcome-booked { border-color: var(--green); color: var(--green); }
+  .outcome-booked:hover { background: var(--green-dim); }
+
+  .qual-check { display: flex; flex-direction: column; gap: 8px; }
+  .qual-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .qual-item:hover { background: var(--bg-hover); }
+  .qual-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--purple-primary); cursor: pointer; flex-shrink: 0; }
+  .qual-item label { font-size: 13px; color: var(--text-secondary); cursor: pointer; line-height: 1.3; }
+  .qual-item.checked label { color: var(--text-primary); }
+
+  .qual-score-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+  .qual-score-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--gold), var(--green)); border-radius: 2px; transition: width 0.4s; }
+  .qual-score-label { font-size: 12px; color: var(--text-secondary); margin-top: 6px; display: flex; justify-content: space-between; }
+
+  /* MAIN PANEL */
+  .dialer-main { display: flex; flex-direction: column; gap: 0; }
+  .brief-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg-card); border-radius: 12px 12px 0 0; overflow: hidden; }
+  .brief-tab { padding: 12px 20px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .brief-tab.active { color: var(--purple-primary); border-bottom-color: var(--purple-primary); background: var(--purple-dim); }
+  .brief-tab:hover:not(.active) { color: var(--text-primary); background: var(--bg-hover); }
+  .brief-content { background: var(--bg-card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; padding: 20px; flex: 1; overflow-y: auto; min-height: 400px; max-height: calc(100vh - 280px); }
+  .brief-tab-panel { display: none; }
+  .brief-tab-panel.active { display: block; }
+
+  .brief-section { margin-bottom: 20px; }
+  .brief-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 10px; }
+  .brief-highlight { background: var(--purple-dim); border: 1px solid rgba(139,92,246,0.3); border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.6; color: var(--text-primary); }
+  .brief-highlight.gold { background: var(--gold-dim); border-color: rgba(251,191,36,0.3); }
+  .brief-highlight.green { background: var(--green-dim); border-color: rgba(34,197,94,0.3); }
+  .brief-list { display: flex; flex-direction: column; gap: 6px; }
+  .brief-list-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+  .brief-list-item::before { content: '→'; color: var(--purple-primary); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .brief-list-item.q::before { content: '?'; color: var(--gold); }
+  .brief-list-item.warn::before { content: '⚠'; color: var(--red); font-size: 11px; }
+
+  .script-line { background: var(--bg-secondary); border-left: 3px solid var(--purple-primary); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; line-height: 1.6; color: var(--text-primary); margin-bottom: 8px; }
+  .script-line.gold { border-left-color: var(--gold); }
+  .script-line.green { border-left-color: var(--green); }
+  .script-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 4px; }
+
+  .objection-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+  .objection-trigger { padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--red); background: var(--red-dim); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .objection-trigger .arrow { transition: transform 0.2s; }
+  .objection-trigger.open .arrow { transform: rotate(180deg); }
+  .objection-response { padding: 12px 14px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); display: none; }
+  .objection-response.open { display: block; }
+
+  .notes-area { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 14px; font-size: 14px; line-height: 1.6; resize: vertical; min-height: 200px; font-family: inherit; transition: border-color 0.2s; }
+  .notes-area:focus { outline: none; border-color: var(--purple-primary); }
+  .notes-save-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .notes-hint { font-size: 12px; color: var(--text-muted); }
+
+  /* Loading/empty states */
+  .loading-brief { text-align: center; padding: 60px 20px; }
+  .loading-spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--purple-primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--text-secondary); font-size: 14px; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-title { font-size: 18px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+
+  /* HISTORY VIEW */
+  .history-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 800; }
+  .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .stat-card.gold .stat-value { color: var(--gold); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.purple .stat-value { color: var(--purple-primary); }
+  .stat-card.blue .stat-value { color: var(--blue); }
+
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+  .outcome-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px; text-align: center; }
+  .badge-voicemail { background: var(--bg-hover); color: var(--text-secondary); }
+  .badge-no { background: var(--red-dim); color: var(--red); }
+  .badge-callback { background: var(--orange-dim); color: var(--orange); }
+  .badge-interested { background: var(--blue-dim); color: var(--blue); }
+  .badge-qualified { background: var(--gold-dim); color: var(--gold); }
+  .badge-booked { background: var(--green-dim); color: var(--green); }
+  .history-info { flex: 1; }
+  .history-company { font-weight: 600; font-size: 14px; }
+  .history-contact { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .history-notes { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+  .history-time { font-size: 11px; color: var(--text-muted); text-align: right; min-width: 80px; }
+
+  /* CALLBACK MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 24px; width: 90%; max-width: 440px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .modal-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); padding: 10px 12px; font-size: 14px; transition: border-color 0.2s; font-family: inherit; }
+  .form-input:focus { outline: none; border-color: var(--purple-primary); }
+  textarea.form-input { min-height: 80px; resize: vertical; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+  .modal-actions .btn { flex: 1; justify-content: center; }
+
+  /* KEYBOARD SHORTCUTS */
+  .shortcuts-bar { background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 8px 24px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; }
+  .shortcut { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+  .key { background: var(--bg-hover); border: 1px solid var(--border-light); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; color: var(--text-secondary); font-family: monospace; }
+  .shortcuts-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 56px; right: 24px; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 10px; padding: 12px 18px; font-size: 13px; color: var(--text-primary); z-index: 300; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; max-width: 320px; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+  .toast.info { border-color: var(--purple-primary); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .dialer-container { grid-template-columns: 1fr; }
+    .dialer-sidebar { order: 2; }
+    .dialer-main { order: 1; }
+    .brief-content { max-height: 60vh; }
+    .view { padding: 12px; }
+    .nav { padding: 0 12px; }
+    .shortcuts-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-brand-icon">📞</div>
+    <div>
+      <div>Cold Call Engine</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="switchView('queue')">Queue</button>
+    <button class="nav-btn" onclick="switchView('dialer')">Dialer</button>
+    <button class="nav-btn" onclick="switchView('history')">History</button>
+  </div>
+  <div class="nav-right">
+    <div class="status-dot" id="status-dot"></div>
+    <span class="status-label" id="status-label">Loading...</span>
+  </div>
+</nav>
+
+<!-- QUEUE VIEW -->
+<div id="view-queue" class="view active">
+  <div class="queue-header">
+    <div>
+      <div class="queue-title">📋 Call Queue</div>
+      <div class="queue-subtitle" id="queue-subtitle">Loading leads...</div>
+    </div>
+    <div class="queue-actions">
+      <button class="btn btn-secondary btn-sm" onclick="refreshQueue()">↻ Refresh</button>
+      <button class="btn btn-secondary btn-sm" onclick="preGenAll()">⚡ Pre-gen Briefs</button>
+      <button class="btn btn-primary btn-sm" onclick="startCalling()">📞 Start Calling</button>
+    </div>
+  </div>
+  <div class="filters">
+    <div class="filter-pill active" onclick="setFilter('all', this)">All</div>
+    <div class="filter-pill" onclick="setFilter('highly_qualified', this)">🌟 Highly Qualified</div>
+    <div class="filter-pill" onclick="setFilter('qualified', this)">✅ Qualified</div>
+    <div class="filter-pill" onclick="setFilter('maybe', this)">🤔 Maybe</div>
+    <div class="filter-pill" onclick="setFilter('not_called', this)">📵 Not Called</div>
+    <div class="filter-pill" onclick="setFilter('callback', this)">🔄 Callbacks</div>
+  </div>
+  <div class="queue-list" id="queue-list">
+    <div class="loading-brief"><div class="loading-spinner"></div><div class="loading-text">Loading leads...</div></div>
+  </div>
+</div>
+
+<!-- DIALER VIEW -->
+<div id="view-dialer" class="view">
+  <div class="dialer-container">
+    <!-- LEFT SIDEBAR -->
+    <div class="dialer-sidebar">
+
+      <!-- Lead Info -->
+      <div class="dialer-card">
+        <div class="lead-hero" id="lead-hero">
+          <div class="empty-state">
+            <div class="empty-icon">👤</div>
+            <div class="empty-title">No Lead Selected</div>
+            <p style="font-size:13px;margin-top:6px;">Select a lead from the Queue to start calling.</p>
+            <button class="btn btn-primary" style="margin-top:12px;" onclick="switchView('queue')">Open Queue</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="dialer-card">
+        <div class="dialer-card-header">
+          <span class="dialer-card-title">Call Timer</span>
+          <span id="call-status-badge" class="tag" style="background:var(--bg-hover);color:var(--text-muted);">Idle</span>
+        </div>
+        <div class="dialer-card-body">
+          <div class="call-timer" id="call-timer">00:00</div>
+          <div class="call-status" id="call-status-text">Press START when connected</div>
+          <div class="timer-btns">
+            <button class="btn btn-green btn-sm" id="timer-start-btn" onclick="startTimer()">▶ START</button>
+            <button class="btn btn-secondary btn-sm" id="timer-stop-btn" onclick="stopTimer()" disabled>⏹ STOP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outcomes -->
+      <div class="dialer-card">
+        <div class="dialer-card-header"><span class="dialer-card-title">Log Outcome</span></div>
+        <div class="dialer-card-body">
+          <div class="outcome-grid">
+            <button class="outcome-btn outcome-voicemail" onclick="logOutcome('voicemail')">
+              <span class="outcome-icon">📬</span>
+              <span class="outcome-label">Voicemail</span>
+              <span class="outcome-key">[V]</span>
+            </button>
+            <button class="outcome-btn outcome-no" onclick="logOutcome('not_interested')">
+              <span class="outcome-icon">❌</span>
+              <span class="outcome-label">Not Interested</span>
+              <span class="outcome-key">[N]</span>
+            </button>
+            <button class="outcome-btn outcome-callback" onclick="logOutcome('callback')">
+              <span class="outcome-icon">🔄</span>
+              <span class="outcome-label">Call Back</span>
+              <span class="outcome-key">[C]</span>
+            </button>
+            <button class="outcome-btn outcome-interested" onclick="logOutcome('interested')">
+              <span class="outcome-icon">💡</span>
+              <span class="outcome-label">Interested</span>
+              <span class="outcome-key">[I]</span>
+            </button>
+            <button class="outcome-btn outcome-qualified" onclick="logOutcome('qualified')">
+              <span class="outcome-icon">⭐</span>
+              <span class="outcome-label">Qualified</span>
+              <span class="outcome-key">[Q]</span>
+            </button>
+            <button class="outcome-btn outcome-booked" onclick="logOutcome('booked')">
+              <span class="outcome-icon">📅</span>
+              <span class="outcome-label">Booked</span>
+              <span class="outcome-key">[B]</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Qualification Checklist -->
+      <div class="dialer-card">
+        <div class="dialer-card-header">
+          <span class="dialer-card-title">Qualification</span>
+          <span id="qual-score-text" style="font-size:12px;color:var(--text-muted);">0/5</span>
+        </div>
+        <div class="dialer-card-body">
+          <div class="qual-check" id="qual-checklist">
+            <div class="qual-item" onclick="toggleQual(this)">
+              <input type="checkbox" id="q1"><label for="q1">Decision maker confirmed</label>
+            </div>
+            <div class="qual-item" onclick="toggleQual(this)">
+              <input type="checkbox" id="q2"><label for="q2">Pain point acknowledged</label>
+            </div>
+            <div class="qual-item" onclick="toggleQual(this)">
+              <input type="checkbox" id="q3"><label for="q3">Budget / ROI capacity exists</label>
+            </div>
+            <div class="qual-item" onclick="toggleQual(this)">
+              <input type="checkbox" id="q4"><label for="q4">Timeline / urgency established</label>
+            </div>
+            <div class="qual-item" onclick="toggleQual(this)">
+              <input type="checkbox" id="q5"><label for="q5">Open to next step / call</label>
+            </div>
+          </div>
+          <div class="qual-score-bar"><div class="qual-score-fill" id="qual-fill" style="width:0%"></div></div>
+          <div class="qual-score-label"><span>Cold</span><span>🔥 Hot Lead</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAIN PANEL -->
+    <div class="dialer-main">
+      <div class="brief-tabs" id="brief-tabs">
+        <div class="brief-tab active" onclick="switchBriefTab('brief', this)">📋 Brief</div>
+        <div class="brief-tab" onclick="switchBriefTab('script', this)">🎯 Script</div>
+        <div class="brief-tab" onclick="switchBriefTab('objections', this)">⚔️ Objections</div>
+        <div class="brief-tab" onclick="switchBriefTab('notes', this)">📝 Notes</div>
+      </div>
+      <div class="brief-content" id="brief-content">
+        <div class="brief-tab-panel active" id="tab-brief">
+          <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Select a lead to see their brief</div><p style="font-size:13px;margin-top:6px;color:var(--text-muted);">Go to Queue, pick a lead, then click "Start Call".</p></div>
+        </div>
+        <div class="brief-tab-panel" id="tab-script">
+          <div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-title">Script will appear here</div></div>
+        </div>
+        <div class="brief-tab-panel" id="tab-objections">
+          <div class="empty-state"><div class="empty-icon">⚔️</div><div class="empty-title">Objection handlers will appear here</div></div>
+        </div>
+        <div class="brief-tab-panel" id="tab-notes">
+          <div class="brief-section">
+            <div class="brief-section-title">Call Notes</div>
+            <textarea class="notes-area" id="call-notes" placeholder="Type your call notes here as you talk... What did they say? Any pain points? Objections? How did the call go?"></textarea>
+            <div class="notes-save-bar">
+              <span class="notes-hint">Notes auto-saved with outcome</span>
+              <button class="btn btn-secondary btn-sm" onclick="saveNotesDraft()">💾 Save Draft</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY VIEW -->
+<div id="view-history" class="view">
+  <div class="queue-header">
+    <div>
+      <div class="queue-title">📊 Call History</div>
+      <div class="queue-subtitle">Today's sessions and all-time log</div>
+    </div>
+    <div class="queue-actions">
+      <button class="btn btn-secondary btn-sm" onclick="loadHistory()">↻ Refresh</button>
+    </div>
+  </div>
+  <div class="history-stats" id="history-stats">
+    <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total Calls</div></div>
+    <div class="stat-card green"><div class="stat-value" id="stat-booked">0</div><div class="stat-label">Booked</div></div>
+    <div class="stat-card gold"><div class="stat-value" id="stat-qualified">0</div><div class="stat-label">Qualified</div></div>
+    <div class="stat-card blue"><div class="stat-value" id="stat-interested">0</div><div class="stat-label">Interested</div></div>
+    <div class="stat-card purple"><div class="stat-value" id="stat-callback">0</div><div class="stat-label">Callbacks</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-rate">0%</div><div class="stat-label">Connect Rate</div></div>
+  </div>
+  <div class="history-list" id="history-list">
+    <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No calls logged yet</div></div>
+  </div>
+</div>
+
+<!-- CALLBACK MODAL -->
+<div class="modal-overlay" id="callback-modal">
+  <div class="modal">
+    <div class="modal-title">🔄 Schedule Callback</div>
+    <div class="modal-subtitle" id="callback-modal-subtitle">Set a time to call back</div>
+    <div class="form-group">
+      <label class="form-label">Callback Date & Time</label>
+      <input type="datetime-local" class="form-input" id="callback-datetime">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Reason</label>
+      <textarea class="form-input" id="callback-notes" placeholder="What did they say? What to follow up on?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('callback-modal')">Cancel</button>
+      <button class="btn btn-orange" onclick="confirmCallback()">📅 Save Callback</button>
+    </div>
+  </div>
+</div>
+
+<!-- OUTCOME NOTES MODAL -->
+<div class="modal-overlay" id="outcome-modal">
+  <div class="modal">
+    <div class="modal-title" id="outcome-modal-title">Log Outcome</div>
+    <div class="modal-subtitle" id="outcome-modal-subtitle"></div>
+    <div class="form-group">
+      <label class="form-label">Call Notes (optional)</label>
+      <textarea class="form-input" id="outcome-notes-input" placeholder="Key takeaways, what they said, next steps..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('outcome-modal')">Cancel</button>
+      <button class="btn btn-primary" id="outcome-confirm-btn" onclick="confirmOutcome()">✓ Confirm & Next Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Shortcuts bar (dialer only) -->
+<div class="shortcuts-bar" id="shortcuts-bar" style="display:none;">
+  <span class="shortcuts-label">Shortcuts:</span>
+  <span class="shortcut"><span class="key">V</span> Voicemail</span>
+  <span class="shortcut"><span class="key">N</span> Not Interested</span>
+  <span class="shortcut"><span class="key">C</span> Callback</span>
+  <span class="shortcut"><span class="key">I</span> Interested</span>
+  <span class="shortcut"><span class="key">Q</span> Qualified</span>
+  <span class="shortcut"><span class="key">B</span> Booked</span>
+  <span class="shortcut"><span class="key">Space</span> Start/Stop Timer</span>
+  <span class="shortcut"><span class="key">→</span> Next Lead</span>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+  projectId: "arcane-archives-3b0f5",
+  storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+  messagingSenderId: "264237235055",
+  appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentUser = null;
+let leads = [];
+let filteredLeads = [];
+let currentFilter = 'all';
+let currentLeadIndex = 0;
+let currentLead = null;
+let callBriefs = {}; // leadId → brief data
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+let callHistory = [];
+let pendingOutcome = null;
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+auth.onAuthStateChanged(user => {
+  if (!user) { window.location.href = 'arcane-consulting-crm.html'; return; }
+  if (!ADMIN_UIDS.includes(user.uid)) { window.location.href = 'arcane-consulting-crm.html'; return; }
+  currentUser = user;
+  setStatus('Ready', true);
+  refreshQueue();
+  loadHistory();
+});
+
+// ─── VIEW SWITCHING ────────────────────────────────────────────────────────────
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  const map = { queue: 0, dialer: 1, history: 2 };
+  btns[map[v]].classList.add('active');
+  const sb = document.getElementById('shortcuts-bar');
+  if (v === 'dialer') sb.style.display = 'flex'; else sb.style.display = 'none';
+  if (v === 'history') loadHistory();
+}
+
+// ─── QUEUE ────────────────────────────────────────────────────────────────────
+const QUAL_ORDER = { highly_qualified: 0, qualified: 1, maybe: 2, not_qualified: 3 };
+const STAGE_ORDER = { new_lead: 0, contacted: 1, qualified: 2, diagnostic_paid: 3 };
+const CALL_STATUSES = ['voicemail', 'interested', 'qualified', 'booked', 'callback'];
+
+async function refreshQueue() {
+  setStatus('Loading...', false);
+  try {
+    const snap = await db.collection('consulting_leads')
+      .where('stage', 'in', ['new_lead', 'contacted', 'qualified', 'diagnostic_paid'])
+      .get();
+    leads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    leads.sort((a, b) => {
+      const qa = QUAL_ORDER[a.qualification] ?? 99;
+      const qb = QUAL_ORDER[b.qualification] ?? 99;
+      if (qa !== qb) return qa - qb;
+      const sa = STAGE_ORDER[a.stage] ?? 99;
+      const sb2 = STAGE_ORDER[b.stage] ?? 99;
+      return sa - sb2;
+    });
+    applyFilter(currentFilter);
+    setStatus(`${leads.length} leads`, true);
+    document.getElementById('queue-subtitle').textContent = `${leads.length} leads in pipeline — sorted by qualification`;
+    preGenTopFive();
+  } catch(e) {
+    setStatus('Error', false);
+    showToast('Failed to load leads: ' + e.message, 'error');
+  }
+}
+
+function applyFilter(f) {
+  currentFilter = f;
+  if (f === 'all') filteredLeads = [...leads];
+  else if (f === 'not_called') filteredLeads = leads.filter(l => !l.lastCallOutcome);
+  else if (f === 'callback') filteredLeads = leads.filter(l => l.lastCallOutcome === 'callback');
+  else filteredLeads = leads.filter(l => l.qualification === f);
+  renderQueue();
+}
+
+function setFilter(f, el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilter(f);
+}
+
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  if (!filteredLeads.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No leads in this filter</div></div>';
+    return;
+  }
+  list.innerHTML = filteredLeads.map((lead, i) => {
+    const rank = i + 1;
+    const briefReady = callBriefs[lead.id];
+    const isTop = rank <= 5;
+    const qTag = qualTag(lead.qualification);
+    const phone = lead.phone || lead.contactPhone || '';
+    const lastOutcome = lead.lastCallOutcome ? `<span class="tag" style="background:var(--bg-hover);color:var(--text-muted);">${lead.lastCallOutcome.replace('_',' ')}</span>` : '';
+    return `
+      <div class="queue-card ${isTop ? 'priority' : ''} ${briefReady ? 'ready' : ''}" onclick="selectLeadAndDial(${i})">
+        <div class="queue-rank ${isTop ? 'top' : ''}">${rank}</div>
+        <div class="queue-info">
+          <div class="queue-company">${lead.company || 'Unknown'}</div>
+          <div class="queue-contact">${lead.name || ''} ${lead.role || lead.contactRole ? '— ' + (lead.role || lead.contactRole) : ''}</div>
+          ${phone ? `<div class="queue-phone">📞 ${phone}</div>` : ''}
+          <div class="queue-meta">
+            ${qTag}
+            <span class="tag tag-stage">${(lead.stage||'').replace('_',' ')}</span>
+            ${lead.industry ? `<span class="tag tag-industry">${lead.industry}</span>` : ''}
+            ${lastOutcome}
+            <span class="brief-status">${briefReady ? '✅ Brief ready' : isTop ? '⏳ Generating...' : '○ No brief'}</span>
+          </div>
+        </div>
+        <div class="queue-actions-right">
+          ${!briefReady ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();genBrief('${lead.id}', ${i})">⚡ Gen Brief</button>` : ''}
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();selectLeadAndDial(${i})">📞 Call</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function qualTag(q) {
+  const map = {
+    highly_qualified: '<span class="tag tag-hq">🌟 HQ</span>',
+    qualified: '<span class="tag tag-q">✅ Qual</span>',
+    maybe: '<span class="tag tag-m">🤔 Maybe</span>',
+    not_qualified: '<span class="tag tag-nq">❌ NQ</span>'
+  };
+  return map[q] || '';
+}
+
+// ─── BRIEF GENERATION ─────────────────────────────────────────────────────────
+async function preGenTopFive() {
+  const top5 = filteredLeads.slice(0, 5);
+  for (const lead of top5) {
+    if (!callBriefs[lead.id]) {
+      genBrief(lead.id, filteredLeads.indexOf(lead));
+    }
+  }
+}
+
+async function preGenAll() {
+  showToast('Generating briefs for all leads...', 'info');
+  for (let i = 0; i < filteredLeads.length; i++) {
+    const lead = filteredLeads[i];
+    if (!callBriefs[lead.id]) await genBrief(lead.id, i);
+  }
+  showToast('All briefs generated!', 'success');
+}
+
+async function genBrief(leadId, queueIdx) {
+  const lead = leads.find(l => l.id === leadId);
+  if (!lead) return;
+  try {
+    const res = await fetch('/.netlify/functions/consulting-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cold_call_brief', lead, context: '' })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    callBriefs[leadId] = data;
+    renderQueue();
+    if (currentLead && currentLead.id === leadId) renderBrief(data);
+  } catch(e) {
+    console.error('Brief gen error:', e);
+  }
+}
+
+// ─── DIALER ────────────────────────────────────────────────────────────────────
+function selectLeadAndDial(queueIdx) {
+  currentLeadIndex = queueIdx;
+  currentLead = filteredLeads[queueIdx];
+  if (!currentLead) return;
+  switchView('dialer');
+  renderLeadHero();
+  resetTimer();
+  resetQual();
+  document.getElementById('call-notes').value = currentLead.lastCallNotes || '';
+  const brief = callBriefs[currentLead.id];
+  if (brief) renderBrief(brief);
+  else {
+    showBriefLoading();
+    genBrief(currentLead.id, queueIdx);
+  }
+}
+
+function renderLeadHero() {
+  const lead = currentLead;
+  const initial = (lead.company || '?')[0].toUpperCase();
+  const phone = lead.phone || lead.contactPhone || '';
+  const phoneHtml = phone
+    ? `<a href="tel:${phone}" class="lead-phone-btn">📞 ${phone}</a>`
+    : `<div style="margin-top:14px;font-size:12px;color:var(--text-muted);">No phone on record</div>`;
+  document.getElementById('lead-hero').innerHTML = `
+    <div class="lead-avatar">${initial}</div>
+    <div class="lead-name">${lead.name || 'Unknown Contact'}</div>
+    <div class="lead-role">${lead.role || lead.contactRole || 'Unknown role'}</div>
+    <div class="lead-company">${lead.company}</div>
+    ${phoneHtml}
+    <div style="margin-top:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+      ${qualTag(lead.qualification)}
+      <span class="tag tag-stage">${(lead.stage||'').replace('_',' ')}</span>
+    </div>`;
+}
+
+function showBriefLoading() {
+  document.getElementById('tab-brief').innerHTML = '<div class="loading-brief"><div class="loading-spinner"></div><div class="loading-text">Generating your call brief with AI...</div></div>';
+  document.getElementById('tab-script').innerHTML = '<div class="loading-brief"><div class="loading-spinner"></div><div class="loading-text">Building script...</div></div>';
+  document.getElementById('tab-objections').innerHTML = '<div class="loading-brief"><div class="loading-spinner"></div><div class="loading-text">Loading objection handlers...</div></div>';
+}
+
+function renderBrief(b) {
+  if (!b) return;
+  // BRIEF TAB
+  document.getElementById('tab-brief').innerHTML = `
+    <div class="brief-section">
+      <div class="brief-section-title">Why This Lead</div>
+      <div class="brief-highlight gold">${b.whyThisLead || '—'}</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Call Goal</div>
+      <div class="brief-highlight green">${b.callGoal || '—'}</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Qualifying Questions to Ask</div>
+      <div class="brief-list">${(b.qualifyingQuestions||[]).map(q => `<div class="brief-list-item q">${q}</div>`).join('')}</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Talking Points</div>
+      <div class="brief-list">${(b.talkingPoints||[]).map(p => `<div class="brief-list-item">${p}</div>`).join('')}</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Red Flags / Watch Out For</div>
+      <div class="brief-list">${(b.redFlags||[]).map(r => `<div class="brief-list-item warn">${r}</div>`).join('')}</div>
+    </div>`;
+
+  // SCRIPT TAB
+  document.getElementById('tab-script').innerHTML = `
+    <div class="brief-section">
+      <div class="brief-section-title">Opening Line (Pattern Interrupt)</div>
+      <div class="script-label">Say exactly this:</div>
+      <div class="script-line gold">"${b.openingLine || '—'}"</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Permission Ask</div>
+      <div class="script-line">"${b.permissionAsk || '—'}"</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Problem Statement</div>
+      <div class="script-line">"${b.problemStatement || '—'}"</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">30-Second Pitch</div>
+      <div class="script-line">"${b.thirtySecondPitch || '—'}"</div>
+    </div>
+    <div class="brief-section">
+      <div class="brief-section-title">Close Line</div>
+      <div class="script-line green">"${b.closeLine || '—'}"</div>
+    </div>
+    ${b.altCloseLines && b.altCloseLines.length ? `
+    <div class="brief-section">
+      <div class="brief-section-title">Alternative Closes</div>
+      ${b.altCloseLines.map(l => `<div class="script-line">"${l}"</div>`).join('')}
+    </div>` : ''}
+    <div class="brief-section">
+      <div class="brief-section-title">Voicemail Script</div>
+      <div class="script-line" style="font-style:italic;">"${b.voicemailScript || '—'}"</div>
+    </div>`;
+
+  // OBJECTIONS TAB
+  document.getElementById('tab-objections').innerHTML = `
+    <div class="brief-section">
+      <div class="brief-section-title">Objection Battle Cards — Tap to expand</div>
+      ${(b.objections||[]).map((o,i) => `
+        <div class="objection-card">
+          <div class="objection-trigger" onclick="toggleObj(this, ${i})">
+            <span>🚫 "${o.trigger}"</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="objection-response" id="obj-resp-${i}">${o.response}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function toggleObj(el, i) {
+  el.classList.toggle('open');
+  document.getElementById('obj-resp-' + i).classList.toggle('open');
+}
+
+// ─── TIMER ────────────────────────────────────────────────────────────────────
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  document.getElementById('timer-start-btn').disabled = true;
+  document.getElementById('timer-stop-btn').disabled = false;
+  document.getElementById('call-status-badge').textContent = '🔴 Live';
+  document.getElementById('call-status-badge').style.cssText = 'background:var(--red-dim);color:var(--red);';
+  document.getElementById('call-status-text').textContent = 'Call in progress...';
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+    const s = String(timerSeconds%60).padStart(2,'0');
+    document.getElementById('call-timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  if (!timerRunning) return;
+  timerRunning = false;
+  clearInterval(timerInterval);
+  document.getElementById('timer-start-btn').disabled = false;
+  document.getElementById('timer-stop-btn').disabled = true;
+  document.getElementById('call-status-badge').textContent = 'Done';
+  document.getElementById('call-status-badge').style.cssText = 'background:var(--bg-hover);color:var(--text-muted);';
+  document.getElementById('call-status-text').textContent = 'Log outcome below ↓';
+}
+
+function resetTimer() {
+  stopTimer();
+  timerSeconds = 0;
+  document.getElementById('call-timer').textContent = '00:00';
+  document.getElementById('call-status-badge').textContent = 'Idle';
+  document.getElementById('call-status-badge').style.cssText = 'background:var(--bg-hover);color:var(--text-muted);';
+  document.getElementById('call-status-text').textContent = 'Press START when connected';
+}
+
+// ─── QUALIFICATION ────────────────────────────────────────────────────────────
+function toggleQual(item) {
+  const cb = item.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  item.classList.toggle('checked', cb.checked);
+  updateQualScore();
+}
+
+function updateQualScore() {
+  const checks = document.querySelectorAll('#qual-checklist input[type=checkbox]');
+  const checked = [...checks].filter(c => c.checked).length;
+  const total = checks.length;
+  document.getElementById('qual-score-text').textContent = `${checked}/${total}`;
+  document.getElementById('qual-fill').style.width = `${(checked/total)*100}%`;
+}
+
+function resetQual() {
+  document.querySelectorAll('#qual-checklist input[type=checkbox]').forEach(c => { c.checked = false; });
+  document.querySelectorAll('#qual-checklist .qual-item').forEach(i => i.classList.remove('checked'));
+  updateQualScore();
+}
+
+// ─── OUTCOME LOGGING ──────────────────────────────────────────────────────────
+const OUTCOME_CONFIG = {
+  voicemail: { label: 'Voicemail Left', stage: null, title: '📬 Voicemail Logged', color: 'badge-voicemail' },
+  not_interested: { label: 'Not Interested', stage: null, title: '❌ Not Interested', color: 'badge-no' },
+  callback: { label: 'Call Back Later', stage: null, title: '🔄 Callback Scheduled', color: 'badge-callback' },
+  interested: { label: 'Interested', stage: 'contacted', title: '💡 Interested — Advanced Stage', color: 'badge-interested' },
+  qualified: { label: 'Qualified', stage: 'qualified', title: '⭐ Qualified — Advanced to Qualified', color: 'badge-qualified' },
+  booked: { label: 'Discovery Booked', stage: 'diagnostic_paid', title: '📅 Booked! Advanced to Diagnostic', color: 'badge-booked' }
+};
+
+function logOutcome(outcome) {
+  if (!currentLead) { showToast('No lead selected', 'error'); return; }
+  stopTimer();
+  pendingOutcome = outcome;
+  if (outcome === 'callback') {
+    document.getElementById('callback-modal-subtitle').textContent = `Scheduling callback for ${currentLead.company}`;
+    const dt = new Date(); dt.setDate(dt.getDate() + 1);
+    document.getElementById('callback-datetime').value = dt.toISOString().slice(0,16);
+    document.getElementById('callback-notes').value = document.getElementById('call-notes').value;
+    document.getElementById('callback-modal').classList.add('open');
+    return;
+  }
+  const cfg = OUTCOME_CONFIG[outcome];
+  document.getElementById('outcome-modal-title').textContent = cfg.title;
+  document.getElementById('outcome-modal-subtitle').textContent = cfg.stage ? `Stage will advance to: ${cfg.stage.replace('_',' ')}` : 'No stage change';
+  document.getElementById('outcome-notes-input').value = document.getElementById('call-notes').value;
+  document.getElementById('outcome-modal').classList.add('open');
+}
+
+async function confirmOutcome() {
+  if (!pendingOutcome || !currentLead) return;
+  const notes = document.getElementById('outcome-notes-input').value;
+  closeModal('outcome-modal');
+  await saveOutcome(pendingOutcome, notes, null);
+}
+
+async function confirmCallback() {
+  if (!currentLead) return;
+  const dt = document.getElementById('callback-datetime').value;
+  const notes = document.getElementById('callback-notes').value;
+  closeModal('callback-modal');
+  await saveOutcome('callback', notes, dt);
+}
+
+async function saveOutcome(outcome, notes, callbackDt) {
+  if (!currentLead) return;
+  const cfg = OUTCOME_CONFIG[outcome];
+  const callRecord = {
+    leadId: currentLead.id,
+    company: currentLead.company,
+    contactName: currentLead.name || '',
+    outcome,
+    notes: notes || '',
+    callbackAt: callbackDt || null,
+    duration: timerSeconds,
+    calledAt: firebase.firestore.FieldValue.serverTimestamp(),
+    calledBy: currentUser.uid
+  };
+  try {
+    // Save to call_log subcollection
+    await db.collection('consulting_leads').doc(currentLead.id)
+      .collection('call_log').add(callRecord);
+    // Update lead doc
+    const leadUpdate = {
+      lastCallOutcome: outcome,
+      lastCallNotes: notes || '',
+      lastCalledAt: firebase.firestore.FieldValue.serverTimestamp(),
+      callCount: firebase.firestore.FieldValue.increment(1)
+    };
+    if (callbackDt) leadUpdate.callbackAt = callbackDt;
+    if (cfg.stage) leadUpdate.stage = cfg.stage;
+    await db.collection('consulting_leads').doc(currentLead.id).update(leadUpdate);
+    // Save to global call_history
+    await db.collection('call_history').add(callRecord);
+    showToast(cfg.title + ' logged!', 'success');
+    callHistory.unshift(callRecord);
+    // Advance to next lead
+    setTimeout(nextLead, 600);
+    // Refresh queue in bg
+    refreshQueue();
+  } catch(e) {
+    showToast('Failed to save: ' + e.message, 'error');
+  }
+}
+
+function nextLead() {
+  currentLeadIndex++;
+  if (currentLeadIndex < filteredLeads.length) {
+    selectLeadAndDial(currentLeadIndex);
+  } else {
+    showToast('🎉 All leads called! Queue complete.', 'success');
+    switchView('queue');
+  }
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const snap = await db.collection('call_history')
+      .orderBy('calledAt', 'desc')
+      .limit(100)
+      .get();
+    callHistory = snap.docs.map(d => d.data());
+    renderHistory();
+  } catch(e) {
+    console.error('Load history error:', e);
+  }
+}
+
+function renderHistory() {
+  const stats = { total: callHistory.length, booked: 0, qualified: 0, interested: 0, callback: 0, connected: 0 };
+  callHistory.forEach(c => {
+    if (c.outcome === 'booked') stats.booked++;
+    if (c.outcome === 'qualified') stats.qualified++;
+    if (c.outcome === 'interested') stats.interested++;
+    if (c.outcome === 'callback') stats.callback++;
+    if (['interested','qualified','booked'].includes(c.outcome)) stats.connected++;
+  });
+  document.getElementById('stat-total').textContent = stats.total;
+  document.getElementById('stat-booked').textContent = stats.booked;
+  document.getElementById('stat-qualified').textContent = stats.qualified;
+  document.getElementById('stat-interested').textContent = stats.interested;
+  document.getElementById('stat-callback').textContent = stats.callback;
+  document.getElementById('stat-rate').textContent = stats.total ? Math.round((stats.connected/stats.total)*100)+'%' : '0%';
+
+  const list = document.getElementById('history-list');
+  if (!callHistory.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No calls logged yet</div></div>';
+    return;
+  }
+  list.innerHTML = callHistory.map(c => {
+    const badge = `badge-${c.outcome === 'not_interested' ? 'no' : c.outcome}`;
+    const label = OUTCOME_CONFIG[c.outcome]?.label || c.outcome;
+    const ts = c.calledAt?.toDate ? c.calledAt.toDate().toLocaleString() : 'Just now';
+    const dur = c.duration ? `${Math.floor(c.duration/60)}m ${c.duration%60}s` : '';
+    return `
+      <div class="history-item">
+        <span class="outcome-badge ${badge}">${label}</span>
+        <div class="history-info">
+          <div class="history-company">${c.company || 'Unknown'}</div>
+          <div class="history-contact">${c.contactName || ''} ${dur ? '· ' + dur : ''}</div>
+          ${c.notes ? `<div class="history-notes">"${c.notes.substring(0,100)}${c.notes.length>100?'...':''}"</div>` : ''}
+        </div>
+        <div class="history-time">${ts}</div>
+      </div>`;
+  }).join('');
+}
+
+// ─── MISC UI ──────────────────────────────────────────────────────────────────
+function startCalling() {
+  if (!filteredLeads.length) { showToast('No leads in queue', 'error'); return; }
+  selectLeadAndDial(0);
+}
+
+function switchBriefTab(tab, el) {
+  document.querySelectorAll('.brief-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.brief-tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function saveNotesDraft() {
+  if (!currentLead) return;
+  db.collection('consulting_leads').doc(currentLead.id).update({ draftNotes: document.getElementById('call-notes').value });
+  showToast('Notes saved!', 'success');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function setStatus(msg, ok) {
+  document.getElementById('status-label').textContent = msg;
+  const dot = document.getElementById('status-dot');
+  dot.style.background = ok ? 'var(--green)' : '#ef4444';
+  dot.style.boxShadow = ok ? '0 0 6px var(--green)' : '0 0 6px #ef4444';
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  t.innerHTML = `${icons[type]} ${msg}`;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ─── KEYBOARD SHORTCUTS ───────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const active = document.getElementById('view-dialer').classList.contains('active');
+  if (!active) return;
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  const key = e.key.toLowerCase();
+  if (key === 'v') logOutcome('voicemail');
+  else if (key === 'n') logOutcome('not_interested');
+  else if (key === 'c') logOutcome('callback');
+  else if (key === 'i') logOutcome('interested');
+  else if (key === 'q') logOutcome('qualified');
+  else if (key === 'b') logOutcome('booked');
+  else if (key === ' ') { e.preventDefault(); timerRunning ? stopTimer() : startTimer(); }
+  else if (key === 'arrowright') nextLead();
+});
+</script>
+</body>
+</html>
