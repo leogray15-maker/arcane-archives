@@ -573,6 +573,24 @@ function switchView(v) {
   if (v === 'history') loadHistory();
 }
 
+// ─── FIELD NORMALIZATION ──────────────────────────────────────────────────────
+// Handles inconsistent field names from different entry points (CRM manual add,
+// Lead Agent import, CSV batch import, etc.)
+function normalizeLead(raw) {
+  const company = raw.company || raw.companyName || '';
+  const contactName = raw.contactName || raw.name || '';
+  // If name looks like the company (fallback case), treat company separately
+  const displayCompany = company || contactName || 'Unknown';
+  const displayContact = contactName !== displayCompany ? contactName : '';
+  return {
+    ...raw,
+    company: displayCompany,
+    name: displayContact,
+    role: raw.contactRole || raw.role || '',
+    phone: raw.phone || raw.contactPhone || raw.contactPhone || '',
+  };
+}
+
 // ─── QUEUE ────────────────────────────────────────────────────────────────────
 const QUAL_ORDER = { highly_qualified: 0, qualified: 1, maybe: 2, not_qualified: 3 };
 const STAGE_ORDER = { new_lead: 0, contacted: 1, qualified: 2, diagnostic_paid: 3 };
@@ -584,7 +602,7 @@ async function refreshQueue() {
     const snap = await db.collection('consulting_leads')
       .where('stage', 'in', ['new_lead', 'contacted', 'qualified', 'diagnostic_paid'])
       .get();
-    leads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    leads = snap.docs.map(d => normalizeLead({ id: d.id, ...d.data() }));
     leads.sort((a, b) => {
       const qa = QUAL_ORDER[a.qualification] ?? 99;
       const qb = QUAL_ORDER[b.qualification] ?? 99;
@@ -636,7 +654,7 @@ function renderQueue() {
         <div class="queue-rank ${isTop ? 'top' : ''}">${rank}</div>
         <div class="queue-info">
           <div class="queue-company">${lead.company || 'Unknown'}</div>
-          <div class="queue-contact">${lead.name || ''} ${lead.role || lead.contactRole ? '— ' + (lead.role || lead.contactRole) : ''}</div>
+          <div class="queue-contact">${lead.name ? lead.name + (lead.role ? ' — ' + lead.role : '') : (lead.role || '')}</div>
           ${phone ? `<div class="queue-phone">📞 ${phone}</div>` : ''}
           <div class="queue-meta">
             ${qTag}
@@ -686,19 +704,56 @@ async function preGenAll() {
 async function genBrief(leadId, queueIdx) {
   const lead = leads.find(l => l.id === leadId);
   if (!lead) return;
+  // Mark as generating so UI shows spinner
+  callBriefs[leadId] = null;
   try {
     const res = await fetch('/.netlify/functions/consulting-agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'cold_call_brief', lead, context: '' })
+      body: JSON.stringify({
+        action: 'cold_call_brief',
+        lead: {
+          company: lead.company,
+          name: lead.name,
+          role: lead.role,
+          industry: lead.industry || '',
+          revenueEstimate: lead.revenueEstimate || '',
+          stage: lead.stage || '',
+          qualification: lead.qualification || '',
+          phone: lead.phone || '',
+          website: lead.website || '',
+          linkedin: lead.linkedin || '',
+          notes: lead.notes || ''
+        },
+        context: ''
+      })
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Brief API error:', errText);
+      delete callBriefs[leadId];
+      if (currentLead && currentLead.id === leadId) {
+        document.getElementById('tab-brief').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Brief generation failed</div><p style="font-size:13px;margin-top:6px;color:var(--text-muted);">${errText.substring(0,200)}</p><button class="btn btn-primary" style="margin-top:12px;" onclick="genBrief('${leadId}', ${queueIdx})">↻ Retry</button></div>`;
+        document.getElementById('tab-script').innerHTML = '<div class="empty-state"></div>';
+        document.getElementById('tab-objections').innerHTML = '<div class="empty-state"></div>';
+      }
+      return;
+    }
     const data = await res.json();
+    if (data.error) {
+      console.error('Brief error response:', data);
+      delete callBriefs[leadId];
+      return;
+    }
     callBriefs[leadId] = data;
     renderQueue();
     if (currentLead && currentLead.id === leadId) renderBrief(data);
   } catch(e) {
     console.error('Brief gen error:', e);
+    delete callBriefs[leadId];
+    if (currentLead && currentLead.id === leadId) {
+      document.getElementById('tab-brief').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Network error</div><p style="font-size:13px;margin-top:6px;color:var(--text-muted);">${e.message}</p><button class="btn btn-primary" style="margin-top:12px;" onclick="genBrief('${leadId}', ${queueIdx})">↻ Retry</button></div>`;
+    }
   }
 }
 
@@ -723,14 +778,14 @@ function selectLeadAndDial(queueIdx) {
 function renderLeadHero() {
   const lead = currentLead;
   const initial = (lead.company || '?')[0].toUpperCase();
-  const phone = lead.phone || lead.contactPhone || '';
+  const phone = lead.phone || '';
   const phoneHtml = phone
     ? `<a href="tel:${phone}" class="lead-phone-btn">📞 ${phone}</a>`
-    : `<div style="margin-top:14px;font-size:12px;color:var(--text-muted);">No phone on record</div>`;
+    : `<div style="margin-top:14px;font-size:12px;color:var(--text-muted);">No phone on record — add in CRM</div>`;
   document.getElementById('lead-hero').innerHTML = `
     <div class="lead-avatar">${initial}</div>
-    <div class="lead-name">${lead.name || 'Unknown Contact'}</div>
-    <div class="lead-role">${lead.role || lead.contactRole || 'Unknown role'}</div>
+    <div class="lead-name">${lead.name || '<span style="color:var(--text-muted);font-size:13px;">No contact name</span>'}</div>
+    <div class="lead-role">${lead.role || ''}</div>
     <div class="lead-company">${lead.company}</div>
     ${phoneHtml}
     <div style="margin-top:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">

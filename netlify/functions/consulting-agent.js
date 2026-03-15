@@ -58,16 +58,37 @@ exports.handler = async (event) => {
   }
 };
 
+function normLead(lead) {
+  // Handles field name variations across different entry points
+  return {
+    company: lead.company || lead.companyName || lead.name || 'Unknown',
+    name: lead.contactName || (lead.name !== (lead.company || lead.companyName) ? lead.name : '') || 'Unknown',
+    role: lead.contactRole || lead.role || 'Unknown role',
+    industry: lead.industry || 'Unknown',
+    revenueEstimate: lead.revenueEstimate || 'Unknown',
+    stage: lead.stage || 'Unknown',
+    dealValue: lead.dealValue || null,
+    qualification: lead.qualification || 'Unknown',
+    notes: lead.notes || '',
+    phone: lead.phone || lead.contactPhone || '',
+    website: lead.website || '',
+    linkedin: lead.linkedin || ''
+  };
+}
+
 function leadContext(lead) {
+  const l = normLead(lead);
   return `
-Company: ${lead.company || 'Unknown'}
-Contact: ${lead.name || 'Unknown'} — ${lead.role || lead.contactRole || 'Unknown role'}
-Industry: ${lead.industry || 'Unknown'}
-Revenue Estimate: ${lead.revenueEstimate || 'Unknown'}
-Current Stage: ${lead.stage || 'Unknown'}
-Deal Value Target: ${lead.dealValue ? '£' + lead.dealValue : 'Unknown'}
-Qualification: ${lead.qualification || 'Unknown'}
-Recent Notes: ${lead.notes || 'None'}`.trim();
+Company: ${l.company}
+Contact: ${l.name} — ${l.role}
+Industry: ${l.industry}
+Revenue Estimate: ${l.revenueEstimate}
+Current Stage: ${l.stage}
+Deal Value Target: ${l.dealValue ? '£' + l.dealValue : 'Unknown'}
+Qualification: ${l.qualification}
+Website: ${l.website || 'N/A'}
+Phone: ${l.phone || 'N/A'}
+Recent Notes: ${l.notes || 'None'}`.trim();
 }
 
 function buildPrompts(action, lead, context) {
