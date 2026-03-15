@@ -670,6 +670,7 @@
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="openAddLeadModal()">+ Add Lead</button>
                     <button class="btn btn-secondary" onclick="exportLeadsCSV()">&#x1F4E5; Export CSV</button>
+                    <button class="btn btn-danger" onclick="deleteAllLeads()" style="margin-left:auto;">&#x1F5D1; Delete All</button>
                 </div>
             </div>
             <div class="search-container">
@@ -1316,6 +1317,46 @@ function exportLeadsCSV() {
     showToast('CSV exported');
 }
 
+// ==================== DELETE LEADS ====================
+async function deleteLead(id) {
+    const lead = allLeads.find(l => l.id === id);
+    if (!lead) return;
+    if (!confirm(`Delete "${lead.name}" permanently? This cannot be undone.`)) return;
+    try {
+        await db.collection('consulting_leads').doc(id).delete();
+        allLeads = allLeads.filter(l => l.id !== id);
+        closeModal('leadDetailModal');
+        renderKanban();
+        renderLeadList();
+        updateSidebar();
+        showToast(`${lead.name} deleted`);
+    } catch (e) {
+        showToast('Delete failed: ' + e.message);
+    }
+}
+
+async function deleteAllLeads() {
+    if (allLeads.length === 0) { showToast('No leads to delete'); return; }
+    const answer = prompt(`This will permanently delete ALL ${allLeads.length} leads. Type DELETE to confirm:`);
+    if (answer !== 'DELETE') { showToast('Cancelled — nothing deleted'); return; }
+    try {
+        // Firestore batch deletes in chunks of 500
+        const ids = allLeads.map(l => l.id);
+        for (let i = 0; i < ids.length; i += 500) {
+            const batch = db.batch();
+            ids.slice(i, i + 500).forEach(id => batch.delete(db.collection('consulting_leads').doc(id)));
+            await batch.commit();
+        }
+        allLeads = [];
+        renderKanban();
+        renderLeadList();
+        updateSidebar();
+        showToast(`All leads deleted — ready for fresh import`);
+    } catch (e) {
+        showToast('Delete failed: ' + e.message);
+    }
+}
+
 // ==================== LEAD DETAIL MODAL ====================
 function openLeadDetail(id) {
     const lead = allLeads.find(l => l.id === id);
@@ -1346,6 +1387,7 @@ function openLeadDetail(id) {
             ${lead.email ? `<a class="btn btn-secondary btn-sm" href="mailto:${escapeHtml(lead.email)}?subject=Arcane%20Archives%20Consulting" target="_blank">&#x2709; Email</a>` : ''}
             ${lead.status !== 'won' ? `<button class="btn btn-success btn-sm" onclick="markStatus('${lead.id}','won')">&#x1F3C6; Mark Won</button>` : ''}
             ${lead.status !== 'lost' ? `<button class="btn btn-danger btn-sm" onclick="markStatus('${lead.id}','lost')">&#x274C; Mark Lost</button>` : ''}
+            <button class="btn btn-danger btn-sm" onclick="deleteLead('${lead.id}')" style="margin-left:auto;">&#x1F5D1; Delete Lead</button>
         </div>
 
         <h3 style="font-size:1rem;font-weight:800;margin-bottom:1rem;">Attachments</h3>
