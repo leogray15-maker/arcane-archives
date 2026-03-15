@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pipeline Command Center | The Arcane Archives</title>
+    <link rel="icon" href="ArcaneA.png">
+    <link rel="apple-touch-icon" href="ArcaneA.png">
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        :root {
+            --bg-primary:#09090b; --bg-secondary:#18181b; --bg-card:#1f1f23;
+            --bg-elevated:#2d2d32; --purple-primary:#8b5cf6; --purple-dark:#7c3aed;
+            --purple-light:#a78bfa; --gold:#fbbf24; --gold-dark:#f59e0b;
+            --text:#fafafa; --text-secondary:#a1a1aa; --text-muted:#71717a;
+            --border:rgba(255,255,255,0.1); --border-hover:rgba(255,255,255,0.2);
+            --success:#22c55e; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+            --sidebar-width:280px; --header-height:72px; --panel-width:480px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        html{scroll-behavior:smooth;}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+        /* MOBILE HEADER */
+        .mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:calc(var(--header-height) + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);background:rgba(9,9,11,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:200;padding-left:1rem;padding-right:1rem;align-items:center;justify-content:space-between;}
+        .mobile-header-title{font-size:1.125rem;font-weight:800;background:linear-gradient(135deg,var(--purple-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .mobile-menu-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+        /* SIDEBAR */
+        .app-container{display:flex;min-height:100vh;}
+        .sidebar{width:var(--sidebar-width);background:linear-gradient(180deg,rgba(31,31,35,0.97),rgba(9,9,11,0.99));backdrop-filter:blur(20px);border-right:1px solid var(--border);padding:1.5rem;position:fixed;height:100vh;overflow-y:auto;z-index:100;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;}
+        .sidebar-logo{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;}
+        .sidebar-logo img{width:40px;height:40px;border-radius:10px;}
+        .sidebar-logo-text{font-size:1.25rem;font-weight:900;background:linear-gradient(135deg,var(--purple-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-tagline{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-left:3.25rem;margin-bottom:1.5rem;}
+        .sidebar-links{display:flex;flex-direction:column;gap:0.375rem;margin-bottom:1.25rem;}
+        .sidebar-link{display:flex;align-items:center;gap:0.5rem;padding:0.625rem 0.875rem;border-radius:10px;border:1px solid var(--border);color:var(--text-secondary);font-size:0.8125rem;font-weight:600;text-decoration:none;transition:all 0.2s;}
+        .sidebar-link:hover{background:rgba(139,92,246,0.1);border-color:var(--purple-primary);color:var(--text);}
+        .nav-section-title{font-size:0.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.75rem;padding:0 0.75rem;}
+        .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.875rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.25rem;position:relative;}
+        .nav-item:hover{background:rgba(139,92,246,0.1);color:var(--text);transform:translateX(4px);}
+        .nav-item.active{background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(251,191,36,0.1));color:var(--text);border:1px solid rgba(139,92,246,0.3);}
+        .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--purple-primary);border-radius:0 2px 2px 0;}
+        .nav-icon{font-size:1.125rem;width:24px;text-align:center;}
+        .nav-badge{margin-left:auto;background:var(--danger);color:white;font-size:0.6875rem;font-weight:700;padding:0.125rem 0.5rem;border-radius:999px;}
+        .sidebar-footer{margin-top:auto;}
+        .sidebar-stats{padding:1.25rem;background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(251,191,36,0.05));border-radius:16px;border:1px solid rgba(139,92,246,0.2);margin-bottom:0.875rem;}
+        .sidebar-stat{margin-bottom:0.75rem;}
+        .sidebar-stat:last-child{margin-bottom:0;}
+        .sidebar-stat-label{font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;}
+        .sidebar-stat-value{font-size:1.5rem;font-weight:900;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,var(--purple-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-user{font-size:0.75rem;color:var(--text-muted);text-align:center;padding:0.375rem;}
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99;}
+        .sidebar-overlay.active{display:block;}
+
+        /* MAIN */
+        .main-content{margin-left:var(--sidebar-width);flex:1;padding:2rem;min-height:100vh;overflow-x:hidden;transition:margin-right 0.35s ease;}
+        .main-content.panel-open{margin-right:var(--panel-width);}
+        .page-header{margin-bottom:2rem;}
+        .page-title{font-size:2rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:0.5rem;background:linear-gradient(135deg,var(--text),var(--purple-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .page-subtitle{font-size:1rem;color:var(--text-secondary);font-weight:500;}
+
+        /* METRICS */
+        .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;}
+        .metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;transition:transform 0.2s,border-color 0.2s;position:relative;overflow:hidden;}
+        .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple-primary),var(--gold));opacity:0;transition:opacity 0.3s;}
+        .metric-card:hover{transform:translateY(-3px);border-color:var(--border-hover);}
+        .metric-card:hover::before{opacity:1;}
+        .metric-icon{font-size:1.5rem;margin-bottom:0.625rem;}
+        .metric-label{font-size:0.6875rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:0.375rem;}
+        .metric-value{font-size:1.875rem;font-weight:900;font-family:'JetBrains Mono',monospace;line-height:1;}
+        .metric-sub{font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;}
+
+        /* BUTTONS */
+        .btn{padding:0.625rem 1rem;border-radius:10px;border:none;font-weight:700;font-size:0.8125rem;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:0.375rem;text-decoration:none;white-space:nowrap;}
+        .btn-primary{background:linear-gradient(135deg,var(--purple-primary),var(--purple-dark));color:white;box-shadow:0 4px 12px rgba(139,92,246,0.3);}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(139,92,246,0.4);}
+        .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+        .btn-secondary{background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);}
+        .btn-secondary:hover{background:var(--bg-elevated);border-color:var(--purple-primary);color:var(--text);}
+        .btn-success{background:linear-gradient(135deg,var(--success),#16a34a);color:white;}
+        .btn-success:hover{transform:translateY(-1px);}
+        .btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#000;font-weight:800;}
+        .btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(251,191,36,0.35);}
+        .btn-danger{background:linear-gradient(135deg,var(--danger),#dc2626);color:white;}
+        .btn-sm{padding:0.4375rem 0.75rem;font-size:0.75rem;}
+        .btn-xs{padding:0.3125rem 0.625rem;font-size:0.6875rem;}
+        .btn-full{width:100%;justify-content:center;}
+
+        /* AI ACTION BUTTON — glows */
+        .btn-ai{background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(251,191,36,0.08));color:var(--purple-light);border:1px solid rgba(139,92,246,0.4);font-weight:700;box-shadow:0 0 12px rgba(139,92,246,0.15);}
+        .btn-ai:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(251,191,36,0.15));border-color:var(--purple-light);box-shadow:0 0 20px rgba(139,92,246,0.35);transform:translateY(-1px);}
+
+        /* VIEWS */
+        .view-container{display:none;animation:fadeIn 0.3s ease;}
+        .view-container.active{display:block;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+        /* TODAY VIEW */
+        .today-section{margin-bottom:2rem;}
+        .today-section-title{font-size:0.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.875rem;display:flex;align-items:center;gap:0.5rem;}
+        .today-section-title span{display:inline-block;width:8px;height:8px;border-radius:50%;}
+        .today-section-title .dot-red{background:var(--danger);}
+        .today-section-title .dot-amber{background:var(--warning);}
+        .today-section-title .dot-purple{background:var(--purple-primary);}
+        .today-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.625rem;transition:border-color 0.2s,box-shadow 0.2s;flex-wrap:wrap;}
+        .today-card:hover{border-color:var(--border-hover);box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+        .today-card.urgent{border-left:3px solid var(--danger);}
+        .today-card.due-today{border-left:3px solid var(--warning);}
+        .today-card.hot{border-left:3px solid var(--purple-primary);}
+        .today-card-left{flex:1;min-width:0;}
+        .today-card-company{font-weight:800;font-size:0.9375rem;}
+        .today-card-meta{font-size:0.8125rem;color:var(--text-secondary);margin-top:0.2rem;}
+        .today-card-reason{font-size:0.75rem;margin-top:0.3rem;}
+        .today-card-reason.urgent{color:var(--danger);}
+        .today-card-reason.due-today{color:var(--warning);}
+        .today-card-reason.hot{color:var(--purple-light);}
+        .today-card-actions{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;}
+        .today-empty{text-align:center;padding:2.5rem;color:var(--text-muted);font-size:0.9375rem;}
+
+        /* KANBAN */
+        #view-pipeline{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .kanban-board{display:flex;gap:1rem;min-width:max-content;padding-bottom:1rem;}
+        .kanban-col{width:260px;flex-shrink:0;}
+        .kanban-col-header{display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px 12px 0 0;border-bottom:none;}
+        .kanban-col-title{font-size:0.8125rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;}
+        .kanban-col-count{background:var(--bg-elevated);color:var(--text-muted);font-size:0.75rem;font-weight:700;padding:0.125rem 0.5rem;border-radius:999px;}
+        .kanban-col-body{background:var(--bg-secondary);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:0.75rem;min-height:200px;display:flex;flex-direction:column;gap:0.625rem;}
+        .kanban-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;transition:border-color 0.2s,box-shadow 0.2s,transform 0.15s;cursor:pointer;position:relative;}
+        .kanban-card:hover{border-color:rgba(139,92,246,0.4);box-shadow:0 6px 20px rgba(0,0,0,0.35);transform:translateY(-2px);}
+        .kanban-card-name{font-weight:800;font-size:0.875rem;margin-bottom:0.2rem;}
+        .kanban-card-company{font-size:0.8125rem;color:var(--text-secondary);margin-bottom:0.5rem;}
+        .kanban-card-value{font-family:'JetBrains Mono',monospace;font-size:0.875rem;font-weight:700;color:var(--success);}
+        .kanban-card-days{font-size:0.6875rem;color:var(--text-muted);margin-bottom:0.75rem;}
+        .kanban-card-actions{display:flex;gap:0.375rem;flex-wrap:wrap;margin-top:0.75rem;}
+        .kanban-empty{text-align:center;padding:1.5rem 0.5rem;color:var(--text-muted);font-size:0.8125rem;}
+
+        /* STAGE BADGE */
+        .stage-badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.625rem;border-radius:6px;font-size:0.6875rem;font-weight:700;white-space:nowrap;}
+        .stage-badge.new_lead{background:rgba(99,102,241,0.15);color:#6366f1;}
+        .stage-badge.contacted{background:rgba(59,130,246,0.15);color:#3b82f6;}
+        .stage-badge.qualified{background:rgba(139,92,246,0.15);color:#8b5cf6;}
+        .stage-badge.diagnostic_paid{background:rgba(245,158,11,0.15);color:#f59e0b;}
+        .stage-badge.diagnostic_done{background:rgba(249,115,22,0.15);color:#f97316;}
+        .stage-badge.active,.stage-badge.90_day_active{background:rgba(34,197,94,0.15);color:#22c55e;}
+        .stage-badge.completed{background:rgba(251,191,36,0.15);color:#fbbf24;}
+
+        /* AI WORKSPACE */
+        .workspace-grid{display:grid;grid-template-columns:340px 1fr;gap:1.5rem;align-items:start;}
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;}
+        .card-title{font-size:1rem;font-weight:800;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;}
+        .form-group{margin-bottom:1rem;}
+        .form-label{display:block;font-size:0.75rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.375rem;text-transform:uppercase;letter-spacing:0.05em;}
+        .form-input,.form-select,.form-textarea{width:100%;padding:0.75rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text);font-family:'Inter',sans-serif;font-size:0.875rem;transition:all 0.2s;}
+        .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--purple-primary);box-shadow:0 0 0 3px rgba(139,92,246,0.15);}
+        .form-select{cursor:pointer;}
+        .form-select option{background:var(--bg-card);}
+        .form-textarea{resize:vertical;min-height:100px;}
+        .ws-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:1rem;text-align:center;color:var(--text-muted);}
+        .ws-empty-icon{font-size:3rem;opacity:0.35;}
+
+        /* AI SLIDE PANEL */
+        .ai-panel{position:fixed;top:0;right:0;width:var(--panel-width);height:100vh;background:var(--bg-secondary);border-left:1px solid var(--border);z-index:500;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden;}
+        .ai-panel.open{transform:translateX(0);}
+        .ai-panel-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-shrink:0;}
+        .ai-panel-title{font-size:1rem;font-weight:800;}
+        .ai-panel-meta{font-size:0.8125rem;color:var(--text-secondary);margin-top:0.25rem;}
+        .ai-panel-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.875rem;flex-shrink:0;transition:all 0.2s;}
+        .ai-panel-close:hover{background:var(--danger);border-color:var(--danger);color:white;}
+        .ai-panel-body{flex:1;overflow-y:auto;padding:1.5rem;}
+        .ai-panel-footer{padding:1.25rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.625rem;flex-wrap:wrap;flex-shrink:0;}
+
+        /* PANEL CONTENT STYLES */
+        .panel-section{margin-bottom:1.5rem;}
+        .panel-section-label{font-size:0.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:0.625rem;}
+        .panel-text{font-size:0.875rem;line-height:1.7;color:var(--text-secondary);}
+        .panel-list{list-style:none;display:flex;flex-direction:column;gap:0.5rem;}
+        .panel-list li{font-size:0.875rem;color:var(--text-secondary);padding-left:1.25rem;position:relative;}
+        .panel-list li::before{content:'→';position:absolute;left:0;color:var(--purple-light);font-weight:700;}
+        .panel-email{background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1rem;}
+        .panel-email-subject{font-weight:700;font-size:0.875rem;margin-bottom:0.75rem;color:var(--text);}
+        .panel-email-body{font-size:0.875rem;line-height:1.7;color:var(--text-secondary);white-space:pre-wrap;}
+        .panel-email-textarea{width:100%;padding:0.875rem;border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text);font-family:'Inter',sans-serif;font-size:0.875rem;line-height:1.7;resize:vertical;min-height:140px;transition:border-color 0.2s;}
+        .panel-email-textarea:focus{outline:none;border-color:var(--purple-primary);}
+        .chip-row{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.375rem;}
+        .chip{padding:0.25rem 0.75rem;border-radius:999px;font-size:0.75rem;font-weight:600;background:rgba(139,92,246,0.12);color:var(--purple-light);border:1px solid rgba(139,92,246,0.25);}
+        .chip.green{background:rgba(34,197,94,0.12);color:var(--success);border-color:rgba(34,197,94,0.25);}
+        .chip.amber{background:rgba(245,158,11,0.12);color:var(--warning);border-color:rgba(245,158,11,0.25);}
+        .email-tabs{display:flex;gap:0.375rem;margin-bottom:1rem;}
+        .email-tab{padding:0.5rem 0.875rem;border-radius:8px;font-size:0.8125rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);transition:all 0.2s;}
+        .email-tab.active{background:var(--purple-primary);border-color:var(--purple-primary);color:white;}
+        .objection-row{background:var(--bg-elevated);border-radius:10px;padding:0.875rem;margin-bottom:0.5rem;}
+        .objection-q{font-size:0.8125rem;font-weight:700;color:var(--text);margin-bottom:0.375rem;}
+        .objection-a{font-size:0.8125rem;color:var(--text-secondary);line-height:1.6;}
+        .panel-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:1rem;color:var(--text-muted);}
+        .spinner{width:36px;height:36px;border:3px solid rgba(139,92,246,0.2);border-top-color:var(--purple-primary);border-radius:50%;animation:spin 0.8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .sentiment-badge{display:inline-flex;align-items:center;gap:0.375rem;padding:0.375rem 0.875rem;border-radius:999px;font-size:0.8125rem;font-weight:700;}
+        .sentiment-positive{background:rgba(34,197,94,0.15);color:var(--success);}
+        .sentiment-neutral{background:rgba(113,113,122,0.15);color:var(--text-muted);}
+        .sentiment-negative,.sentiment-not_interested{background:rgba(239,68,68,0.15);color:var(--danger);}
+        .sentiment-objecting{background:rgba(245,158,11,0.15);color:var(--warning);}
+        .sentiment-interested{background:rgba(139,92,246,0.15);color:var(--purple-light);}
+
+        /* LOG CALL MODAL */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:2rem;}
+        .modal-overlay.active{display:flex;animation:fadeIn 0.2s ease;}
+        .modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;animation:slideUp 0.3s ease;}
+        @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem;border-bottom:1px solid var(--border);border-radius:20px 20px 0 0;}
+        .modal-title{font-size:1.125rem;font-weight:800;}
+        .modal-close-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.875rem;transition:all 0.2s;}
+        .modal-close-btn:hover{background:var(--danger);border-color:var(--danger);color:white;}
+        .modal-body{padding:1.5rem;}
+        .modal-footer{padding:1.25rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.75rem;justify-content:flex-end;border-radius:0 0 20px 20px;}
+
+        /* RESPONSIVE */
+        @media(max-width:768px){
+            .mobile-header{display:flex;}
+            .sidebar{transform:translateX(-100%);}
+            .sidebar.open{transform:translateX(0);}
+            .main-content{margin-left:0;padding:1rem;padding-top:calc(var(--header-height) + env(safe-area-inset-top,0px) + 1rem);}
+            .main-content.panel-open{margin-right:0;}
+            .ai-panel{width:100%;}
+            .metrics-grid{grid-template-columns:1fr 1fr;}
+            .workspace-grid{grid-template-columns:1fr;}
+        }
+        @media(max-width:480px){.metrics-grid{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+<div class="mobile-header" id="mobileHeader">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+    <span class="mobile-header-title">Command Center</span>
+    <div style="width:44px;"></div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="ArcaneA.png" alt="Arcane">
+            <span class="sidebar-logo-text">ARCANE</span>
+        </div>
+        <div class="sidebar-tagline">Command Center</div>
+
+        <div class="sidebar-links">
+            <a href="arcane-consulting-crm.html" class="sidebar-link">&#x1F4C1; Full CRM</a>
+            <a href="arcane-lead-agent.html" class="sidebar-link">&#x1F916; Lead Agent</a>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+            <div class="nav-section-title">Views</div>
+            <div class="nav-item active" id="nav-today" onclick="switchView('today')"><span class="nav-icon">&#x26A1;</span> Today <span class="nav-badge" id="today-badge" style="display:none;">0</span></div>
+            <div class="nav-item" id="nav-pipeline" onclick="switchView('pipeline')"><span class="nav-icon">&#x1F4CA;</span> Pipeline</div>
+            <div class="nav-item" id="nav-workspace" onclick="switchView('workspace')"><span class="nav-icon">&#x1F9E0;</span> AI Workspace</div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Pipeline Value</div>
+                    <div class="sidebar-stat-value" id="stat-pipeline">£0</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Active Clients</div>
+                    <div class="sidebar-stat-value" id="stat-active">0</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-label">Hot Leads</div>
+                    <div class="sidebar-stat-value" id="stat-hot">0</div>
+                </div>
+            </div>
+            <div class="sidebar-user" id="user-email"></div>
+        </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+
+        <!-- ===== TODAY ===== -->
+        <div class="view-container active" id="view-today">
+            <div class="page-header">
+                <div class="page-title" id="today-greeting">Today's Priorities</div>
+                <div class="page-subtitle">Your AI-powered action list. Work through this and you're done.</div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card"><div class="metric-icon">&#x1F525;</div><div class="metric-label">Overdue Follow-ups</div><div class="metric-value" id="m-overdue" style="color:var(--danger);">0</div></div>
+                <div class="metric-card"><div class="metric-icon">&#x1F4C5;</div><div class="metric-label">Due Today</div><div class="metric-value" id="m-due" style="color:var(--warning);">0</div></div>
+                <div class="metric-card"><div class="metric-icon">&#x2B50;</div><div class="metric-label">Hot Leads</div><div class="metric-value" id="m-hot" style="color:var(--purple-light);">0</div></div>
+                <div class="metric-card"><div class="metric-icon">&#x1F4B0;</div><div class="metric-label">Pipeline Value</div><div class="metric-value" id="m-pipeline" style="font-size:1.25rem;">£0</div></div>
+            </div>
+            <div id="today-content"></div>
+        </div>
+
+        <!-- ===== PIPELINE ===== -->
+        <div class="view-container" id="view-pipeline">
+            <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <div class="page-title">Pipeline</div>
+                    <div class="page-subtitle">Full kanban view — AI actions at every stage</div>
+                </div>
+                <a href="arcane-consulting-crm.html" class="btn btn-secondary btn-sm">Open Full CRM &#x2197;</a>
+            </div>
+            <div class="kanban-board" id="kanban-board"></div>
+        </div>
+
+        <!-- ===== AI WORKSPACE ===== -->
+        <div class="view-container" id="view-workspace">
+            <div class="page-header">
+                <div class="page-title">&#x1F9E0; AI Workspace</div>
+                <div class="page-subtitle">Select any lead and action — AI handles the rest</div>
+            </div>
+            <div class="workspace-grid">
+                <div class="card">
+                    <div class="card-title">&#x1F3AF; Generate</div>
+                    <div class="form-group">
+                        <label class="form-label">Select Lead</label>
+                        <select id="ws-lead" class="form-select" onchange="wsLeadChanged()">
+                            <option value="">— Choose a lead —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Action</label>
+                        <select id="ws-action" class="form-select">
+                            <option value="follow_up_sequence">📧 Follow-Up Sequence</option>
+                            <option value="call_prep">📞 Call Prep Brief</option>
+                            <option value="post_call">📝 Post-Call Processing</option>
+                            <option value="proposal">📋 Generate Proposal</option>
+                            <option value="reply_analysis">💬 Analyze Reply</option>
+                            <option value="onboarding">🚀 Onboarding Plan</option>
+                            <option value="case_study">🏆 Case Study + Referral</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" id="ws-context-label">Context / Notes</label>
+                        <textarea id="ws-context" class="form-textarea" placeholder="Add context, call notes, diagnostic findings, or reply content..."></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="ws-btn" onclick="workspaceGenerate()">&#x26A1; Generate</button>
+                </div>
+                <div class="card" id="ws-output-card">
+                    <div class="ws-empty" id="ws-empty">
+                        <div class="ws-empty-icon">&#x1F9E0;</div>
+                        <div style="font-size:0.9375rem;">Select a lead and action, then click Generate</div>
+                    </div>
+                    <div id="ws-result" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- AI SLIDE PANEL -->
+<div class="ai-panel" id="aiPanel">
+    <div class="ai-panel-header">
+        <div>
+            <div class="ai-panel-title" id="panel-title">AI Action</div>
+            <div class="ai-panel-meta" id="panel-meta"></div>
+        </div>
+        <button class="ai-panel-close" onclick="closePanel()">&#x2715;</button>
+    </div>
+    <div class="ai-panel-body" id="panel-body">
+        <div class="panel-loading"><div class="spinner"></div><div>Generating...</div></div>
+    </div>
+    <div class="ai-panel-footer" id="panel-footer"></div>
+</div>
+
+<!-- LOG CALL MODAL -->
+<div class="modal-overlay" id="callModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">&#x1F4DE; Log Call Notes</div>
+            <button class="modal-close-btn" onclick="closeCallModal()">&#x2715;</button>
+        </div>
+        <div class="modal-body">
+            <div style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:1rem;">
+                Dump your raw call notes below — AI will process them into a summary, recommended next stage, and follow-up email.
+            </div>
+            <div class="form-group">
+                <label class="form-label">Call Notes — <span id="call-modal-lead-name" style="color:var(--purple-light);"></span></label>
+                <textarea id="call-notes-input" class="form-textarea" rows="8" placeholder="Brain dump everything — what they said, their problems, objections, interest level, what you agreed on next..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="closeCallModal()">Cancel</button>
+            <button class="btn btn-ai" id="process-call-btn" onclick="processCallNotes()">&#x26A1; Process with AI</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== FIREBASE =====
+const firebaseConfig={apiKey:"AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",authDomain:"arcane-archives-3b0f5.firebaseapp.com",projectId:"arcane-archives-3b0f5",storageBucket:"arcane-archives-3b0f5.firebasestorage.app",messagingSenderId:"264237235055",appId:"1:264237235055:web:4a2e5605b0ffb5307f069a"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.firestore();
+const ADMIN_UIDS=['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
+
+const STAGES=[
+    {id:'new_lead',label:'New Lead',color:'#6366f1'},
+    {id:'contacted',label:'Contacted',color:'#3b82f6'},
+    {id:'qualified',label:'Qualified',color:'#8b5cf6'},
+    {id:'diagnostic_paid',label:'Diagnostic Paid',color:'#f59e0b'},
+    {id:'diagnostic_done',label:'Diagnostic Done',color:'#f97316'},
+    {id:'90_day_active',label:'90-Day Active',color:'#22c55e'},
+    {id:'completed',label:'Completed',color:'#fbbf24'}
+];
+const NEXT_STAGE={new_lead:'contacted',contacted:'qualified',qualified:'diagnostic_paid',diagnostic_paid:'diagnostic_done',diagnostic_done:'90_day_active','90_day_active':'completed'};
+const STAGE_AI={
+    new_lead:{action:'follow_up_sequence',label:'&#x26A1; Follow-Up Sequence'},
+    contacted:{action:'reply_analysis',label:'&#x26A1; Analyze & Reply'},
+    qualified:{action:'call_prep',label:'&#x26A1; Call Prep Brief'},
+    diagnostic_paid:{action:'call_prep',label:'&#x26A1; Diagnostic Brief'},
+    diagnostic_done:{action:'proposal',label:'&#x26A1; Generate Proposal'},
+    '90_day_active':{action:'onboarding',label:'&#x26A1; Weekly Check-in'},
+    completed:{action:'case_study',label:'&#x26A1; Case Study'}
+};
+
+let currentUser=null, allLeads=[], callModalLeadId=null, panelLeadId=null, panelAction=null, currentAIResult=null;
+
+// ===== AUTH =====
+auth.onAuthStateChanged(async user=>{
+    if(!user){window.location.href='login.html';return;}
+    if(!ADMIN_UIDS.includes(user.uid)){window.location.href='dashboard.html';return;}
+    currentUser=user;
+    document.getElementById('user-email').textContent=user.email;
+    setGreeting();
+    await loadLeads();
+    renderAll();
+});
+
+function setGreeting(){
+    const h=new Date().getHours();
+    const g=h<12?'Good Morning':'h<17?Good Afternoon':'Good Evening';
+    document.getElementById('today-greeting').textContent=h<12?'Good Morning — Here\'s Your Day':h<17?'Good Afternoon — Here\'s Your Pipeline':'Good Evening — Tomorrow\'s Prep';
+}
+
+// ===== DATA =====
+async function loadLeads(){
+    const snap=await db.collection('consulting_leads').orderBy('createdAt','desc').get();
+    allLeads=snap.docs.map(d=>({id:d.id,...d.data()}));
+    populateWorkspaceSelect();
+}
+
+function populateWorkspaceSelect(){
+    const sel=document.getElementById('ws-lead');
+    const active=allLeads.filter(l=>l.status!=='lost');
+    sel.innerHTML='<option value="">— Choose a lead —</option>'+active.map(l=>`<option value="${l.id}">${escHtml(l.company||l.name)} — ${stageLabel(l.stage)}</option>`).join('');
+}
+
+// ===== RENDER ALL =====
+function renderAll(){
+    updateMetrics();
+    renderToday();
+    renderKanban();
+}
+
+function updateMetrics(){
+    const active=allLeads.filter(l=>l.status!=='lost');
+    const today=new Date();today.setHours(0,0,0,0);
+    const overdue=active.filter(l=>{if(!l.followUpDate)return false;const d=tsToDate(l.followUpDate);d.setHours(0,0,0,0);return d<today;});
+    const dueToday=active.filter(l=>{if(!l.followUpDate)return false;const d=tsToDate(l.followUpDate);d.setHours(0,0,0,0);return d.getTime()===today.getTime();});
+    const hot=active.filter(l=>l.qualification==='highly_qualified'&&l.stage!=='90_day_active'&&l.stage!=='completed');
+    const pipeline=active.reduce((s,l)=>s+(l.dealValue||0),0);
+    const clients=active.filter(l=>l.stage==='90_day_active').length;
+    setEl('m-overdue',overdue.length);setEl('m-due',dueToday.length);setEl('m-hot',hot.length);
+    setEl('m-pipeline',fmtCurrency(pipeline));setEl('stat-pipeline',fmtCurrency(pipeline));
+    setEl('stat-active',clients);setEl('stat-hot',hot.length);
+    const urgent=overdue.length+dueToday.length+hot.length;
+    const badge=document.getElementById('today-badge');
+    if(urgent>0){badge.textContent=urgent;badge.style.display='';}else{badge.style.display='none';}
+}
+
+// ===== TODAY VIEW =====
+function renderToday(){
+    const active=allLeads.filter(l=>l.status!=='lost');
+    const today=new Date();today.setHours(0,0,0,0);
+    const overdue=active.filter(l=>{if(!l.followUpDate)return false;const d=tsToDate(l.followUpDate);d.setHours(0,0,0,0);return d<today;});
+    const dueToday=active.filter(l=>{if(!l.followUpDate)return false;const d=tsToDate(l.followUpDate);d.setHours(0,0,0,0);return d.getTime()===today.getTime();});
+    const hot=active.filter(l=>l.qualification==='highly_qualified'&&l.stage!=='90_day_active'&&l.stage!=='completed');
+    let html='';
+    if(!overdue.length&&!dueToday.length&&!hot.length){
+        html=`<div class="today-empty">&#x2705; You're all clear. No urgent actions — go close something new.</div>`;
+    }
+    if(overdue.length){
+        html+=`<div class="today-section"><div class="today-section-title"><span class="dot-red"></span> Overdue Follow-ups (${overdue.length})</div>`;
+        overdue.forEach(l=>{html+=todayCard(l,'urgent','&#x1F525; Follow-up overdue');});
+        html+='</div>';
+    }
+    if(dueToday.length){
+        html+=`<div class="today-section"><div class="today-section-title"><span class="dot-amber"></span> Due Today (${dueToday.length})</div>`;
+        dueToday.forEach(l=>{html+=todayCard(l,'due-today','&#x1F4C5; Follow-up due today');});
+        html+='</div>';
+    }
+    if(hot.length){
+        html+=`<div class="today-section"><div class="today-section-title"><span class="dot-purple"></span> Hot Leads — Act Now (${hot.length})</div>`;
+        hot.forEach(l=>{html+=todayCard(l,'hot','&#x2B50; Highly qualified — priority outreach');});
+        html+='</div>';
+    }
+    document.getElementById('today-content').innerHTML=html;
+}
+
+function todayCard(lead,type,reason){
+    const ai=STAGE_AI[lead.stage];
+    return `<div class="today-card ${type}">
+        <div class="today-card-left">
+            <div class="today-card-company">${escHtml(lead.company||lead.name)}</div>
+            <div class="today-card-meta">${escHtml(lead.name||'')}${lead.name&&lead.company?' — ':''}${escHtml(stageLabel(lead.stage))}</div>
+            <div class="today-card-reason ${type}">${reason}</div>
+        </div>
+        <div class="today-card-actions">
+            ${ai?`<button class="btn btn-ai btn-sm" onclick="triggerAI('${lead.id}','${ai.action}')">${ai.label}</button>`:''}
+            <button class="btn btn-secondary btn-sm" onclick="openCallModal('${lead.id}')">&#x1F4DE; Log Call</button>
+            ${NEXT_STAGE[lead.stage]?`<button class="btn btn-success btn-sm" onclick="advanceStage('${lead.id}','${lead.stage}')">&#x2192; ${stageLabel(NEXT_STAGE[lead.stage])}</button>`:''}
+        </div>
+    </div>`;
+}
+
+// ===== KANBAN =====
+function renderKanban(){
+    const board=document.getElementById('kanban-board');
+    board.innerHTML=STAGES.map(stage=>{
+        const leads=allLeads.filter(l=>l.stage===stage.id&&l.status!=='lost');
+        const cards=leads.length?leads.map(l=>kanbanCard(l)).join(''):`<div class="kanban-empty">No leads</div>`;
+        return `<div class="kanban-col">
+            <div class="kanban-col-header">
+                <span class="kanban-col-title" style="color:${stage.color};">${stage.label}</span>
+                <span class="kanban-col-count">${leads.length}</span>
+            </div>
+            <div class="kanban-col-body">${cards}</div>
+        </div>`;
+    }).join('');
+}
+
+function kanbanCard(lead){
+    const ai=STAGE_AI[lead.stage];
+    const days=daysSince(lead.createdAt);
+    return `<div class="kanban-card">
+        <div class="kanban-card-name">${escHtml(lead.name||lead.company)}</div>
+        <div class="kanban-card-company">${escHtml(lead.company||'')}</div>
+        <div class="kanban-card-days">${days}d in pipeline${lead.dealValue?` · <span class="kanban-card-value">${fmtCurrency(lead.dealValue)}</span>`:''}</div>
+        <div class="kanban-card-actions">
+            ${ai?`<button class="btn btn-ai btn-xs" onclick="triggerAI('${lead.id}','${ai.action}')">${ai.label}</button>`:''}
+            <button class="btn btn-secondary btn-xs" onclick="openCallModal('${lead.id}')">&#x1F4DE;</button>
+            ${NEXT_STAGE[lead.stage]?`<button class="btn btn-success btn-xs" onclick="advanceStage('${lead.id}','${lead.stage}')">&#x2192;</button>`:''}
+        </div>
+    </div>`;
+}
+
+// ===== AI TRIGGER =====
+async function triggerAI(leadId, action, context){
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(!lead) return;
+    panelLeadId=leadId; panelAction=action;
+    const ai=STAGE_AI[lead.stage];
+    openPanel(lead.company||lead.name, ai?.label||action);
+    try{
+        const res=await fetch('/.netlify/functions/consulting-agent',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action,lead:{name:lead.name,company:lead.company,industry:lead.industry,revenueEstimate:lead.revenueEstimate,stage:lead.stage,notes:(lead.notes||[]).slice(-3).map(n=>n.text).join('\n'),dealValue:lead.dealValue,qualification:lead.qualification,role:lead.contactRole||''},context:context||''})
+        });
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.error||'Error');
+        currentAIResult=data;
+        renderPanelResult(lead, action, data);
+    }catch(err){
+        document.getElementById('panel-body').innerHTML=`<div style="padding:2rem;color:var(--danger);text-align:center;">&#x274C; ${escHtml(err.message)}</div>`;
+        document.getElementById('panel-footer').innerHTML='';
+    }
+}
+
+// ===== AI WORKSPACE =====
+function wsLeadChanged(){
+    const leadId=document.getElementById('ws-lead').value;
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(lead&&STAGE_AI[lead.stage]){
+        document.getElementById('ws-action').value=STAGE_AI[lead.stage].action;
+    }
+}
+async function workspaceGenerate(){
+    const leadId=document.getElementById('ws-lead').value;
+    const action=document.getElementById('ws-action').value;
+    const context=document.getElementById('ws-context').value;
+    if(!leadId){showToast('Select a lead first','warning');return;}
+    const btn=document.getElementById('ws-btn');
+    btn.disabled=true;btn.innerHTML='&#x23F3; Generating...';
+    document.getElementById('ws-empty').style.display='none';
+    document.getElementById('ws-result').style.display='none';
+    document.getElementById('ws-result').innerHTML='<div class="panel-loading"><div class="spinner"></div><div>Generating...</div></div>';
+    document.getElementById('ws-result').style.display='block';
+    const lead=allLeads.find(l=>l.id===leadId);
+    try{
+        const res=await fetch('/.netlify/functions/consulting-agent',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action,lead:{name:lead.name,company:lead.company,industry:lead.industry,revenueEstimate:lead.revenueEstimate,stage:lead.stage,notes:(lead.notes||[]).slice(-3).map(n=>n.text).join('\n'),dealValue:lead.dealValue,qualification:lead.qualification,role:lead.contactRole||''},context})
+        });
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.error||'Error');
+        currentAIResult=data;
+        panelLeadId=leadId; panelAction=action;
+        document.getElementById('ws-result').innerHTML=buildPanelHTML(lead,action,data);
+        showToast('Generated!');
+    }catch(err){
+        document.getElementById('ws-result').innerHTML=`<div style="color:var(--danger);text-align:center;padding:2rem;">&#x274C; ${escHtml(err.message)}</div>`;
+    }finally{btn.disabled=false;btn.innerHTML='&#x26A1; Generate';}
+}
+
+// ===== PANEL =====
+function openPanel(title,meta){
+    document.getElementById('panel-title').textContent=title;
+    document.getElementById('panel-meta').textContent=meta;
+    document.getElementById('panel-body').innerHTML='<div class="panel-loading"><div class="spinner"></div><div>Generating with AI...</div></div>';
+    document.getElementById('panel-footer').innerHTML='';
+    document.getElementById('aiPanel').classList.add('open');
+    document.getElementById('mainContent').classList.add('panel-open');
+}
+function closePanel(){
+    document.getElementById('aiPanel').classList.remove('open');
+    document.getElementById('mainContent').classList.remove('panel-open');
+}
+function renderPanelResult(lead,action,data){
+    document.getElementById('panel-body').innerHTML=buildPanelHTML(lead,action,data);
+    buildPanelFooter(lead,action,data);
+}
+
+function buildPanelHTML(lead,action,data){
+    switch(action){
+        case 'follow_up_sequence': return buildFollowUpHTML(data);
+        case 'call_prep': return buildCallPrepHTML(data);
+        case 'post_call': return buildPostCallHTML(data);
+        case 'proposal': return buildProposalHTML(data);
+        case 'onboarding': return buildOnboardingHTML(data);
+        case 'case_study': return buildCaseStudyHTML(data);
+        case 'reply_analysis': return buildReplyAnalysisHTML(data);
+        default: return `<pre style="font-size:0.8rem;white-space:pre-wrap;color:var(--text-secondary);">${JSON.stringify(data,null,2)}</pre>`;
+    }
+}
+
+function buildFollowUpHTML(d){
+    const emails=d.emails||[];
+    const tabs=emails.map((e,i)=>`<div class="email-tab${i===0?' active':''}" onclick="switchEmailTab(${i},${emails.length})" id="ftab-${i}">Day ${e.day}</div>`).join('');
+    const panels=emails.map((e,i)=>`<div id="fpanel-${i}" style="${i>0?'display:none':''}">
+        <div class="panel-section"><div class="panel-section-label">Subject</div><div class="panel-email"><div class="panel-email-subject">${escHtml(e.subject)}</div></div></div>
+        <div class="panel-section"><div class="panel-section-label">Body</div><textarea class="panel-email-textarea" id="fbody-${i}">${escHtml(e.body)}</textarea></div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:0.5rem;" onclick="copyEmailParts('${escHtml(e.subject).replace(/'/g,'\\x27')}','fbody-${i}')">&#x1F4CB; Copy Day ${e.day}</button>
+    </div>`).join('');
+    return `<div class="panel-section"><div class="panel-section-label">Strategy</div><div class="panel-text">${escHtml(d.strategy||'')}</div></div>
+    <div class="email-tabs">${tabs}</div>${panels}`;
+}
+
+function switchEmailTab(idx,total){
+    for(let i=0;i<total;i++){document.getElementById('ftab-'+i)?.classList.remove('active');document.getElementById('fpanel-'+i)&&(document.getElementById('fpanel-'+i).style.display='none');}
+    document.getElementById('ftab-'+idx)?.classList.add('active');
+    if(document.getElementById('fpanel-'+idx)) document.getElementById('fpanel-'+idx).style.display='block';
+}
+
+function buildCallPrepHTML(d){
+    return `
+    <div class="panel-section"><div class="panel-section-label">Brief</div><div class="panel-text">${escHtml(d.brief||'')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Opening Move</div><div class="panel-email"><div class="panel-email-body">${escHtml(d.openingMove||'')}</div></div></div>
+    <div class="panel-section"><div class="panel-section-label">Questions to Ask</div><ul class="panel-list">${(d.questions||[]).map(q=>`<li>${escHtml(q)}</li>`).join('')}</ul></div>
+    <div class="panel-section"><div class="panel-section-label">Pain Points to Probe</div><div class="chip-row">${(d.painPointsToProbe||[]).map(p=>`<span class="chip">${escHtml(p)}</span>`).join('')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Objection Handling</div>${(d.objections||[]).map(o=>`<div class="objection-row"><div class="objection-q">&#x1F914; "${escHtml(o.objection)}"</div><div class="objection-a">&#x2192; ${escHtml(o.response)}</div></div>`).join('')}</div>
+    <div class="panel-section"><div class="panel-section-label">Recommended Close</div><div class="panel-email"><div class="panel-email-body">${escHtml(d.recommendedClose||'')}</div></div></div>
+    ${d.watchOutFor?`<div class="panel-section"><div class="panel-section-label">&#x26A0; Watch Out For</div><div class="panel-text" style="color:var(--warning);">${escHtml(d.watchOutFor)}</div></div>`:''}`;
+}
+
+function buildPostCallHTML(d){
+    const stageNext=d.recommendedStage;
+    return `
+    <div class="panel-section"><div class="panel-section-label">Summary</div><div class="panel-text">${escHtml(d.summary||'')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Key Insights</div><ul class="panel-list">${(d.keyInsights||[]).map(i=>`<li>${escHtml(i)}</li>`).join('')}</ul></div>
+    <div class="panel-section"><div class="panel-section-label">Qualification Update</div><div class="chip-row"><span class="chip ${d.qualificationUpdate==='highly_qualified'?'green':d.qualificationUpdate==='not_qualified'?'amber':''}">${escHtml(d.qualificationUpdate||'')}</span></div></div>
+    <div class="panel-section"><div class="panel-section-label">Recommended Stage</div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            <span class="stage-badge ${stageNext}">${stageLabel(stageNext)}</span>
+            <span style="font-size:0.8125rem;color:var(--text-muted);">${escHtml(d.stageReasoning||'')}</span>
+        </div>
+    </div>
+    <div class="panel-section"><div class="panel-section-label">Next Actions</div><ul class="panel-list">${(d.nextActions||[]).map(a=>`<li>${escHtml(a)}</li>`).join('')}</ul></div>
+    <div class="panel-section"><div class="panel-section-label">Follow-Up Email</div>
+        <div class="panel-email"><div class="panel-email-subject">&#x1F4E7; ${escHtml(d.followUpEmail?.subject||'')}</div></div>
+        <textarea class="panel-email-textarea" id="postcall-email" style="margin-top:0.5rem;">${escHtml(d.followUpEmail?.body||'')}</textarea>
+    </div>`;
+}
+
+function buildProposalHTML(d){
+    return `
+    <div class="panel-section"><div class="panel-section-label">Subject</div><div class="panel-email"><div class="panel-email-subject">${escHtml(d.subject||'')}</div></div></div>
+    <div class="panel-section"><div class="panel-section-label">Email Body</div><textarea class="panel-email-textarea" id="proposal-body" style="min-height:200px;">${escHtml(d.emailBody||'')}</textarea></div>
+    <div class="panel-section"><div class="panel-section-label">Key Value Props</div><ul class="panel-list">${(d.keyValueProps||[]).map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul></div>
+    <div class="panel-section"><div class="panel-section-label">Recommended Investment</div><div class="panel-text" style="color:var(--gold);font-weight:700;">${escHtml(d.recommendedInvestment||'')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Urgency Angle</div><div class="panel-text">${escHtml(d.urgencyAngle||'')}</div></div>`;
+}
+
+function buildOnboardingHTML(d){
+    return `
+    <div class="panel-section"><div class="panel-section-label">Welcome Email</div>
+        <div class="panel-email"><div class="panel-email-subject">${escHtml(d.welcomeEmail?.subject||'')}</div></div>
+        <textarea class="panel-email-textarea" id="onboard-email" style="margin-top:0.5rem;">${escHtml(d.welcomeEmail?.body||'')}</textarea>
+    </div>
+    <div class="panel-section"><div class="panel-section-label">Week 1 Plan</div><ul class="panel-list">${(d.weekOnePlan||[]).map(a=>`<li>${escHtml(a)}</li>`).join('')}</ul></div>
+    <div class="panel-section"><div class="panel-section-label">90-Day Roadmap</div><div class="panel-text">${escHtml(d.ninetyDayRoadmap||'')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Quick Wins</div><div class="chip-row">${(d.quickWins||[]).map(w=>`<span class="chip green">${escHtml(w)}</span>`).join('')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">First Check-in Questions</div><ul class="panel-list">${(d.firstCheckInQuestions||[]).map(q=>`<li>${escHtml(q)}</li>`).join('')}</ul></div>`;
+}
+
+function buildCaseStudyHTML(d){
+    const cs=d.caseStudyOutline||{};
+    return `
+    <div class="panel-section"><div class="panel-section-label">Case Study Headline</div><div class="panel-text" style="font-weight:700;font-size:1rem;color:var(--gold);">${escHtml(cs.headline||'')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Before → After</div>
+        <div class="panel-text"><strong style="color:var(--danger);">Before:</strong> ${escHtml(cs.situation||'')}</div>
+        <div class="panel-text" style="margin-top:0.5rem;"><strong style="color:var(--success);">After:</strong> ${escHtml(cs.results||'')}</div>
+    </div>
+    <div class="panel-section"><div class="panel-section-label">Suggested Testimonial Quote</div><div class="panel-email"><div class="panel-email-body" style="font-style:italic;">"${escHtml(cs.quote||'')}"</div></div></div>
+    <div class="panel-section"><div class="panel-section-label">Referral Email</div>
+        <div class="panel-email"><div class="panel-email-subject">${escHtml(d.referralEmail?.subject||'')}</div></div>
+        <textarea class="panel-email-textarea" id="referral-email" style="margin-top:0.5rem;">${escHtml(d.referralEmail?.body||'')}</textarea>
+    </div>
+    <div class="panel-section"><div class="panel-section-label">Testimonial Request</div><div class="panel-email"><div class="panel-email-body">${escHtml(d.testimonialRequest||'')}</div></div></div>
+    ${d.nextOpportunity?`<div class="panel-section"><div class="panel-section-label">&#x1F4A1; Next Opportunity</div><div class="panel-text" style="color:var(--purple-light);">${escHtml(d.nextOpportunity)}</div></div>`:''}`;
+}
+
+function buildReplyAnalysisHTML(d){
+    return `
+    <div class="panel-section"><div class="panel-section-label">Sentiment</div><span class="sentiment-badge sentiment-${d.sentiment||'neutral'}">${escHtml(d.sentiment||'neutral')}</span></div>
+    <div class="panel-section"><div class="panel-section-label">Key Takeaways</div><ul class="panel-list">${(d.keyTakeaways||[]).map(t=>`<li>${escHtml(t)}</li>`).join('')}</ul></div>
+    <div class="panel-section"><div class="panel-section-label">Buying Signals</div><div class="chip-row">${(d.buyingSignals||[]).map(s=>`<span class="chip green">${escHtml(s)}</span>`).join('')}</div></div>
+    <div class="panel-section"><div class="panel-section-label">Recommended Stage</div><span class="stage-badge ${d.recommendedStage}">${stageLabel(d.recommendedStage)}</span></div>
+    <div class="panel-section"><div class="panel-section-label">Suggested Reply</div>
+        <div class="panel-email"><div class="panel-email-subject">${escHtml(d.suggestedReply?.subject||'')}</div></div>
+        <textarea class="panel-email-textarea" id="reply-email" style="margin-top:0.5rem;">${escHtml(d.suggestedReply?.body||'')}</textarea>
+    </div>
+    <div class="panel-section"><div class="panel-section-label">Recommended Action</div><div class="panel-text" style="color:var(--purple-light);font-weight:600;">${escHtml(d.recommendedAction||'')}</div></div>`;
+}
+
+function buildPanelFooter(lead,action,data){
+    let btns='<button class="btn btn-secondary btn-sm" onclick="copyPanelContent()">&#x1F4CB; Copy</button>';
+    btns+=`<button class="btn btn-secondary btn-sm" onclick="savePanelToNotes()">&#x1F4BE; Save to Notes</button>`;
+    if(action==='post_call'&&data.recommendedStage&&NEXT_STAGE[lead.stage]){
+        btns+=`<button class="btn btn-success btn-sm" onclick="applyPostCall('${lead.id}','${data.recommendedStage}')">&#x2713; Apply + Advance Stage</button>`;
+    }
+    if(action==='reply_analysis'&&data.recommendedStage){
+        btns+=`<button class="btn btn-primary btn-sm" onclick="advanceToStage('${lead.id}','${data.recommendedStage}')">&#x2192; Move to ${stageLabel(data.recommendedStage)}</button>`;
+    }
+    if(action==='proposal'){
+        btns+=`<button class="btn btn-gold btn-sm" onclick="advanceToStage('${lead.id}','90_day_active')">&#x1F3C6; Mark as Won &#x2192; 90-Day</button>`;
+    }
+    document.getElementById('panel-footer').innerHTML=btns;
+}
+
+// ===== PANEL ACTIONS =====
+async function savePanelToNotes(){
+    if(!panelLeadId||!currentAIResult) return;
+    const summary=JSON.stringify(currentAIResult,null,2).substring(0,2000);
+    const note={text:`[AI: ${panelAction}]\n${summary}`,createdAt:new Date().toISOString(),createdBy:currentUser.email};
+    await db.collection('consulting_leads').doc(panelLeadId).update({notes:firebase.firestore.FieldValue.arrayUnion(note),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const lead=allLeads.find(l=>l.id===panelLeadId);
+    if(lead){lead.notes=[...(lead.notes||[]),note];}
+    showToast('Saved to CRM notes!');
+}
+
+async function applyPostCall(leadId,recommendedStage){
+    const data=currentAIResult;
+    if(!data) return;
+    const notes=[];
+    notes.push({text:`[Post-Call Summary]\n${data.summary||''}\n\nNext Actions:\n${(data.nextActions||[]).join('\n')}`,createdAt:new Date().toISOString(),createdBy:currentUser.email});
+    const emailNote={text:`[Follow-up Email]\nSubject: ${data.followUpEmail?.subject||''}\n\n${data.followUpEmail?.body||''}`,createdAt:new Date().toISOString(),createdBy:currentUser.email};
+    notes.push(emailNote);
+    const updateData={notes:firebase.firestore.FieldValue.arrayUnion(...notes),stage:recommendedStage,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(data.followUpDays){const fd=new Date();fd.setDate(fd.getDate()+(data.followUpDays||2));updateData.followUpDate=fd;}
+    await db.collection('consulting_leads').doc(leadId).update(updateData);
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(lead){lead.stage=recommendedStage;lead.notes=[...(lead.notes||[]),...notes];}
+    renderAll();
+    showToast(`Stage updated to ${stageLabel(recommendedStage)} + notes saved!`);
+    closePanel();
+}
+
+async function advanceToStage(leadId,stage){
+    await db.collection('consulting_leads').doc(leadId).update({stage,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(lead) lead.stage=stage;
+    renderAll();
+    showToast(`Moved to ${stageLabel(stage)}!`);
+    closePanel();
+}
+
+async function advanceStage(leadId,currentStage){
+    const next=NEXT_STAGE[currentStage];
+    if(!next) return;
+    await db.collection('consulting_leads').doc(leadId).update({stage:next,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(lead) lead.stage=next;
+    renderAll();
+    showToast(`&#x2192; Moved to ${stageLabel(next)}`);
+}
+
+function copyPanelContent(){
+    const el=document.querySelector('#panel-body .panel-email-textarea');
+    if(el){navigator.clipboard.writeText(el.value).then(()=>showToast('Copied!'));return;}
+    const html=document.getElementById('panel-body').innerText;
+    navigator.clipboard.writeText(html).then(()=>showToast('Copied!'));
+}
+
+function copyEmailParts(subject,bodyId){
+    const body=document.getElementById(bodyId)?.value||'';
+    navigator.clipboard.writeText('Subject: '+subject+'\n\n'+body).then(()=>showToast('Email copied!'));
+}
+
+// ===== LOG CALL MODAL =====
+function openCallModal(leadId){
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(!lead) return;
+    callModalLeadId=leadId;
+    document.getElementById('call-modal-lead-name').textContent=lead.company||lead.name;
+    document.getElementById('call-notes-input').value='';
+    document.getElementById('callModal').classList.add('active');
+}
+function closeCallModal(){document.getElementById('callModal').classList.remove('active');callModalLeadId=null;}
+async function processCallNotes(){
+    const notes=document.getElementById('call-notes-input').value.trim();
+    if(!notes){showToast('Add call notes first','warning');return;}
+    closeCallModal();
+    await triggerAI(callModalLeadId,'post_call',notes);
+}
+
+// ===== VIEW SWITCHING =====
+function switchView(view){
+    ['today','pipeline','workspace'].forEach(v=>{
+        document.getElementById('view-'+v).classList.toggle('active',v===view);
+        document.getElementById('nav-'+v).classList.toggle('active',v===view);
+    });
+    closeSidebar();
+}
+
+// ===== SIDEBAR =====
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('active');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('active');}
+
+// ===== UTILS =====
+function stageLabel(id){return STAGES.find(s=>s.id===id)?.label||id||'—';}
+function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+function fmtCurrency(n){return'£'+Number(n||0).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function tsToDate(ts){if(!ts)return new Date(0);if(ts.toDate)return ts.toDate();if(ts.seconds)return new Date(ts.seconds*1000);return new Date(ts);}
+function daysSince(ts){const d=tsToDate(ts);return Math.floor((Date.now()-d.getTime())/(86400000));}
+function setEl(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function showToast(msg,type='success'){const t=document.createElement('div');const bg=type==='error'?'#ef4444':type==='warning'?'#f59e0b':'#22c55e';t.style.cssText=`position:fixed;bottom:1.5rem;right:1.5rem;padding:1rem 1.5rem;border-radius:12px;font-weight:600;font-size:0.875rem;z-index:9999;color:white;background:${bg};box-shadow:0 8px 24px rgba(0,0,0,0.4);max-width:320px;`;t.innerHTML=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},3200);}
+
+// Inject keyframe
+const s=document.createElement('style');
+s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(s);
+</script>
+</body>
+</html>
