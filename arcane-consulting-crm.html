@@ -759,6 +759,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Company</th>
+                            <th>Rating</th>
                             <th>Stage</th>
                             <th>Deal Value</th>
                             <th>Source</th>
@@ -930,6 +931,8 @@
                     <div class="form-group"><label class="form-label">Industry</label><input class="form-input" id="leadIndustry"></div>
                     <div class="form-group"><label class="form-label">Address</label><input class="form-input" id="leadAddress"></div>
                     <div class="form-group"><label class="form-label">Revenue Estimate</label><input class="form-input" id="leadRevenue" placeholder="e.g. 500k"></div>
+                    <div class="form-group"><label class="form-label">Google Rating (0–5)</label><input class="form-input" id="leadRating" type="number" step="0.1" min="0" max="5" placeholder="e.g. 4.7"></div>
+                    <div class="form-group"><label class="form-label">No. of Reviews</label><input class="form-input" id="leadRatingInfo" type="number" min="0" placeholder="e.g. 143"></div>
                     <div class="form-group">
                         <label class="form-label">Stage</label>
                         <select class="form-select" id="leadStage">
@@ -1150,6 +1153,15 @@ function formatDateShort(d) { if (!d) return '—'; const dt = d.toDate ? d.toDa
 function daysSince(d) { if (!d) return 0; const dt = d.toDate ? d.toDate() : new Date(d); return Math.floor((Date.now() - dt.getTime()) / 86400000); }
 function stageLabel(id) { return STAGES.find(s => s.id === id)?.label || id; }
 function stageColor(id) { return STAGES.find(s => s.id === id)?.color || 'var(--text-muted)'; }
+function renderRating(rating, ratingInfo) {
+    if (!rating) return '—';
+    const r = parseFloat(rating);
+    const stars = Math.round(r);
+    const starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+    const color = r >= 4.5 ? '#22c55e' : r >= 4.0 ? '#f59e0b' : '#ef4444';
+    const reviewStr = ratingInfo ? ` <span style="color:var(--text-muted);font-size:0.75rem;">(${parseInt(ratingInfo).toLocaleString()})</span>` : '';
+    return `<span style="color:${color};font-size:0.85rem;letter-spacing:1px;" title="${r} stars">${starStr}</span> <span style="font-size:0.8125rem;font-weight:700;">${r.toFixed(1)}</span>${reviewStr}`;
+}
 function showToast(msg, type = 'success') {
     const c = document.getElementById('toastContainer');
     const t = document.createElement('div');
@@ -1451,12 +1463,14 @@ function filterLeads() {
 
     const tbody = document.getElementById('leadsTableBody');
     tbody.innerHTML = filtered.length === 0
-        ? '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">No leads found</td></tr>'
+        ? '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:3rem;">No leads found</td></tr>'
         : filtered.map(l => {
             const fuDate = l.followUpDate ? formatDateShort(l.followUpDate) : '—';
+            const hotBadge = (l.rating >= 4.0 && l.ratingInfo >= 50) ? ' <span style="font-size:0.65rem;background:#22c55e22;color:#22c55e;border-radius:4px;padding:1px 5px;font-weight:700;">HOT</span>' : '';
             return `<tr onclick="openLeadDetail('${l.id}')">
-                <td><strong>${escapeHtml(l.name)}</strong></td>
+                <td><strong>${escapeHtml(l.name)}</strong>${hotBadge}</td>
                 <td>${escapeHtml(l.company || '—')}</td>
+                <td>${renderRating(l.rating, l.ratingInfo)}</td>
                 <td><span class="stage-badge ${l.stage}">${stageLabel(l.stage)}</span></td>
                 <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">${formatCurrency(l.dealValue || 0)}</td>
                 <td style="font-size:0.8125rem;color:var(--text-muted);">${l.source || '—'}</td>
@@ -1467,8 +1481,8 @@ function filterLeads() {
 }
 
 function exportLeadsCSV() {
-    const headers = ['Name','Email','Phone','Company','Website','Industry','Address','Revenue','Stage','Deal Value','Source','Status','Follow-up','Created'];
-    const rows = allLeads.map(l => [l.name,l.email,l.phone,l.company,l.website,l.industry,l.address,l.revenueEstimate,stageLabel(l.stage),l.dealValue||0,l.source,l.status||'active',l.followUpDate?formatDate(l.followUpDate):'',formatDate(l.createdAt)]);
+    const headers = ['Name','Email','Phone','Company','Website','Industry','Address','Revenue','Rating','Reviews','Stage','Deal Value','Source','Status','Follow-up','Created'];
+    const rows = allLeads.map(l => [l.name,l.email,l.phone,l.company,l.website,l.industry,l.address,l.revenueEstimate,l.rating||'',l.ratingInfo||'',stageLabel(l.stage),l.dealValue||0,l.source,l.status||'active',l.followUpDate?formatDate(l.followUpDate):'',formatDate(l.createdAt)]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${(c+'').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -1533,6 +1547,8 @@ function openLeadDetail(id) {
             <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Website</span><div>${lead.website ? `<a href="${escapeHtml(lead.website)}" target="_blank" style="color:var(--purple-light);">${escapeHtml(lead.website)}</a>` : '—'}</div></div>
             <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Industry</span><div>${escapeHtml(lead.industry || '—')}</div></div>
             <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Revenue Est.</span><div>${escapeHtml(lead.revenueEstimate || '—')}</div></div>
+            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Google Rating</span><div>${renderRating(lead.rating, lead.ratingInfo)}</div></div>
+            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">No. of Reviews</span><div>${lead.ratingInfo ? parseInt(lead.ratingInfo).toLocaleString() : '—'}</div></div>
             <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Stage</span><div><span class="stage-badge ${lead.stage}">${stageLabel(lead.stage)}</span></div></div>
             <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Status</span><div><span class="status-dot ${lead.status||'active'}"></span> ${lead.status || 'active'}</div></div>
             <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Deal Value</span><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.25rem;color:var(--success);">${formatCurrency(lead.dealValue || 0)}</div></div>
@@ -1602,6 +1618,8 @@ function openEditLead(id) {
     document.getElementById('leadIndustry').value = lead.industry || '';
     document.getElementById('leadAddress').value = lead.address || '';
     document.getElementById('leadRevenue').value = lead.revenueEstimate || '';
+    document.getElementById('leadRating').value = lead.rating || '';
+    document.getElementById('leadRatingInfo').value = lead.ratingInfo || '';
     document.getElementById('leadStage').value = lead.stage || 'new_lead';
     document.getElementById('leadDealValue').value = lead.dealValue || '';
     document.getElementById('leadSource').value = lead.source || 'manual';
@@ -1626,6 +1644,8 @@ async function saveLead(e) {
         industry: document.getElementById('leadIndustry').value,
         address: document.getElementById('leadAddress').value,
         revenueEstimate: document.getElementById('leadRevenue').value,
+        rating: parseFloat(document.getElementById('leadRating').value) || null,
+        ratingInfo: parseInt(document.getElementById('leadRatingInfo').value) || null,
         stage: document.getElementById('leadStage').value,
         dealValue: parseFloat(document.getElementById('leadDealValue').value) || 0,
         source: document.getElementById('leadSource').value,
@@ -1953,9 +1973,10 @@ function renderCSVMapping(headers) {
         { id: 'name', label: 'Name' }, { id: 'email', label: 'Email' }, { id: 'phone', label: 'Phone' },
         { id: 'company', label: 'Company' }, { id: 'website', label: 'Website' },
         { id: 'address', label: 'Address' }, { id: 'industry', label: 'Industry' },
-        { id: 'revenueEstimate', label: 'Revenue Estimate' }, { id: '__skip', label: '— Skip —' }
+        { id: 'revenueEstimate', label: 'Revenue Estimate' }, { id: 'rating', label: 'Rating' },
+        { id: 'ratingInfo', label: 'Rating Info (Reviews)' }, { id: '__skip', label: '— Skip —' }
     ];
-    const autoMap = { name: ['name','contact','owner','full name','contact name','owner name'], email: ['email','e-mail','mail','email address'], phone: ['phone','tel','telephone','phone number','mobile'], company: ['company','business','company name','business name','organization'], website: ['website','url','web','site','domain'], address: ['address','location','full address','street'], industry: ['industry','category','type','business type'], revenueEstimate: ['revenue','annual revenue','turnover','estimated revenue'] };
+    const autoMap = { name: ['name','contact','owner','full name','contact name','owner name'], email: ['email','e-mail','mail','email address'], phone: ['phone','tel','telephone','phone number','mobile'], company: ['company','business','company name','business name','organization'], website: ['website','url','web','site','domain'], address: ['address','location','full address','street'], industry: ['industry','category','type','business type'], revenueEstimate: ['revenue','annual revenue','turnover','estimated revenue'], rating: ['rating','google rating','stars','score'], ratingInfo: ['rating info','reviews','review count','number of reviews','total reviews','ratings'] };
 
     csvMapping = {};
     headers.forEach((h, i) => {
