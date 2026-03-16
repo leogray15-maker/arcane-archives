@@ -71,6 +71,10 @@
   .btn-blue:hover { background: #2563eb; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  .queue-search { position: relative; margin-bottom: 12px; }
+  .queue-search input { width: 100%; padding: 8px 12px 8px 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 13px; outline: none; box-sizing: border-box; }
+  .queue-search input:focus { border-color: var(--purple-primary); }
+  .queue-search .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
   .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .filter-pill { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.2s; }
   .filter-pill.active { border-color: var(--purple-primary); background: var(--purple-dim); color: var(--purple-primary); }
@@ -292,6 +296,10 @@
       <button class="btn btn-secondary btn-sm" onclick="preGenAll()">⚡ Pre-gen Briefs</button>
       <button class="btn btn-primary btn-sm" onclick="startCalling()">📞 Start Calling</button>
     </div>
+  </div>
+  <div class="queue-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="queue-search-input" placeholder="Search by name or number..." oninput="applySearch(this.value)">
   </div>
   <div class="filters">
     <div class="filter-pill active" onclick="setFilter('all', this)">All</div>
@@ -541,6 +549,7 @@ let currentUser = null;
 let leads = [];
 let filteredLeads = [];
 let currentFilter = 'all';
+let currentSearch = '';
 let currentLeadIndex = 0;
 let currentLead = null;
 let callBriefs = {}; // leadId → brief data
@@ -623,11 +632,22 @@ async function refreshQueue() {
 
 function applyFilter(f) {
   currentFilter = f;
-  if (f === 'all') filteredLeads = [...leads];
-  else if (f === 'not_called') filteredLeads = leads.filter(l => !l.lastCallOutcome);
-  else if (f === 'callback') filteredLeads = leads.filter(l => l.lastCallOutcome === 'callback');
-  else filteredLeads = leads.filter(l => l.qualification === f);
+  let base;
+  if (f === 'all') base = [...leads];
+  else if (f === 'not_called') base = leads.filter(l => !l.lastCallOutcome);
+  else if (f === 'callback') base = leads.filter(l => l.lastCallOutcome === 'callback');
+  else base = leads.filter(l => l.qualification === f);
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    base = base.filter(l => (l.company || '').toLowerCase().includes(q) || (l.name || '').toLowerCase().includes(q) || (l.phone || '').replace(/\s/g,'').includes(q.replace(/\s/g,'')));
+  }
+  filteredLeads = base;
   renderQueue();
+}
+
+function applySearch(val) {
+  currentSearch = val.trim();
+  applyFilter(currentFilter);
 }
 
 function setFilter(f, el) {
@@ -1006,7 +1026,11 @@ async function saveOutcome(outcome, notes, callbackDt) {
       lastCalledAt: firebase.firestore.FieldValue.serverTimestamp(),
       callCount: firebase.firestore.FieldValue.increment(1)
     };
-    if (callbackDt) leadUpdate.callbackAt = callbackDt;
+    if (callbackDt) {
+      leadUpdate.callbackAt = callbackDt;
+      leadUpdate.followUpDate = new Date(callbackDt);
+      leadUpdate.followUpNote = notes ? `Callback: ${notes}` : 'Callback scheduled from cold call engine';
+    }
     if (cfg.stage) leadUpdate.stage = cfg.stage;
     await db.collection('consulting_leads').doc(currentLead.id).update(leadUpdate);
     // Save to global call_history
