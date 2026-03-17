@@ -543,7 +543,6 @@
 </div>
 
 <!-- ══════════════ TRADINGVIEW ══════════════ -->
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
 <!-- ══════════════ FIREBASE ══════════════ -->
 <script type="module">
@@ -597,124 +596,64 @@
 
 /* ══ Ticker — handled by arcane-prices.js ══ */
 
-/* ══ TradingView Widget ══ */
-let tvWidget = null;
+/* ══ TradingView Chart — direct iframe embed ══ */
 let currentSymbol = 'XAUUSD';
 let currentTF = '240';
-let currentType = 'candlestick';
+let currentType = '1'; // TradingView style codes: 1=candles,0=bars,2=line,3=area
 
-function loadChart(symbol, tf, type) {
+const STYLE_MAP = { candlestick:'1', bars:'0', line:'2', area:'3' };
+const TF_MAP    = { '1':'1','5':'5','15':'15','60':'60','240':'240','D':'1D','W':'1W' };
+
+function loadSimpleChart(symbol, tf, type) {
   symbol = symbol || currentSymbol;
   tf     = tf     || currentTF;
   type   = type   || currentType;
   currentSymbol = symbol;
+  currentTF     = tf;
+  currentType   = type;
 
-  const container = document.getElementById('tv-chart');
-  container.innerHTML = '';
+  const tvTF    = TF_MAP[tf] || '240';
+  const tvStyle = (typeof type === 'string' && type.length > 1) ? STYLE_MAP[type] || '1' : type;
 
-  tvWidget = new TradingView.widget({
-    symbol:           symbol,
-    interval:         tf,
-    container_id:     'tv-chart',
-    datafeed:         new Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
-    library_path:     'https://www.tradingview.com/charting_library/',
-    // Use the lightweight public chart instead:
-    width:  '100%',
-    height: '100%',
-    locale: 'en',
-    theme:  'dark',
-    style:  type === 'candlestick' ? '1' : type === 'bars' ? '0' : type === 'line' ? '2' : '3',
-    timezone: 'Etc/UTC',
-    toolbar_bg: '#0a0a0f',
-    hide_top_toolbar: true,
-    hide_legend: false,
-    withdateranges: false,
-    allow_symbol_change: false,
-    save_image: false,
-    backgroundColor: '#0a0a0f',
-    gridColor: 'rgba(0,212,255,0.05)',
-    enable_publishing: false,
-    overrides: {
-      'paneProperties.background':       '#0a0a0f',
-      'paneProperties.backgroundType':   'solid',
-      'paneProperties.vertGridProperties.color': 'rgba(0,212,255,0.05)',
-      'paneProperties.horzGridProperties.color': 'rgba(0,212,255,0.05)',
-      'scalesProperties.textColor':      '#7a8499',
-      'scalesProperties.lineColor':      'rgba(80,100,140,0.2)',
-      'mainSeriesProperties.candleStyle.upColor':        '#00e676',
-      'mainSeriesProperties.candleStyle.downColor':      '#ff3b3b',
-      'mainSeriesProperties.candleStyle.borderUpColor':  '#00e676',
-      'mainSeriesProperties.candleStyle.borderDownColor':'#ff3b3b',
-      'mainSeriesProperties.candleStyle.wickUpColor':    '#00e676',
-      'mainSeriesProperties.candleStyle.wickDownColor':  '#ff3b3b',
-    }
-  });
-}
-
-// Fallback: Use the simple embed widget (no charting_library needed)
-function loadSimpleChart(symbol, tf) {
-  symbol = symbol || currentSymbol;
-  tf = tf || currentTF;
-  currentSymbol = symbol;
-
-  const container = document.getElementById('tv-chart');
-  container.style.background = '#0a0a0f';
-
-  // Map interval to TradingView format
-  const tfMap = {'1':'1','5':'5','15':'15','60':'60','240':'240','D':'1D','W':'1W'};
-  const tvTF = tfMap[tf] || '240';
-
-  container.innerHTML = `
-    <div class="tradingview-widget-container" style="height:100%;width:100%">
-      <div id="tradingview_embed" style="height:calc(100% - 32px);width:100%"></div>
-    </div>`;
-
-  new TradingView.widget({
-    width:   '100%',
-    height:  '100%',
-    symbol:  symbol,
-    interval: tvTF,
-    timezone: 'Etc/UTC',
-    theme:   'dark',
-    style:   '1',
-    locale:  'en',
+  const params = new URLSearchParams({
+    symbol,
+    interval:            tvTF,
+    style:               tvStyle,
+    theme:               'dark',
+    timezone:            'Etc/UTC',
+    locale:              'en',
     toolbar_bg:          '#0a0a0f',
-    enable_publishing:   false,
-    allow_symbol_change: true,
-    save_image:          false,
-    container_id:        'tradingview_embed',
-    overrides: {
-      'paneProperties.background':        '#0a0a0f',
-      'paneProperties.backgroundType':    'solid',
-      'paneProperties.vertGridProperties.color': 'rgba(0,212,255,0.05)',
-      'paneProperties.horzGridProperties.color': 'rgba(0,212,255,0.05)',
-      'mainSeriesProperties.candleStyle.upColor':        '#00e676',
-      'mainSeriesProperties.candleStyle.downColor':      '#ff3b3b',
-      'mainSeriesProperties.candleStyle.borderUpColor':  '#00e676',
-      'mainSeriesProperties.candleStyle.borderDownColor':'#ff3b3b',
-      'mainSeriesProperties.candleStyle.wickUpColor':    '#00e676',
-      'mainSeriesProperties.candleStyle.wickDownColor':  '#ff3b3b',
-    }
+    hide_top_toolbar:    '0',
+    hide_legend:         '0',
+    allow_symbol_change: '0',
+    save_image:          '0',
+    backgroundColor:     'rgba(10,10,15,1)',
+    gridColor:           'rgba(0,212,255,0.05)',
+    up_color:            '#00e676',
+    down_color:          '#ff3b3b',
   });
+
+  const src = `https://www.tradingview.com/widgetembed/?${params.toString()}`;
+
+  document.getElementById('tv-chart').innerHTML =
+    `<iframe src="${src}" style="width:100%;height:100%;border:none;" frameborder="0" allowtransparency="true" scrolling="no"></iframe>`;
 }
 
 function setTF(tf, el) {
-  currentTF = tf;
   document.querySelectorAll('.tf-time-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  loadSimpleChart(currentSymbol, tf);
+  loadSimpleChart(currentSymbol, tf, currentType);
 }
 window.setTF = setTF;
 
 function setChartType(type, el) {
-  currentType = type;
   document.querySelectorAll('.tf-ct-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  loadSimpleChart(currentSymbol, currentTF);
+  loadSimpleChart(currentSymbol, currentTF, type);
 }
 window.setChartType = setChartType;
 
-function loadChart(sym) { currentSymbol = sym; loadSimpleChart(sym, currentTF); }
+function loadChart(sym) { loadSimpleChart(sym, currentTF, currentType); }
 window.loadChart = loadChart;
 
 function openIndicators() {

@@ -60,7 +60,7 @@
   async function fetchCrypto() {
     try {
       const r = await fetch(
-        'https://api.coingecko.com/api/v3/simple/price' +
+        '/api/coingecko/simple/price' +
         '?ids=bitcoin,ethereum,solana' +
         '&vs_currencies=usd' +
         '&include_24hr_change=true' +
@@ -81,7 +81,7 @@
 
   async function fetchCryptoGlobal() {
     try {
-      const r = await fetch('https://api.coingecko.com/api/v3/global');
+      const r = await fetch('/api/coingecko/global');
       if (!r.ok) return;
       const d = await r.json();
       const gd = d.data;
@@ -103,7 +103,7 @@
 
   async function fetchMetals() {
     try {
-      const r = await fetch('https://metals.live/api/spot', { cache: 'no-cache' });
+      const r = await fetch('/api/metals/spot', { cache: 'no-cache' });
       if (!r.ok) throw new Error('metals.live ' + r.status);
       const d = await r.json();
       const metals = Array.isArray(d) ? d : Object.values(d);
@@ -121,7 +121,7 @@
 
   async function fetchFX() {
     try {
-      const r = await fetch('https://open.er-api.com/v6/latest/USD');
+      const r = await fetch('/api/fx/latest/USD');
       if (!r.ok) return;
       const d = await r.json();
       if (!d.rates) return;
