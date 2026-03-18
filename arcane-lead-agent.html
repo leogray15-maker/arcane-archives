@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Lead Agent | The Arcane Archives</title>
+    <title>Cold Calling Engine | Arcane Consulting</title>
     <link rel="icon" href="ArcaneA.png">
     <link rel="apple-touch-icon" href="ArcaneA.png">
 
@@ -17,1141 +17,1428 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
         :root {
-            --bg-primary: #09090b;
-            --bg-secondary: #18181b;
-            --bg-card: #1f1f23;
-            --bg-card-hover: #27272a;
-            --bg-elevated: #2d2d32;
-            --purple-primary: #8b5cf6;
+            --bg: #09090b;
+            --bg2: #111113;
+            --bg3: #18181b;
+            --card: #1f1f23;
+            --card-hover: #27272a;
+            --elevated: #2d2d32;
+            --border: rgba(255,255,255,0.08);
+            --border2: rgba(255,255,255,0.14);
+            --text: #fafafa;
+            --text2: #a1a1aa;
+            --text3: #71717a;
+            --purple: #8b5cf6;
             --purple-dark: #7c3aed;
             --purple-light: #a78bfa;
             --gold: #fbbf24;
-            --gold-dark: #f59e0b;
-            --text: #fafafa;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
-            --border: rgba(255,255,255,0.1);
-            --border-hover: rgba(255,255,255,0.2);
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
-            --sidebar-width: 280px;
-            --header-height: 72px;
+            --green: #22c55e;
+            --red: #ef4444;
+            --orange: #f97316;
+            --blue: #3b82f6;
+            --teal: #14b8a6;
+            --sidebar: 260px;
+            --queue: 320px;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
         html { scroll-behavior:smooth; }
-        body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-primary); color:var(--text); min-height:100vh; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-
-        /* MOBILE HEADER */
-        .mobile-header { display:none; position:fixed; top:0; left:0; right:0; height:calc(var(--header-height) + env(safe-area-inset-top,0px)); padding-top:env(safe-area-inset-top,0px); background:rgba(9,9,11,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); z-index:200; padding-left:1rem; padding-right:1rem; align-items:center; justify-content:space-between; }
-        .mobile-header-title { font-size:1.125rem; font-weight:800; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .mobile-menu-btn { width:44px; height:44px; border-radius:12px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); font-size:1.25rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-
-        /* SIDEBAR */
-        .app-container { display:flex; min-height:100vh; }
-        .sidebar { width:var(--sidebar-width); background:linear-gradient(180deg,rgba(31,31,35,0.95),rgba(9,9,11,0.98)); backdrop-filter:blur(20px); border-right:1px solid var(--border); padding:1.5rem; position:fixed; height:100vh; overflow-y:auto; z-index:100; transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; }
-        .sidebar-header { margin-bottom:2rem; }
-        .sidebar-logo { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem; }
-        .sidebar-logo img { width:40px; height:40px; border-radius:10px; }
-        .sidebar-logo-text { font-size:1.25rem; font-weight:900; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .sidebar-tagline { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; margin-left:3.25rem; }
-        .sidebar-back { display:flex; align-items:center; gap:0.5rem; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:0.875rem; font-weight:600; text-decoration:none; transition:all 0.2s; margin-bottom:1.5rem; }
-        .sidebar-back:hover { background:rgba(139,92,246,0.1); border-color:var(--purple-primary); color:var(--text); }
-        .nav-section { margin-bottom:1.5rem; }
-        .nav-section-title { font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.75rem; padding:0 0.75rem; }
-        .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border-radius:10px; cursor:pointer; transition:all 0.2s; font-size:0.875rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.25rem; position:relative; }
-        .nav-item:hover { background:rgba(139,92,246,0.1); color:var(--text); transform:translateX(4px); }
-        .nav-item.active { background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(251,191,36,0.1)); color:var(--text); border:1px solid rgba(139,92,246,0.3); }
-        .nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:60%; background:var(--purple-primary); border-radius:0 2px 2px 0; }
-        .nav-icon { font-size:1.125rem; width:24px; text-align:center; }
-        .sidebar-footer { margin-top:auto; }
-        .sidebar-stats { padding:1.25rem; background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(251,191,36,0.05)); border-radius:16px; border:1px solid rgba(139,92,246,0.2); margin-bottom:1rem; }
-        .sidebar-stat { margin-bottom:0.75rem; }
-        .sidebar-stat:last-child { margin-bottom:0; }
-        .sidebar-stat-label { font-size:0.6875rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem; }
-        .sidebar-stat-value { font-size:1.5rem; font-weight:900; font-family:'JetBrains Mono',monospace; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .sidebar-user { font-size:0.75rem; color:var(--text-muted); text-align:center; padding:0.5rem; }
-
-        /* MAIN */
-        .main-content { margin-left:var(--sidebar-width); flex:1; padding:2rem; min-height:100vh; overflow-x:hidden; }
-        .page-header { margin-bottom:2rem; }
-        .page-title { font-size:2rem; font-weight:900; letter-spacing:-0.02em; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--text),var(--purple-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .page-subtitle { font-size:1rem; color:var(--text-secondary); font-weight:500; }
-
-        /* METRICS */
-        .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:2rem; }
-        .metric-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; position:relative; overflow:hidden; }
-        .metric-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--purple-primary),var(--gold)); opacity:0; transition:opacity 0.3s; }
-        .metric-card:hover { transform:translateY(-4px); border-color:var(--border-hover); box-shadow:0 20px 40px -12px rgba(0,0,0,0.5); }
-        .metric-card:hover::before { opacity:1; }
-        .metric-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; }
-        .metric-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; background:linear-gradient(135deg,var(--purple-primary),var(--purple-dark)); box-shadow:0 4px 12px rgba(139,92,246,0.3); }
-        .metric-label { font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
-        .metric-value { font-size:2rem; font-weight:900; font-family:'JetBrains Mono',monospace; margin-bottom:0.25rem; line-height:1; }
-        .metric-sub { font-size:0.75rem; color:var(--text-muted); }
-
-        /* BUTTONS */
-        .btn { padding:0.75rem 1.25rem; border-radius:10px; border:none; font-weight:700; font-size:0.875rem; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; }
-        .btn-primary { background:linear-gradient(135deg,var(--purple-primary),var(--purple-dark)); color:white; box-shadow:0 4px 12px rgba(139,92,246,0.3); }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(139,92,246,0.4); }
-        .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
-        .btn-secondary { background:var(--bg-card); color:var(--text-secondary); border:1px solid var(--border); }
-        .btn-secondary:hover { background:var(--bg-elevated); border-color:var(--purple-primary); color:var(--text); }
-        .btn-secondary:disabled { opacity:0.4; cursor:not-allowed; }
-        .btn-success { background:linear-gradient(135deg,var(--success),#16a34a); color:white; }
-        .btn-success:hover { transform:translateY(-2px); }
-        .btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#000; font-weight:800; }
-        .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(251,191,36,0.4); }
-        .btn-sm { padding:0.5rem 1rem; font-size:0.8125rem; }
-        .btn-xs { padding:0.375rem 0.75rem; font-size:0.75rem; }
-        .btn-full { width:100%; justify-content:center; }
-
-        /* CARDS */
-        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; }
-        .card-title { font-size:1rem; font-weight:800; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem; }
-
-        /* VIEWS */
-        .view-container { display:none; animation:fadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
-        .view-container.active { display:block; }
-        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-
-        /* FORMS */
-        .form-group { margin-bottom:1rem; }
-        .form-label { display:block; font-size:0.75rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.375rem; text-transform:uppercase; letter-spacing:0.05em; }
-        .form-input, .form-select, .form-textarea { width:100%; padding:0.75rem 1rem; border-radius:10px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-family:'Inter',sans-serif; font-size:0.875rem; transition:all 0.2s; }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 3px rgba(139,92,246,0.15); }
-        .form-input::placeholder, .form-textarea::placeholder { color:var(--text-muted); }
-        .form-textarea { resize:vertical; min-height:80px; }
-
-        /* TWO-COL GENERATE LAYOUT */
-        .generate-layout { display:grid; grid-template-columns:420px 1fr; gap:1.5rem; align-items:start; }
-
-        /* OUTPUT PANEL */
-        .output-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:320px; gap:1rem; text-align:center; }
-        .output-empty-icon { font-size:3rem; opacity:0.4; }
-        .output-empty-text { color:var(--text-muted); font-size:0.9375rem; max-width:280px; line-height:1.6; }
-
-        /* QUAL BADGES */
-        .qual-badge { display:inline-flex; align-items:center; gap:0.375rem; padding:0.375rem 0.875rem; border-radius:999px; font-size:0.8125rem; font-weight:700; }
-        .qual-badge.highly_qualified { background:rgba(34,197,94,0.15); color:var(--success); border:1px solid rgba(34,197,94,0.3); }
-        .qual-badge.qualified { background:rgba(59,130,246,0.15); color:var(--info); border:1px solid rgba(59,130,246,0.3); }
-        .qual-badge.maybe { background:rgba(245,158,11,0.15); color:var(--warning); border:1px solid rgba(245,158,11,0.3); }
-        .qual-badge.not_qualified { background:rgba(113,113,122,0.15); color:var(--text-muted); border:1px solid rgba(113,113,122,0.3); }
-
-        /* PAIN POINTS */
-        .pain-chips { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0; }
-        .pain-chip { padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; background:rgba(139,92,246,0.12); color:var(--purple-light); border:1px solid rgba(139,92,246,0.25); }
-
-        /* SUBJECT LINE */
-        .subject-display { background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:0.875rem 1rem; font-weight:600; font-size:0.9375rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; margin-bottom:1rem; }
-        .subject-text { flex:1; }
-        .copy-subject-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.375rem 0.75rem; font-size:0.75rem; font-weight:600; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-        .copy-subject-btn:hover { border-color:var(--purple-primary); color:var(--text); }
-
-        /* EMAIL BODY TEXTAREA */
-        .email-body-area { width:100%; padding:1rem; border-radius:10px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-family:'Inter',sans-serif; font-size:0.875rem; line-height:1.7; resize:vertical; min-height:220px; transition:all 0.2s; }
-        .email-body-area:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 3px rgba(139,92,246,0.15); }
-
-        /* ACTION BUTTONS */
-        .action-bar { display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem; }
-
-        /* DEDUP WARNING */
-        .dedup-warning { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; display:none; }
-        .dedup-warning-title { font-weight:700; color:var(--warning); font-size:0.875rem; margin-bottom:0.25rem; }
-        .dedup-warning-text { font-size:0.8125rem; color:var(--text-secondary); }
-        .dedup-warning a { color:var(--purple-light); }
-
-        /* QUEUE */
-        .queue-results { margin-top:1.5rem; display:flex; flex-direction:column; gap:1rem; }
-        .queue-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.25rem; }
-        .queue-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem; }
-        .queue-card-company { font-weight:800; font-size:1rem; }
-        .queue-card-body { display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
-        .queue-card-body.open { display:block; }
-        .queue-card-subject { font-size:0.8125rem; color:var(--text-secondary); margin-top:0.25rem; }
-        .queue-card-actions { display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem; }
-
-        /* PROGRESS BAR */
-        .progress-wrap { background:var(--bg-elevated); border-radius:999px; height:8px; margin:1rem 0; overflow:hidden; display:none; }
-        .progress-fill { height:100%; background:linear-gradient(90deg,var(--purple-primary),var(--gold)); border-radius:999px; transition:width 0.4s ease; width:0%; }
-        .progress-label { font-size:0.8125rem; color:var(--text-muted); margin-bottom:0.5rem; }
-
-        /* FILTER BAR */
-        .filter-bar { display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-        .filter-chip { padding:0.5rem 1rem; border-radius:999px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); font-size:0.8125rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
-        .filter-chip:hover { background:var(--bg-elevated); border-color:var(--purple-primary); color:var(--text); }
-        .filter-chip.active { background:var(--purple-primary); border-color:var(--purple-primary); color:white; }
-
-        /* TABLE */
-        .table-wrapper { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:auto; }
-        .data-table { width:100%; border-collapse:collapse; min-width:700px; }
-        .data-table th { text-align:left; padding:0.875rem 1rem; font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--bg-secondary); white-space:nowrap; }
-        .data-table td { padding:0.875rem 1rem; font-size:0.875rem; border-bottom:1px solid var(--border); vertical-align:middle; }
-        .data-table tr:last-child td { border-bottom:none; }
-        .data-table tr { transition:background 0.15s; }
-        .data-table tr:hover td { background:rgba(139,92,246,0.04); }
-        .data-table .empty-row td { text-align:center; padding:3rem; color:var(--text-muted); }
-
-        /* STATUS BADGE */
-        .status-badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.625rem; border-radius:6px; font-size:0.75rem; font-weight:700; }
-        .status-badge.draft { background:rgba(113,113,122,0.15); color:var(--text-muted); }
-        .status-badge.approved { background:rgba(59,130,246,0.15); color:var(--info); }
-        .status-badge.sent { background:rgba(34,197,94,0.15); color:var(--success); }
-
-        /* MODAL */
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:1000; align-items:flex-start; justify-content:center; padding:2rem; overflow-y:auto; }
-        .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .modal { background:var(--bg-secondary); border:1px solid var(--border); border-radius:20px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; margin-top:2rem; animation:slideUp 0.3s ease; }
-        @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
-        .modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.5rem 2rem; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg-secondary); z-index:1; border-radius:20px 20px 0 0; }
-        .modal-title { font-size:1.125rem; font-weight:800; }
-        .modal-close { width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem; transition:all 0.2s; }
-        .modal-close:hover { background:var(--danger); border-color:var(--danger); color:white; }
-        .modal-body { padding:2rem; }
-        .modal-footer { padding:1.5rem 2rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; justify-content:flex-end; }
-
-        /* OVERLAY */
-        .sidebar-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99; }
-        .sidebar-overlay.active { display:block; }
-
-        /* RESPONSIVE */
-        @media (max-width: 1100px) {
-            .generate-layout { grid-template-columns:1fr; }
+        body {
+            font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+            background:var(--bg); color:var(--text);
+            min-height:100vh; overflow:hidden;
+            -webkit-font-smoothing:antialiased;
         }
-        @media (max-width: 768px) {
+
+        /* ===== LAYOUT ===== */
+        .app { display:flex; height:100vh; overflow:hidden; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width:var(--sidebar); flex-shrink:0;
+            background:linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 100%);
+            border-right:1px solid var(--border);
+            display:flex; flex-direction:column;
+            padding:1.25rem 1rem;
+            overflow-y:auto; z-index:10;
+        }
+        .sidebar-brand { display:flex; align-items:center; gap:0.625rem; margin-bottom:0.375rem; }
+        .sidebar-brand img { width:34px; height:34px; border-radius:8px; }
+        .sidebar-brand-name { font-size:1rem; font-weight:900; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .sidebar-sub { font-size:0.6875rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1.5rem; padding-left:2.75rem; }
+        .sidebar-back { display:flex; align-items:center; gap:0.5rem; padding:0.625rem 0.875rem; border-radius:9px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:0.8125rem; font-weight:600; text-decoration:none; transition:all 0.2s; margin-bottom:1.25rem; }
+        .sidebar-back:hover { background:rgba(139,92,246,0.1); border-color:var(--purple); color:var(--text); }
+
+        .nav-label { font-size:0.625rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text3); margin:1rem 0 0.5rem 0.5rem; }
+        .nav-item { display:flex; align-items:center; gap:0.625rem; padding:0.625rem 0.875rem; border-radius:9px; cursor:pointer; font-size:0.8125rem; font-weight:600; color:var(--text2); transition:all 0.2s; margin-bottom:0.125rem; position:relative; }
+        .nav-item:hover { background:rgba(139,92,246,0.1); color:var(--text); transform:translateX(2px); }
+        .nav-item.active { background:linear-gradient(135deg,rgba(139,92,246,0.18),rgba(251,191,36,0.08)); color:var(--text); border:1px solid rgba(139,92,246,0.25); }
+        .nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:55%; background:var(--purple); border-radius:0 2px 2px 0; }
+        .nav-icon { font-size:1rem; width:20px; text-align:center; }
+        .nav-badge { margin-left:auto; background:var(--red); color:#fff; font-size:0.625rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:999px; min-width:18px; text-align:center; }
+
+        .sidebar-stats { margin-top:auto; padding:1rem; background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(251,191,36,0.05)); border-radius:12px; border:1px solid rgba(139,92,246,0.2); }
+        .stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.625rem; }
+        .stat-row:last-child { margin-bottom:0; }
+        .stat-label { font-size:0.6875rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; }
+        .stat-val { font-size:1.125rem; font-weight:900; font-family:'JetBrains Mono',monospace; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+        /* ===== QUEUE PANEL ===== */
+        .queue-panel {
+            width:var(--queue); flex-shrink:0;
+            background:var(--bg2); border-right:1px solid var(--border);
+            display:flex; flex-direction:column;
+            overflow:hidden;
+        }
+        .queue-header { padding:1rem 1.125rem; border-bottom:1px solid var(--border); flex-shrink:0; }
+        .queue-title { font-size:0.8125rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--text2); margin-bottom:0.625rem; }
+        .queue-search { position:relative; }
+        .queue-search input { width:100%; padding:0.5rem 0.75rem 0.5rem 2rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:0.8125rem; font-family:'Inter',sans-serif; transition:all 0.2s; }
+        .queue-search input:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 3px rgba(139,92,246,0.12); }
+        .queue-search input::placeholder { color:var(--text3); }
+        .queue-search-icon { position:absolute; left:0.625rem; top:50%; transform:translateY(-50%); font-size:0.875rem; color:var(--text3); }
+        .queue-filters { display:flex; gap:0.375rem; padding:0.625rem 1.125rem; border-bottom:1px solid var(--border); flex-shrink:0; overflow-x:auto; }
+        .queue-filters::-webkit-scrollbar { display:none; }
+        .q-chip { padding:0.3rem 0.75rem; border-radius:999px; border:1px solid var(--border); background:var(--card); color:var(--text3); font-size:0.6875rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+        .q-chip:hover { border-color:var(--purple); color:var(--text2); }
+        .q-chip.active { background:var(--purple); border-color:var(--purple); color:#fff; }
+        .queue-list { flex:1; overflow-y:auto; padding:0.5rem 0.625rem; }
+        .queue-list::-webkit-scrollbar { width:4px; }
+        .queue-list::-webkit-scrollbar-track { background:transparent; }
+        .queue-list::-webkit-scrollbar-thumb { background:var(--elevated); border-radius:2px; }
+        .queue-empty { text-align:center; padding:3rem 1rem; color:var(--text3); font-size:0.8125rem; }
+        .queue-empty-icon { font-size:2.5rem; margin-bottom:0.75rem; }
+
+        .lead-card {
+            padding:0.875rem 1rem; border-radius:10px; border:1px solid var(--border);
+            background:var(--card); margin-bottom:0.375rem; cursor:pointer;
+            transition:all 0.18s; position:relative;
+        }
+        .lead-card:hover { border-color:var(--border2); background:var(--card-hover); }
+        .lead-card.active { border-color:var(--purple); background:rgba(139,92,246,0.08); }
+        .lead-card.active::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--purple); border-radius:2px 0 0 2px; }
+        .lead-card-name { font-size:0.875rem; font-weight:700; margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .lead-card-meta { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+        .lead-card-cat { font-size:0.6875rem; color:var(--text3); }
+        .lead-card-city { font-size:0.6875rem; color:var(--text3); }
+        .lead-card-status { margin-left:auto; }
+        .status-pill { font-size:0.625rem; font-weight:700; padding:0.175rem 0.5rem; border-radius:999px; }
+        .status-pill.pending    { background:rgba(113,113,122,0.15); color:var(--text3); }
+        .status-pill.called     { background:rgba(59,130,246,0.15); color:var(--blue); }
+        .status-pill.callback   { background:rgba(251,191,36,0.15); color:var(--gold); }
+        .status-pill.interested { background:rgba(34,197,94,0.15); color:var(--green); }
+        .status-pill.not_interested { background:rgba(239,68,68,0.15); color:var(--red); }
+        .status-pill.meeting    { background:rgba(139,92,246,0.2); color:var(--purple-light); }
+        .status-pill.voicemail  { background:rgba(249,115,22,0.15); color:var(--orange); }
+        .lead-card-attempts { font-size:0.625rem; color:var(--text3); margin-top:0.25rem; }
+        .lead-card-rating { display:flex; align-items:center; gap:0.25rem; font-size:0.6875rem; color:var(--gold); font-weight:700; }
+
+        /* ===== MAIN DIALER ===== */
+        .main-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+        .dialer-empty {
+            flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            color:var(--text3); gap:1rem;
+        }
+        .dialer-empty-icon { font-size:4rem; opacity:0.3; }
+        .dialer-empty h2 { font-size:1.25rem; font-weight:700; color:var(--text2); }
+        .dialer-empty p { font-size:0.875rem; max-width:280px; text-align:center; line-height:1.6; }
+
+        /* ===== DIALER ACTIVE STATE ===== */
+        .dialer {
+            flex:1; display:flex; flex-direction:column; overflow:hidden;
+        }
+
+        /* Top bar */
+        .dialer-topbar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0.875rem 1.5rem; border-bottom:1px solid var(--border);
+            background:var(--bg2); flex-shrink:0;
+        }
+        .dialer-breadcrumb { font-size:0.75rem; color:var(--text3); display:flex; align-items:center; gap:0.5rem; }
+        .dialer-breadcrumb strong { color:var(--text2); }
+        .dialer-nav-btns { display:flex; gap:0.5rem; }
+        .nav-btn { padding:0.5rem 0.875rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text2); font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:0.375rem; }
+        .nav-btn:hover { background:var(--card-hover); border-color:var(--border2); color:var(--text); }
+        .nav-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+        /* ===== DIALER BODY - two column ===== */
+        .dialer-body { flex:1; display:flex; overflow:hidden; }
+
+        /* Left: company data */
+        .company-panel {
+            flex:1; overflow-y:auto; padding:1.5rem;
+            border-right:1px solid var(--border);
+        }
+        .company-panel::-webkit-scrollbar { width:4px; }
+        .company-panel::-webkit-scrollbar-thumb { background:var(--elevated); border-radius:2px; }
+
+        /* Right: call panel */
+        .call-panel {
+            width:340px; flex-shrink:0;
+            display:flex; flex-direction:column;
+            overflow-y:auto; background:var(--bg2);
+        }
+        .call-panel::-webkit-scrollbar { width:4px; }
+        .call-panel::-webkit-scrollbar-thumb { background:var(--elevated); border-radius:2px; }
+
+        /* Company header */
+        .company-header { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; }
+        .company-avatar {
+            width:56px; height:56px; border-radius:14px; flex-shrink:0;
+            background:linear-gradient(135deg,var(--purple),var(--purple-dark));
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.5rem; font-weight:900; color:#fff;
+        }
+        .company-name { font-size:1.375rem; font-weight:900; letter-spacing:-0.02em; margin-bottom:0.25rem; }
+        .company-category-badge { display:inline-flex; align-items:center; gap:0.375rem; padding:0.25rem 0.625rem; border-radius:6px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.2); font-size:0.75rem; font-weight:700; color:var(--purple-light); }
+
+        /* Data grid */
+        .data-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.5rem; }
+        .data-card {
+            background:var(--card); border:1px solid var(--border); border-radius:12px;
+            padding:0.875rem 1rem; transition:border-color 0.2s;
+        }
+        .data-card.full { grid-column:1/-1; }
+        .data-card.clickable { cursor:pointer; }
+        .data-card.clickable:hover { border-color:var(--purple); }
+        .data-card-label { font-size:0.625rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-bottom:0.375rem; }
+        .data-card-value { font-size:0.9375rem; font-weight:700; color:var(--text); word-break:break-all; }
+        .data-card-value.phone { font-size:1.125rem; font-family:'JetBrains Mono',monospace; color:var(--green); letter-spacing:0.02em; }
+        .data-card-value.website a { color:var(--blue); text-decoration:none; font-size:0.875rem; }
+        .data-card-value.website a:hover { text-decoration:underline; }
+        .data-card-value.rating { display:flex; align-items:center; gap:0.5rem; }
+        .stars { color:var(--gold); font-size:1rem; }
+        .rating-count { font-size:0.75rem; color:var(--text3); font-weight:500; }
+        .data-card-value.description { font-size:0.8125rem; color:var(--text2); font-weight:500; line-height:1.55; }
+
+        /* Map link */
+        .maps-link {
+            display:flex; align-items:center; gap:0.5rem; padding:0.75rem 1rem;
+            background:var(--card); border:1px solid var(--border); border-radius:12px;
+            color:var(--blue); font-size:0.8125rem; font-weight:700; text-decoration:none;
+            transition:all 0.2s; margin-bottom:1.5rem;
+        }
+        .maps-link:hover { border-color:var(--blue); background:rgba(59,130,246,0.06); }
+
+        /* Section header */
+        .section-header { font-size:0.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text3); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem; }
+        .section-header::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        /* Previous calls */
+        .prev-call { display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+        .prev-call:last-child { border-bottom:none; }
+        .prev-call-dot { width:8px; height:8px; border-radius:50%; margin-top:0.3rem; flex-shrink:0; }
+        .prev-call-outcome { font-size:0.75rem; font-weight:700; margin-bottom:0.125rem; }
+        .prev-call-note { font-size:0.75rem; color:var(--text3); line-height:1.4; }
+        .prev-call-time { font-size:0.6875rem; color:var(--text3); margin-left:auto; white-space:nowrap; padding-left:0.5rem; }
+
+        /* ===== CALL PANEL ===== */
+        .call-section { padding:1.25rem; border-bottom:1px solid var(--border); }
+
+        /* Timer */
+        .call-timer { text-align:center; padding:1.25rem; }
+        .timer-ring { position:relative; width:96px; height:96px; margin:0 auto 0.75rem; }
+        .timer-ring svg { transform:rotate(-90deg); }
+        .timer-ring-bg { fill:none; stroke:var(--elevated); stroke-width:4; }
+        .timer-ring-progress { fill:none; stroke:var(--green); stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset 1s linear, stroke 0.3s; }
+        .timer-time { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.25rem; font-weight:900; font-family:'JetBrains Mono',monospace; }
+        .timer-status { font-size:0.6875rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; }
+
+        .call-btn-row { display:flex; gap:0.5rem; justify-content:center; margin-top:1rem; }
+        .call-action-btn { width:44px; height:44px; border-radius:50%; border:none; cursor:pointer; font-size:1.125rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+        .call-action-btn:hover { transform:scale(1.08); }
+        .btn-start-call { background:var(--green); color:#fff; width:56px; height:56px; font-size:1.25rem; box-shadow:0 4px 16px rgba(34,197,94,0.3); }
+        .btn-start-call:hover { box-shadow:0 6px 24px rgba(34,197,94,0.45); }
+        .btn-end-call { background:var(--red); color:#fff; width:56px; height:56px; font-size:1.25rem; box-shadow:0 4px 16px rgba(239,68,68,0.3); }
+        .btn-end-call:hover { box-shadow:0 6px 24px rgba(239,68,68,0.45); }
+        .btn-mute { background:var(--elevated); color:var(--text2); }
+        .btn-mute.active { background:var(--orange); color:#fff; }
+
+        /* Outcome selector */
+        .outcome-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+        .outcome-btn {
+            padding:0.625rem 0.5rem; border-radius:9px; border:1px solid var(--border);
+            background:var(--card); color:var(--text2); font-size:0.75rem; font-weight:700;
+            cursor:pointer; transition:all 0.2s; text-align:center; display:flex; flex-direction:column; align-items:center; gap:0.25rem;
+        }
+        .outcome-btn:hover { border-color:var(--border2); color:var(--text); }
+        .outcome-btn.selected { border-color: transparent; color:#fff; }
+        .outcome-btn.selected.no_answer   { background:var(--text3); border-color:var(--text3); }
+        .outcome-btn.selected.voicemail   { background:var(--orange); border-color:var(--orange); }
+        .outcome-btn.selected.not_interested { background:var(--red); border-color:var(--red); }
+        .outcome-btn.selected.callback    { background:var(--gold); border-color:var(--gold); color:#000; }
+        .outcome-btn.selected.interested  { background:var(--teal); border-color:var(--teal); }
+        .outcome-btn.selected.meeting_booked { background:var(--purple); border-color:var(--purple); }
+        .outcome-icon { font-size:1.125rem; }
+        .outcome-label { font-size:0.6875rem; }
+
+        /* Follow-up date (shown on callback) */
+        .followup-row { display:none; gap:0.5rem; align-items:center; margin-top:0.625rem; }
+        .followup-row.visible { display:flex; }
+        .followup-row label { font-size:0.75rem; color:var(--text3); font-weight:600; white-space:nowrap; }
+        .followup-row input { flex:1; padding:0.5rem 0.75rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:0.8125rem; font-family:'Inter',sans-serif; }
+        .followup-row input:focus { outline:none; border-color:var(--purple); }
+
+        /* Notes */
+        .notes-textarea {
+            width:100%; padding:0.75rem; border-radius:10px; border:1px solid var(--border);
+            background:var(--card); color:var(--text); font-family:'Inter',sans-serif;
+            font-size:0.8125rem; line-height:1.55; resize:none; min-height:100px;
+            transition:all 0.2s;
+        }
+        .notes-textarea:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 3px rgba(139,92,246,0.1); }
+        .notes-textarea::placeholder { color:var(--text3); }
+
+        /* Log button */
+        .log-btn {
+            width:100%; padding:0.875rem; border-radius:10px; border:none;
+            background:linear-gradient(135deg,var(--purple),var(--purple-dark));
+            color:#fff; font-size:0.9375rem; font-weight:800; cursor:pointer;
+            transition:all 0.2s; box-shadow:0 4px 14px rgba(139,92,246,0.3);
+            display:flex; align-items:center; justify-content:center; gap:0.5rem;
+        }
+        .log-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(139,92,246,0.45); }
+        .log-btn:active { transform:translateY(0); }
+        .log-btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        /* ===== KANBAN VIEW ===== */
+        .kanban-view { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+        .kanban-header { padding:1.25rem 1.5rem; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+        .kanban-header h2 { font-size:1.25rem; font-weight:900; }
+        .kanban-scroll { flex:1; overflow-x:auto; overflow-y:hidden; padding:1.25rem; display:flex; gap:0.875rem; -webkit-overflow-scrolling:touch; }
+        .kanban-scroll::-webkit-scrollbar { height:6px; }
+        .kanban-scroll::-webkit-scrollbar-track { background:var(--bg2); border-radius:3px; }
+        .kanban-scroll::-webkit-scrollbar-thumb { background:var(--purple); border-radius:3px; }
+
+        .k-col { min-width:260px; max-width:260px; flex-shrink:0; background:var(--bg3); border:1px solid var(--border); border-radius:14px; display:flex; flex-direction:column; max-height:calc(100vh - 200px); }
+        .k-col-head { padding:0.875rem 1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+        .k-col-title { font-size:0.8125rem; font-weight:700; display:flex; align-items:center; gap:0.5rem; }
+        .k-col-dot { width:8px; height:8px; border-radius:50%; }
+        .k-col-count { background:var(--elevated); padding:0.1rem 0.5rem; border-radius:999px; font-size:0.6875rem; font-weight:700; font-family:'JetBrains Mono',monospace; }
+        .k-col-body { padding:0.625rem; flex:1; overflow-y:auto; }
+        .k-col-body::-webkit-scrollbar { width:3px; }
+        .k-col-body::-webkit-scrollbar-thumb { background:var(--elevated); border-radius:2px; }
+        .k-col-body.drag-over { background:rgba(139,92,246,0.05); border-radius:0 0 14px 14px; }
+
+        .k-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:0.875rem; margin-bottom:0.5rem; cursor:grab; transition:all 0.15s; }
+        .k-card:hover { border-color:var(--border2); box-shadow:0 6px 20px rgba(0,0,0,0.25); }
+        .k-card.dragging { opacity:0.45; transform:rotate(1.5deg); }
+        .k-card-name { font-size:0.8125rem; font-weight:700; margin-bottom:0.125rem; }
+        .k-card-co { font-size:0.6875rem; color:var(--text3); margin-bottom:0.5rem; }
+        .k-card-foot { display:flex; justify-content:space-between; align-items:center; }
+        .k-card-days { font-size:0.625rem; color:var(--text3); }
+        .k-card-fu { width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .k-card-fu.overdue { background:var(--red); animation:pulse 2s infinite; }
+        .k-card-fu.due { background:var(--gold); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+        /* ===== IMPORT VIEW ===== */
+        .import-view { flex:1; overflow-y:auto; padding:1.5rem; }
+        .import-view::-webkit-scrollbar { width:4px; }
+        .import-view::-webkit-scrollbar-thumb { background:var(--elevated); border-radius:2px; }
+        .import-header { margin-bottom:1.5rem; }
+        .import-header h2 { font-size:1.375rem; font-weight:900; margin-bottom:0.25rem; }
+        .import-header p { font-size:0.875rem; color:var(--text2); }
+        .dropzone { border:2px dashed var(--border); border-radius:14px; padding:3rem 2rem; text-align:center; cursor:pointer; transition:all 0.25s; margin-bottom:1.25rem; }
+        .dropzone:hover, .dropzone.over { border-color:var(--purple); background:rgba(139,92,246,0.04); }
+        .dropzone-icon { font-size:2.5rem; margin-bottom:0.875rem; }
+        .dropzone-text { font-size:1rem; font-weight:700; margin-bottom:0.375rem; }
+        .dropzone-sub { font-size:0.8125rem; color:var(--text3); }
+
+        .import-preview { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:1.25rem; }
+        .import-preview-scroll { overflow-x:auto; }
+        .import-preview table { width:100%; border-collapse:collapse; font-size:0.75rem; white-space:nowrap; }
+        .import-preview th { padding:0.625rem 0.875rem; background:var(--elevated); font-weight:700; color:var(--text2); border-bottom:1px solid var(--border); text-align:left; }
+        .import-preview td { padding:0.625rem 0.875rem; border-bottom:1px solid var(--border); color:var(--text3); }
+        .import-preview tr:last-child td { border-bottom:none; }
+        .import-actions { display:flex; gap:0.75rem; }
+
+        .progress-bar-wrap { height:5px; background:var(--elevated); border-radius:3px; margin:0.875rem 0; overflow:hidden; }
+        .progress-bar { height:100%; background:linear-gradient(90deg,var(--purple),var(--gold)); border-radius:3px; transition:width 0.3s; }
+
+        /* ===== BUTTONS ===== */
+        .btn { padding:0.625rem 1.125rem; border-radius:9px; border:none; font-weight:700; font-size:0.8125rem; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; display:inline-flex; align-items:center; gap:0.5rem; }
+        .btn-primary { background:linear-gradient(135deg,var(--purple),var(--purple-dark)); color:#fff; box-shadow:0 4px 12px rgba(139,92,246,0.3); }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(139,92,246,0.4); }
+        .btn-secondary { background:var(--card); color:var(--text2); border:1px solid var(--border); }
+        .btn-secondary:hover { background:var(--card-hover); border-color:var(--border2); color:var(--text); }
+        .btn-danger { background:linear-gradient(135deg,var(--red),#dc2626); color:#fff; }
+
+        /* ===== TOAST ===== */
+        .toasts { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; }
+        .toast { padding:0.875rem 1.25rem; border-radius:12px; font-size:0.875rem; font-weight:600; animation:toastIn 0.3s ease; display:flex; align-items:center; gap:0.5rem; box-shadow:0 8px 24px rgba(0,0,0,0.4); max-width:320px; }
+        .toast.success { background:var(--green); color:#fff; }
+        .toast.error { background:var(--red); color:#fff; }
+        .toast.info { background:var(--blue); color:#fff; }
+        .toast.warn { background:var(--gold); color:#000; }
+        @keyframes toastIn { from{transform:translateX(80px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+        /* ===== MOBILE HEADER ===== */
+        .mobile-header {
+            display:none; position:fixed; top:0; left:0; right:0; z-index:200;
+            height:56px; background:rgba(9,9,11,0.95); backdrop-filter:blur(16px);
+            border-bottom:1px solid var(--border); padding:0 1rem;
+            align-items:center; justify-content:space-between;
+        }
+        .mobile-logo { font-size:0.9375rem; font-weight:800; background:linear-gradient(135deg,var(--purple-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .mobile-menu-btn { width:40px; height:40px; border-radius:9px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:1.125rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+        @media (max-width:1024px) {
             .mobile-header { display:flex; }
-            .sidebar { transform:translateX(-100%); }
-            .sidebar.open { transform:translateX(0); }
-            .main-content { margin-left:0; padding:1rem; padding-top:calc(var(--header-height) + env(safe-area-inset-top,0px) + 1rem); }
-            .metrics-grid { grid-template-columns:1fr 1fr; }
-        }
-        @media (max-width: 480px) {
-            .metrics-grid { grid-template-columns:1fr; }
-            .action-bar { flex-direction:column; }
-            .action-bar .btn { justify-content:center; }
+            body { overflow:auto; }
+            .app { flex-direction:column; height:auto; min-height:100vh; padding-top:56px; }
+            .sidebar { display:none; }
+            .queue-panel { width:100%; border-right:none; border-bottom:1px solid var(--border); height:auto; }
+            .queue-list { max-height:240px; }
+            .main-panel { overflow:visible; }
+            .dialer { flex-direction:column; }
+            .dialer-body { flex-direction:column; overflow:visible; }
+            .company-panel { border-right:none; border-bottom:1px solid var(--border); }
+            .call-panel { width:100%; }
+            .data-grid { grid-template-columns:1fr; }
         }
     </style>
 </head>
 <body>
 
-<!-- Mobile Header -->
-<div class="mobile-header" id="mobileHeader">
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
-    <span class="mobile-header-title">Lead Agent</span>
-    <div style="width:44px;"></div>
+<div class="mobile-header">
+    <span class="mobile-logo">Cold Calling Engine</span>
+    <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').style.display='flex'">&#9776;</button>
 </div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-<div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <img src="ArcaneA.png" alt="Arcane">
-                <span class="sidebar-logo-text">ARCANE</span>
-            </div>
-            <div class="sidebar-tagline">Lead Agent</div>
+<div class="app" id="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <img src="ArcaneA.png" alt="Logo" onerror="this.style.display='none'">
+            <span class="sidebar-brand-name">Arcane</span>
+        </div>
+        <div class="sidebar-sub">Cold Calling Engine</div>
+        <a href="dashboard.html" class="sidebar-back">&#8592; Dashboard</a>
+
+        <div class="nav-label">Engine</div>
+        <div class="nav-item active" id="nav-dialer" onclick="setView('dialer')">
+            <span class="nav-icon">&#x1F4DE;</span> Dialer
+        </div>
+        <div class="nav-item" id="nav-kanban" onclick="setView('kanban')">
+            <span class="nav-icon">&#x1F5C2;</span> Pipeline Board
+        </div>
+        <div class="nav-item" id="nav-import" onclick="setView('import')">
+            <span class="nav-icon">&#x1F4E4;</span> Import Leads
         </div>
 
-        <a href="arcane-consulting-crm.html" class="sidebar-back">&#8592; Back to CRM</a>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Agent</div>
-            <div class="nav-item active" id="nav-generate" onclick="switchView('generate')">
-                <span class="nav-icon">&#x1F916;</span> Generate
-            </div>
-            <div class="nav-item" id="nav-queue" onclick="switchView('queue')">
-                <span class="nav-icon">&#x1F4CB;</span> Batch Queue
-            </div>
-            <div class="nav-item" id="nav-history" onclick="switchView('history')">
-                <span class="nav-icon">&#x1F4DA;</span> History
-            </div>
+        <div class="nav-label">CRM</div>
+        <div class="nav-item" onclick="window.open('arcane-consulting-crm.html','_blank')">
+            <span class="nav-icon">&#x1F4CA;</span> Full CRM
+            <span style="margin-left:auto;font-size:0.6rem;opacity:0.5;">&#x2197;</span>
         </div>
 
-        <div class="sidebar-footer">
-            <div class="sidebar-stats">
-                <div class="sidebar-stat">
-                    <div class="sidebar-stat-label">Generated Today</div>
-                    <div class="sidebar-stat-value" id="stat-today">0</div>
-                </div>
-                <div class="sidebar-stat">
-                    <div class="sidebar-stat-label">Total Generated</div>
-                    <div class="sidebar-stat-value" id="stat-total">0</div>
-                </div>
+        <div class="sidebar-stats" id="sidebarStats">
+            <div class="stat-row">
+                <span class="stat-label">Calls Today</span>
+                <span class="stat-val" id="statCallsToday">0</span>
             </div>
-            <div class="sidebar-user" id="sidebar-user-email"></div>
+            <div class="stat-row">
+                <span class="stat-label">Connected</span>
+                <span class="stat-val" id="statConnected">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Qualified</span>
+                <span class="stat-val" id="statQualified">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Queue Left</span>
+                <span class="stat-val" id="statQueue">0</span>
+            </div>
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <!-- ===== VIEW: GENERATE ===== -->
-        <div class="view-container active" id="view-generate">
-            <div class="page-header">
-                <div class="page-title">&#x1F916; AI Lead Agent</div>
-                <div class="page-subtitle">Generate hyper-personalised outreach emails in seconds</div>
-            </div>
-
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x26A1;</div><div class="metric-label">Total Generated</div></div>
-                    <div class="metric-value" id="metric-total">0</div>
-                    <div class="metric-sub">all time</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x2B50;</div><div class="metric-label">Highly Qualified</div></div>
-                    <div class="metric-value" id="metric-hq">0</div>
-                    <div class="metric-sub">hot leads</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x1F4BC;</div><div class="metric-label">Added to CRM</div></div>
-                    <div class="metric-value" id="metric-crm">0</div>
-                    <div class="metric-sub">leads saved</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x2709;</div><div class="metric-label">Sent</div></div>
-                    <div class="metric-value" id="metric-sent">0</div>
-                    <div class="metric-sub">emails out</div>
-                </div>
-            </div>
-
-            <div class="generate-layout">
-                <!-- Input Form -->
-                <div class="card">
-                    <div class="card-title">&#x1F50D; Lead Details</div>
-
-                    <div class="form-group">
-                        <label class="form-label">Company Name *</label>
-                        <input type="text" id="inp-company" class="form-input" placeholder="e.g. Acme Agency" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Website</label>
-                        <input type="text" id="inp-website" class="form-input" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">LinkedIn URL</label>
-                        <input type="text" id="inp-linkedin" class="form-input" placeholder="https://linkedin.com/in/...">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Contact Name</label>
-                        <input type="text" id="inp-contact" class="form-input" placeholder="e.g. John Smith">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Contact Role</label>
-                        <input type="text" id="inp-role" class="form-input" placeholder="e.g. Founder, CEO, MD">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Industry</label>
-                        <input type="text" id="inp-industry" class="form-input" placeholder="e.g. Marketing Agency, E-commerce">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Revenue Estimate</label>
-                        <input type="text" id="inp-revenue" class="form-input" placeholder="e.g. £100k–£500k">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notes / Context</label>
-                        <textarea id="inp-notes" class="form-textarea" placeholder="Pain points, how you found them, anything specific about their business..."></textarea>
-                    </div>
-
-                    <div class="dedup-warning" id="dedup-warning">
-                        <div class="dedup-warning-title">&#x26A0; Possible Duplicate</div>
-                        <div class="dedup-warning-text" id="dedup-warning-text"></div>
-                    </div>
-
-                    <button class="btn btn-primary btn-full" id="btn-generate" onclick="generateEmail()">
-                        &#x26A1; Generate Email
-                    </button>
-                </div>
-
-                <!-- Output Panel -->
-                <div class="card" id="output-panel">
-                    <div id="output-empty" class="output-empty">
-                        <div class="output-empty-icon">&#x1F916;</div>
-                        <div class="output-empty-text">Enter lead details and click Generate to create a personalised email</div>
-                    </div>
-
-                    <div id="output-result" style="display:none;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
-                            <div>
-                                <span class="qual-badge" id="out-qual-badge">—</span>
-                            </div>
-                            <div style="font-size:0.75rem;color:var(--text-muted);" id="out-approach"></div>
-                        </div>
-
-                        <div style="font-size:0.8125rem;color:var(--text-secondary);margin-bottom:0.75rem;" id="out-qual-reason"></div>
-
-                        <div class="pain-chips" id="out-pain-chips"></div>
-
-                        <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin-bottom:0.5rem;margin-top:1rem;">Subject Line</div>
-                        <div class="subject-display">
-                            <span class="subject-text" id="out-subject">—</span>
-                            <button class="copy-subject-btn" onclick="copySubject()">Copy</button>
-                        </div>
-
-                        <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin-bottom:0.5rem;">Email Body</div>
-                        <textarea class="email-body-area" id="out-email-body" placeholder="Email body will appear here..."></textarea>
-
-                        <div class="action-bar">
-                            <button class="btn btn-secondary btn-sm" onclick="copyFullEmail()">&#x1F4CB; Copy Email</button>
-                            <button class="btn btn-primary btn-sm" id="btn-save-crm" onclick="saveToCRM()">&#x1F4BE; Save to CRM</button>
-                            <button class="btn btn-success btn-sm" id="btn-mark-sent" onclick="markCurrentSent()">&#x2705; Mark Sent</button>
-                            <button class="btn btn-secondary btn-sm" onclick="generateEmail()">&#x1F504; Regenerate</button>
-                        </div>
-                    </div>
-                </div>
+    <!-- ===== QUEUE PANEL ===== -->
+    <div class="queue-panel" id="queuePanel">
+        <div class="queue-header">
+            <div class="queue-title">Lead Queue</div>
+            <div class="queue-search">
+                <span class="queue-search-icon">&#x1F50D;</span>
+                <input type="text" id="qSearch" placeholder="Search leads..." oninput="filterQueue()">
             </div>
         </div>
-
-        <!-- ===== VIEW: QUEUE ===== -->
-        <div class="view-container" id="view-queue">
-            <div class="page-header">
-                <div class="page-title">&#x1F4CB; Batch Queue</div>
-                <div class="page-subtitle">Process multiple leads at once</div>
-            </div>
-
-            <div class="card" style="margin-bottom:1.5rem;">
-                <div class="card-title">&#x1F4DD; Paste Lead List</div>
-                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.75rem;">
-                    One lead per line. Format: <code style="background:var(--bg-elevated);padding:0.125rem 0.5rem;border-radius:6px;font-size:0.8125rem;">Company | Website | Contact Name | Role | Industry</code>
-                </p>
-                <p style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:1rem;font-family:'JetBrains Mono',monospace;">
-                    Example: Acme Agency | https://acme.co | John Smith | Founder | Marketing
-                </p>
-                <div class="form-group">
-                    <textarea id="queue-input" class="form-textarea" rows="10" placeholder="Paste your leads here, one per line...&#10;Company | Website | Contact | Role | Industry&#10;Company | Website | Contact | Role | Industry"></textarea>
-                </div>
-                <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-                    <button class="btn btn-primary" id="btn-process-queue" onclick="processQueue()">&#x26A1; Process Queue</button>
-                    <button class="btn btn-secondary btn-sm" onclick="clearQueue()">&#x1F5D1; Clear</button>
-                    <span id="queue-count-label" style="font-size:0.8125rem;color:var(--text-muted);"></span>
-                </div>
-                <div id="queue-progress-wrap" class="progress-wrap" style="margin-top:1rem;">
-                    <div id="queue-progress-bar" class="progress-fill"></div>
-                </div>
-                <div id="queue-progress-label" class="progress-label" style="display:none;"></div>
-            </div>
-
-            <div id="queue-results" class="queue-results"></div>
+        <div class="queue-filters" id="qFilters">
+            <span class="q-chip active" data-filter="all" onclick="setQFilter('all',this)">All</span>
+            <span class="q-chip" data-filter="pending" onclick="setQFilter('pending',this)">Pending</span>
+            <span class="q-chip" data-filter="callback" onclick="setQFilter('callback',this)">Callback</span>
+            <span class="q-chip" data-filter="interested" onclick="setQFilter('interested',this)">Interested</span>
+            <span class="q-chip" data-filter="called" onclick="setQFilter('called',this)">Called</span>
         </div>
-
-        <!-- ===== VIEW: HISTORY ===== -->
-        <div class="view-container" id="view-history">
-            <div class="page-header">
-                <div class="page-title">&#x1F4DA; History</div>
-                <div class="page-subtitle">All AI-generated outreach emails</div>
+        <div class="queue-list" id="queueList">
+            <div class="queue-empty">
+                <div class="queue-empty-icon">&#x1F4CB;</div>
+                <p>No leads yet. Import a CSV to begin.</p>
             </div>
-
-            <div class="metrics-grid" style="margin-bottom:1.5rem;">
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x26A1;</div><div class="metric-label">Total</div></div>
-                    <div class="metric-value" id="hist-total">0</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x2B50;</div><div class="metric-label">Highly Qualified</div></div>
-                    <div class="metric-value" id="hist-hq">0</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x1F4BC;</div><div class="metric-label">In CRM</div></div>
-                    <div class="metric-value" id="hist-crm">0</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-header"><div class="metric-icon">&#x2709;</div><div class="metric-label">Sent</div></div>
-                    <div class="metric-value" id="hist-sent">0</div>
-                </div>
-            </div>
-
-            <div class="filter-bar" id="history-filter-bar">
-                <span class="filter-chip active" onclick="setHistoryFilter('all',this)">All</span>
-                <span class="filter-chip" onclick="setHistoryFilter('draft',this)">Draft</span>
-                <span class="filter-chip" onclick="setHistoryFilter('sent',this)">Sent</span>
-                <span class="filter-chip" onclick="setHistoryFilter('highly_qualified',this)">&#x2B50; Highly Qualified</span>
-            </div>
-
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Company</th>
-                            <th>Contact</th>
-                            <th>Qualification</th>
-                            <th>Subject</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-tbody">
-                        <tr class="empty-row"><td colspan="7">Loading history...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </main>
-</div>
-
-<!-- Email Detail Modal -->
-<div class="modal-overlay" id="email-detail-modal">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title" id="modal-company-name">Email Details</div>
-            <button class="modal-close" onclick="closeModal()">&#x2715;</button>
-        </div>
-        <div class="modal-body">
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap;">
-                <span class="qual-badge" id="modal-qual-badge">—</span>
-                <span style="font-size:0.8125rem;color:var(--text-secondary);" id="modal-qual-reason"></span>
-            </div>
-            <div class="pain-chips" id="modal-pain-chips"></div>
-            <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin:1rem 0 0.5rem;">Subject Line</div>
-            <div class="subject-display" style="margin-bottom:1rem;">
-                <span class="subject-text" id="modal-subject">—</span>
-            </div>
-            <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;margin-bottom:0.5rem;">Email Body</div>
-            <textarea class="email-body-area" id="modal-email-body" style="min-height:260px;"></textarea>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary btn-sm" onclick="copyModalEmail()">&#x1F4CB; Copy</button>
-            <button class="btn btn-primary btn-sm" id="modal-save-crm" onclick="modalSaveToCRM()">&#x1F4BE; Save to CRM</button>
-            <button class="btn btn-success btn-sm" id="modal-mark-sent" onclick="modalMarkSent()">&#x2705; Mark Sent</button>
         </div>
     </div>
-</div>
+
+    <!-- ===== MAIN PANEL ===== -->
+    <div class="main-panel" id="mainPanel">
+
+        <!-- DIALER VIEW -->
+        <div id="view-dialer" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+            <div class="dialer-empty" id="dialerEmpty">
+                <div class="dialer-empty-icon">&#x1F4DE;</div>
+                <h2>Select a lead to begin</h2>
+                <p>Choose a company from the queue or import leads from a Google Maps CSV.</p>
+            </div>
+            <div class="dialer" id="dialerActive" style="display:none;">
+                <div class="dialer-topbar">
+                    <div class="dialer-breadcrumb">
+                        <span id="dialerQueuePos"></span>
+                        &rsaquo; <strong id="dialerCompanyName">—</strong>
+                    </div>
+                    <div class="dialer-nav-btns">
+                        <button class="nav-btn" id="btnPrev" onclick="navLead(-1)">&#x2190; Prev</button>
+                        <button class="nav-btn" id="btnNext" onclick="navLead(1)">Next &#x2192;</button>
+                        <button class="nav-btn" onclick="skipLead()" title="Skip this lead">&#x23E9; Skip</button>
+                    </div>
+                </div>
+                <div class="dialer-body">
+
+                    <!-- Company Info Panel -->
+                    <div class="company-panel" id="companyPanel">
+                        <div class="company-header">
+                            <div class="company-avatar" id="companyAvatar">A</div>
+                            <div>
+                                <div class="company-name" id="infoName">—</div>
+                                <span class="company-category-badge" id="infoCat">—</span>
+                            </div>
+                        </div>
+
+                        <div class="data-grid" id="infoGrid">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <a class="maps-link" id="mapsLink" href="#" target="_blank">
+                            &#x1F4CD; Open in Google Maps &rarr;
+                        </a>
+
+                        <div class="section-header">Call History</div>
+                        <div id="callHistory">
+                            <div style="font-size:0.8125rem;color:var(--text3);padding:0.5rem 0;">No previous calls logged.</div>
+                        </div>
+                    </div>
+
+                    <!-- Call Action Panel -->
+                    <div class="call-panel">
+
+                        <!-- Timer -->
+                        <div class="call-section call-timer">
+                            <div class="timer-ring">
+                                <svg width="96" height="96" viewBox="0 0 96 96">
+                                    <circle class="timer-ring-bg" cx="48" cy="48" r="42"/>
+                                    <circle class="timer-ring-progress" id="timerProgress" cx="48" cy="48" r="42"
+                                        stroke-dasharray="264" stroke-dashoffset="264"/>
+                                </svg>
+                                <div class="timer-time" id="timerDisplay">0:00</div>
+                            </div>
+                            <div class="timer-status" id="timerStatus">Ready to call</div>
+                            <div class="call-btn-row">
+                                <button class="call-action-btn btn-mute" id="btnMute" onclick="toggleMute()" title="Mute" style="display:none;">&#x1F507;</button>
+                                <button class="call-action-btn btn-start-call" id="btnStartCall" onclick="startCall()">&#x1F4DE;</button>
+                                <button class="call-action-btn btn-end-call" id="btnEndCall" onclick="endCall()" style="display:none;">&#x260F;&#xFE0F;</button>
+                                <button class="call-action-btn" id="btnDialPhone" onclick="dialPhone()" title="Open phone dialer" style="background:var(--elevated);color:var(--text2);display:none;">&#x2316;</button>
+                            </div>
+                        </div>
+
+                        <!-- Outcome -->
+                        <div class="call-section">
+                            <div class="section-header" style="margin-bottom:0.75rem;">Call Outcome</div>
+                            <div class="outcome-grid">
+                                <button class="outcome-btn" data-outcome="no_answer" onclick="selectOutcome('no_answer',this)">
+                                    <span class="outcome-icon">&#x1F515;</span>
+                                    <span class="outcome-label">No Answer</span>
+                                </button>
+                                <button class="outcome-btn" data-outcome="voicemail" onclick="selectOutcome('voicemail',this)">
+                                    <span class="outcome-icon">&#x1F4E9;</span>
+                                    <span class="outcome-label">Voicemail</span>
+                                </button>
+                                <button class="outcome-btn" data-outcome="not_interested" onclick="selectOutcome('not_interested',this)">
+                                    <span class="outcome-icon">&#x274C;</span>
+                                    <span class="outcome-label">Not Interested</span>
+                                </button>
+                                <button class="outcome-btn" data-outcome="callback" onclick="selectOutcome('callback',this)">
+                                    <span class="outcome-icon">&#x1F504;</span>
+                                    <span class="outcome-label">Callback</span>
+                                </button>
+                                <button class="outcome-btn" data-outcome="interested" onclick="selectOutcome('interested',this)">
+                                    <span class="outcome-icon">&#x2705;</span>
+                                    <span class="outcome-label">Interested</span>
+                                </button>
+                                <button class="outcome-btn" data-outcome="meeting_booked" onclick="selectOutcome('meeting_booked',this)">
+                                    <span class="outcome-icon">&#x1F91D;</span>
+                                    <span class="outcome-label">Meeting Booked</span>
+                                </button>
+                            </div>
+                            <div class="followup-row" id="followupRow">
+                                <label>Callback Date:</label>
+                                <input type="date" id="callbackDate">
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="call-section">
+                            <div class="section-header" style="margin-bottom:0.625rem;">Notes</div>
+                            <textarea class="notes-textarea" id="callNotes" placeholder="Gatekeeper name, who to ask for, what they said, best time to call back..."></textarea>
+                        </div>
+
+                        <!-- Log -->
+                        <div class="call-section">
+                            <button class="log-btn" id="logBtn" onclick="logCall()" disabled>
+                                &#x1F4BE; Log Call &amp; Move Pipeline
+                            </button>
+                            <div style="font-size:0.6875rem;color:var(--text3);text-align:center;margin-top:0.625rem;" id="logHint">Select an outcome above to log</div>
+                        </div>
+
+                    </div><!-- /call-panel -->
+                </div><!-- /dialer-body -->
+            </div><!-- /dialerActive -->
+        </div><!-- /view-dialer -->
+
+        <!-- KANBAN VIEW -->
+        <div id="view-kanban" style="flex:1;display:none;flex-direction:column;overflow:hidden;">
+            <div class="kanban-header">
+                <h2>Pipeline Board</h2>
+                <div style="display:flex;gap:0.5rem;">
+                    <button class="btn btn-secondary" onclick="loadKanban()">&#x1F504; Refresh</button>
+                    <button class="btn btn-primary" onclick="setView('dialer')">&#x1F4DE; Back to Dialer</button>
+                </div>
+            </div>
+            <div class="kanban-scroll" id="kanbanBoard"></div>
+        </div>
+
+        <!-- IMPORT VIEW -->
+        <div id="view-import" style="flex:1;display:none;overflow-y:auto;">
+            <div class="import-view">
+                <div class="import-header">
+                    <h2>Import Leads</h2>
+                    <p>Upload a Google Maps CSV export — all fields are automatically detected.</p>
+                </div>
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('csvInput').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+                    <div class="dropzone-icon">&#x1F5C2;</div>
+                    <div class="dropzone-text">Drop your CSV here or click to browse</div>
+                    <div class="dropzone-sub">Supports Google Maps scraper exports — name, phone, website, rating, reviews, category, address, email, description</div>
+                    <input type="file" id="csvInput" accept=".csv" style="display:none;" onchange="handleCSV(event)">
+                </div>
+                <div id="importPreview"></div>
+                <div id="importActions" style="display:none;">
+                    <div class="progress-bar-wrap" id="importProgress" style="display:none;"><div class="progress-bar" id="importProgressBar" style="width:0%"></div></div>
+                    <div class="import-actions">
+                        <button class="btn btn-primary" onclick="executeImport()">&#x1F680; Import All Leads</button>
+                        <button class="btn btn-secondary" onclick="resetImport()">&#x2715; Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /main-panel -->
+</div><!-- /app -->
+
+<div class="toasts" id="toasts"></div>
 
 <script>
-// ==================== FIREBASE ====================
+// ===== FIREBASE =====
 const firebaseConfig = {
-    apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
-    authDomain: "arcane-archives-3b0f5.firebaseapp.com",
-    projectId: "arcane-archives-3b0f5",
-    storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
-    messagingSenderId: "264237235055",
-    appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+    apiKey:"AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+    authDomain:"arcane-archives-3b0f5.firebaseapp.com",
+    projectId:"arcane-archives-3b0f5",
+    storageBucket:"arcane-archives-3b0f5.firebasestorage.app",
+    messagingSenderId:"264237235055",
+    appId:"1:264237235055:web:4a2e5605b0ffb5307f069a"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+const db   = firebase.firestore();
+const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
 
-const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
-
+// ===== STATE =====
 let currentUser = null;
-let allQueueDocs = [];
-let allCRMLeads = [];
-let currentDocId = null;   // doc id of currently shown email
-let historyFilter = 'all';
+let allLeads = [];       // cold_call_leads
+let crmLeads = [];       // consulting_leads (for kanban)
+let queueFilter = 'all';
+let currentIdx = -1;
+let selectedOutcome = null;
+let timerInterval = null;
+let timerSeconds = 0;
+let callActive = false;
+let muted = false;
+let csvRows = [];
+let todayCallCount = 0;
+let todayConnected = 0;
+let todayQualified = 0;
 
-// ==================== AUTH ====================
-auth.onAuthStateChanged(async (user) => {
-    if (!user) { window.location.href = 'login.html'; return; }
-    if (!ADMIN_UIDS.includes(user.uid)) { window.location.href = 'dashboard.html'; return; }
+const OUTCOME_STAGE = {
+    no_answer:      null,             // stays new_lead, increments attempts
+    voicemail:      'contacted',
+    not_interested: '_lost',          // special: mark lost
+    callback:       'contacted',
+    interested:     'qualified',
+    meeting_booked: 'diagnostic_paid'
+};
+
+const OUTCOME_COLORS = {
+    no_answer:'#71717a', voicemail:'#f97316', not_interested:'#ef4444',
+    callback:'#fbbf24', interested:'#14b8a6', meeting_booked:'#8b5cf6'
+};
+
+const KANBAN_STAGES = [
+    { id:'new_lead',        label:'New Lead',        color:'#6366f1' },
+    { id:'contacted',       label:'Contacted',       color:'#3b82f6' },
+    { id:'qualified',       label:'Qualified',       color:'#8b5cf6' },
+    { id:'diagnostic_paid', label:'Diagnostic Paid', color:'#f59e0b' },
+    { id:'diagnostic_done', label:'Diagnostic Done', color:'#f97316' },
+    { id:'90_day_active',   label:'90-Day Active',   color:'#22c55e' },
+    { id:'completed',       label:'Completed',       color:'#fbbf24' }
+];
+
+// ===== AUTH =====
+auth.onAuthStateChanged(async user => {
+    if (!user || !ADMIN_UIDS.includes(user.uid)) {
+        alert('Admin access required.');
+        window.location.href = 'dashboard.html';
+        return;
+    }
     currentUser = user;
-    document.getElementById('sidebar-user-email').textContent = user.email;
-    await Promise.all([loadQueueDocs(), loadCRMLeads()]);
-    updateMetrics();
-    renderHistory();
+    await loadLeads();
+    loadTodayStats();
 });
 
-// ==================== DATA ====================
-async function loadQueueDocs() {
-    const snap = await db.collection('ai_email_queue').orderBy('createdAt', 'desc').get();
-    allQueueDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+// ===== LOAD =====
+async function loadLeads() {
+    const snap = await db.collection('cold_call_leads').orderBy('createdAt','desc').get();
+    allLeads = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderQueue();
+    updateSidebarStats();
 }
 
 async function loadCRMLeads() {
-    const snap = await db.collection('consulting_leads').get();
-    allCRMLeads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const snap = await db.collection('consulting_leads').orderBy('createdAt','desc').get();
+    crmLeads = snap.docs.map(d => ({ id:d.id, ...d.data() }));
 }
 
-// ==================== METRICS ====================
-function updateMetrics() {
-    const total = allQueueDocs.length;
-    const hq = allQueueDocs.filter(d => d.qualification === 'highly_qualified').length;
-    const crm = allQueueDocs.filter(d => d.addedToCRM).length;
-    const sent = allQueueDocs.filter(d => d.status === 'sent').length;
-
-    ['metric-total','hist-total'].forEach(id => setEl(id, total));
-    ['metric-hq','hist-hq'].forEach(id => setEl(id, hq));
-    ['metric-crm','hist-crm'].forEach(id => setEl(id, crm));
-    ['metric-sent','hist-sent'].forEach(id => setEl(id, sent));
-
-    // Sidebar stats
+function loadTodayStats() {
     const today = new Date(); today.setHours(0,0,0,0);
-    const todayCount = allQueueDocs.filter(d => {
-        const ts = d.createdAt?.toDate ? d.createdAt.toDate() : new Date(d.createdAt || 0);
-        return ts >= today;
-    }).length;
-    setEl('stat-today', todayCount);
-    setEl('stat-total', total);
+    db.collection('call_logs')
+        .where('uid','==',currentUser.uid)
+        .where('loggedAt','>=',today)
+        .get().then(snap => {
+            const logs = snap.docs.map(d => d.data());
+            todayCallCount = logs.length;
+            todayConnected = logs.filter(l => !['no_answer','voicemail'].includes(l.outcome)).length;
+            todayQualified = logs.filter(l => ['interested','meeting_booked'].includes(l.outcome)).length;
+            updateSidebarStats();
+        });
 }
 
-function setEl(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
+function updateSidebarStats() {
+    const pending = allLeads.filter(l => !l.callStatus || l.callStatus === 'pending').length;
+    el('statCallsToday').textContent = todayCallCount;
+    el('statConnected').textContent  = todayConnected;
+    el('statQualified').textContent  = todayQualified;
+    el('statQueue').textContent      = pending;
 }
 
-// ==================== VIEW SWITCHING ====================
-function switchView(view) {
-    ['generate','queue','history'].forEach(v => {
-        document.getElementById('view-' + v).classList.toggle('active', v === view);
-        document.getElementById('nav-' + v).classList.toggle('active', v === view);
+// ===== VIEW SWITCHING =====
+function setView(v) {
+    ['dialer','kanban','import'].forEach(id => {
+        const el2 = document.getElementById(`view-${id}`);
+        if (el2) el2.style.display = 'none';
     });
-    if (view === 'history') renderHistory();
-    closeSidebar();
+    document.getElementById(`view-${v}`).style.display = 'flex';
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`nav-${v}`)?.classList.add('active');
+    if (v === 'kanban') { loadCRMLeads().then(loadKanban); }
 }
 
-// ==================== SIDEBAR (MOBILE) ====================
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('active');
+// ===== QUEUE =====
+function setQFilter(f, chip) {
+    queueFilter = f;
+    document.querySelectorAll('.q-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filterQueue();
 }
 
-// ==================== DEDUP CHECK ====================
-function checkDedup(companyName) {
-    if (!companyName) return null;
-    const lower = companyName.toLowerCase().trim();
-    return allCRMLeads.find(l => (l.company || '').toLowerCase().trim() === lower || (l.name || '').toLowerCase().trim() === lower);
+function filterQueue() {
+    const q = el('qSearch').value.toLowerCase();
+    let list = allLeads;
+    if (queueFilter !== 'all') list = list.filter(l => (l.callStatus || 'pending') === queueFilter);
+    if (q) list = list.filter(l =>
+        (l.name||'').toLowerCase().includes(q) ||
+        (l.company||l.name||'').toLowerCase().includes(q) ||
+        (l.category||'').toLowerCase().includes(q) ||
+        (l.city||'').toLowerCase().includes(q)
+    );
+    renderQueueList(list);
 }
 
-// ==================== GENERATE EMAIL ====================
-async function generateEmail() {
-    const company = document.getElementById('inp-company').value.trim();
-    if (!company) { showToast('Company name is required', 'error'); return; }
-
-    const btn = document.getElementById('btn-generate');
-    btn.disabled = true;
-    btn.innerHTML = '<span style="display:inline-block;animation:spin 0.8s linear infinite;">&#x23F3;</span> Generating...';
-    document.getElementById('output-empty').style.display = 'flex';
-    document.getElementById('output-result').style.display = 'none';
-
-    // Dedup check
-    const dupe = checkDedup(company);
-    const dedupEl = document.getElementById('dedup-warning');
-    if (dupe) {
-        dedupEl.style.display = 'block';
-        document.getElementById('dedup-warning-text').innerHTML =
-            `<strong>${escapeHtml(company)}</strong> may already be in your CRM as <strong>${escapeHtml(dupe.name || dupe.company)}</strong>. <a href="arcane-consulting-crm.html">View in CRM &#8599;</a>`;
-    } else {
-        dedupEl.style.display = 'none';
-    }
-
-    const payload = {
-        companyName: company,
-        website: document.getElementById('inp-website').value.trim(),
-        linkedin: document.getElementById('inp-linkedin').value.trim(),
-        contactName: document.getElementById('inp-contact').value.trim(),
-        contactRole: document.getElementById('inp-role').value.trim(),
-        industry: document.getElementById('inp-industry').value.trim(),
-        revenueEstimate: document.getElementById('inp-revenue').value.trim(),
-        notes: document.getElementById('inp-notes').value.trim()
-    };
-
-    try {
-        const res = await fetch('/.netlify/functions/lead-agent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || 'API error ' + res.status);
-        }
-        const data = await res.json();
-
-        // Save to Firestore
-        const docData = {
-            ...payload,
-            subject: data.subject,
-            emailBody: data.emailBody,
-            qualification: data.qualification,
-            qualificationReason: data.qualificationReason,
-            painPoints: data.painPoints || [],
-            suggestedApproach: data.suggestedApproach || '',
-            status: 'draft',
-            addedToCRM: false,
-            leadId: null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            createdBy: currentUser.email
-        };
-        const docRef = await db.collection('ai_email_queue').add(docData);
-        currentDocId = docRef.id;
-        allQueueDocs.unshift({ id: docRef.id, ...docData, createdAt: new Date() });
-        updateMetrics();
-
-        // Show output
-        showOutputResult(data);
-        document.getElementById('btn-save-crm').disabled = false;
-        document.getElementById('btn-save-crm').innerHTML = '&#x1F4BE; Save to CRM';
-        document.getElementById('btn-mark-sent').disabled = false;
-        showToast('Email generated successfully!');
-
-    } catch (err) {
-        console.error(err);
-        showToast('Error: ' + err.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '&#x26A1; Generate Email';
-    }
+function renderQueue() {
+    filterQueue();
 }
 
-function showOutputResult(data) {
-    document.getElementById('output-empty').style.display = 'none';
-    document.getElementById('output-result').style.display = 'block';
-
-    // Qual badge
-    const badge = document.getElementById('out-qual-badge');
-    badge.textContent = qualLabel(data.qualification);
-    badge.className = 'qual-badge ' + (data.qualification || 'maybe');
-
-    document.getElementById('out-qual-reason').textContent = data.qualificationReason || '';
-    document.getElementById('out-approach').textContent = data.suggestedApproach || '';
-
-    // Pain chips
-    const chips = document.getElementById('out-pain-chips');
-    chips.innerHTML = (data.painPoints || []).map(p => `<span class="pain-chip">${escapeHtml(p)}</span>`).join('');
-
-    document.getElementById('out-subject').textContent = data.subject || '';
-    document.getElementById('out-email-body').value = data.emailBody || '';
-}
-
-function qualLabel(q) {
-    return { highly_qualified: '⭐ Highly Qualified', qualified: '✅ Qualified', maybe: '🤔 Maybe', not_qualified: '❌ Not Qualified' }[q] || q;
-}
-
-// ==================== COPY ====================
-function copySubject() {
-    const text = document.getElementById('out-subject').textContent;
-    navigator.clipboard.writeText(text).then(() => showToast('Subject copied!'));
-}
-
-function copyFullEmail() {
-    const subj = document.getElementById('out-subject').textContent;
-    const body = document.getElementById('out-email-body').value;
-    navigator.clipboard.writeText('Subject: ' + subj + '\n\n' + body).then(() => showToast('Email copied!'));
-}
-
-function copyModalEmail() {
-    const subj = document.getElementById('modal-subject').textContent;
-    const body = document.getElementById('modal-email-body').value;
-    navigator.clipboard.writeText('Subject: ' + subj + '\n\n' + body).then(() => showToast('Email copied!'));
-}
-
-// ==================== SAVE TO CRM ====================
-async function saveToCRM() {
-    if (!currentDocId) return;
-    const doc = allQueueDocs.find(d => d.id === currentDocId);
-    if (!doc) return;
-
-    const btn = document.getElementById('btn-save-crm');
-    btn.disabled = true;
-    btn.innerHTML = '&#x23F3; Saving...';
-
-    try {
-        // Get latest email body (user may have edited it)
-        const emailBody = document.getElementById('out-email-body').value;
-        const subject = document.getElementById('out-subject').textContent;
-
-        const leadData = {
-            name: doc.contactName || doc.companyName,
-            company: doc.companyName,
-            email: '',
-            website: doc.website || '',
-            industry: doc.industry || '',
-            revenueEstimate: doc.revenueEstimate || '',
-            stage: 'new_lead',
-            status: 'active',
-            source: 'ai_agent',
-            qualification: doc.qualification,
-            notes: [{
-                text: `AI-generated outreach email.\nSubject: ${subject}\n\n${emailBody}`,
-                createdAt: new Date().toISOString(),
-                createdBy: currentUser.email
-            }],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        const leadRef = await db.collection('consulting_leads').add(leadData);
-
-        // Update queue doc
-        await db.collection('ai_email_queue').doc(currentDocId).update({
-            addedToCRM: true,
-            leadId: leadRef.id,
-            emailBody: emailBody
-        });
-
-        const docIdx = allQueueDocs.findIndex(d => d.id === currentDocId);
-        if (docIdx !== -1) { allQueueDocs[docIdx].addedToCRM = true; allQueueDocs[docIdx].leadId = leadRef.id; }
-
-        allCRMLeads.push({ id: leadRef.id, ...leadData });
-        updateMetrics();
-
-        btn.innerHTML = '&#x2713; Added to CRM';
-        btn.className = 'btn btn-success btn-sm';
-        showToast(doc.companyName + ' added to CRM!');
-    } catch (err) {
-        btn.disabled = false;
-        btn.innerHTML = '&#x1F4BE; Save to CRM';
-        showToast('Error saving: ' + err.message, 'error');
-    }
-}
-
-async function markCurrentSent() {
-    if (!currentDocId) return;
-    await db.collection('ai_email_queue').doc(currentDocId).update({ status: 'sent' });
-    const doc = allQueueDocs.find(d => d.id === currentDocId);
-    if (doc) doc.status = 'sent';
-    updateMetrics();
-    const btn = document.getElementById('btn-mark-sent');
-    btn.innerHTML = '&#x2713; Sent';
-    btn.className = 'btn btn-success btn-sm';
-    btn.disabled = true;
-    showToast('Marked as sent!');
-}
-
-// ==================== QUEUE PROCESSING ====================
-async function processQueue() {
-    const raw = document.getElementById('queue-input').value.trim();
-    if (!raw) { showToast('Paste some leads first', 'warning'); return; }
-
-    const lines = raw.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('//') && !l.startsWith('#'));
-    if (!lines.length) { showToast('No valid lines found', 'warning'); return; }
-
-    const btn = document.getElementById('btn-process-queue');
-    btn.disabled = true;
-    btn.innerHTML = '&#x23F3; Processing...';
-
-    const progressWrap = document.getElementById('queue-progress-wrap');
-    const progressBar = document.getElementById('queue-progress-bar');
-    const progressLabel = document.getElementById('queue-progress-label');
-    progressWrap.style.display = 'block';
-    progressLabel.style.display = 'block';
-
-    const resultsEl = document.getElementById('queue-results');
-    resultsEl.innerHTML = '';
-
-    for (let i = 0; i < lines.length; i++) {
-        const parts = lines[i].split('|').map(p => p.trim());
-        const payload = {
-            companyName: parts[0] || '',
-            website: parts[1] || '',
-            contactName: parts[2] || '',
-            contactRole: parts[3] || '',
-            industry: parts[4] || '',
-            revenueEstimate: parts[5] || '',
-            notes: parts[6] || '',
-            linkedin: ''
-        };
-
-        if (!payload.companyName) continue;
-
-        progressLabel.textContent = `Processing ${i + 1} of ${lines.length}: ${payload.companyName}`;
-        progressBar.style.width = ((i / lines.length) * 100) + '%';
-
-        // Placeholder card
-        const cardId = 'qcard-' + i;
-        resultsEl.insertAdjacentHTML('beforeend', `
-            <div class="queue-card" id="${cardId}">
-                <div class="queue-card-header">
-                    <div>
-                        <div class="queue-card-company">${escapeHtml(payload.companyName)}</div>
-                        <div class="queue-card-subject" style="color:var(--text-muted);">Generating...</div>
-                    </div>
-                    <div style="display:flex;gap:0.5rem;align-items:center;">
-                        <span style="font-size:0.8125rem;color:var(--text-muted);">&#x23F3;</span>
-                    </div>
-                </div>
-            </div>`);
-
-        try {
-            const res = await fetch('/.netlify/functions/lead-agent', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Error');
-
-            // Save to Firestore
-            const docData = {
-                ...payload,
-                subject: data.subject,
-                emailBody: data.emailBody,
-                qualification: data.qualification,
-                qualificationReason: data.qualificationReason,
-                painPoints: data.painPoints || [],
-                suggestedApproach: data.suggestedApproach || '',
-                status: 'draft',
-                addedToCRM: false,
-                leadId: null,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.email
-            };
-            const docRef = await db.collection('ai_email_queue').add(docData);
-            const savedDoc = { id: docRef.id, ...docData, createdAt: new Date() };
-            allQueueDocs.unshift(savedDoc);
-
-            // Update card
-            const card = document.getElementById(cardId);
-            const dupe = checkDedup(payload.companyName);
-            card.innerHTML = `
-                <div class="queue-card-header">
-                    <div>
-                        <div class="queue-card-company">${escapeHtml(payload.companyName)}</div>
-                        <div class="queue-card-subject">${escapeHtml(data.subject)}</div>
-                        ${dupe ? `<div style="font-size:0.75rem;color:var(--warning);margin-top:0.25rem;">⚠️ Possible duplicate in CRM</div>` : ''}
-                    </div>
-                    <div style="display:flex;gap:0.5rem;align-items:center;">
-                        <span class="qual-badge ${data.qualification}">${qualLabel(data.qualification)}</span>
-                        <button class="btn btn-secondary btn-xs" onclick="toggleQueueCard('${cardId}')">View</button>
-                    </div>
-                </div>
-                <div class="queue-card-body" id="${cardId}-body">
-                    <div class="pain-chips">${(data.painPoints||[]).map(p=>`<span class="pain-chip">${escapeHtml(p)}</span>`).join('')}</div>
-                    <div style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;margin:0.75rem 0 0.375rem;font-weight:700;">Email Body</div>
-                    <textarea class="email-body-area" id="${cardId}-email" style="min-height:160px;">${escapeHtml(data.emailBody)}</textarea>
-                    <div class="queue-card-actions">
-                        <button class="btn btn-secondary btn-xs" onclick="copyQueueEmail('${cardId}','${escapeHtml(data.subject).replace(/'/g,'\\&apos;')}')">&#x1F4CB; Copy</button>
-                        <button class="btn btn-primary btn-xs" id="${cardId}-save" onclick="saveQueueToCRM('${docRef.id}','${cardId}')">&#x1F4BE; Save to CRM</button>
-                        <button class="btn btn-success btn-xs" id="${cardId}-sent" onclick="markQueueSent('${docRef.id}','${cardId}')">&#x2705; Mark Sent</button>
-                    </div>
-                </div>`;
-
-        } catch (err) {
-            const card = document.getElementById(cardId);
-            card.innerHTML = `
-                <div class="queue-card-header">
-                    <div class="queue-card-company">${escapeHtml(payload.companyName)}</div>
-                    <div style="font-size:0.8125rem;color:var(--danger);">Error: ${escapeHtml(err.message)}</div>
-                </div>`;
-        }
-    }
-
-    progressBar.style.width = '100%';
-    progressLabel.textContent = `Done! Processed ${lines.length} leads.`;
-    btn.disabled = false;
-    btn.innerHTML = '&#x26A1; Process Queue';
-    updateMetrics();
-    showToast('Queue processed! ' + lines.length + ' leads done.');
-}
-
-function toggleQueueCard(cardId) {
-    const body = document.getElementById(cardId + '-body');
-    if (body) body.classList.toggle('open');
-}
-
-function copyQueueEmail(cardId, subject) {
-    const body = document.getElementById(cardId + '-email').value;
-    navigator.clipboard.writeText('Subject: ' + subject + '\n\n' + body).then(() => showToast('Copied!'));
-}
-
-async function saveQueueToCRM(docId, cardId) {
-    const doc = allQueueDocs.find(d => d.id === docId);
-    if (!doc) return;
-    const btn = document.getElementById(cardId + '-save');
-    btn.disabled = true; btn.innerHTML = '&#x23F3; Saving...';
-    try {
-        const emailBody = document.getElementById(cardId + '-email').value;
-        const leadData = {
-            name: doc.contactName || doc.companyName,
-            company: doc.companyName,
-            email: '',
-            website: doc.website || '',
-            industry: doc.industry || '',
-            revenueEstimate: doc.revenueEstimate || '',
-            stage: 'new_lead',
-            status: 'active',
-            source: 'ai_agent',
-            qualification: doc.qualification,
-            notes: [{ text: `AI Email: ${emailBody}`, createdAt: new Date().toISOString(), createdBy: currentUser.email }],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        const leadRef = await db.collection('consulting_leads').add(leadData);
-        await db.collection('ai_email_queue').doc(docId).update({ addedToCRM: true, leadId: leadRef.id });
-        doc.addedToCRM = true;
-        allCRMLeads.push({ id: leadRef.id, ...leadData });
-        btn.innerHTML = '&#x2713; In CRM'; btn.className = 'btn btn-success btn-xs';
-        updateMetrics();
-        showToast(doc.companyName + ' added to CRM!');
-    } catch (err) {
-        btn.disabled = false; btn.innerHTML = '&#x1F4BE; Save to CRM';
-        showToast('Error: ' + err.message, 'error');
-    }
-}
-
-async function markQueueSent(docId, cardId) {
-    await db.collection('ai_email_queue').doc(docId).update({ status: 'sent' });
-    const doc = allQueueDocs.find(d => d.id === docId);
-    if (doc) doc.status = 'sent';
-    const btn = document.getElementById(cardId + '-sent');
-    if (btn) { btn.innerHTML = '&#x2713; Sent'; btn.className = 'btn btn-success btn-xs'; btn.disabled = true; }
-    updateMetrics();
-    showToast('Marked as sent!');
-}
-
-function clearQueue() {
-    document.getElementById('queue-input').value = '';
-    document.getElementById('queue-results').innerHTML = '';
-    document.getElementById('queue-progress-wrap').style.display = 'none';
-    document.getElementById('queue-progress-label').style.display = 'none';
-    document.getElementById('queue-count-label').textContent = '';
-}
-
-// ==================== HISTORY ====================
-function setHistoryFilter(filter, el) {
-    historyFilter = filter;
-    document.querySelectorAll('#history-filter-bar .filter-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    renderHistory();
-}
-
-function renderHistory() {
-    let docs = [...allQueueDocs];
-    if (historyFilter === 'draft') docs = docs.filter(d => d.status === 'draft');
-    else if (historyFilter === 'sent') docs = docs.filter(d => d.status === 'sent');
-    else if (historyFilter === 'highly_qualified') docs = docs.filter(d => d.qualification === 'highly_qualified');
-
-    const tbody = document.getElementById('history-tbody');
-    if (!docs.length) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No emails yet. Start generating from the Generate tab.</td></tr>';
+function renderQueueList(list) {
+    const container = el('queueList');
+    if (!list.length) {
+        container.innerHTML = `<div class="queue-empty"><div class="queue-empty-icon">&#x1F50D;</div><p>No leads match your filter.</p></div>`;
         return;
     }
-
-    tbody.innerHTML = docs.map(d => {
-        const date = d.createdAt?.toDate ? d.createdAt.toDate() : (d.createdAt instanceof Date ? d.createdAt : new Date());
-        const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' });
-        return `
-        <tr>
-            <td><strong>${escapeHtml(d.companyName || '—')}</strong>${d.addedToCRM ? ' <span style="font-size:0.7rem;color:var(--success);">&#x2713; CRM</span>' : ''}</td>
-            <td>${escapeHtml(d.contactName || '—')}<br><span style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(d.contactRole || '')}</span></td>
-            <td><span class="qual-badge ${d.qualification || 'maybe'}" style="font-size:0.7rem;padding:0.2rem 0.5rem;">${qualLabel(d.qualification)}</span></td>
-            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(d.subject || '—')}</td>
-            <td><span class="status-badge ${d.status || 'draft'}">${d.status || 'draft'}</span></td>
-            <td style="white-space:nowrap;color:var(--text-muted);">${dateStr}</td>
-            <td>
-                <div style="display:flex;gap:0.375rem;">
-                    <button class="btn btn-secondary btn-xs" onclick="openEmailModal('${d.id}')">View</button>
-                    ${!d.addedToCRM ? `<button class="btn btn-primary btn-xs" onclick="modalDocId='${d.id}';openEmailModal('${d.id}')">+CRM</button>` : ''}
-                </div>
-            </td>
-        </tr>`;
+    container.innerHTML = list.map((lead, i) => {
+        const status = lead.callStatus || 'pending';
+        const attempts = lead.callAttempts || 0;
+        const rating = parseFloat(lead.rating) || 0;
+        const stars = rating > 0 ? `<div class="lead-card-rating">&#x2605; ${rating.toFixed(1)}</div>` : '';
+        const realIdx = allLeads.indexOf(lead);
+        return `<div class="lead-card ${realIdx === currentIdx ? 'active' : ''}" onclick="selectLead(${realIdx})">
+            <div class="lead-card-name">${esc(lead.name || lead.company || 'Unknown')}</div>
+            <div class="lead-card-meta">
+                <span class="lead-card-cat">${esc(lead.category || '')}</span>
+                ${lead.city ? `<span class="lead-card-city">&#x1F4CD; ${esc(lead.city)}</span>` : ''}
+                <span class="lead-card-status"><span class="status-pill ${status}">${statusLabel(status)}</span></span>
+            </div>
+            ${attempts > 0 ? `<div class="lead-card-attempts">${attempts} attempt${attempts>1?'s':''}</div>` : ''}
+            ${stars}
+        </div>`;
     }).join('');
 }
 
-// ==================== MODAL ====================
-let modalDocId = null;
-
-function openEmailModal(docId) {
-    const doc = allQueueDocs.find(d => d.id === docId);
-    if (!doc) return;
-    modalDocId = docId;
-
-    document.getElementById('modal-company-name').textContent = doc.companyName || 'Email Details';
-    const badge = document.getElementById('modal-qual-badge');
-    badge.textContent = qualLabel(doc.qualification);
-    badge.className = 'qual-badge ' + (doc.qualification || 'maybe');
-    document.getElementById('modal-qual-reason').textContent = doc.qualificationReason || '';
-    document.getElementById('modal-pain-chips').innerHTML = (doc.painPoints || []).map(p => `<span class="pain-chip">${escapeHtml(p)}</span>`).join('');
-    document.getElementById('modal-subject').textContent = doc.subject || '';
-    document.getElementById('modal-email-body').value = doc.emailBody || '';
-
-    const saveBtn = document.getElementById('modal-save-crm');
-    const sentBtn = document.getElementById('modal-mark-sent');
-    if (doc.addedToCRM) { saveBtn.innerHTML = '&#x2713; In CRM'; saveBtn.disabled = true; saveBtn.className = 'btn btn-success btn-sm'; }
-    else { saveBtn.innerHTML = '&#x1F4BE; Save to CRM'; saveBtn.disabled = false; saveBtn.className = 'btn btn-primary btn-sm'; }
-    if (doc.status === 'sent') { sentBtn.innerHTML = '&#x2713; Sent'; sentBtn.disabled = true; sentBtn.className = 'btn btn-success btn-sm'; }
-    else { sentBtn.innerHTML = '&#x2705; Mark Sent'; sentBtn.disabled = false; sentBtn.className = 'btn btn-success btn-sm'; }
-
-    document.getElementById('email-detail-modal').classList.add('active');
+function statusLabel(s) {
+    return {pending:'Pending',called:'Called',callback:'Callback',interested:'Interested',
+            not_interested:'Not Interested',meeting:'Meeting',voicemail:'Voicemail'}[s] || s;
 }
 
-function closeModal() {
-    document.getElementById('email-detail-modal').classList.remove('active');
-    modalDocId = null;
+// ===== SELECT LEAD =====
+function selectLead(idx) {
+    currentIdx = idx;
+    const lead = allLeads[idx];
+    if (!lead) return;
+
+    el('dialerEmpty').style.display = 'none';
+    el('dialerActive').style.display = 'flex';
+    el('dialerActive').style.flexDirection = 'column';
+
+    // Topbar
+    el('dialerQueuePos').textContent = `Lead ${idx+1} / ${allLeads.length}`;
+    el('dialerCompanyName').textContent = lead.name || lead.company || 'Unknown';
+
+    // Avatar
+    const avatar = el('companyAvatar');
+    avatar.textContent = (lead.name || lead.company || 'A').charAt(0).toUpperCase();
+
+    // Name + category
+    el('infoName').textContent = lead.name || lead.company || '—';
+    el('infoCat').textContent  = lead.category || lead.industry || 'Business';
+
+    // Build data grid
+    const grid = el('infoGrid');
+    grid.innerHTML = buildDataGrid(lead);
+
+    // Maps link
+    const mapsQuery = encodeURIComponent(`${lead.name || lead.company || ''} ${lead.address || lead.city || ''}`);
+    el('mapsLink').href = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+    // Call history
+    loadCallHistory(lead.id);
+
+    // Reset call state
+    resetCallState();
+    renderQueue();
+
+    // Prev/Next buttons
+    el('btnPrev').disabled = idx <= 0;
+    el('btnNext').disabled = idx >= allLeads.length - 1;
 }
 
-async function modalSaveToCRM() {
-    if (!modalDocId) return;
-    const doc = allQueueDocs.find(d => d.id === modalDocId);
-    if (!doc || doc.addedToCRM) return;
-    const btn = document.getElementById('modal-save-crm');
-    btn.disabled = true; btn.innerHTML = '&#x23F3; Saving...';
+function buildDataGrid(lead) {
+    const rows = [];
+
+    // Phone — big and prominent
+    if (lead.phone) {
+        rows.push(`<div class="data-card full clickable" onclick="dialPhone()">
+            <div class="data-card-label">&#x1F4DE; Phone — click to call</div>
+            <div class="data-card-value phone">${esc(lead.phone)}</div>
+        </div>`);
+    }
+
+    // Email
+    if (lead.email) {
+        rows.push(`<div class="data-card">
+            <div class="data-card-label">&#x2709;&#xFE0F; Email</div>
+            <div class="data-card-value"><a href="mailto:${esc(lead.email)}" style="color:var(--purple-light);text-decoration:none;">${esc(lead.email)}</a></div>
+        </div>`);
+    }
+
+    // Website
+    if (lead.website) {
+        const url = lead.website.startsWith('http') ? lead.website : 'https://' + lead.website;
+        rows.push(`<div class="data-card">
+            <div class="data-card-label">&#x1F310; Website</div>
+            <div class="data-card-value website"><a href="${url}" target="_blank" rel="noopener">${esc(lead.website.replace(/^https?:\/\//,''))}</a></div>
+        </div>`);
+    }
+
+    // Address
+    const fullAddr = [lead.address, lead.city].filter(Boolean).join(', ');
+    if (fullAddr) {
+        rows.push(`<div class="data-card ${!lead.email && !lead.website ? 'full' : ''}">
+            <div class="data-card-label">&#x1F4CD; Address</div>
+            <div class="data-card-value" style="font-size:0.8125rem;">${esc(fullAddr)}</div>
+        </div>`);
+    }
+
+    // Rating + Reviews
+    if (lead.rating) {
+        const r = parseFloat(lead.rating);
+        const stars = '&#x2605;'.repeat(Math.round(r)) + '&#x2606;'.repeat(5 - Math.round(r));
+        rows.push(`<div class="data-card">
+            <div class="data-card-label">&#x2B50; Google Rating</div>
+            <div class="data-card-value rating">
+                <span class="stars">${'★'.repeat(Math.round(r))}${'☆'.repeat(5-Math.round(r))}</span>
+                <span>${r.toFixed(1)}</span>
+                ${lead.reviews && lead.reviews !== '0' ? `<span class="rating-count">(${Number(lead.reviews).toLocaleString()} reviews)</span>` : ''}
+            </div>
+        </div>`);
+    }
+
+    // Revenue estimate
+    if (lead.revenue) {
+        rows.push(`<div class="data-card">
+            <div class="data-card-label">&#x1F4B0; Revenue Estimate</div>
+            <div class="data-card-value">${esc(lead.revenue)}</div>
+        </div>`);
+    }
+
+    // Description
+    if (lead.description) {
+        rows.push(`<div class="data-card full">
+            <div class="data-card-label">&#x1F4DD; About</div>
+            <div class="data-card-value description">${esc(lead.description)}</div>
+        </div>`);
+    }
+
+    // LinkedIn
+    if (lead.linkedin) {
+        rows.push(`<div class="data-card">
+            <div class="data-card-label">&#x1F517; LinkedIn</div>
+            <div class="data-card-value"><a href="${esc(lead.linkedin)}" target="_blank" style="color:var(--blue);font-size:0.8125rem;">View Profile</a></div>
+        </div>`);
+    }
+
+    // Contact name
+    if (lead.contactName) {
+        rows.push(`<div class="data-card">
+            <div class="data-card-label">&#x1F464; Contact</div>
+            <div class="data-card-value">${esc(lead.contactName)}${lead.contactRole ? ` <span style="color:var(--text3);font-size:0.75rem;">· ${esc(lead.contactRole)}</span>` : ''}</div>
+        </div>`);
+    }
+
+    return rows.join('');
+}
+
+async function loadCallHistory(leadId) {
+    const container = el('callHistory');
+    container.innerHTML = `<div style="font-size:0.75rem;color:var(--text3);">Loading...</div>`;
     try {
-        const emailBody = document.getElementById('modal-email-body').value;
-        const leadData = {
-            name: doc.contactName || doc.companyName,
-            company: doc.companyName,
-            email: '',
-            website: doc.website || '',
-            industry: doc.industry || '',
-            revenueEstimate: doc.revenueEstimate || '',
-            stage: 'new_lead',
-            status: 'active',
-            source: 'ai_agent',
-            qualification: doc.qualification,
-            notes: [{ text: `AI Email:\n${emailBody}`, createdAt: new Date().toISOString(), createdBy: currentUser.email }],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        const leadRef = await db.collection('consulting_leads').add(leadData);
-        await db.collection('ai_email_queue').doc(modalDocId).update({ addedToCRM: true, leadId: leadRef.id, emailBody });
-        doc.addedToCRM = true; doc.leadId = leadRef.id;
-        allCRMLeads.push({ id: leadRef.id, ...leadData });
-        btn.innerHTML = '&#x2713; In CRM'; btn.className = 'btn btn-success btn-sm';
-        updateMetrics();
-        renderHistory();
-        showToast(doc.companyName + ' added to CRM!');
-    } catch (err) {
-        btn.disabled = false; btn.innerHTML = '&#x1F4BE; Save to CRM';
-        showToast('Error: ' + err.message, 'error');
+        const snap = await db.collection('call_logs')
+            .where('leadId','==',leadId)
+            .orderBy('loggedAt','desc')
+            .limit(8)
+            .get();
+        const logs = snap.docs.map(d => d.data());
+        if (!logs.length) {
+            container.innerHTML = `<div style="font-size:0.8125rem;color:var(--text3);padding:0.5rem 0;">No previous calls logged.</div>`;
+            return;
+        }
+        container.innerHTML = logs.map(log => {
+            const color = OUTCOME_COLORS[log.outcome] || '#71717a';
+            const dt = log.loggedAt?.toDate ? log.loggedAt.toDate() : new Date(log.loggedAt);
+            const timeStr = dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+            return `<div class="prev-call">
+                <div class="prev-call-dot" style="background:${color};"></div>
+                <div style="flex:1;">
+                    <div class="prev-call-outcome" style="color:${color};">${outcomeLabel(log.outcome)}</div>
+                    ${log.notes ? `<div class="prev-call-note">${esc(log.notes)}</div>` : ''}
+                </div>
+                <div class="prev-call-time">${timeStr}</div>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        container.innerHTML = `<div style="font-size:0.75rem;color:var(--text3);">Could not load history.</div>`;
     }
 }
 
-async function modalMarkSent() {
-    if (!modalDocId) return;
-    await db.collection('ai_email_queue').doc(modalDocId).update({ status: 'sent' });
-    const doc = allQueueDocs.find(d => d.id === modalDocId);
-    if (doc) doc.status = 'sent';
-    const btn = document.getElementById('modal-mark-sent');
-    btn.innerHTML = '&#x2713; Sent'; btn.className = 'btn btn-success btn-sm'; btn.disabled = true;
-    updateMetrics();
-    renderHistory();
-    showToast('Marked as sent!');
+// ===== NAVIGATION =====
+function navLead(dir) {
+    const newIdx = currentIdx + dir;
+    if (newIdx >= 0 && newIdx < allLeads.length) selectLead(newIdx);
 }
 
-// ==================== UTILS ====================
-function escapeHtml(str) {
+function skipLead() {
+    if (currentIdx < allLeads.length - 1) selectLead(currentIdx + 1);
+    else toast('End of queue','info');
+}
+
+// ===== CALL TIMER =====
+function startCall() {
+    callActive = true;
+    timerSeconds = 0;
+    el('btnStartCall').style.display = 'none';
+    el('btnEndCall').style.display   = '';
+    el('btnMute').style.display      = '';
+    el('btnDialPhone').style.display = '';
+    el('timerStatus').textContent    = 'In call...';
+    timerInterval = setInterval(() => {
+        timerSeconds++;
+        updateTimerDisplay();
+    }, 1000);
+    // Open phone dialer
+    dialPhone();
+}
+
+function endCall() {
+    clearInterval(timerInterval);
+    callActive = false;
+    el('btnEndCall').style.display   = 'none';
+    el('btnMute').style.display      = 'none';
+    el('btnStartCall').style.display = '';
+    el('timerStatus').textContent    = `Call ended · ${formatTimer(timerSeconds)}`;
+}
+
+function toggleMute() {
+    muted = !muted;
+    const btn = el('btnMute');
+    btn.classList.toggle('active', muted);
+    btn.innerHTML = muted ? '&#x1F507;' : '&#x1F508;';
+    btn.title = muted ? 'Unmute' : 'Mute';
+}
+
+function updateTimerDisplay() {
+    el('timerDisplay').textContent = formatTimer(timerSeconds);
+    // Pulse the ring (60s cycle)
+    const progress = el('timerProgress');
+    const offset = 264 - (264 * (timerSeconds % 60) / 60);
+    progress.style.strokeDashoffset = offset;
+    progress.style.stroke = timerSeconds < 30 ? 'var(--green)' : timerSeconds < 120 ? 'var(--gold)' : 'var(--red)';
+}
+
+function formatTimer(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+function resetCallState() {
+    clearInterval(timerInterval);
+    callActive = false;
+    muted = false;
+    timerSeconds = 0;
+    selectedOutcome = null;
+    el('timerDisplay').textContent = '0:00';
+    el('timerStatus').textContent  = 'Ready to call';
+    el('timerProgress').style.strokeDashoffset = 264;
+    el('timerProgress').style.stroke = 'var(--green)';
+    el('btnStartCall').style.display = '';
+    el('btnEndCall').style.display   = 'none';
+    el('btnMute').style.display      = 'none';
+    el('btnDialPhone').style.display = 'none';
+    el('callNotes').value = '';
+    el('followupRow').classList.remove('visible');
+    el('callbackDate').value = '';
+    el('logBtn').disabled = true;
+    el('logHint').textContent = 'Select an outcome above to log';
+    document.querySelectorAll('.outcome-btn').forEach(b => {
+        b.classList.remove('selected');
+        Object.keys(OUTCOME_COLORS).forEach(k => b.classList.remove(k));
+    });
+}
+
+function dialPhone() {
+    const lead = allLeads[currentIdx];
+    if (!lead?.phone) return;
+    const clean = lead.phone.replace(/\s/g,'');
+    window.location.href = `tel:${clean}`;
+}
+
+// ===== OUTCOME =====
+function selectOutcome(outcome, btn) {
+    selectedOutcome = outcome;
+    document.querySelectorAll('.outcome-btn').forEach(b => {
+        b.classList.remove('selected');
+        Object.keys(OUTCOME_COLORS).forEach(k => b.classList.remove(k));
+    });
+    btn.classList.add('selected', outcome);
+    el('logBtn').disabled = false;
+    el('logHint').textContent = outcomeHint(outcome);
+    el('followupRow').classList.toggle('visible', outcome === 'callback');
+}
+
+function outcomeLabel(o) {
+    return {no_answer:'No Answer',voicemail:'Voicemail Left',not_interested:'Not Interested',
+            callback:'Callback Scheduled',interested:'Interested',meeting_booked:'Meeting Booked'}[o] || o;
+}
+
+function outcomeHint(o) {
+    return {
+        no_answer:'Will mark as attempted — stays in queue',
+        voicemail:'Moves to Contacted in CRM pipeline',
+        not_interested:'Marks as lost — removed from active queue',
+        callback:'Moves to Contacted · set a callback date',
+        interested:'Moves to Qualified in CRM pipeline',
+        meeting_booked:'Moves to Diagnostic Paid — congratulations!'
+    }[o] || '';
+}
+
+// ===== LOG CALL =====
+async function logCall() {
+    if (!selectedOutcome) { toast('Select an outcome first','warn'); return; }
+    const lead = allLeads[currentIdx];
+    if (!lead) return;
+
+    const btn = el('logBtn');
+    btn.disabled = true;
+    btn.innerHTML = '&#x23F3; Saving...';
+
+    const notes = el('callNotes').value.trim();
+    const callbackDate = el('callbackDate').value;
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+
+    try {
+        // 1. Save call log
+        await db.collection('call_logs').add({
+            leadId: lead.id,
+            leadName: lead.name || lead.company || '',
+            outcome: selectedOutcome,
+            notes,
+            callbackDate: callbackDate || null,
+            duration: timerSeconds,
+            loggedAt: now,
+            uid: currentUser.uid
+        });
+
+        // 2. Update cold_call_lead status
+        const newStatus = {
+            no_answer:'called', voicemail:'voicemail', not_interested:'not_interested',
+            callback:'callback', interested:'interested', meeting_booked:'meeting'
+        }[selectedOutcome];
+
+        const leadUpdate = {
+            callStatus: newStatus,
+            callAttempts: firebase.firestore.FieldValue.increment(1),
+            lastCalledAt: now,
+            lastOutcome: selectedOutcome,
+            lastNotes: notes
+        };
+        if (callbackDate) leadUpdate.callbackDate = callbackDate;
+        await db.collection('cold_call_leads').doc(lead.id).update(leadUpdate);
+
+        // 3. Move CRM pipeline if applicable
+        const targetStage = OUTCOME_STAGE[selectedOutcome];
+        if (targetStage) {
+            await syncToCRM(lead, targetStage, notes, callbackDate);
+        }
+
+        // 4. Update local state
+        lead.callStatus = newStatus;
+        lead.callAttempts = (lead.callAttempts || 0) + 1;
+        lead.lastOutcome = selectedOutcome;
+
+        // 5. Update stats
+        todayCallCount++;
+        if (!['no_answer','voicemail'].includes(selectedOutcome)) todayConnected++;
+        if (['interested','meeting_booked'].includes(selectedOutcome)) todayQualified++;
+        updateSidebarStats();
+
+        toast(`&#x2705; Logged: ${outcomeLabel(selectedOutcome)}`, 'success');
+
+        // 6. Auto-advance to next pending lead (skip if meeting/not-interested)
+        const shouldAdvance = ['no_answer','voicemail','not_interested'].includes(selectedOutcome);
+        if (shouldAdvance && currentIdx < allLeads.length - 1) {
+            setTimeout(() => selectLead(currentIdx + 1), 800);
+        } else {
+            resetCallState();
+            loadCallHistory(lead.id);
+            renderQueue();
+        }
+
+    } catch(e) {
+        console.error(e);
+        toast('Error saving — check console','error');
+        btn.disabled = false;
+        btn.innerHTML = '&#x1F4BE; Log Call &amp; Move Pipeline';
+    }
+}
+
+async function syncToCRM(lead, targetStage, notes, callbackDate) {
+    // Check if already in CRM by phone or name
+    const existing = await db.collection('consulting_leads')
+        .where('phone','==',lead.phone || '')
+        .limit(1).get();
+
+    if (targetStage === '_lost') {
+        if (!existing.empty) {
+            await db.collection('consulting_leads').doc(existing.docs[0].id).update({ status:'lost', lostAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+        return;
+    }
+
+    if (!existing.empty) {
+        // Update existing CRM lead
+        const crmDoc = existing.docs[0];
+        const currentStageIdx = KANBAN_STAGES.findIndex(s => s.id === crmDoc.data().stage);
+        const newStageIdx     = KANBAN_STAGES.findIndex(s => s.id === targetStage);
+        if (newStageIdx > currentStageIdx) {
+            const upd = { stage: targetStage, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+            if (notes) upd.lastNote = notes;
+            if (callbackDate) upd.followUpDate = callbackDate;
+            await db.collection('consulting_leads').doc(crmDoc.id).update(upd);
+        }
+    } else {
+        // Create new CRM lead
+        const crmData = {
+            name: lead.contactName || lead.name || lead.company || 'Unknown',
+            company: lead.name || lead.company || '',
+            email: lead.email || '',
+            phone: lead.phone || '',
+            website: lead.website || '',
+            address: [lead.address, lead.city].filter(Boolean).join(', '),
+            industry: lead.category || lead.industry || '',
+            stage: targetStage,
+            source: 'cold_call',
+            dealValue: 0,
+            status: 'active',
+            notes: notes || '',
+            followUpDate: callbackDate || null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            coldCallLeadId: lead.id
+        };
+        await db.collection('consulting_leads').add(crmData);
+    }
+}
+
+// ===== KANBAN =====
+async function loadKanban() {
+    await loadCRMLeads();
+    renderKanban();
+}
+
+function renderKanban() {
+    const board = el('kanbanBoard');
+    board.innerHTML = KANBAN_STAGES.map(stage => {
+        const leads = crmLeads.filter(l => l.stage === stage.id && l.status !== 'lost');
+        return `<div class="k-col" ondragover="kDragOver(event,this)" ondrop="kDrop(event,'${stage.id}')">
+            <div class="k-col-head">
+                <div class="k-col-title">
+                    <div class="k-col-dot" style="background:${stage.color};"></div>
+                    ${stage.label}
+                </div>
+                <div class="k-col-count">${leads.length}</div>
+            </div>
+            <div class="k-col-body" id="kcol-${stage.id}">
+                ${leads.map(lead => kanbanCard(lead)).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function kanbanCard(lead) {
+    const days = lead.createdAt ? Math.floor((Date.now() - (lead.createdAt.toDate?.() || new Date(lead.createdAt)).getTime()) / 86400000) : 0;
+    const hasFollowUp = lead.followUpDate;
+    const isOverdue = hasFollowUp && new Date(lead.followUpDate) < new Date();
+    return `<div class="k-card" draggable="true" ondragstart="kDragStart(event,'${lead.id}')" onclick="openCRMLeadDetail('${lead.id}')">
+        <div class="k-card-name">${esc(lead.name || '—')}</div>
+        <div class="k-card-co">${esc(lead.company || lead.industry || '—')}</div>
+        <div class="k-card-foot">
+            <span class="k-card-days">${days}d in stage</span>
+            ${hasFollowUp ? `<span class="k-card-fu ${isOverdue?'overdue':'due'}" title="${isOverdue?'Overdue follow-up':'Follow-up due'}"></span>` : ''}
+        </div>
+    </div>`;
+}
+
+let dragLeadId = null;
+function kDragStart(e, id) { dragLeadId = id; e.dataTransfer.effectAllowed = 'move'; }
+function kDragOver(e, col) { e.preventDefault(); col.querySelector('.k-col-body')?.classList.add('drag-over'); }
+async function kDrop(e, stageId) {
+    e.preventDefault();
+    document.querySelectorAll('.k-col-body').forEach(c => c.classList.remove('drag-over'));
+    if (!dragLeadId) return;
+    await db.collection('consulting_leads').doc(dragLeadId).update({ stage: stageId, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await loadCRMLeads();
+    renderKanban();
+    toast(`Moved to ${KANBAN_STAGES.find(s=>s.id===stageId)?.label}`,'success');
+}
+
+function openCRMLeadDetail(id) {
+    window.open(`arcane-consulting-crm.html`, '_blank');
+}
+
+// ===== CSV IMPORT =====
+let csvParsed = [];
+
+function onDragOver(e) { e.preventDefault(); el('dropzone').classList.add('over'); }
+function onDragLeave(e) { el('dropzone').classList.remove('over'); }
+function onDrop(e) {
+    e.preventDefault();
+    el('dropzone').classList.remove('over');
+    const file = e.dataTransfer.files[0];
+    if (file) processCSVFile(file);
+}
+function handleCSV(e) {
+    const file = e.target.files[0];
+    if (file) processCSVFile(file);
+}
+
+function processCSVFile(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const text = ev.target.result;
+        csvParsed = parseCSV(text);
+        showImportPreview(csvParsed);
+    };
+    reader.readAsText(file);
+}
+
+function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/\s+/g,'_'));
+    return lines.slice(1).filter(l => l.trim()).map(line => {
+        const vals = parseCSVLine(line);
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim(); });
+        return obj;
+    });
+}
+
+function parseCSVLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
+        else { cur += ch; }
+    }
+    result.push(cur);
+    return result;
+}
+
+function showImportPreview(rows) {
+    if (!rows.length) { toast('No data found in CSV','error'); return; }
+    const preview = el('importPreview');
+    const heads = Object.keys(rows[0]);
+    const sample = rows.slice(0, 5);
+    preview.innerHTML = `
+        <div style="margin-bottom:0.75rem;font-size:0.8125rem;color:var(--text2);">
+            <strong>${rows.length}</strong> leads detected · showing first 5
+        </div>
+        <div class="import-preview">
+            <div class="import-preview-scroll">
+            <table>
+                <thead><tr>${heads.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+                <tbody>${sample.map(r => `<tr>${heads.map(h => `<td>${esc(r[h]||'')}</td>`).join('')}</tr>`).join('')}</tbody>
+            </table>
+            </div>
+        </div>`;
+    el('importActions').style.display = 'block';
+}
+
+async function executeImport() {
+    if (!csvParsed.length) return;
+    const bar = el('importProgressBar');
+    const prog = el('importProgress');
+    prog.style.display = 'block';
+    let imported = 0;
+    // Check existing to avoid duplicates (by name+phone or name+website)
+    const existingSnap = await db.collection('cold_call_leads').get();
+    const existingKeys = new Set(existingSnap.docs.map(d => {
+        const data = d.data();
+        return `${(data.name||'').toLowerCase()}|${data.phone||''}`;
+    }));
+    const batch = db.batch();
+    let count = 0;
+    for (const row of csvParsed) {
+        const name = row.name || row.business_name || row.company_name || '';
+        const phone = row.phone || row.phone_number || row.telephone || '';
+        const key = `${name.toLowerCase()}|${phone}`;
+        if (existingKeys.has(key)) continue;
+        const ref = db.collection('cold_call_leads').doc();
+        batch.set(ref, {
+            name:        name,
+            phone:       phone,
+            email:       row.email || '',
+            website:     row.website || row.url || '',
+            address:     row.address || row.full_address || '',
+            city:        row.city || row.town || '',
+            category:    row.category || row.type || row.industry || '',
+            rating:      row.rating || row.google_rating || '',
+            reviews:     row.reviews || row.review_count || row.num_reviews || '',
+            description: row.description || row.about || '',
+            contactName: row.contact_name || row.owner || '',
+            contactRole: row.contact_role || row.position || '',
+            linkedin:    row.linkedin || row.linkedin_url || '',
+            revenue:     row.revenue || row.revenue_estimate || '',
+            callStatus:  'pending',
+            callAttempts:0,
+            source:      'csv_import',
+            createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+        });
+        count++;
+        imported++;
+        if (count === 499) { await batch.commit(); count = 0; }
+        bar.style.width = `${Math.round((imported / csvParsed.length) * 100)}%`;
+    }
+    if (count > 0) await batch.commit();
+    prog.style.display = 'none';
+    toast(`&#x2705; Imported ${imported} leads`, 'success');
+    resetImport();
+    await loadLeads();
+    setView('dialer');
+}
+
+function resetImport() {
+    csvParsed = [];
+    el('importPreview').innerHTML = '';
+    el('importActions').style.display = 'none';
+    el('csvInput').value = '';
+}
+
+// ===== UTILS =====
+function el(id) { return document.getElementById(id); }
+function esc(str) {
     if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function showToast(msg, type = 'success') {
+function toast(msg, type = 'success') {
+    const c = el('toasts');
     const t = document.createElement('div');
-    const bg = type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#22c55e';
-    t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;padding:1rem 1.5rem;border-radius:12px;font-weight:600;font-size:0.875rem;z-index:9999;color:white;background:${bg};box-shadow:0 8px 24px rgba(0,0,0,0.4);max-width:320px;animation:slideInRight 0.3s ease;`;
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3200);
+    t.className = `toast ${type}`;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(80px)'; t.style.transition = '0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-// Queue input — update count label
-document.getElementById('queue-input').addEventListener('input', function() {
-    const lines = this.value.split('\n').filter(l => l.trim() && !l.startsWith('//'));
-    document.getElementById('queue-count-label').textContent = lines.length ? lines.length + ' lead' + (lines.length > 1 ? 's' : '') + ' detected' : '';
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (currentIdx < 0) return;
+    switch(e.key) {
+        case 'ArrowRight': case 'n': navLead(1); break;
+        case 'ArrowLeft':  case 'p': navLead(-1); break;
+        case '1': selectOutcome('no_answer', document.querySelector('[data-outcome="no_answer"]')); break;
+        case '2': selectOutcome('voicemail', document.querySelector('[data-outcome="voicemail"]')); break;
+        case '3': selectOutcome('not_interested', document.querySelector('[data-outcome="not_interested"]')); break;
+        case '4': selectOutcome('callback', document.querySelector('[data-outcome="callback"]')); break;
+        case '5': selectOutcome('interested', document.querySelector('[data-outcome="interested"]')); break;
+        case '6': selectOutcome('meeting_booked', document.querySelector('[data-outcome="meeting_booked"]')); break;
+        case 'Enter': if (selectedOutcome && !el('logBtn').disabled) logCall(); break;
+        case 'c': if (!callActive) startCall(); else endCall(); break;
+    }
 });
-
-// Spin keyframe
-const style = document.createElement('style');
-style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes slideInRight{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}';
-document.head.appendChild(style);
 </script>
 </body>
 </html>
