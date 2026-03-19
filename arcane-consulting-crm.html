@@ -1108,17 +1108,25 @@
 <div class="modal-overlay" id="paymentModal">
     <div class="modal" style="max-width:500px;">
         <div class="modal-header">
-            <span class="modal-title">Log Payment</span>
+            <span class="modal-title">&#x1F4B0; Log Payment</span>
             <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
         </div>
         <div class="modal-body">
             <form id="paymentForm" onsubmit="savePayment(event)">
                 <div class="form-group">
                     <label class="form-label">Lead *</label>
-                    <select class="form-select" id="paymentLeadId" required></select>
+                    <div style="position:relative;">
+                        <input type="text" class="form-input" id="paymentLeadSearch"
+                               placeholder="&#x1F50D; Search by company, name or phone..."
+                               oninput="filterPaymentLeads()" autocomplete="off"
+                               style="padding-left:0.875rem;">
+                        <input type="hidden" id="paymentLeadId">
+                        <div id="paymentLeadDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
+                    </div>
+                    <div id="paymentLeadSelected" style="display:none;font-size:0.8125rem;color:var(--purple-light);margin-top:0.375rem;font-weight:600;"></div>
                 </div>
                 <div class="form-grid">
-                    <div class="form-group"><label class="form-label">Amount (&pound;) *</label><input class="form-input" id="paymentAmount" type="number" required></div>
+                    <div class="form-group"><label class="form-label">Amount (&pound;) *</label><input class="form-input" id="paymentAmount" type="number" step="0.01" min="0" required placeholder="0.00"></div>
                     <div class="form-group"><label class="form-label">Date *</label><input class="form-input" id="paymentDate" type="date" required></div>
                 </div>
                 <div class="form-group">
@@ -1130,10 +1138,10 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="paymentNotes"></div>
+                <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="paymentNotes" placeholder="Optional notes..."></div>
                 <div class="modal-footer" style="padding:1.5rem 0 0;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('paymentModal')">Cancel</button>
-                    <button type="submit" class="btn btn-success">Log Payment</button>
+                    <button type="submit" class="btn btn-success">&#x1F4BE; Log Payment</button>
                 </div>
             </form>
         </div>
@@ -1603,7 +1611,15 @@ function filterLeads() {
         else if (currentFilter === 'lost') filtered = filtered.filter(l => l.status === 'lost');
         else filtered = filtered.filter(l => l.stage === currentFilter);
     }
-    if (q) filtered = filtered.filter(l => (l.name||'').toLowerCase().includes(q) || (l.company||'').toLowerCase().includes(q) || (l.email||'').toLowerCase().includes(q));
+    if (q) filtered = filtered.filter(l =>
+        (l.name||'').toLowerCase().includes(q) ||
+        (l.company||'').toLowerCase().includes(q) ||
+        (l.email||'').toLowerCase().includes(q) ||
+        (l.phone||'').toLowerCase().includes(q) ||
+        (l.address||'').toLowerCase().includes(q) ||
+        (l.category||'').toLowerCase().includes(q) ||
+        (l.industry||'').toLowerCase().includes(q)
+    );
 
     const tbody = document.getElementById('leadsTableBody');
     tbody.innerHTML = filtered.length === 0
@@ -1680,46 +1696,114 @@ async function deleteAllLeads() {
 function openLeadDetail(id) {
     const lead = allLeads.find(l => l.id === id);
     if (!lead) return;
-    document.getElementById('detailModalTitle').textContent = lead.name;
+
+    // Fix NaN for reviews: only parse if it's a valid number string
+    const reviewCount = lead.ratingInfo != null && !isNaN(parseInt(lead.ratingInfo))
+        ? parseInt(lead.ratingInfo).toLocaleString() : null;
+    const rating = lead.rating != null && !isNaN(parseFloat(lead.rating))
+        ? parseFloat(lead.rating) : null;
+    const calls = lead.callAttempts || 0;
+    const days = daysSince(lead.createdAt);
+    const nextStage = NEXT_STAGE[lead.stage];
     const notes = (lead.notes || []).slice().reverse();
+    const outstanding = Math.max(0, (lead.dealValue || 0) - (lead.paymentsReceived || 0));
+
+    document.getElementById('detailModalTitle').textContent = lead.company || lead.name;
 
     document.getElementById('detailModalBody').innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;">
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Email</span><div>${escapeHtml(lead.email || '—')}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Phone</span><div>${escapeHtml(lead.phone || '—')}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Company</span><div>${escapeHtml(lead.company || '—')}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Website</span><div>${lead.website ? `<a href="${escapeHtml(lead.website)}" target="_blank" style="color:var(--purple-light);">${escapeHtml(lead.website)}</a>` : '—'}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Industry</span><div>${escapeHtml(lead.industry || '—')}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Revenue Est.</span><div>${escapeHtml(lead.revenueEstimate || '—')}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Google Rating</span><div>${renderRating(lead.rating, lead.ratingInfo)}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">No. of Reviews</span><div>${lead.ratingInfo ? parseInt(lead.ratingInfo).toLocaleString() : '—'}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Stage</span><div><span class="stage-badge ${lead.stage}">${stageLabel(lead.stage)}</span></div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Status</span><div><span class="status-dot ${lead.status||'active'}"></span> ${lead.status || 'active'}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Deal Value</span><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.25rem;color:var(--success);">${formatCurrency(lead.dealValue || 0)}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Payments Received</span><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.25rem;">${formatCurrency(lead.paymentsReceived || 0)}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Follow-up</span><div>${lead.followUpDate ? formatDate(lead.followUpDate) : '—'}</div></div>
-            <div><span style="font-size:0.6875rem;color:var(--text-muted);text-transform:uppercase;">Source</span><div>${lead.source || '—'}</div></div>
+        <!-- QUICK STATS BAR -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.5rem;">
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.25rem;">Deal Value</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:1rem;color:var(--success);">${formatCurrency(lead.dealValue || 0)}</div>
+            </div>
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.25rem;">Paid</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:1rem;color:var(--gold);">${formatCurrency(lead.paymentsReceived || 0)}</div>
+            </div>
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.25rem;">Call Attempts</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:1rem;">${calls}</div>
+            </div>
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.25rem;">Days In</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:1rem;">${days}d</div>
+            </div>
         </div>
 
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem;">
+        <!-- STAGE + STATUS ROW -->
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+            <span class="stage-badge ${lead.stage}">${stageLabel(lead.stage)}</span>
+            <span style="display:flex;align-items:center;gap:0.375rem;font-size:0.8125rem;color:var(--text-secondary);">
+                <span class="status-dot ${lead.status||'active'}"></span>${lead.status || 'active'}
+            </span>
+            ${lead.source ? `<span style="font-size:0.75rem;color:var(--text-muted);background:var(--bg-elevated);border-radius:4px;padding:0.125rem 0.5rem;">${escapeHtml(lead.source)}</span>` : ''}
+            ${lead.qualification ? `<span style="font-size:0.75rem;font-weight:700;color:var(--purple-light);background:rgba(139,92,246,0.1);border-radius:4px;padding:0.125rem 0.5rem;">${escapeHtml(lead.qualification.replace('_', ' '))}</span>` : ''}
+        </div>
+
+        <!-- MAIN INFO GRID -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;">
+
+            <!-- Contact Info -->
+            <div style="background:var(--bg-elevated);border-radius:12px;padding:1rem;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.875rem;">&#x1F4DE; Contact</div>
+                ${lead.name && lead.company ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">Contact Name</span><div style="font-weight:600;font-size:0.9375rem;">${escapeHtml(lead.name)}</div></div>` : ''}
+                ${lead.phone ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">Phone</span><div><a href="tel:${escapeHtml(lead.phone)}" style="color:var(--text);font-weight:700;text-decoration:none;font-family:'JetBrains Mono',monospace;">${escapeHtml(lead.phone)}</a></div></div>` : '<div style="margin-bottom:0.5rem;color:var(--text-muted);font-size:0.8125rem;">No phone on record</div>'}
+                ${lead.email ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">Email</span><div><a href="mailto:${escapeHtml(lead.email)}" style="color:var(--purple-light);font-size:0.875rem;">${escapeHtml(lead.email)}</a></div></div>` : ''}
+                ${lead.website ? `<div><span style="font-size:0.6875rem;color:var(--text-muted);">Website</span><div><a href="${escapeHtml(lead.website)}" target="_blank" style="color:var(--purple-light);font-size:0.8125rem;word-break:break-all;">${escapeHtml(lead.website)}</a></div></div>` : ''}
+            </div>
+
+            <!-- Business Info -->
+            <div style="background:var(--bg-elevated);border-radius:12px;padding:1rem;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.875rem;">&#x1F3E2; Business</div>
+                ${(lead.industry || lead.category) ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">Category</span><div style="font-weight:600;">${escapeHtml(lead.industry || lead.category)}</div></div>` : ''}
+                ${lead.address ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">Address</span><div style="font-size:0.875rem;color:var(--text-secondary);">${escapeHtml(lead.address)}${lead.city ? ', ' + escapeHtml(lead.city) : ''}</div></div>` : lead.city ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">City</span><div>${escapeHtml(lead.city)}</div></div>` : ''}
+                ${rating != null ? `<div style="margin-bottom:0.5rem;"><span style="font-size:0.6875rem;color:var(--text-muted);">Google Rating</span><div style="display:flex;align-items:center;gap:0.5rem;">${renderRating(rating, null)}<span style="font-weight:700;">${rating}</span>${reviewCount ? `<span style="color:var(--text-muted);font-size:0.8125rem;">(${reviewCount} reviews)</span>` : ''}</div></div>` : ''}
+                ${lead.description ? `<div><span style="font-size:0.6875rem;color:var(--text-muted);">Description</span><div style="font-size:0.8125rem;color:var(--text-secondary);line-height:1.5;">${escapeHtml(lead.description)}</div></div>` : ''}
+                ${lead.revenueEstimate ? `<div><span style="font-size:0.6875rem;color:var(--text-muted);">Revenue Est.</span><div style="font-weight:600;color:var(--gold);">${escapeHtml(lead.revenueEstimate)}</div></div>` : ''}
+            </div>
+        </div>
+
+        <!-- DEAL INFO ROW -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.875rem;margin-bottom:1.5rem;">
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.375rem;">Outstanding</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:800;color:${outstanding > 0 ? 'var(--warning)' : 'var(--success)'};">${formatCurrency(outstanding)}</div>
+            </div>
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.375rem;">Follow-up Date</div>
+                <div style="font-size:0.875rem;font-weight:600;">${lead.followUpDate ? formatDate(lead.followUpDate) : '—'}</div>
+            </div>
+            <div style="background:var(--bg-elevated);border-radius:10px;padding:0.875rem;border:1px solid var(--border);">
+                <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.375rem;">Next Stage</div>
+                <div style="font-size:0.875rem;font-weight:600;color:var(--purple-light);">${nextStage ? stageLabel(nextStage) : '—'}</div>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);">
+            <button class="btn btn-secondary btn-sm" onclick="openCallModal('${lead.id}')">&#x1F4DE; Log Call</button>
+            <button class="btn btn-secondary btn-sm" onclick="closeModal('leadDetailModal');openPaymentModal('${lead.id}')">&#x1F4B0; Log Payment</button>
             <button class="btn btn-primary btn-sm" onclick="closeModal('leadDetailModal');openEditLead('${lead.id}')">&#x270F; Edit</button>
-            <button class="btn btn-secondary btn-sm" onclick="openNoteModal('${lead.id}')">&#x1F4DD; Add Note</button>
+            <button class="btn btn-secondary btn-sm" onclick="openNoteModal('${lead.id}')">&#x1F4DD; Note</button>
             <button class="btn btn-secondary btn-sm" onclick="closeModal('leadDetailModal');scheduleFollowUp('${lead.id}')">&#x1F514; Follow-up</button>
-            ${lead.email ? `<a class="btn btn-secondary btn-sm" href="mailto:${escapeHtml(lead.email)}?subject=Arcane%20Archives%20Consulting" target="_blank">&#x2709; Email</a>` : ''}
+            ${lead.email ? `<a class="btn btn-secondary btn-sm" href="mailto:${escapeHtml(lead.email)}" target="_blank">&#x2709; Email</a>` : ''}
+            ${nextStage ? `<button class="btn btn-success btn-sm" onclick="advanceStage('${lead.id}','${lead.stage}')">&#x2192; ${stageLabel(nextStage)}</button>` : ''}
             ${lead.status !== 'won' ? `<button class="btn btn-success btn-sm" onclick="markStatus('${lead.id}','won')">&#x1F3C6; Mark Won</button>` : ''}
             ${lead.status !== 'lost' ? `<button class="btn btn-danger btn-sm" onclick="markStatus('${lead.id}','lost')">&#x274C; Mark Lost</button>` : ''}
-            <button class="btn btn-danger btn-sm" onclick="deleteLead('${lead.id}')" style="margin-left:auto;">&#x1F5D1; Delete Lead</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteLead('${lead.id}')" style="margin-left:auto;">&#x1F5D1; Delete</button>
         </div>
 
-        <h3 style="font-size:1rem;font-weight:800;margin-bottom:1rem;">Attachments</h3>
-        <div style="margin-bottom:2rem;">
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <!-- ATTACHMENTS -->
+        <h3 style="font-size:0.875rem;font-weight:800;margin-bottom:0.875rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Attachments</h3>
+        <div style="margin-bottom:1.5rem;">
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">
                 ${(lead.attachments || []).length === 0 ? '<div style="color:var(--text-muted);font-size:0.875rem;">No files attached</div>' :
                 (lead.attachments || []).map((att, idx) => `
                     <div style="display:flex;align-items:center;gap:0.5rem;background:var(--bg-elevated);padding:0.5rem 0.75rem;border-radius:8px;border:1px solid var(--border);font-size:0.8125rem;">
                         <span>&#x1F4CE;</span>
                         <a href="${escapeHtml(att.url)}" target="_blank" style="color:var(--purple-light);text-decoration:none;font-weight:600;">${escapeHtml(att.name)}</a>
-                        <button class="btn btn-xs btn-danger" onclick="event.stopPropagation();deleteAttachment('${lead.id}',${idx})" title="Delete" style="padding:0.2rem 0.5rem;font-size:0.6875rem;">&times;</button>
+                        <button class="btn btn-xs btn-danger" onclick="event.stopPropagation();deleteAttachment('${lead.id}',${idx})" style="padding:0.2rem 0.5rem;font-size:0.6875rem;">&times;</button>
                     </div>`).join('')}
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -1729,11 +1813,12 @@ function openLeadDetail(id) {
             </div>
         </div>
 
-        <h3 style="font-size:1rem;font-weight:800;margin-bottom:1rem;">Activity Log</h3>
+        <!-- ACTIVITY LOG -->
+        <h3 style="font-size:0.875rem;font-weight:800;margin-bottom:0.875rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Activity Log</h3>
         <div class="activity-timeline">
-            ${notes.length === 0 ? '<div style="color:var(--text-muted);font-size:0.875rem;">No activity yet</div>' :
+            ${notes.length === 0 ? '<div style="color:var(--text-muted);font-size:0.875rem;padding-left:2rem;">No activity yet</div>' :
             notes.map(n => `
-                <div class="activity-item ${n.text?.startsWith('Stage') ? 'stage' : n.text?.startsWith('Payment') ? 'payment' : n.text?.startsWith('Follow') ? 'followup' : 'note'}">
+                <div class="activity-item ${n.text?.startsWith('Stage') ? 'stage' : n.text?.startsWith('Payment') ? 'payment' : n.text?.startsWith('[Call') ? 'note' : 'note'}">
                     <div class="activity-time">${formatDate(n.createdAt)} &middot; ${escapeHtml(n.createdBy || '')}</div>
                     <div class="activity-text">${escapeHtml(n.text)}</div>
                 </div>`).join('')}
@@ -2202,17 +2287,75 @@ function resetCSVImport() {
 }
 
 // ==================== PAYMENTS / REVENUE ====================
-function openPaymentModal() {
+function openPaymentModal(preSelectLeadId) {
     document.getElementById('paymentForm').reset();
-    const select = document.getElementById('paymentLeadId');
-    select.innerHTML = allLeads.filter(l => l.status !== 'lost').map(l => `<option value="${l.id}">${escapeHtml(l.name)} — ${escapeHtml(l.company || '')}</option>`).join('');
+    document.getElementById('paymentLeadId').value = preSelectLeadId || '';
+    document.getElementById('paymentLeadSearch').value = '';
+    document.getElementById('paymentLeadDropdown').style.display = 'none';
+    document.getElementById('paymentLeadSelected').style.display = 'none';
     document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+    if (preSelectLeadId) {
+        const lead = allLeads.find(l => l.id === preSelectLeadId);
+        if (lead) {
+            document.getElementById('paymentLeadSearch').value = lead.company || lead.name || '';
+            document.getElementById('paymentLeadSelected').textContent = `${stageLabel(lead.stage)}${lead.phone ? ' · ' + lead.phone : ''}`;
+            document.getElementById('paymentLeadSelected').style.display = 'block';
+        }
+    }
     openModal('paymentModal');
+    setTimeout(() => document.getElementById('paymentLeadSearch').focus(), 100);
 }
+
+function filterPaymentLeads() {
+    const q = document.getElementById('paymentLeadSearch').value.toLowerCase();
+    document.getElementById('paymentLeadId').value = '';
+    document.getElementById('paymentLeadSelected').style.display = 'none';
+    const leads = allLeads.filter(l => l.status !== 'lost').filter(l =>
+        !q ||
+        (l.company||'').toLowerCase().includes(q) ||
+        (l.name||'').toLowerCase().includes(q) ||
+        (l.phone||'').toLowerCase().includes(q) ||
+        (l.email||'').toLowerCase().includes(q)
+    ).slice(0, 20);
+    const dd = document.getElementById('paymentLeadDropdown');
+    if (!q && leads.length === 0) { dd.style.display = 'none'; return; }
+    dd.innerHTML = leads.map(l => {
+        const display = l.company || l.name || '';
+        const sub = [l.phone, stageLabel(l.stage)].filter(Boolean).join(' · ');
+        return `<div onclick="selectPaymentLead('${l.id}')"
+            style="padding:0.625rem 0.875rem;cursor:pointer;border-bottom:1px solid var(--border);"
+            onmouseenter="this.style.background='var(--bg-card)'"
+            onmouseleave="this.style.background=''">
+            <div style="font-weight:700;font-size:0.875rem;">${escapeHtml(display)}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.125rem;">${escapeHtml(sub)}</div>
+        </div>`;
+    }).join('') || `<div style="padding:0.75rem;color:var(--text-muted);font-size:0.875rem;text-align:center;">No leads found</div>`;
+    dd.style.display = 'block';
+}
+
+function selectPaymentLead(leadId) {
+    const lead = allLeads.find(l => l.id === leadId);
+    if (!lead) return;
+    document.getElementById('paymentLeadId').value = leadId;
+    document.getElementById('paymentLeadSearch').value = lead.company || lead.name || '';
+    document.getElementById('paymentLeadDropdown').style.display = 'none';
+    const sel = document.getElementById('paymentLeadSelected');
+    sel.textContent = `${stageLabel(lead.stage)}${lead.phone ? ' · ' + lead.phone : ''}`;
+    sel.style.display = 'block';
+}
+
+// Close payment dropdown when clicking outside
+document.addEventListener('click', e => {
+    if (!e.target.closest('#paymentLeadSearch') && !e.target.closest('#paymentLeadDropdown')) {
+        const dd = document.getElementById('paymentLeadDropdown');
+        if (dd) dd.style.display = 'none';
+    }
+});
 
 async function savePayment(e) {
     e.preventDefault();
     const leadId = document.getElementById('paymentLeadId').value;
+    if (!leadId) { showToast('Please select a lead', 'error'); return; }
     const amount = parseFloat(document.getElementById('paymentAmount').value) || 0;
     const data = {
         leadId, amount,
@@ -2436,6 +2579,7 @@ function dBuildQueue() {
     if (q) list = list.filter(l =>
         (l.name||'').toLowerCase().includes(q) ||
         (l.company||'').toLowerCase().includes(q) ||
+        (l.phone||'').toLowerCase().includes(q) ||
         (l.industry||l.category||'').toLowerCase().includes(q) ||
         (l.city||'').toLowerCase().includes(q)
     );
