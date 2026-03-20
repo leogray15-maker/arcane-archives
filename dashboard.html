@@ -406,6 +406,225 @@
       .upgrade-banner { flex-direction: column; align-items: flex-start; }
     }
 
+    /* ── Upgrade Modal ───────────────────────────────────────────── */
+    .upgrade-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .upgrade-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .upgrade-modal {
+      position: relative;
+      background: #18181b;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      padding: 2rem 2rem 1.75rem;
+      box-shadow: 0 0 80px rgba(139, 92, 246, 0.18), 0 24px 64px rgba(0,0,0,0.6);
+      transform: translateY(16px) scale(0.97);
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      overflow: hidden;
+    }
+    .upgrade-modal-backdrop.open .upgrade-modal {
+      transform: translateY(0) scale(1);
+    }
+    /* subtle purple glow top-left */
+    .upgrade-modal::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: -60px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%);
+      pointer-events: none;
+    }
+    .upgrade-modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: var(--dash-muted);
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1;
+    }
+    .upgrade-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .upgrade-modal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.28rem 0.8rem;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid var(--purple-border);
+      border-radius: 999px;
+      font-family: var(--font-body);
+      font-size: 0.67rem;
+      font-weight: 700;
+      color: var(--purple-light);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .upgrade-modal-badge-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--purple);
+      box-shadow: 0 0 5px var(--purple);
+    }
+    .upgrade-modal-title {
+      font-family: var(--font-body);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--dash-text);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    .upgrade-modal-title span { color: var(--purple-light); }
+    .upgrade-modal-sub {
+      font-family: var(--font-body);
+      font-size: 0.83rem;
+      color: var(--dash-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .upgrade-modal-divider {
+      height: 1px;
+      background: var(--dash-border);
+      margin-bottom: 1.25rem;
+    }
+    .upgrade-modal-unlock-label {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--dash-dimmer);
+      margin-bottom: 0.85rem;
+    }
+    .upgrade-modal-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.55rem 1rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 460px) {
+      .upgrade-modal-features { grid-template-columns: 1fr; }
+    }
+    .upgrade-modal-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .upgrade-modal-feature-icon {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.22);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .upgrade-modal-feature-text strong {
+      display: block;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--dash-text);
+      line-height: 1.2;
+    }
+    .upgrade-modal-feature-text span {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      color: var(--dash-muted);
+      line-height: 1.3;
+    }
+    .upgrade-modal-pricing {
+      background: rgba(139, 92, 246, 0.06);
+      border: 1px solid rgba(139, 92, 246, 0.18);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .upgrade-modal-price-left strong {
+      font-family: var(--font-body);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--dash-text);
+      letter-spacing: -0.02em;
+    }
+    .upgrade-modal-price-left span {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      color: var(--dash-muted);
+      margin-left: 4px;
+    }
+    .upgrade-modal-price-badge {
+      font-family: var(--font-body);
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #00e676;
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.2);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+    }
+    .upgrade-modal-cta {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      background: var(--purple);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    .upgrade-modal-cta:hover {
+      background: var(--purple-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+    }
+    .upgrade-modal-cta:active { transform: translateY(0); }
+    .upgrade-modal-footer {
+      text-align: center;
+      margin-top: 0.85rem;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      color: var(--dash-dimmer);
+    }
+
     /* Card center icon */
     .card-icon-wrap {
       position: absolute;
@@ -856,7 +1075,7 @@
         <div class="upgrade-banner-title">Modules locked — upgrade to access</div>
         <div class="upgrade-banner-sub">Get full access to Watchtower, Trading Floor, War Room &amp; more</div>
       </div>
-      <a href="arcane-store.html" class="upgrade-banner-btn">Upgrade Now</a>
+      <button onclick="openUpgradeModal()" class="upgrade-banner-btn">Upgrade Now</button>
     </div>
 
     <div class="carousel-outer">
@@ -1283,16 +1502,17 @@
           <div class="lock-sub">Upgrade your plan to access</div>`;
         card.appendChild(overlay);
       }
-      // Redirect to store on click instead of following href
+      // Show upgrade modal on click instead of redirecting
       card.addEventListener('click', e => {
         e.preventDefault();
-        location.href = 'arcane-store.html';
+        openUpgradeModal();
       });
     });
   }
 
   onAuthStateChanged(auth, async user => {
     if (!user) { location.href = 'login.html'; return; }
+    _upgradeModalUserEmail = user.email || '';
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
@@ -1369,7 +1589,130 @@ function scrollCarousel() {
   const t = document.getElementById('carousel-track');
   t.scrollBy({ left: 290, behavior: 'smooth' });
 }
+
+/* ══ Upgrade Modal ══ */
+// Replace with your actual Stripe payment link
+const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/YOUR_LINK_HERE';
+let _upgradeModalUserEmail = '';
+
+function openUpgradeModal() {
+  document.getElementById('upgrade-modal-backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeUpgradeModal() {
+  document.getElementById('upgrade-modal-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on backdrop click
+document.getElementById('upgrade-modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('upgrade-modal-backdrop')) closeUpgradeModal();
+});
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeUpgradeModal();
+});
+// Stripe CTA
+document.getElementById('upgrade-modal-cta').addEventListener('click', () => {
+  const url = _upgradeModalUserEmail
+    ? `${STRIPE_PAYMENT_URL}?prefilled_email=${encodeURIComponent(_upgradeModalUserEmail)}`
+    : STRIPE_PAYMENT_URL;
+  window.open(url, '_blank');
+});
 </script>
+
+<!-- ── Upgrade Modal ── -->
+<div class="upgrade-modal-backdrop" id="upgrade-modal-backdrop">
+  <div class="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-heading">
+    <button class="upgrade-modal-close" onclick="closeUpgradeModal()" aria-label="Close">✕</button>
+
+    <div class="upgrade-modal-badge">
+      <span class="upgrade-modal-badge-dot"></span>
+      Premium Access
+    </div>
+
+    <h2 class="upgrade-modal-title" id="upgrade-modal-heading">
+      Unlock the full<br><span>Arcane Archives</span>
+    </h2>
+    <p class="upgrade-modal-sub">
+      Join traders who get real-time intelligence, live sessions, curated picks, and exclusive tools — all in one place.
+    </p>
+
+    <div class="upgrade-modal-divider"></div>
+
+    <div class="upgrade-modal-unlock-label">What you'll unlock</div>
+    <div class="upgrade-modal-features">
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">🌐</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Watchtower</strong>
+          <span>Global intel, fear/greed & FX heatmaps</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">📈</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Trading Floor</strong>
+          <span>Live charts, watchlists & trade signals</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">🎯</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Stock Picks</strong>
+          <span>Curated picks with entry, target & stops</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">🎙️</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>War Room</strong>
+          <span>Live video calls, recordings & schedule</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">📞</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Live Calls</strong>
+          <span>Weekly calls with full playback archive</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">💬</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Community</strong>
+          <span>Exclusive member chat & peer network</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">📰</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Market Reports</strong>
+          <span>Daily briefings & macro analysis</span>
+        </div>
+      </div>
+      <div class="upgrade-modal-feature">
+        <div class="upgrade-modal-feature-icon">⚡</div>
+        <div class="upgrade-modal-feature-text">
+          <strong>Priority Support</strong>
+          <span>Direct access to the Arcane team</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="upgrade-modal-pricing">
+      <div class="upgrade-modal-price-left">
+        <strong>£128</strong><span>/ month</span>
+      </div>
+      <div class="upgrade-modal-price-badge">Cancel anytime</div>
+    </div>
+
+    <button class="upgrade-modal-cta" id="upgrade-modal-cta">
+      Unlock Full Access →
+    </button>
+
+    <p class="upgrade-modal-footer">Secure payment via Stripe · Cancel anytime · Instant access</p>
+  </div>
+</div>
 
 </body>
 </html>
