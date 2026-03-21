@@ -433,14 +433,19 @@
       border-radius: 16px;
       width: 100%;
       max-width: 520px;
+      max-height: calc(100dvh - 2rem);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 2rem 2rem 1.75rem;
       box-shadow: 0 0 80px rgba(139, 92, 246, 0.18), 0 24px 64px rgba(0,0,0,0.6);
       transform: translateY(16px) scale(0.97);
-      transition: transform 0.25s ease, opacity 0.25s ease;
-      overflow: hidden;
+      transition: transform 0.25s ease;
     }
     .upgrade-modal-backdrop.open .upgrade-modal {
       transform: translateY(0) scale(1);
+    }
+    @media (max-width: 480px) {
+      .upgrade-modal { padding: 1.25rem 1.25rem 1.5rem; }
     }
     /* subtle purple glow top-left */
     .upgrade-modal::before {
@@ -1550,6 +1555,7 @@
   onAuthStateChanged(auth, async user => {
     if (!user) { location.href = 'login.html'; return; }
     _upgradeModalUserEmail = user.email || '';
+    _upgradeModalUserUid   = user.uid   || '';
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
@@ -1600,6 +1606,9 @@
   });
 </script>
 
+<!-- Stripe.js (for checkout redirect) -->
+<script src="https://js.stripe.com/v3/"></script>
+
 <!-- Live price service — populates ticker + all price displays -->
 <script src="arcane-prices.js"></script>
 
@@ -1628,9 +1637,8 @@ function scrollCarousel() {
 }
 
 /* ══ Upgrade Modal ══ */
-// Replace with your actual Stripe payment link
-const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/YOUR_LINK_HERE';
 let _upgradeModalUserEmail = '';
+let _upgradeModalUserUid   = '';
 
 function openUpgradeModal() {
   document.getElementById('upgrade-modal-backdrop').classList.add('open');
@@ -1640,7 +1648,7 @@ function closeUpgradeModal() {
   document.getElementById('upgrade-modal-backdrop').classList.remove('open');
   document.body.style.overflow = '';
 }
-// Close on backdrop click
+// Close on backdrop click (only if clicking the backdrop itself, not modal)
 document.getElementById('upgrade-modal-backdrop').addEventListener('click', e => {
   if (e.target === document.getElementById('upgrade-modal-backdrop')) closeUpgradeModal();
 });
@@ -1648,12 +1656,27 @@ document.getElementById('upgrade-modal-backdrop').addEventListener('click', e =>
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeUpgradeModal();
 });
-// Stripe CTA
-document.getElementById('upgrade-modal-cta').addEventListener('click', () => {
-  const url = _upgradeModalUserEmail
-    ? `${STRIPE_PAYMENT_URL}?prefilled_email=${encodeURIComponent(_upgradeModalUserEmail)}`
-    : STRIPE_PAYMENT_URL;
-  window.open(url, '_blank');
+// Stripe CTA — uses same Netlify checkout function as index.html
+document.getElementById('upgrade-modal-cta').addEventListener('click', async () => {
+  const btn = document.getElementById('upgrade-modal-cta');
+  btn.textContent = 'Loading…';
+  btn.disabled = true;
+  try {
+    const stripe = Stripe('pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW');
+    const res = await fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId: 'price_1SkbkNCXghparoQFd6flbwip', uid: _upgradeModalUserUid })
+    });
+    const session = await res.json();
+    if (!session.id) throw new Error('No session ID returned');
+    await stripe.redirectToCheckout({ sessionId: session.id });
+  } catch (err) {
+    console.error('Checkout error:', err);
+    btn.textContent = 'Unlock Full Access →';
+    btn.disabled = false;
+    alert('Something went wrong — please try again.');
+  }
 });
 </script>
 
