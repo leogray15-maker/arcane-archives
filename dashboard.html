@@ -1571,19 +1571,34 @@ document.getElementById('upgrade-modal-cta').addEventListener('click', async () 
   btn.disabled = true;
   try {
     const stripe = Stripe('pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW');
-    const res = await fetch('/.netlify/functions/create-checkout-session', {
+    const res = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceId: 'price_1SkbkNCXghparoQFd6flbwip', uid: window._upgradeModalUserUid || '' })
+      body: JSON.stringify({
+        priceId: 'price_1SkbkNCXghparoQFd6flbwip',
+        uid: window._upgradeModalUserUid || '',
+        email: window._upgradeModalUserEmail || ''
+      })
     });
-    const session = await res.json();
-    if (!session.id) throw new Error('No session ID');
-    await stripe.redirectToCheckout({ sessionId: session.id });
+    const text = await res.text();
+    let session;
+    try { session = JSON.parse(text); } catch (e) {
+      console.error('Non-JSON response:', text);
+      throw new Error('Checkout unavailable. Please try again.');
+    }
+    if (!res.ok || session.error) throw new Error(session.error || 'Checkout failed');
+    if (session.url) {
+      window.location.href = session.url;
+    } else if (session.id) {
+      await stripe.redirectToCheckout({ sessionId: session.id });
+    } else {
+      throw new Error('No checkout URL returned');
+    }
   } catch (err) {
     console.error('Checkout error:', err);
     btn.textContent = 'Unlock Full Access →';
     btn.disabled = false;
-    alert('Something went wrong — please try again.');
+    alert(err.message || 'Something went wrong — please try again.');
   }
 });
 </script>
