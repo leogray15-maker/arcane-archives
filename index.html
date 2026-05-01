@@ -1499,7 +1499,11 @@
                         <li>Dating & Relationship Mastery</li>
                         <li>Health Optimization & Biohacking</li>
                         <li>Psychology & Mindset Frameworks</li>
-                        <li>Weekly Live Calls with Leo Gray</li>
+                        <li>Live calls, Group sessions and premium content</li>
+                        <li>Watchtower — Global Intelligence System</li>
+                        <li>Stock Picks — Curated Long-Term Equity Positions</li>
+                        <li>Trading Floor — Live Charts, Signals & Watchlist</li>
+                        <li>War Room — Live Calls, Recordings & Briefings</li>
                         <li>Private Community Access</li>
                         <li>Real-Time Market Alerts</li>
                         <li>All Future Content & Updates</li>
@@ -1790,7 +1794,6 @@
     window.checkout = async function checkout() {
         const user = auth.currentUser;
 
-        // If not logged in, redirect to signup (preserving any referral code in URL)
         if (!user) {
             const ref = localStorage.getItem('arcane_ref');
             const signupUrl = ref ? `signup.html?ref=${encodeURIComponent(ref)}` : 'signup.html';
@@ -1804,23 +1807,36 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     priceId: "price_1SkbkNCXghparoQFd6flbwip",
-                    uid: user.uid
+                    uid: user.uid,
+                    email: user.email
                 })
             });
 
-            const session = await response.json();
-
-            if (!session.id) {
-                alert("Checkout error. Please try again.");
+            const text = await response.text();
+            let session;
+            try {
+                session = JSON.parse(text);
+            } catch (e) {
+                console.error("Non-JSON response from checkout function:", text);
+                alert("Checkout is temporarily unavailable. Please try again in a moment.");
                 return;
             }
 
-            await stripe.redirectToCheckout({
-                sessionId: session.id
-            });
+            if (!response.ok || session.error) {
+                alert("Checkout error: " + (session.error || "Please try again."));
+                return;
+            }
+
+            if (session.url) {
+                window.location.href = session.url;
+            } else if (session.id) {
+                await stripe.redirectToCheckout({ sessionId: session.id });
+            } else {
+                alert("Checkout error. Please try again.");
+            }
         } catch (error) {
             console.error("Checkout error:", error);
-            alert("Something went wrong: " + error.message);
+            alert("Something went wrong. Please try again.");
         }
     };
 
