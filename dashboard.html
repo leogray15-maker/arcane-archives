@@ -9,14 +9,29 @@
   <link rel="icon" href="ArcaneA.png"/>
   <link rel="apple-touch-icon" href="ArcaneA.png"/>
   <link rel="manifest" href="manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap"/>
   <link rel="stylesheet" href="arcane-globals.css"/>
 
   <style>
-    /* ── Dashboard — Watchtower Terminal Design ── */
+    /* ══════════════════════════════════════════════════════════════
+       DASHBOARD — Enhanced Intelligence Terminal
+       ══════════════════════════════════════════════════════════════ */
+
+    /* Extended colour tokens */
+    :root {
+      --purple:       #8b5cf6;
+      --purple-dim:   #7c3aed;
+      --purple-glow:  rgba(139,92,246,0.14);
+      --purple-glow2: rgba(139,92,246,0.06);
+      --amber:        #f59e0b;
+      --amber-glow:   rgba(245,158,11,0.12);
+    }
 
     body { background: var(--bg); }
 
-    /* Subtle teal scan grid */
+    /* Scan grid */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -26,8 +41,6 @@
       background-size: 40px 40px;
       pointer-events: none; z-index: 0;
     }
-
-    /* Top ambient teal glow */
     body::after {
       content: '';
       position: fixed; top: -20%; left: 50%;
@@ -37,165 +50,336 @@
       pointer-events: none; z-index: 0;
     }
 
-    /* ── Hero ── */
+    /* ── LEFT SIDEBAR ──────────────────────────────────────────── */
+    .arcane-sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 8500;
+      width: 260px;
+      background: rgba(9,9,14,0.99);
+      border-right: 1px solid var(--border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: flex; flex-direction: column;
+      padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 1rem);
+      transform: translateX(-100%);
+      transition: transform 0.28s var(--ease);
+      overflow-y: auto; overflow-x: hidden;
+      scrollbar-width: none;
+    }
+    .arcane-sidebar::-webkit-scrollbar { display: none; }
+    .arcane-sidebar.open { transform: translateX(0); }
+
+    .sidebar-overlay {
+      position: fixed; inset: 0;
+      z-index: 8400;
+      background: rgba(0,0,0,0.68);
+      backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s;
+    }
+    .sidebar-overlay.open { opacity: 1; pointer-events: all; }
+
+    .sidebar-section-label {
+      font-family: var(--font-head);
+      font-size: 0.4rem; font-weight: 700;
+      letter-spacing: 0.26em; color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 0.6rem 1rem 0.25rem;
+      margin-top: 0.25rem;
+    }
+
+    .sidebar-nav-item {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 0.68rem 1rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.16s var(--ease);
+      position: relative;
+    }
+    .sidebar-nav-item:hover {
+      color: var(--teal); background: var(--teal-glow2);
+      border-left-color: var(--teal);
+    }
+    .sidebar-nav-item.active {
+      color: var(--purple); background: var(--purple-glow2);
+      border-left-color: var(--purple);
+    }
+    .sidebar-nav-item.admin-item { color: rgba(255,59,59,0.65); }
+    .sidebar-nav-item.admin-item:hover {
+      color: var(--red); background: var(--red-glow);
+      border-left-color: var(--red);
+    }
+
+    .sidebar-nav-icon {
+      width: 18px; height: 18px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-nav-icon svg { width: 18px; height: 18px; }
+
+    .sidebar-nav-label {
+      font-family: var(--font-head);
+      font-size: 0.52rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .sidebar-divider { height: 1px; background: var(--border); margin: 0.5rem 1rem; }
+
+    /* Sidebar toggle (navbar hamburger) */
+    .sidebar-toggle {
+      width: 30px; height: 30px; border-radius: 5px;
+      border: 1px solid var(--border); background: var(--bg-3);
+      color: var(--text-dim);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.16s; flex-shrink: 0;
+      margin-right: 0.4rem;
+    }
+    .sidebar-toggle:hover {
+      border-color: var(--purple); color: var(--purple);
+      background: var(--purple-glow2);
+    }
+    .sidebar-toggle svg { width: 15px; height: 15px; }
+
+    /* Desktop: always-visible icon strip */
+    @media (min-width: 768px) {
+      .arcane-sidebar {
+        transform: translateX(0);
+        width: 60px;
+        top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
+        padding-top: 1rem;
+      }
+      .sidebar-toggle { display: none; }
+      .sidebar-overlay { display: none !important; }
+      .sidebar-section-label { display: none; }
+      .sidebar-divider { margin: 0.5rem 0.35rem; }
+      .sidebar-nav-item { padding: 0.72rem 0; justify-content: center; }
+      .sidebar-nav-label {
+        position: absolute;
+        left: 66px;
+        background: var(--bg-4);
+        border: 1px solid var(--border-hi);
+        padding: 0.3rem 0.75rem;
+        border-radius: 4px;
+        white-space: nowrap;
+        font-size: 0.48rem;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateX(-6px);
+        transition: opacity 0.14s, transform 0.14s;
+        z-index: 100;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      }
+      .sidebar-nav-item:hover .sidebar-nav-label {
+        opacity: 1; transform: translateX(0);
+      }
+      .page-wrap { padding-left: 60px; }
+    }
+
+    /* ── STATUS BAR ────────────────────────────────────────────── */
     .dash-hero {
       padding: 0;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 0;
       position: relative; z-index: 2;
-      background: rgba(9,9,14,0.92);
+      background: rgba(9,9,14,0.93);
     }
 
-    /* Status toolbar */
     .dash-status-bar {
-      display: flex;
-      align-items: stretch;
+      display: flex; align-items: stretch;
       border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      scrollbar-width: none;
+      overflow-x: auto; scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
     .dash-status-bar::-webkit-scrollbar { display: none; }
 
     .dash-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
+      display: flex; align-items: center; gap: 0.45rem;
       padding: 0.55rem 1.25rem;
       border-right: 1px solid var(--border);
       font-family: var(--font-head);
-      font-size: 0.52rem;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-size: 0.52rem; font-weight: 600;
+      letter-spacing: 0.14em; color: var(--text-dim);
+      text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
     }
+    .dash-meta-item .dot { width: 6px; height: 6px; border-radius: 50%; }
 
-    .dash-meta-item .dot {
-      width: 6px; height: 6px; border-radius: 50%;
+    .dot-green  { background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .dot-gold   { background: var(--gold); }
+    .dot-teal   { background: var(--teal); box-shadow: 0 0 5px rgba(0,212,255,0.6); }
+    .dot-red    { background: var(--red); box-shadow: 0 0 5px rgba(255,59,59,0.6); }
+    .dot-amber  { background: var(--amber); }
+    .dot-purple { background: var(--purple); box-shadow: 0 0 5px rgba(139,92,246,0.6); }
+    .dot-grey   { background: var(--text-muted); }
+
+    @keyframes pulse-open {
+      0%,100% { box-shadow: 0 0 5px var(--green); }
+      50% { box-shadow: 0 0 12px var(--green), 0 0 22px rgba(0,230,118,0.35); }
     }
-    .dot-green { background: var(--green); box-shadow: 0 0 5px var(--green); }
-    .dot-gold  { background: var(--gold); }
-    .dot-teal  { background: var(--teal); box-shadow: 0 0 5px rgba(0,212,255,0.6); }
-
-    /* Hero body */
-    .dash-hero-body {
-      padding: 1.5rem 1.5rem 1.4rem;
+    @keyframes pulse-closed {
+      0%,100% { box-shadow: 0 0 4px var(--red); }
+      50% { box-shadow: 0 0 9px var(--red); }
     }
+    .dot-market-open   { background: var(--green); animation: pulse-open   1.8s ease-in-out infinite; }
+    .dot-market-closed { background: var(--red);   animation: pulse-closed 3s   ease-in-out infinite; }
 
-    /* System label (replaces pill) */
-    .dash-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0;
-      background: none;
-      border: none;
-      border-radius: 0;
+    /* System health row */
+    .system-health-bar {
+      display: flex; align-items: stretch;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .system-health-bar::-webkit-scrollbar { display: none; }
+
+    .health-item {
+      display: flex; align-items: center; gap: 0.38rem;
+      padding: 0.36rem 1rem;
+      border-right: 1px solid var(--border);
       font-family: var(--font-head);
-      font-size: 0.48rem;
-      font-weight: 700;
-      color: var(--teal);
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      margin-bottom: 0.65rem;
+      font-size: 0.42rem; font-weight: 600;
+      letter-spacing: 0.16em; color: var(--text-muted);
+      text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+    }
+    .health-item .dot { width: 5px; height: 5px; border-radius: 50%; }
+    .health-ts {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.42rem; color: var(--text-muted);
+      letter-spacing: 0.06em;
+      padding: 0.36rem 1rem;
+      margin-left: auto; white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* ── HERO BODY ─────────────────────────────────────────────── */
+    .dash-hero-body { padding: 1.4rem 1.5rem 1rem; }
+
+    .dash-pill {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-family: var(--font-head);
+      font-size: 0.48rem; font-weight: 700;
+      color: var(--teal); letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 0.65rem;
     }
     .dash-pill::before { content: '⬡'; opacity: 0.7; margin-right: 0.15rem; }
-    .dash-pill-dot { display: none; }
 
     .dash-title {
       font-family: var(--font-head);
       font-size: clamp(1.1rem, 2.4vw, 1.65rem);
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--text);
-      line-height: 1.2;
-      text-transform: uppercase;
+      font-weight: 700; letter-spacing: 0.05em;
+      color: var(--text); line-height: 1.2; text-transform: uppercase;
     }
     .dash-title span { color: var(--teal); }
 
     .dash-sub {
       font-family: var(--font-body);
-      font-size: 0.76rem;
-      font-weight: 400;
-      color: var(--text-dim);
-      margin-top: 0.4rem;
-      letter-spacing: 0.02em;
+      font-size: 0.76rem; color: var(--text-dim);
+      margin-top: 0.4rem; letter-spacing: 0.02em;
     }
 
-    /* ── Section Header ── */
+    /* Stat pills row */
+    .stat-pills-row {
+      display: flex; flex-wrap: wrap; gap: 0.45rem;
+      margin-top: 1rem;
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.24rem 0.65rem;
+      background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+    .stat-pill-label {
+      font-family: var(--font-head);
+      font-size: 0.4rem; font-weight: 600;
+      letter-spacing: 0.18em; color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .stat-pill-value {
+      font-family: var(--font-head);
+      font-size: 0.52rem; font-weight: 700;
+      letter-spacing: 0.08em; color: var(--text);
+    }
+    .stat-pill.rank-pill    { border-color: var(--border-gold); background: var(--gold-glow2); }
+    .stat-pill.rank-pill    .stat-pill-value { color: var(--gold); }
+    .stat-pill.xp-pill      { border-color: var(--border-hi); background: var(--teal-glow2); }
+    .stat-pill.xp-pill      .stat-pill-value { color: var(--teal); }
+    .stat-pill.credits-pill { border-color: rgba(139,92,246,0.28); background: var(--purple-glow2); }
+    .stat-pill.credits-pill .stat-pill-value { color: var(--purple); }
+    .stat-pill.streak-pill  { border-color: rgba(245,158,11,0.28); background: var(--amber-glow); }
+    .stat-pill.streak-pill  .stat-pill-value { color: var(--amber); }
+
+    /* Today's Brief / Intel Quote */
+    .today-brief {
+      padding: 0.85rem 1.5rem 1.2rem;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(139,92,246,0.04), transparent);
+    }
+    .brief-label {
+      font-family: var(--font-head);
+      font-size: 0.41rem; font-weight: 700;
+      letter-spacing: 0.24em; color: var(--purple);
+      text-transform: uppercase; margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .brief-label::before { content: '◈'; opacity: 0.75; }
+    .brief-quote {
+      font-family: var(--font-body);
+      font-size: 0.72rem; font-style: italic;
+      color: rgba(230,233,242,0.58); line-height: 1.55;
+      border-left: 2px solid rgba(139,92,246,0.38);
+      padding-left: 0.85rem;
+      transition: opacity 0.45s ease;
+      min-height: 2.2rem;
+    }
+    .brief-quote.fading { opacity: 0; }
+
+    /* ── SECTION HEADERS ───────────────────────────────────────── */
     .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem;
-      margin-bottom: 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; margin-bottom: 1rem;
     }
     .section-title {
       font-family: var(--font-head);
-      font-size: 0.54rem;
-      font-weight: 800;
-      letter-spacing: 0.26em;
-      color: var(--teal);
+      font-size: 0.54rem; font-weight: 800;
+      letter-spacing: 0.26em; color: var(--teal);
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      display: flex; align-items: center; gap: 0.5rem;
     }
-    .section-title::before {
-      content: '⬡';
-      color: var(--teal);
-      opacity: 0.6;
-    }
+    .section-title::before { content: '⬡'; opacity: 0.6; }
 
-    /* LIVE badge */
-    .badge-live {
-      font-family: var(--font-head);
-      font-size: 0.45rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--teal);
-      background: var(--teal-glow2);
-      border: 1px solid rgba(0,212,255,0.28);
-      padding: 0.22rem 0.65rem;
-      border-radius: 3px;
-      display: flex; align-items: center; gap: 0.35rem;
-    }
-    .badge-live::before {
-      content: '';
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--teal); box-shadow: 0 0 5px var(--teal);
-      flex-shrink: 0;
-    }
-
-    /* Open Intel badge */
-    .badge-tag.teal {
+    /* Override global badge-live to teal for section badge */
+    .section-header .badge-live {
       font-family: var(--font-head);
       font-size: 0.45rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--teal); background: var(--teal-glow2);
+      border: 1px solid rgba(0,212,255,0.28);
+      padding: 0.22rem 0.65rem; border-radius: 3px;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .section-header .badge-live::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--teal); box-shadow: 0 0 5px var(--teal); flex-shrink: 0;
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    .badge-tag.teal {
+      font-family: var(--font-head); font-size: 0.45rem; font-weight: 700;
       letter-spacing: 0.12em; text-transform: uppercase;
       color: var(--teal); background: var(--teal-glow2);
       border: 1px solid rgba(0,212,255,0.22);
       padding: 0.22rem 0.65rem; border-radius: 3px;
     }
 
-    /* ── Module Carousel ── */
+    /* ── MODULE CAROUSEL ───────────────────────────────────────── */
     .carousel-section { margin-bottom: 2.5rem; position: relative; z-index: 2; padding-top: 1.5rem; }
     .carousel-outer { position: relative; padding: 0 1.5rem; }
     .carousel-track {
       display: flex; gap: 1rem;
-      overflow-x: auto;
-      padding-top: 16px; margin-top: -16px;
+      overflow-x: auto; padding-top: 16px; margin-top: -16px;
       padding-bottom: 1rem;
       scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
     }
     .carousel-track::-webkit-scrollbar { display: none; }
 
-    /* Scroll arrow */
     .carousel-arrow {
       position: absolute; right: 0.5rem; top: 50%;
       transform: translateY(-60%);
@@ -207,11 +391,10 @@
     }
     .carousel-arrow:hover { border-color: var(--teal); color: var(--teal); background: var(--bg-5); }
 
-    /* ── Module Card ── */
+    /* Module card base */
     .module-card {
       flex: 0 0 270px; height: 380px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
+      border-radius: 6px; border: 1px solid var(--border);
       background: var(--bg-2);
       position: relative; overflow: hidden;
       cursor: pointer; scroll-snap-align: start;
@@ -223,89 +406,121 @@
     .module-card:hover { transform: translateY(-4px); z-index: 20; }
     .module-card.teal-card:hover {
       border-color: var(--border-hi);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,255,0.1);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,255,0.1), 0 0 28px rgba(0,212,255,0.06);
     }
     .module-card.gold-card:hover {
       border-color: var(--border-gold);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(245,200,66,0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(245,200,66,0.08), 0 0 28px rgba(245,200,66,0.05);
     }
     .module-card.red-card:hover {
       border-color: var(--border-red);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,59,59,0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,59,59,0.08), 0 0 28px rgba(255,59,59,0.05);
     }
     .module-card.green-card:hover {
       border-color: rgba(0,230,118,0.32);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,230,118,0.07);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,230,118,0.07), 0 0 28px rgba(0,230,118,0.04);
     }
 
-    /* Card Visual Area */
+    /* Card visual */
     .card-visual { flex: 1; position: relative; overflow: hidden; }
 
-    /* Animated backgrounds per card */
-    .comm-bg {
-      background: radial-gradient(ellipse 80% 80% at 50% 60%, rgba(0,212,255,0.10) 0%, transparent 70%),
-                  linear-gradient(180deg, #0c0c18 0%, #0a1020 100%);
-    }
-    .floor-bg {
-      background: radial-gradient(ellipse 70% 70% at 50% 70%, rgba(245,200,66,0.08) 0%, transparent 70%),
-                  linear-gradient(180deg, #100c08 0%, #0a0a0f 100%);
-    }
-    .watch-bg {
-      background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,212,255,0.06) 0%, transparent 70%),
-                  linear-gradient(180deg, #080c14 0%, #0a0a0f 100%);
-    }
-    .war-bg {
-      background: radial-gradient(ellipse 70% 80% at 50% 40%, rgba(255,59,59,0.08) 0%, transparent 70%),
-                  linear-gradient(180deg, #100808 0%, #0a0a0f 100%);
-    }
-    .stocks-bg {
-      background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(0,230,118,0.08) 0%, transparent 70%),
-                  linear-gradient(180deg, #081008 0%, #0a0a0f 100%);
-    }
-    .courses-bg {
-      background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(245,200,66,0.08) 0%, transparent 70%),
-                  linear-gradient(180deg, #0f0d06 0%, #0a0a0f 100%);
+    /* Scanline overlay on every card */
+    .card-visual::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 5; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.07) 2px,
+        rgba(0,0,0,0.07) 4px
+      );
     }
 
-    /* Stocks ticker animation */
-    .ticker-bars {
-      position: absolute; bottom: 30px; left: 20px; right: 20px;
-      display: flex; align-items: flex-end; gap: 5px; height: 100px;
+    /* Per-card LIVE badge */
+    .card-live-tag {
+      position: absolute; top: 10px; right: 10px; z-index: 10;
+      display: flex; align-items: center; gap: 0.3rem;
+      padding: 0.18rem 0.48rem; border-radius: 3px;
+      font-family: var(--font-head);
+      font-size: 0.38rem; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
     }
-    .ticker-bar { flex: 1; border-radius: 3px 3px 0 0; animation: tickerPulse 2.5s ease-in-out infinite; }
-    .ticker-bar.up   { background: rgba(0,230,118,0.45); }
-    .ticker-bar.down { background: rgba(255,59,59,0.35); }
-    @keyframes tickerPulse {
-      0%,100% { transform: scaleY(1); }
-      50%      { transform: scaleY(1.15); }
+    .card-live-dot {
+      width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+      animation: blink 1.4s ease-in-out infinite;
     }
-    /* Courses card — floating dots */
+    .card-live-tag.teal  { background: rgba(0,212,255,0.12); border: 1px solid rgba(0,212,255,0.25); color: var(--teal); }
+    .card-live-tag.teal  .card-live-dot { background: var(--teal); box-shadow: 0 0 5px var(--teal); }
+    .card-live-tag.gold  { background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.22); color: var(--gold); }
+    .card-live-tag.gold  .card-live-dot { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+    .card-live-tag.red   { background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.22); color: var(--red); }
+    .card-live-tag.red   .card-live-dot { background: var(--red); box-shadow: 0 0 5px var(--red); }
+    .card-live-tag.green { background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.22); color: var(--green); }
+    .card-live-tag.green .card-live-dot { background: var(--green); box-shadow: 0 0 5px var(--green); }
+
+    /* Card backgrounds */
+    .comm-bg    { background: radial-gradient(ellipse 80% 80% at 50% 60%, rgba(0,212,255,0.10) 0%, transparent 70%), linear-gradient(180deg, #0c0c18 0%, #0a1020 100%); }
+    .floor-bg   { background: radial-gradient(ellipse 70% 70% at 50% 70%, rgba(245,200,66,0.08) 0%, transparent 70%), linear-gradient(180deg, #100c08 0%, #0a0a0f 100%); }
+    .watch-bg   { background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,212,255,0.06) 0%, transparent 70%), linear-gradient(180deg, #080c14 0%, #0a0a0f 100%); }
+    .war-bg     { background: radial-gradient(ellipse 70% 80% at 50% 40%, rgba(255,59,59,0.08) 0%, transparent 70%), linear-gradient(180deg, #100808 0%, #0a0a0f 100%); }
+    .stocks-bg  { background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(0,230,118,0.08) 0%, transparent 70%), linear-gradient(180deg, #081008 0%, #0a0a0f 100%); }
+    .courses-bg { background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(245,200,66,0.08) 0%, transparent 70%), linear-gradient(180deg, #0f0d06 0%, #0a0a0f 100%); }
+
+    /* Card visual animations */
     .course-dots { position: absolute; inset: 0; overflow: hidden; }
-    .course-dot {
-      position: absolute; border-radius: 50%;
-      background: rgba(245,200,66,0.6);
-      animation: dotFloat 4s ease-in-out infinite;
-    }
-    @keyframes dotFloat {
-      0%,100% { transform: translateY(0); opacity: 0.4; }
-      50%      { transform: translateY(-12px); opacity: 0.85; }
+    .course-dot  { position: absolute; border-radius: 50%; background: rgba(245,200,66,0.6); animation: dotFloat 4s ease-in-out infinite; }
+    @keyframes dotFloat { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-12px); opacity: 0.85; } }
+
+    .chat-bubbles { position: absolute; inset: 0; overflow: hidden; }
+    .chat-bubble  { position: absolute; border-radius: 12px 12px 12px 2px; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.15); animation: float-up 4s ease-in-out infinite; }
+    .chat-bubble:nth-child(2) { border-radius: 12px 12px 2px 12px; background: rgba(245,200,66,0.06); border-color: rgba(245,200,66,0.12); animation-delay: -1.5s; }
+    .chat-bubble:nth-child(3) { animation-delay: -3s; }
+    @keyframes float-up { 0%, 100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(-8px); opacity: 1; } }
+
+    .candle-chart { position: absolute; bottom: 20px; left: 16px; right: 16px; display: flex; align-items: flex-end; gap: 3px; height: 120px; }
+    .candle { flex: 1; border-radius: 2px 2px 0 0; position: relative; }
+    .candle.bull { background: rgba(0,230,118,0.35); border: 1px solid rgba(0,230,118,0.5); }
+    .candle.bear { background: rgba(255,59,59,0.35); border: 1px solid rgba(255,59,59,0.5); }
+    .candle-wick { position: absolute; left: 50%; width: 1px; transform: translateX(-50%); }
+    .candle.bull .candle-wick { top: -12px; height: 12px; background: rgba(0,230,118,0.6); }
+    .candle.bear .candle-wick { top: -8px;  height: 8px;  background: rgba(255,59,59,0.6); }
+
+    .globe-dots { position: absolute; inset: 0; overflow: hidden; }
+    .globe-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(0,212,255,0.4); animation: ring-pulse 3s ease-in-out infinite; }
+    .sat-dot    { position: absolute; animation: sat-orbit 6s linear infinite; }
+    @keyframes sat-orbit   { from { transform: rotate(0deg) translateX(95px) rotate(0deg); } to { transform: rotate(360deg) translateX(95px) rotate(-360deg); } }
+    @keyframes ring-pulse  { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.03); } }
+
+    .radar-wrap   { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .radar-circle { position: absolute; border-radius: 50%; border: 1px solid rgba(255,59,59,0.15); }
+    .radar-sweep  { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(rgba(255,59,59,0.55) 0deg, transparent 60deg); animation: radar-spin 3s linear infinite; }
+    @keyframes radar-spin  { to { transform: rotate(360deg); } }
+    .radar-dot    { position: absolute; border-radius: 50%; background: var(--red); box-shadow: 0 0 6px var(--red); animation: radar-blink 2s ease-in-out infinite; }
+    @keyframes radar-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    .card-icon-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .card-icon { font-size: 4rem; opacity: 0.15; transition: opacity 0.3s, transform 0.3s; }
+    .module-card:hover .card-icon { opacity: 0.28; transform: scale(1.08); }
+    .card-grid-pattern {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 28px 28px;
     }
 
-    /* ── Locked Card State ── */
+    /* Locked state */
     .module-card.locked { cursor: default; }
-    .module-card.locked:hover {
-      transform: none !important;
-      border-color: var(--border) !important;
-      box-shadow: none !important;
-    }
-    .module-card.locked .card-visual { filter: blur(5px); opacity: 0.2; }
+    .module-card.locked:hover { transform: none !important; border-color: var(--border) !important; box-shadow: none !important; }
+    .module-card.locked .card-visual { filter: blur(5px); opacity: 0.15; }
     .module-card.locked .card-footer { opacity: 0.35; filter: blur(1px); }
+
     .lock-overlay {
       position: absolute; inset: 0; z-index: 10;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 10px; pointer-events: none;
-      background: rgba(10,10,15,0.55);
+      background: rgba(10,10,15,0.58);
     }
     .lock-icon-ring {
       width: 54px; height: 54px; border-radius: 50%;
@@ -313,342 +528,23 @@
       display: flex; align-items: center; justify-content: center;
       background: rgba(245,200,66,0.06);
     }
-    .lock-glyph {
-      font-size: 1.5rem;
-      line-height: 1;
-    }
-    .lock-label {
+    .lock-glyph { font-size: 1.5rem; line-height: 1; }
+    .lock-label { font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em; color: var(--gold); text-transform: uppercase; }
+    .lock-sub   { font-size: 0.65rem; color: rgba(255,255,255,0.4); font-family: var(--font-body); }
+
+    /* Classified stamp (shown on locked cards via JS) */
+    .classified-stamp {
+      position: absolute; top: 18px; left: 50%;
+      transform: translateX(-50%) rotate(-10deg);
       font-family: var(--font-head);
-      font-size: 0.52rem; font-weight: 700;
-      letter-spacing: 0.12em; color: var(--gold);
+      font-size: 0.62rem; font-weight: 900;
+      letter-spacing: 0.2em; color: rgba(255,59,59,0.5);
+      border: 2px solid rgba(255,59,59,0.35);
+      padding: 0.18rem 0.6rem;
       text-transform: uppercase;
+      pointer-events: none; z-index: 12;
+      white-space: nowrap;
     }
-    .lock-sub { font-size: 0.65rem; color: rgba(255,255,255,0.4); font-family: var(--font-body); }
-
-    /* ── Upgrade Banner ── */
-    .upgrade-banner {
-      display: none;
-      align-items: center; justify-content: space-between;
-      gap: 16px;
-      background: var(--gold-glow2);
-      border: 1px solid var(--border-gold);
-      border-radius: 5px; padding: 12px 18px;
-      margin: 0 1.5rem 1rem;
-    }
-    .upgrade-banner.visible { display: flex; }
-    .upgrade-banner-title {
-      font-family: var(--font-head);
-      font-size: 0.52rem; font-weight: 700;
-      letter-spacing: 0.12em; color: var(--gold);
-      text-transform: uppercase; margin-bottom: 4px;
-    }
-    .upgrade-banner-sub {
-      font-size: 0.72rem; color: var(--text-dim); font-family: var(--font-body);
-    }
-    .upgrade-banner-btn {
-      flex-shrink: 0;
-      background: rgba(245,200,66,0.1);
-      border: 1px solid var(--border-gold);
-      color: var(--gold);
-      font-family: var(--font-head);
-      font-size: 0.5rem; font-weight: 700;
-      letter-spacing: 0.14em; padding: 8px 18px;
-      border-radius: 4px; text-decoration: none;
-      text-transform: uppercase; white-space: nowrap; cursor: pointer;
-      transition: background 0.2s;
-    }
-    .upgrade-banner-btn:hover { background: rgba(245,200,66,0.18); }
-    @media (max-width: 500px) { .upgrade-banner { flex-direction: column; align-items: flex-start; } }
-
-    /* ── Upgrade Modal ── */
-    .upgrade-modal-backdrop {
-      position: fixed; inset: 0; z-index: 9000;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1rem; opacity: 0; pointer-events: none;
-      transition: opacity 0.25s ease;
-    }
-    .upgrade-modal-backdrop.open { opacity: 1; pointer-events: all; }
-    .upgrade-modal {
-      position: relative;
-      background: var(--bg-2);
-      border: 1px solid var(--border-gold);
-      border-radius: 10px;
-      width: 100%; max-width: 520px;
-      max-height: calc(100dvh - 2rem);
-      overflow-y: auto; -webkit-overflow-scrolling: touch;
-      padding: 2rem 2rem 1.75rem;
-      box-shadow: 0 0 60px rgba(245,200,66,0.1), 0 24px 64px rgba(0,0,0,0.7);
-      transform: translateY(16px) scale(0.97);
-      transition: transform 0.25s ease;
-    }
-    .upgrade-modal-backdrop.open .upgrade-modal { transform: translateY(0) scale(1); }
-    @media (max-width: 480px) { .upgrade-modal { padding: 1.25rem 1.25rem 1.5rem; } }
-    .upgrade-modal::before {
-      content: '';
-      position: absolute; top: -60px; left: -60px;
-      width: 220px; height: 220px;
-      background: radial-gradient(circle, rgba(245,200,66,0.08), transparent 70%);
-      pointer-events: none;
-    }
-    .upgrade-modal-close {
-      position: absolute; top: 1rem; right: 1rem;
-      width: 30px; height: 30px; border-radius: 5px;
-      border: 1px solid var(--border); background: var(--bg-4);
-      color: var(--text-dim); font-size: 0.85rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: background 0.15s, color 0.15s; line-height: 1;
-    }
-    .upgrade-modal-close:hover { background: var(--bg-5); color: var(--text); }
-    .upgrade-modal-badge {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.25rem 0.75rem;
-      background: var(--gold-glow2); border: 1px solid var(--border-gold);
-      border-radius: 3px;
-      font-family: var(--font-head); font-size: 0.45rem; font-weight: 700;
-      color: var(--gold); letter-spacing: 0.14em; text-transform: uppercase;
-      margin-bottom: 1rem;
-    }
-    .upgrade-modal-badge-dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--gold); box-shadow: 0 0 5px var(--gold);
-    }
-    .upgrade-modal-title {
-      font-family: var(--font-head);
-      font-size: 1.2rem; font-weight: 700;
-      letter-spacing: 0.04em; color: var(--text);
-      line-height: 1.2; margin-bottom: 0.5rem; text-transform: uppercase;
-    }
-    .upgrade-modal-title span { color: var(--gold); }
-    .upgrade-modal-sub {
-      font-family: var(--font-body); font-size: 0.82rem;
-      color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.5;
-    }
-    .upgrade-modal-divider { height: 1px; background: var(--border); margin-bottom: 1.25rem; }
-    .upgrade-modal-unlock-label {
-      font-family: var(--font-head);
-      font-size: 0.46rem; font-weight: 700;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: 0.85rem;
-    }
-    .upgrade-modal-features {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 0.55rem 1rem; margin-bottom: 1.75rem;
-    }
-    @media (max-width: 460px) { .upgrade-modal-features { grid-template-columns: 1fr; } }
-    .upgrade-modal-feature { display: flex; align-items: flex-start; gap: 0.5rem; }
-    .upgrade-modal-feature-icon {
-      width: 20px; height: 20px; border-radius: 4px;
-      background: var(--teal-glow2); border: 1px solid var(--border-hi);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; flex-shrink: 0; margin-top: 1px;
-    }
-    .upgrade-modal-feature-text strong {
-      display: block; font-family: var(--font-head);
-      font-size: 0.52rem; font-weight: 700; letter-spacing: 0.08em;
-      color: var(--text); line-height: 1.3; text-transform: uppercase;
-    }
-    .upgrade-modal-feature-text span {
-      font-family: var(--font-body); font-size: 0.68rem;
-      color: var(--text-dim); line-height: 1.3;
-    }
-    .upgrade-modal-pricing {
-      background: var(--gold-glow2); border: 1px solid var(--border-gold);
-      border-radius: 6px; padding: 0.9rem 1rem;
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-    .upgrade-modal-price-left strong {
-      font-family: var(--font-head); font-size: 1.4rem; font-weight: 700;
-      color: var(--gold); letter-spacing: 0.02em;
-    }
-    .upgrade-modal-price-left span {
-      font-family: var(--font-body); font-size: 0.75rem;
-      color: var(--text-dim); margin-left: 4px;
-    }
-    .upgrade-modal-price-badge {
-      font-family: var(--font-head); font-size: 0.45rem; font-weight: 700;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--green); background: var(--green-glow);
-      border: 1px solid rgba(0,230,118,0.25);
-      padding: 0.25rem 0.65rem; border-radius: 3px;
-    }
-    .upgrade-modal-cta {
-      width: 100%; padding: 0.9rem 1rem;
-      background: var(--gold-dark); border: 1px solid var(--border-gold);
-      color: var(--gold);
-      font-family: var(--font-head); font-size: 0.58rem; font-weight: 700;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      border-radius: 5px; cursor: pointer;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      display: flex; align-items: center; justify-content: center;
-      gap: 0.5rem; text-decoration: none;
-    }
-    .upgrade-modal-cta:hover {
-      background: rgba(245,200,66,0.18); transform: translateY(-1px);
-      box-shadow: 0 6px 24px rgba(245,200,66,0.15);
-    }
-    .upgrade-modal-cta:active { transform: translateY(0); }
-    .upgrade-modal-footer {
-      text-align: center; margin-top: 0.85rem;
-      font-family: var(--font-body); font-size: 0.68rem; color: var(--text-muted);
-    }
-    .upgrade-modal-featured {
-      display: flex; align-items: flex-start; gap: 0.85rem;
-      background: var(--teal-glow2); border: 1px solid var(--border-hi);
-      border-radius: 7px; padding: 0.9rem 1rem; margin-bottom: 0.85rem;
-    }
-    .upgrade-modal-featured-icon {
-      width: 36px; height: 36px; border-radius: 6px;
-      background: var(--teal-glow); border: 1px solid var(--border-hi);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; flex-shrink: 0;
-    }
-    .upgrade-modal-featured strong {
-      display: block; font-family: var(--font-head);
-      font-size: 0.54rem; font-weight: 700; letter-spacing: 0.08em;
-      color: var(--teal); margin-bottom: 0.3rem; text-transform: uppercase;
-    }
-    .upgrade-modal-featured p {
-      font-family: var(--font-body); font-size: 0.72rem;
-      color: var(--text-dim); line-height: 1.45; margin: 0;
-    }
-
-    /* Card center icon */
-    .card-icon-wrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card-icon {
-      font-size: 4rem;
-      opacity: 0.15;
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    .module-card:hover .card-icon { opacity: 0.28; transform: scale(1.08); }
-
-    /* SVG pattern overlays */
-    .card-grid-pattern {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 28px 28px;
-    }
-
-    /* Communication card specific */
-    .chat-bubbles {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-    }
-    .chat-bubble {
-      position: absolute;
-      border-radius: 12px 12px 12px 2px;
-      background: rgba(0,212,255,0.08);
-      border: 1px solid rgba(0,212,255,0.15);
-      animation: float-up 4s ease-in-out infinite;
-    }
-    .chat-bubble:nth-child(2) {
-      border-radius: 12px 12px 2px 12px;
-      background: rgba(245,200,66,0.06);
-      border-color: rgba(245,200,66,0.12);
-      animation-delay: -1.5s;
-    }
-    .chat-bubble:nth-child(3) { animation-delay: -3s; }
-    @keyframes float-up {
-      0%, 100% { transform: translateY(0); opacity: 0.6; }
-      50%       { transform: translateY(-8px); opacity: 1; }
-    }
-
-    /* Trading Floor card — animated candles */
-    .candle-chart {
-      position: absolute;
-      bottom: 20px;
-      left: 16px; right: 16px;
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 120px;
-    }
-    .candle {
-      flex: 1;
-      border-radius: 2px 2px 0 0;
-      position: relative;
-      transition: height 1s ease;
-    }
-    .candle.bull { background: rgba(0,230,118,0.35); border: 1px solid rgba(0,230,118,0.5); }
-    .candle.bear { background: rgba(255,59,59,0.35);  border: 1px solid rgba(255,59,59,0.5); }
-    .candle-wick {
-      position: absolute;
-      left: 50%;
-      width: 1px;
-      background: currentColor;
-      transform: translateX(-50%);
-    }
-    .candle.bull .candle-wick { top: -12px; height: 12px; background: rgba(0,230,118,0.6); }
-    .candle.bear .candle-wick { top: -8px;  height: 8px;  background: rgba(255,59,59,0.6); }
-
-    /* Watchtower card — globe dots */
-    .globe-dots {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-    }
-    .globe-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid rgba(0,212,255,0.4);
-      animation: ring-pulse 3s ease-in-out infinite;
-    }
-    .sat-dot {
-      position: absolute;
-      animation: sat-orbit 6s linear infinite;
-    }
-    @keyframes sat-orbit {
-      from { transform: rotate(0deg) translateX(95px) rotate(0deg); }
-      to   { transform: rotate(360deg) translateX(95px) rotate(-360deg); }
-    }
-    @keyframes ring-pulse {
-      0%, 100% { opacity: 0.4; transform: scale(1); }
-      50%       { opacity: 0.8; transform: scale(1.03); }
-    }
-
-    /* War Room card — radar sweep */
-    .radar-wrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .radar-circle {
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid rgba(255,59,59,0.15);
-    }
-    .radar-sweep {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: conic-gradient(rgba(255,59,59,0.55) 0deg, transparent 60deg);
-      animation: radar-spin 3s linear infinite;
-    }
-    @keyframes radar-spin { to { transform: rotate(360deg); } }
-    .radar-dot {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 6px var(--red);
-      animation: radar-blink 2s ease-in-out infinite;
-    }
-    @keyframes radar-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
     /* Card footer */
     .card-footer {
@@ -657,108 +553,101 @@
       border-top: 1px solid rgba(255,255,255,0.04);
       position: relative; z-index: 2; flex-shrink: 0;
     }
-    .card-tag {
-      font-family: var(--font-head);
-      font-size: 0.44rem; letter-spacing: 0.2em;
-      color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.28rem;
-    }
-    .card-name {
-      font-family: var(--font-head);
-      font-size: 0.76rem; font-weight: 700;
-      letter-spacing: 0.08em; color: var(--text);
-      line-height: 1.2; text-transform: uppercase;
-    }
+    .card-tag  { font-family: var(--font-head); font-size: 0.44rem; letter-spacing: 0.2em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.28rem; }
+    .card-name { font-family: var(--font-head); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text); line-height: 1.2; text-transform: uppercase; }
     .teal-card  .card-name { color: var(--teal); }
     .gold-card  .card-name { color: var(--gold); }
     .red-card   .card-name { color: var(--red); }
     .green-card .card-name { color: var(--green); }
-    .card-desc {
-      font-family: var(--font-body);
-      font-size: 0.7rem; color: var(--text-dim);
-      margin-top: 0.3rem; line-height: 1.4;
-    }
-    .card-arrow {
-      position: absolute; bottom: 1.25rem; right: 1.25rem;
-      width: 24px; height: 24px; border-radius: 3px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; transition: transform 0.2s;
-    }
-    .teal-card  .card-arrow { border: 1px solid var(--border-hi);             color: var(--teal); }
-    .gold-card  .card-arrow { border: 1px solid var(--border-gold);            color: var(--gold); }
-    .red-card   .card-arrow { border: 1px solid var(--border-red);             color: var(--red); }
-    .green-card .card-arrow { border: 1px solid rgba(0,230,118,0.32);          color: var(--green); }
+    .card-desc  { font-family: var(--font-body); font-size: 0.7rem; color: var(--text-dim); margin-top: 0.3rem; line-height: 1.4; }
+    .card-arrow { position: absolute; bottom: 1.25rem; right: 1.25rem; width: 24px; height: 24px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: transform 0.2s; }
+    .teal-card  .card-arrow { border: 1px solid var(--border-hi);            color: var(--teal); }
+    .gold-card  .card-arrow { border: 1px solid var(--border-gold);           color: var(--gold); }
+    .red-card   .card-arrow { border: 1px solid var(--border-red);            color: var(--red); }
+    .green-card .card-arrow { border: 1px solid rgba(0,230,118,0.32);         color: var(--green); }
     .module-card:hover .card-arrow { transform: translate(2px, -2px); }
 
-    /* ── Free Access Grid ── */
-    .free-section { padding: 0 1.5rem 2rem; }
-    .free-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+    /* ── UPGRADE BANNER ────────────────────────────────────────── */
+    .upgrade-banner {
+      display: none; align-items: center; justify-content: space-between; gap: 16px;
+      background: var(--gold-glow2); border: 1px solid var(--border-gold);
+      border-radius: 5px; padding: 12px 18px; margin: 0 1.5rem 1rem;
+    }
+    .upgrade-banner.visible { display: flex; }
+    .upgrade-banner-title { font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+    .upgrade-banner-sub   { font-size: 0.72rem; color: var(--text-dim); font-family: var(--font-body); }
+    .upgrade-banner-btn {
+      flex-shrink: 0; background: rgba(245,200,66,0.1); border: 1px solid var(--border-gold);
+      color: var(--gold); font-family: var(--font-head); font-size: 0.5rem; font-weight: 700;
+      letter-spacing: 0.14em; padding: 8px 18px; border-radius: 4px;
+      text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: background 0.2s;
+    }
+    .upgrade-banner-btn:hover { background: rgba(245,200,66,0.18); }
+    @media (max-width: 500px) { .upgrade-banner { flex-direction: column; align-items: flex-start; } }
 
+    /* ── FREE ACCESS ───────────────────────────────────────────── */
+    .free-section { padding: 0 1.5rem 2rem; }
+    .free-grid    { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+
+    /* Stagger entrance */
     .free-card {
       display: flex; align-items: center; gap: 0.85rem;
       padding: 0.9rem 1rem;
       background: var(--bg-2); border: 1px solid var(--border);
       border-radius: 5px; cursor: pointer; text-decoration: none;
-      transition: all 0.2s var(--ease); position: relative; overflow: hidden;
+      position: relative; overflow: hidden;
+      opacity: 0; transform: translateY(18px);
+      transition: opacity 0.42s var(--ease), transform 0.42s var(--ease),
+                  border-color 0.2s, background 0.2s, box-shadow 0.2s;
     }
-    .free-card:hover {
+    .free-card.visible { opacity: 1; transform: translateY(0); }
+    .free-card.visible:hover {
       border-color: var(--border-hi); background: var(--bg-3);
       box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,212,255,0.06);
       transform: translateY(-2px);
     }
     .free-card.retreat {
-      border-color: rgba(245,200,66,0.18);
-      background: linear-gradient(135deg, var(--bg-2), rgba(245,200,66,0.03));
+      grid-column: 1 / -1;
+      border-color: rgba(245,200,66,0.22);
+      background: linear-gradient(135deg, var(--bg-2), rgba(245,200,66,0.04));
     }
-    .free-card.retreat:hover { border-color: var(--border-gold); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .free-card.retreat.visible:hover { border-color: var(--border-gold); box-shadow: 0 4px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(245,200,66,0.1); }
 
-    .free-icon {
-      width: 38px; height: 38px; border-radius: 5px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; flex-shrink: 0;
-      background: var(--bg-4); border: 1px solid var(--border); transition: all 0.2s;
-    }
-    .free-card:hover .free-icon { border-color: var(--border-hi); background: var(--teal-glow2); }
+    .free-icon  { width: 38px; height: 38px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; background: var(--bg-4); border: 1px solid var(--border); transition: all 0.2s; }
+    .free-card.visible:hover .free-icon { border-color: var(--border-hi); background: var(--teal-glow2); }
     .retreat .free-icon { border-color: rgba(245,200,66,0.18); }
-    .retreat:hover .free-icon { border-color: var(--border-gold); }
+    .retreat.visible:hover .free-icon { border-color: var(--border-gold); background: var(--gold-glow2); }
 
-    .free-info { flex: 1; min-width: 0; }
-    .free-title {
-      font-family: var(--font-head);
-      font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em;
-      color: var(--text); text-transform: uppercase;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .free-info  { flex: 1; min-width: 0; }
+    .free-title { font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .retreat .free-title { color: var(--gold); }
-    .free-desc {
-      font-family: var(--font-body);
-      font-size: 0.68rem; color: var(--text-dim); margin-top: 0.2rem;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .free-desc  { font-family: var(--font-body); font-size: 0.68rem; color: var(--text-dim); margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .free-arrow { font-size: 0.8rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s, color 0.2s; }
+    .free-card.visible:hover .free-arrow { transform: translateX(3px); color: var(--teal); }
+    .retreat.visible:hover .free-arrow { color: var(--gold); }
+
     .free-badge { font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; color: var(--gold); flex-shrink: 0; }
 
-    /* ── Admin Section ── */
-    .admin-card:hover {
-      border-color: rgba(255,59,59,0.22) !important;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,59,59,0.05) !important;
-    }
+    /* ── ADMIN SECTION ─────────────────────────────────────────── */
+    .admin-card:hover { border-color: rgba(255,59,59,0.22) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,59,59,0.05) !important; }
     .admin-card:hover .free-icon { border-color: rgba(255,59,59,0.22); background: rgba(255,59,59,0.05); }
     .admin-section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-    .admin-section-title {
-      font-family: var(--font-head);
-      font-size: 0.54rem; font-weight: 800;
-      letter-spacing: 0.22em; color: var(--red); text-transform: uppercase;
-    }
-    .badge-admin {
-      font-family: var(--font-head);
-      font-size: 0.44rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; padding: 3px 8px; border-radius: 3px;
-      border: 1px solid rgba(255,59,59,0.22); color: var(--red); background: rgba(255,59,59,0.05);
-    }
+    .admin-section-title  { font-family: var(--font-head); font-size: 0.54rem; font-weight: 800; letter-spacing: 0.22em; color: var(--red); text-transform: uppercase; }
+    .badge-admin { font-family: var(--font-head); font-size: 0.44rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; border: 1px solid rgba(255,59,59,0.22); color: var(--red); background: rgba(255,59,59,0.05); }
     .admin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
     @media (max-width: 700px) { .admin-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 420px) { .admin-grid { grid-template-columns: 1fr; } }
 
-    /* ── Footer ── */
+    /* ── TICKER MONOSPACE ──────────────────────────────────────── */
+    .t-price, .t-chg {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace !important;
+      font-variant-numeric: tabular-nums;
+    }
+    .nav-ticker-item.t-alert-item .t-sym  { color: var(--amber) !important; }
+    .nav-ticker-item.t-alert-item .t-price { color: var(--amber) !important; font-family: var(--font-head) !important; font-size: 0.52rem; }
+
+    /* ── FOOTER ────────────────────────────────────────────────── */
     .dash-footer {
       padding: 1rem 1.5rem;
       padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
@@ -775,32 +664,163 @@
       cursor: pointer; transition: all 0.2s;
     }
     .logout-btn:hover { background: rgba(255,59,59,0.1); border-color: rgba(255,59,59,0.35); }
-    .version-tag {
-      font-family: var(--font-head); font-size: 0.46rem;
-      color: var(--text-muted); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase;
-    }
+    .version-tag { font-family: var(--font-head); font-size: 0.46rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
 
-    /* ── Responsive ── */
+    /* ── RESPONSIVE ────────────────────────────────────────────── */
     @media (max-width: 640px) {
       .dash-hero-body { padding: 1.25rem 1rem 1rem; }
+      .today-brief    { padding: 0.75rem 1rem 1rem; }
       .section-header { padding: 0 1rem; }
       .carousel-outer { padding: 0 1rem; }
-      .free-section { padding: 0 1rem 1.5rem; }
-      .dash-footer { padding: 0.75rem 1rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom,0px)); }
-      .module-card { flex: 0 0 240px; height: 340px; }
-      .free-grid { grid-template-columns: 1fr; }
+      .free-section   { padding: 0 1rem 1.5rem; }
+      .dash-footer    { padding: 0.75rem 1rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom,0px)); }
+      .module-card    { flex: 0 0 240px; height: 340px; }
+      .free-grid      { grid-template-columns: 1fr; }
       .upgrade-banner { margin: 0 1rem 1rem; }
     }
     @media (max-width: 400px) { .module-card { flex: 0 0 220px; height: 320px; } }
+
+    /* ── UPGRADE MODAL ─────────────────────────────────────────── */
+    .upgrade-modal-backdrop {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    }
+    .upgrade-modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .upgrade-modal {
+      position: relative; background: var(--bg-2); border: 1px solid var(--border-gold);
+      border-radius: 10px; width: 100%; max-width: 520px;
+      max-height: calc(100dvh - 2rem); overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 2rem 2rem 1.75rem;
+      box-shadow: 0 0 60px rgba(245,200,66,0.1), 0 24px 64px rgba(0,0,0,0.7);
+      transform: translateY(16px) scale(0.97); transition: transform 0.25s ease;
+    }
+    .upgrade-modal-backdrop.open .upgrade-modal { transform: translateY(0) scale(1); }
+    @media (max-width: 480px) { .upgrade-modal { padding: 1.25rem 1.25rem 1.5rem; } }
+    .upgrade-modal::before { content: ''; position: absolute; top: -60px; left: -60px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(245,200,66,0.08), transparent 70%); pointer-events: none; }
+    .upgrade-modal-close { position: absolute; top: 1rem; right: 1rem; width: 30px; height: 30px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg-4); color: var(--text-dim); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, color 0.15s; line-height: 1; }
+    .upgrade-modal-close:hover { background: var(--bg-5); color: var(--text); }
+    .upgrade-modal-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; background: var(--gold-glow2); border: 1px solid var(--border-gold); border-radius: 3px; font-family: var(--font-head); font-size: 0.45rem; font-weight: 700; color: var(--gold); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 1rem; }
+    .upgrade-modal-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+    .upgrade-modal-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.04em; color: var(--text); line-height: 1.2; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .upgrade-modal-title span { color: var(--gold); }
+    .upgrade-modal-sub { font-family: var(--font-body); font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.5; }
+    .upgrade-modal-divider { height: 1px; background: var(--border); margin-bottom: 1.25rem; }
+    .upgrade-modal-unlock-label { font-family: var(--font-head); font-size: 0.46rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.85rem; }
+    .upgrade-modal-features { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem 1rem; margin-bottom: 1.75rem; }
+    @media (max-width: 460px) { .upgrade-modal-features { grid-template-columns: 1fr; } }
+    .upgrade-modal-feature { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .upgrade-modal-feature-icon { width: 20px; height: 20px; border-radius: 4px; background: var(--teal-glow2); border: 1px solid var(--border-hi); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; flex-shrink: 0; margin-top: 1px; }
+    .upgrade-modal-feature-text strong { display: block; font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text); line-height: 1.3; text-transform: uppercase; }
+    .upgrade-modal-feature-text span { font-family: var(--font-body); font-size: 0.68rem; color: var(--text-dim); line-height: 1.3; }
+    .upgrade-modal-pricing { background: var(--gold-glow2); border: 1px solid var(--border-gold); border-radius: 6px; padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .upgrade-modal-price-left strong { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--gold); letter-spacing: 0.02em; }
+    .upgrade-modal-price-left span { font-family: var(--font-body); font-size: 0.75rem; color: var(--text-dim); margin-left: 4px; }
+    .upgrade-modal-price-badge { font-family: var(--font-head); font-size: 0.45rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); background: var(--green-glow); border: 1px solid rgba(0,230,118,0.25); padding: 0.25rem 0.65rem; border-radius: 3px; }
+    .upgrade-modal-cta { width: 100%; padding: 0.9rem 1rem; background: var(--gold-dark); border: 1px solid var(--border-gold); color: var(--gold); font-family: var(--font-head); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 5px; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; }
+    .upgrade-modal-cta:hover { background: rgba(245,200,66,0.18); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(245,200,66,0.15); }
+    .upgrade-modal-cta:active { transform: translateY(0); }
+    .upgrade-modal-footer { text-align: center; margin-top: 0.85rem; font-family: var(--font-body); font-size: 0.68rem; color: var(--text-muted); }
+    .upgrade-modal-featured { display: flex; align-items: flex-start; gap: 0.85rem; background: var(--teal-glow2); border: 1px solid var(--border-hi); border-radius: 7px; padding: 0.9rem 1rem; margin-bottom: 0.85rem; }
+    .upgrade-modal-featured-icon { width: 36px; height: 36px; border-radius: 6px; background: var(--teal-glow); border: 1px solid var(--border-hi); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .upgrade-modal-featured strong { display: block; font-family: var(--font-head); font-size: 0.54rem; font-weight: 700; letter-spacing: 0.08em; color: var(--teal); margin-bottom: 0.3rem; text-transform: uppercase; }
+    .upgrade-modal-featured p { font-family: var(--font-body); font-size: 0.72rem; color: var(--text-dim); line-height: 1.45; margin: 0; }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════
-     NAVBAR
-════════════════════════════ -->
+<!-- ════════ SIDEBAR ════════ -->
+<aside class="arcane-sidebar" id="arcane-sidebar">
+
+  <div class="sidebar-section-label">Modules</div>
+
+  <a class="sidebar-nav-item active" href="dashboard.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+    <span class="sidebar-nav-label">Dashboard</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="https://arcane-watchtower.vercel.app" target="_blank">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg></span>
+    <span class="sidebar-nav-label">Watchtower</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="trading-floor.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+    <span class="sidebar-nav-label">Trading Floor</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="war-room.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+    <span class="sidebar-nav-label">War Room</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="stock-picks.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 1 18"/><polyline points="16 7 22 7 22 13"/></svg></span>
+    <span class="sidebar-nav-label">Stock Picks</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="notion-invite.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+    <span class="sidebar-nav-label">Courses</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="live-calls.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+    <span class="sidebar-nav-label">Communication</span>
+  </a>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section-label">Open Intel</div>
+
+  <a class="sidebar-nav-item" href="free-signals.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></span>
+    <span class="sidebar-nav-label">Signals</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="live-streams.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+    <span class="sidebar-nav-label">Live Streams</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="bullion.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+    <span class="sidebar-nav-label">Bullion</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="referrals.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+    <span class="sidebar-nav-label">Referrals</span>
+  </a>
+
+  <div class="sidebar-divider"></div>
+
+  <a class="sidebar-nav-item" href="arcane-store.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+    <span class="sidebar-nav-label">Store</span>
+  </a>
+
+  <a class="sidebar-nav-item" href="settings.html">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+    <span class="sidebar-nav-label">Settings</span>
+  </a>
+
+  <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
+    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+    <span class="sidebar-nav-label">Admin</span>
+  </a>
+
+</aside>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ════════ NAVBAR ════════ -->
 <nav class="arcane-nav">
   <div class="nav-inner">
+    <!-- Sidebar toggle (mobile) -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6"  x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
     <!-- Left: Brand -->
     <a class="nav-left" href="dashboard.html">
       <img src="ArcaneA.png" class="nav-logo" alt="AA"/>
@@ -812,9 +832,7 @@
     <div class="nav-center">
       <a href="arcane-store.html" class="nav-store-btn">Store</a>
       <div class="nav-ticker-wrap">
-        <div class="nav-ticker-track" id="nav-ticker-track">
-          <!-- Populated by JS -->
-        </div>
+        <div class="nav-ticker-track" id="nav-ticker-track"></div>
       </div>
     </div>
     <div class="nav-sep"></div>
@@ -837,18 +855,17 @@
   </div>
 </nav>
 
-<!-- ════════════════════════════
-     PAGE CONTENT
-════════════════════════════ -->
+<!-- ════════ PAGE CONTENT ════════ -->
 <main class="page-wrap">
 
   <!-- ── Hero ── -->
   <div class="dash-hero">
+
     <!-- Status toolbar -->
     <div class="dash-status-bar">
       <div class="dash-meta-item">
-        <div class="dot dot-green"></div>
-        <span id="market-status">MARKETS OPEN</span>
+        <div class="dot dot-market-closed" id="market-dot"></div>
+        <span id="market-status">MARKETS CLOSED</span>
       </div>
       <div class="dash-meta-item">
         <div class="dot dot-gold"></div>
@@ -859,22 +876,70 @@
         <span id="member-plan">FREE TIER</span>
       </div>
     </div>
+
+    <!-- System health row -->
+    <div class="system-health-bar">
+      <div class="health-item">
+        <div class="dot dot-grey" id="dot-firebase"></div>
+        <span>Firebase</span>
+      </div>
+      <div class="health-item">
+        <div class="dot dot-amber" id="dot-api"></div>
+        <span>Market API</span>
+      </div>
+      <div class="health-item">
+        <div class="dot dot-amber" id="dot-stream"></div>
+        <span>Stream</span>
+      </div>
+      <div class="health-item" style="border-right:none">
+        <div class="dot dot-green"></div>
+        <span>All Systems</span>
+      </div>
+      <span class="health-ts" id="health-ts">—</span>
+    </div>
+
     <!-- Hero body -->
     <div class="dash-hero-body">
-      <div class="dash-pill">OPERATOR BRIEFING</div>
+      <div class="dash-pill">Operator Briefing</div>
       <h1 class="dash-title">WELCOME BACK, <span id="user-name">OPERATOR</span></h1>
       <p class="dash-sub">Intelligence platform active. All systems nominal.</p>
-    </div>
-  </div>
 
-  <!-- ── Main Modules Carousel ── -->
+      <!-- Stat pills -->
+      <div class="stat-pills-row">
+        <div class="stat-pill rank-pill">
+          <span class="stat-pill-label">Rank</span>
+          <span class="stat-pill-value" id="pill-rank">—</span>
+        </div>
+        <div class="stat-pill xp-pill">
+          <span class="stat-pill-label">XP</span>
+          <span class="stat-pill-value" id="pill-xp">—</span>
+        </div>
+        <div class="stat-pill credits-pill">
+          <span class="stat-pill-label">Credits</span>
+          <span class="stat-pill-value" id="pill-credits">—</span>
+        </div>
+        <div class="stat-pill streak-pill" id="pill-streak-wrap" style="display:none">
+          <span class="stat-pill-label">Streak</span>
+          <span class="stat-pill-value" id="pill-streak">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Brief -->
+    <div class="today-brief">
+      <div class="brief-label">Intel Brief</div>
+      <div class="brief-quote" id="brief-quote">Initialising intelligence feed…</div>
+    </div>
+
+  </div><!-- /dash-hero -->
+
+  <!-- ── Module Carousel ── -->
   <section class="carousel-section">
     <div class="section-header">
       <div class="section-title">Platform Modules</div>
       <div class="badge-live">Live</div>
     </div>
 
-    <!-- Upgrade banner — shown to free tier users only -->
     <div class="upgrade-banner" id="upgrade-banner">
       <div class="upgrade-banner-copy">
         <div class="upgrade-banner-title">Modules locked — upgrade to access</div>
@@ -890,15 +955,14 @@
         <a class="module-card teal-card" href="live-calls.html">
           <div class="card-visual comm-bg">
             <div class="card-grid-pattern"></div>
+            <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
             <div class="chat-bubbles">
               <div class="chat-bubble" style="width:90px;height:18px;left:30px;top:60px"></div>
               <div class="chat-bubble" style="width:70px;height:18px;left:60px;top:95px;animation-delay:-1.5s"></div>
               <div class="chat-bubble" style="width:110px;height:18px;left:20px;top:130px;animation-delay:-3s"></div>
               <div class="chat-bubble" style="width:80px;height:18px;left:50px;top:165px;animation-delay:-0.8s"></div>
             </div>
-            <div class="card-icon-wrap">
-              <span class="card-icon">💬</span>
-            </div>
+            <div class="card-icon-wrap"><span class="card-icon">💬</span></div>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 01</div>
@@ -912,7 +976,7 @@
         <a class="module-card gold-card" href="trading-floor.html">
           <div class="card-visual floor-bg">
             <div class="card-grid-pattern"></div>
-            <!-- Animated candles — HH/HL uptrend -->
+            <div class="card-live-tag gold"><div class="card-live-dot"></div>Live</div>
             <div class="candle-chart">
               <div class="candle bull" style="height:28px"><div class="candle-wick"></div></div>
               <div class="candle bear" style="height:24px"><div class="candle-wick"></div></div>
@@ -927,7 +991,6 @@
               <div class="candle bull" style="height:100px"><div class="candle-wick"></div></div>
               <div class="candle bull" style="height:112px"><div class="candle-wick"></div></div>
             </div>
-            <!-- Price line overlay -->
             <svg style="position:absolute;bottom:20px;left:16px;right:16px;width:calc(100% - 32px);height:120px;overflow:visible;pointer-events:none" viewBox="0 0 260 120" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
@@ -935,16 +998,11 @@
                   <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
                 </linearGradient>
               </defs>
-              <!-- Gold price line fill -->
               <path d="M0,108 L22,108 L44,96 L66,88 L88,76 L110,68 L132,52 L154,44 L176,28 L198,20 L220,8 L260,0 L260,120 L0,120 Z" fill="url(#lineGrad)"/>
-              <!-- Gold price line -->
               <polyline points="0,108 22,108 44,96 66,88 88,76 110,68 132,52 154,44 176,28 198,20 220,8 260,0" fill="none" stroke="#f5c842" stroke-width="1.5" stroke-linejoin="round"/>
-              <!-- Teal MA line -->
               <polyline points="0,112 44,104 88,88 132,68 176,44 220,20 260,4" fill="none" stroke="#00d4ff" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
             </svg>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.5rem">
-              <span class="card-icon" style="font-size:3rem">📈</span>
-            </div>
+            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.5rem"><span class="card-icon" style="font-size:3rem">📈</span></div>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 02</div>
@@ -958,12 +1016,11 @@
         <a class="module-card teal-card" href="https://arcane-watchtower.vercel.app" target="_blank">
           <div class="card-visual watch-bg">
             <div class="card-grid-pattern"></div>
-            <!-- Globe rings -->
+            <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
             <div class="globe-dots">
               <div class="globe-ring" style="width:200px;height:200px;left:35px;top:30px;animation-delay:0s"></div>
               <div class="globe-ring" style="width:150px;height:150px;left:60px;top:55px;animation-delay:-1s"></div>
               <div class="globe-ring" style="width:100px;height:100px;left:85px;top:80px;animation-delay:-2s"></div>
-              <!-- Grid lines (longitude) -->
               <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.45" viewBox="0 0 270 240">
                 <ellipse cx="135" cy="130" rx="100" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.8"/>
                 <ellipse cx="135" cy="130" rx="60" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.8"/>
@@ -971,30 +1028,23 @@
                 <line x1="35" y1="130" x2="235" y2="130" stroke="#00d4ff" stroke-width="0.8"/>
                 <line x1="55" y1="100" x2="215" y2="100" stroke="#00d4ff" stroke-width="0.8"/>
                 <line x1="55" y1="160" x2="215" y2="160" stroke="#00d4ff" stroke-width="0.8"/>
-                <!-- Hotspot dots -->
                 <circle cx="90" cy="110" r="3" fill="#00d4ff" opacity="0.9"/>
                 <circle cx="150" cy="125" r="3" fill="#f5c842" opacity="0.9"/>
                 <circle cx="180" cy="115" r="3" fill="#00d4ff" opacity="0.9"/>
                 <circle cx="70" cy="140" r="2" fill="#00e676" opacity="0.9"/>
                 <circle cx="210" cy="130" r="2" fill="#ff3b3b" opacity="0.9"/>
               </svg>
-              <!-- Satellite -->
               <div class="sat-dot" style="top:50%;left:50%;margin:-6px 0 0 -6px">
                 <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
-                  <!-- Solar panels -->
                   <rect x="0" y="5" width="6" height="4" rx="1" fill="#00d4ff" opacity="0.9"/>
                   <rect x="16" y="5" width="6" height="4" rx="1" fill="#00d4ff" opacity="0.9"/>
-                  <!-- Body -->
                   <rect x="7" y="3" width="8" height="8" rx="1.5" fill="#a0c4ff" opacity="0.95"/>
-                  <!-- Antenna -->
                   <line x1="11" y1="3" x2="11" y2="0" stroke="#00d4ff" stroke-width="1"/>
                   <circle cx="11" cy="0" r="1" fill="#f5c842"/>
                 </svg>
               </div>
             </div>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-left:1.25rem">
-              <span class="card-icon" style="font-size:2.5rem">🌍</span>
-            </div>
+            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-left:1.25rem"><span class="card-icon" style="font-size:2.5rem">🌍</span></div>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 03</div>
@@ -1008,20 +1058,17 @@
         <a class="module-card red-card" href="war-room.html">
           <div class="card-visual war-bg">
             <div class="card-grid-pattern"></div>
-            <!-- Radar animation -->
+            <div class="card-live-tag red"><div class="card-live-dot"></div>Active</div>
             <div class="radar-wrap">
               <div class="radar-circle" style="width:200px;height:200px;border-color:rgba(255,59,59,0.4)"></div>
               <div class="radar-circle" style="width:150px;height:150px;border-color:rgba(255,59,59,0.5)"></div>
               <div class="radar-circle" style="width:100px;height:100px;border-color:rgba(255,59,59,0.6)"></div>
               <div class="radar-sweep"></div>
-              <!-- Blips -->
               <div class="radar-dot" style="width:5px;height:5px;left:118px;top:88px"></div>
               <div class="radar-dot" style="width:4px;height:4px;left:148px;top:105px;animation-delay:-0.8s"></div>
               <div class="radar-dot" style="width:4px;height:4px;left:100px;top:115px;animation-delay:-1.5s"></div>
             </div>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-right:1.25rem;justify-content:flex-end">
-              <span class="card-icon" style="font-size:2.5rem">🎖️</span>
-            </div>
+            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-right:1.25rem;justify-content:flex-end"><span class="card-icon" style="font-size:2.5rem">🎖️</span></div>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 04</div>
@@ -1035,7 +1082,7 @@
         <a class="module-card green-card" href="stock-picks.html">
           <div class="card-visual stocks-bg">
             <div class="card-grid-pattern"></div>
-            <!-- Sniper scope + breakout chart -->
+            <div class="card-live-tag green"><div class="card-live-dot"></div>Updated</div>
             <svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible" viewBox="0 0 270 180" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <linearGradient id="breakGrad" x1="0" y1="0" x2="0" y2="1">
@@ -1047,31 +1094,23 @@
                   <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
               </defs>
-              <!-- Breakout price line fill -->
               <path d="M10,155 L50,148 L90,138 L120,125 L150,108 L175,80 L200,55 L200,180 L10,180 Z" fill="url(#breakGrad)"/>
-              <!-- Breakout price line -->
               <polyline points="10,155 50,148 90,138 120,125 150,108 175,80 200,55" fill="none" stroke="#00e676" stroke-width="1.5" stroke-linejoin="round"/>
-              <!-- Scope outer ring -->
               <circle cx="185" cy="65" r="52" fill="none" stroke="#00e676" stroke-width="1" opacity="0.5" filter="url(#scopeGlow)"/>
-              <!-- Scope inner ring -->
               <circle cx="185" cy="65" r="32" fill="none" stroke="#00e676" stroke-width="1" opacity="0.7"/>
-              <!-- Scope crosshairs -->
               <line x1="185" y1="13" x2="185" y2="117" stroke="#00e676" stroke-width="0.7" opacity="0.6"/>
               <line x1="133" y1="65" x2="237" y2="65" stroke="#00e676" stroke-width="0.7" opacity="0.6"/>
-              <!-- Gap in crosshairs (reticle style) -->
               <line x1="185" y1="40" x2="185" y2="55" stroke="#0a0a0f" stroke-width="2"/>
               <line x1="185" y1="75" x2="185" y2="90" stroke="#0a0a0f" stroke-width="2"/>
               <line x1="158" y1="65" x2="173" y2="65" stroke="#0a0a0f" stroke-width="2"/>
               <line x1="197" y1="65" x2="212" y2="65" stroke="#0a0a0f" stroke-width="2"/>
-              <!-- Center dot -->
               <circle cx="185" cy="65" r="3" fill="#00e676" opacity="0.9"/>
-              <!-- Ticker label -->
               <rect x="10" y="10" width="72" height="22" rx="4" fill="rgba(0,230,118,0.12)" stroke="rgba(0,230,118,0.3)" stroke-width="0.7"/>
               <text x="46" y="25" fill="#00e676" font-size="9" font-family="monospace" text-anchor="middle" font-weight="bold">PICK  +12.4%</text>
             </svg>
           </div>
           <div class="card-footer">
-            <div class="card-tag" style="color:#00e676;border-color:rgba(0,230,118,0.3)">Module 05</div>
+            <div class="card-tag" style="color:#00e676">Module 05</div>
             <div class="card-name">Stock Picks</div>
             <div class="card-desc">Curated long-term equity positions &amp; thesis</div>
             <div class="card-arrow">→</div>
@@ -1082,7 +1121,7 @@
         <a class="module-card gold-card" href="notion-invite.html">
           <div class="card-visual courses-bg">
             <div class="card-grid-pattern"></div>
-            <!-- Floating dots representing modules -->
+            <div class="card-live-tag gold"><div class="card-live-dot"></div>3,330+ Modules</div>
             <div class="course-dots">
               <div class="course-dot" style="width:10px;height:10px;left:50px;top:50px;animation-delay:0s"></div>
               <div class="course-dot" style="width:7px;height:7px;left:100px;top:80px;animation-delay:-0.7s"></div>
@@ -1091,7 +1130,6 @@
               <div class="course-dot" style="width:9px;height:9px;left:140px;top:120px;animation-delay:-0.35s"></div>
               <div class="course-dot" style="width:8px;height:8px;left:200px;top:90px;animation-delay:-1.05s"></div>
               <div class="course-dot" style="width:5px;height:5px;left:120px;top:160px;animation-delay:-1.75s"></div>
-              <!-- Connecting lines -->
               <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.5" viewBox="0 0 270 240">
                 <line x1="55" y1="55" x2="105" y2="83" stroke="#f5c842" stroke-width="1.2"/>
                 <line x1="105" y1="83" x2="165" y2="58" stroke="#f5c842" stroke-width="1.2"/>
@@ -1101,9 +1139,7 @@
                 <line x1="145" y1="123" x2="125" y2="163" stroke="#f5c842" stroke-width="1.2"/>
               </svg>
             </div>
-            <div class="card-icon-wrap" style="align-items:flex-end;justify-content:flex-end;padding:1.25rem">
-              <span class="card-icon" style="font-size:2.5rem">📚</span>
-            </div>
+            <div class="card-icon-wrap" style="align-items:flex-end;justify-content:flex-end;padding:1.25rem"><span class="card-icon" style="font-size:2.5rem">📚</span></div>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 06</div>
@@ -1114,84 +1150,57 @@
         </a>
 
       </div><!-- /carousel-track -->
-
-      <!-- Scroll arrow -->
       <button class="carousel-arrow" id="carousel-next" onclick="scrollCarousel()" title="More modules">›</button>
     </div>
   </section>
 
-  <!-- ── Admin Operations (admins only — shown via JS) ── -->
+  <!-- ── Admin Operations ── -->
   <section class="free-section" id="admin-section" style="display:none">
     <div class="admin-section-header">
       <div class="admin-section-title">Admin Operations</div>
       <span class="badge-admin">Admin Only</span>
     </div>
     <div class="admin-grid">
-
       <a class="free-card admin-card" href="admin-panel.html">
         <div class="free-icon">🛡️</div>
-        <div class="free-info">
-          <div class="free-title">Admin Panel</div>
-          <div class="free-desc">Trades, alerts &amp; signals</div>
-        </div>
+        <div class="free-info"><div class="free-title">Admin Panel</div><div class="free-desc">Trades, alerts &amp; signals</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="arcane-crm.html">
         <div class="free-icon">👥</div>
-        <div class="free-info">
-          <div class="free-title">Member CRM</div>
-          <div class="free-desc">Members &amp; subscriptions</div>
-        </div>
+        <div class="free-info"><div class="free-title">Member CRM</div><div class="free-desc">Members &amp; subscriptions</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="arcane-consulting-crm.html">
         <div class="free-icon">💼</div>
-        <div class="free-info">
-          <div class="free-title">Consulting CRM</div>
-          <div class="free-desc">Leads, pipeline &amp; payments</div>
-        </div>
+        <div class="free-info"><div class="free-title">Consulting CRM</div><div class="free-desc">Leads, pipeline &amp; payments</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="affiliate-admin.html">
         <div class="free-icon">🔗</div>
-        <div class="free-info">
-          <div class="free-title">Affiliates</div>
-          <div class="free-desc">Referrals &amp; commissions</div>
-        </div>
+        <div class="free-info"><div class="free-title">Affiliates</div><div class="free-desc">Referrals &amp; commissions</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="stock-picks-admin.html">
         <div class="free-icon">📊</div>
-        <div class="free-info">
-          <div class="free-title">Stock Picks</div>
-          <div class="free-desc">Manage investment picks</div>
-        </div>
+        <div class="free-info"><div class="free-title">Stock Picks</div><div class="free-desc">Manage investment picks</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="arcane-insight-admin.html">
         <div class="free-icon">🧠</div>
-        <div class="free-info">
-          <div class="free-title">Arcane Insights</div>
-          <div class="free-desc">Posts &amp; intel updates</div>
-        </div>
+        <div class="free-info"><div class="free-title">Arcane Insights</div><div class="free-desc">Posts &amp; intel updates</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="store-admin.html">
         <div class="free-icon">🏪</div>
-        <div class="free-info">
-          <div class="free-title">Store Admin</div>
-          <div class="free-desc">Products &amp; orders</div>
-        </div>
+        <div class="free-info"><div class="free-title">Store Admin</div><div class="free-desc">Products &amp; orders</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card admin-card" href="bullion-admin.html">
         <div class="free-icon">🥇</div>
-        <div class="free-info">
-          <div class="free-title">Bullion Admin</div>
-          <div class="free-desc">Products &amp; enquiries</div>
-        </div>
+        <div class="free-info"><div class="free-title">Bullion Admin</div><div class="free-desc">Products &amp; enquiries</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
     </div>
   </section>
 
@@ -1203,68 +1212,85 @@
     </div>
 
     <div class="free-grid">
-
       <a class="free-card" href="referrals.html">
         <div class="free-icon">💰</div>
-        <div class="free-info">
-          <div class="free-title">Referrals</div>
-          <div class="free-desc">Earn monthly commission</div>
-        </div>
+        <div class="free-info"><div class="free-title">Referrals</div><div class="free-desc">Earn monthly commission</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card" href="bullion.html">
         <div class="free-icon">🥇</div>
-        <div class="free-info">
-          <div class="free-title">Bullion</div>
-          <div class="free-desc">Gold &amp; Silver products</div>
-        </div>
+        <div class="free-info"><div class="free-title">Bullion</div><div class="free-desc">Gold &amp; Silver products</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card" href="free-signals.html">
         <div class="free-icon">📡</div>
-        <div class="free-info">
-          <div class="free-title">Free Signals</div>
-          <div class="free-desc">Starter access signals</div>
-        </div>
+        <div class="free-info"><div class="free-title">Free Signals</div><div class="free-desc">Starter access signals</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card" href="live-streams.html">
         <div class="free-icon">📺</div>
-        <div class="free-info">
-          <div class="free-title">Live Streams</div>
-          <div class="free-desc">Public broadcasts</div>
-        </div>
+        <div class="free-info"><div class="free-title">Live Streams</div><div class="free-desc">Public broadcasts</div></div>
+        <span class="free-arrow">→</span>
       </a>
-
       <a class="free-card retreat" href="retreat.html">
-        <div class="free-icon">🏔️</div>
+        <div class="free-icon" style="width:46px;height:46px;font-size:1.3rem">🏔️</div>
         <div class="free-info">
           <div class="free-title">2028 Retreat</div>
-          <div class="free-desc">Epic adventure awaits</div>
+          <div class="free-desc">Epic adventure awaits — limited places</div>
         </div>
         <div class="free-badge" style="color:var(--gold)">★</div>
       </a>
-
     </div>
   </section>
 
   <!-- ── Footer ── -->
   <div class="dash-footer">
     <span class="version-tag">The Arcane Archives · v2.0</span>
-    <button class="logout-btn" id="logout-btn">
-      <span>⏻</span> Log Out
-    </button>
+    <button class="logout-btn" id="logout-btn"><span>⏻</span> Log Out</button>
   </div>
 
 </main>
 
-<!-- ════════════════════════════
-     FIREBASE + APP JS
-════════════════════════════ -->
+<!-- ════════ UPGRADE MODAL ════════ -->
+<div class="upgrade-modal-backdrop" id="upgrade-modal-backdrop">
+  <div class="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-heading">
+    <button class="upgrade-modal-close" onclick="closeUpgradeModal()" aria-label="Close">✕</button>
+    <div class="upgrade-modal-badge"><span class="upgrade-modal-badge-dot"></span>Premium Access</div>
+    <h2 class="upgrade-modal-title" id="upgrade-modal-heading">Unlock the full<br><span>Arcane Archives</span></h2>
+    <p class="upgrade-modal-sub">Join traders who get real-time intelligence, live sessions, curated picks, and exclusive tools — all in one place.</p>
+    <div class="upgrade-modal-divider"></div>
+    <div class="upgrade-modal-unlock-label">What you'll unlock</div>
+    <div class="upgrade-modal-featured">
+      <div class="upgrade-modal-featured-icon">🏛️</div>
+      <div>
+        <strong>The Arcane Archives — 3,330+ Knowledge Modules</strong>
+        <p>Deep, structured knowledge across Trading, Business, Health, Psychology, Investing, Life Strategy, and more. Built to make you better in every area of life.</p>
+      </div>
+    </div>
+    <div class="upgrade-modal-features">
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">🌐</div><div class="upgrade-modal-feature-text"><strong>Watchtower</strong><span>Global intel, fear/greed & FX heatmaps</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">📈</div><div class="upgrade-modal-feature-text"><strong>Trading Floor</strong><span>Live charts, watchlists & trade signals</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">🎯</div><div class="upgrade-modal-feature-text"><strong>Stock Picks</strong><span>Curated picks with entry, target & stops</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">🎙️</div><div class="upgrade-modal-feature-text"><strong>War Room</strong><span>Live video calls, recordings & schedule</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">📞</div><div class="upgrade-modal-feature-text"><strong>Live Calls</strong><span>Weekly calls with full playback archive</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">💬</div><div class="upgrade-modal-feature-text"><strong>Community</strong><span>Exclusive member chat & peer network</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">📰</div><div class="upgrade-modal-feature-text"><strong>Market Reports</strong><span>Daily briefings & macro analysis</span></div></div>
+      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">⚡</div><div class="upgrade-modal-feature-text"><strong>Priority Support</strong><span>Direct access to the Arcane team</span></div></div>
+    </div>
+    <div class="upgrade-modal-pricing">
+      <div class="upgrade-modal-price-left"><strong>£128</strong><span>/ month</span></div>
+      <div class="upgrade-modal-price-badge">Cancel anytime</div>
+    </div>
+    <button class="upgrade-modal-cta" id="upgrade-modal-cta">Unlock Full Access →</button>
+    <p class="upgrade-modal-footer">Secure payment via Stripe · Cancel anytime · Instant access</p>
+  </div>
+</div>
+
+<!-- ════════ SCRIPTS ════════ -->
 <script type="module">
-  import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { initializeApp }                       from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc }            from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
@@ -1277,13 +1303,13 @@
   const db   = getFirestore(app);
 
   const RANKS = [
-    { min: 0,    label: 'INITIATE',   color: '#7a8499' },
-    { min: 100,  label: 'ANALYST',    color: '#00d4ff' },
-    { min: 500,  label: 'OPERATIVE',  color: '#00d4ff' },
-    { min: 1500, label: 'TACTICIAN',  color: '#f5c842' },
-    { min: 3000, label: 'STRATEGIST', color: '#f5c842' },
-    { min: 6000, label: 'COMMANDER',  color: '#ff3b3b' },
-    { min: 10000,label: 'ARCHON',     color: '#ff3b3b' },
+    { min: 0,     label: 'INITIATE',   color: '#7a8499' },
+    { min: 100,   label: 'ANALYST',    color: '#00d4ff' },
+    { min: 500,   label: 'OPERATIVE',  color: '#00d4ff' },
+    { min: 1500,  label: 'TACTICIAN',  color: '#f5c842' },
+    { min: 3000,  label: 'STRATEGIST', color: '#f5c842' },
+    { min: 6000,  label: 'COMMANDER',  color: '#ff3b3b' },
+    { min: 10000, label: 'ARCHON',     color: '#ff3b3b' },
   ];
 
   function getRank(xp) {
@@ -1292,26 +1318,23 @@
     return rank;
   }
 
-  // Lock all module cards for free-tier users
   function lockModuleCards() {
     document.getElementById('upgrade-banner')?.classList.add('visible');
     document.querySelectorAll('.module-card').forEach(card => {
       card.classList.add('locked');
-      // Append overlay directly to card (NOT card-visual) so it isn't blurred
+      // Remove live tag from locked cards
+      card.querySelector('.card-live-tag')?.remove();
       if (!card.querySelector('.lock-overlay')) {
         const overlay = document.createElement('div');
         overlay.className = 'lock-overlay';
         overlay.innerHTML = `
+          <div class="classified-stamp">Classified</div>
           <div class="lock-icon-ring"><span class="lock-glyph">🔒</span></div>
           <div class="lock-label">Members Only</div>
           <div class="lock-sub">Upgrade your plan to access</div>`;
         card.appendChild(overlay);
       }
-      // Show upgrade modal on click instead of redirecting
-      card.addEventListener('click', e => {
-        e.preventDefault();
-        openUpgradeModal();
-      });
+      card.addEventListener('click', e => { e.preventDefault(); openUpgradeModal(); });
     });
   }
 
@@ -1319,21 +1342,26 @@
     if (!user) { location.href = 'login.html'; return; }
     window._upgradeModalUserEmail = user.email || '';
     window._upgradeModalUserUid   = user.uid   || '';
+
+    // Firebase connected
+    document.getElementById('dot-firebase').className = 'dot dot-green';
+
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
 
-      // ── Subscription & admin check ────────────────────────────────
       const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92','liMx3vjGGrgAta12IlKclq3Xwvr2'];
       const isAdmin = ADMIN_UIDS.includes(user.uid);
       const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
       if (!isAdmin && !isPaid) lockModuleCards();
-      if (isAdmin) document.getElementById('admin-section').style.display = 'block';
-      // ─────────────────────────────────────────────────────────────
+      if (isAdmin) {
+        document.getElementById('admin-section').style.display = 'block';
+        document.getElementById('sidebar-admin-link').style.display = '';
+      }
 
-      // Update UI
+      // Nav
       const name = data.displayName || user.displayName || user.email?.split('@')[0] || 'Operator';
-      document.getElementById('user-name').textContent = name;
+      document.getElementById('user-name').textContent = name.toUpperCase();
 
       const balance = data.balance ?? 0;
       document.getElementById('nav-balance').textContent = `£${balance.toFixed(2)}`;
@@ -1343,64 +1371,187 @@
 
       const rank = getRank(xp);
       const rankEl = document.getElementById('nav-rank');
-      rankEl.textContent = rank.label;
-      rankEl.style.color = rank.color;
+      rankEl.textContent  = rank.label;
+      rankEl.style.color  = rank.color;
 
-      if (isPaid) {
-        document.getElementById('member-plan').textContent = 'PREMIUM MEMBER';
+      // Stat pills
+      document.getElementById('pill-rank').textContent    = rank.label;
+      document.getElementById('pill-xp').textContent      = xp.toLocaleString() + ' XP';
+      document.getElementById('pill-credits').textContent = `£${balance.toFixed(2)}`;
+
+      if (data.streak) {
+        document.getElementById('pill-streak-wrap').style.display = '';
+        document.getElementById('pill-streak').textContent = data.streak + ' days 🔥';
       }
 
-      if (user.photoURL) {
-        document.getElementById('nav-avatar').src = user.photoURL;
-      }
+      if (isPaid) document.getElementById('member-plan').textContent = 'PREMIUM MEMBER';
+      if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
 
       document.getElementById('nav-online').classList.remove('offline');
+
     } catch(e) {
       console.error('Auth guard error:', e);
-      // On Firestore error, lock cards as safe default (don't boot them out)
       lockModuleCards();
     }
   });
 
-  // Logout
   document.getElementById('logout-btn').addEventListener('click', async () => {
     await signOut(auth);
     location.href = 'login.html';
   });
 </script>
 
-<!-- Stripe.js (for checkout redirect) -->
 <script src="https://js.stripe.com/v3/"></script>
-
-<!-- Live price service — populates ticker + all price displays -->
 <script src="arcane-prices.js"></script>
 
 <script>
-/* ══ Date ══ */
+/* ══ Date & Market Status ══ */
 (function() {
   const d = new Date();
-  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const days   = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   document.getElementById('dash-date').textContent =
     `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 
-  // Market hours (rough: Mon-Fri 08:00-16:30 London time)
   const h = d.getHours(), m = d.getMinutes(), day = d.getDay();
   const isOpen = day >= 1 && day <= 5 && (h > 8 || (h === 8 && m >= 0)) && (h < 16 || (h === 16 && m <= 30));
-  const el = document.getElementById('market-status');
-  if (!isOpen) { el.textContent = 'MARKETS CLOSED'; el.style.color = 'var(--red)'; }
+  const statusEl = document.getElementById('market-status');
+  const dotEl    = document.getElementById('market-dot');
+  if (isOpen) {
+    statusEl.textContent = 'MARKETS OPEN';
+    statusEl.style.color = 'var(--green)';
+    dotEl.className = 'dot dot-market-open';
+  } else {
+    statusEl.textContent = 'MARKETS CLOSED';
+    statusEl.style.color = 'var(--red)';
+    dotEl.className = 'dot dot-market-closed';
+  }
+
+  /* Health timestamp */
+  const ts = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('health-ts').textContent = 'UPDATED ' + ts;
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('health-ts').textContent =
+      'UPDATED ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }, 1000);
 })();
 
-/* ══ Ticker — handled by arcane-prices.js ══ */
+/* ══ Prices loaded → green API dot ══ */
+(function waitForPrices() {
+  let tries = 0;
+  const iv = setInterval(() => {
+    if (window.ArcanePrices && window.ArcanePrices.get('BTC')) {
+      document.getElementById('dot-api').className = 'dot dot-green';
+      clearInterval(iv);
+    }
+    if (++tries > 20) clearInterval(iv);
+  }, 1000);
+})();
+
+/* ══ Geopolitical alert in ticker ══ */
+(function injectAlertTicker() {
+  const ALERTS = [
+    '⚠ GEOPOLITICAL: Middle East tensions — Oil volatility elevated',
+    '⚠ MACRO ALERT: Fed rate decision pending — High-impact event',
+    '⚠ MARKET ALERT: VIX elevated — Risk-off conditions in play',
+    '⚠ GEOPOLITICAL: USD strength — EM currencies under pressure',
+  ];
+  const alert = ALERTS[Math.floor(Math.random() * ALERTS.length)];
+  const alertHtml = `<div class="nav-ticker-item t-alert-item" style="border-right:1px solid var(--border)">
+    <span class="t-sym">▲</span>
+    <span class="t-price">${alert}</span>
+  </div>`;
+
+  let _injecting = false;
+  const track = document.getElementById('nav-ticker-track');
+  if (!track) return;
+
+  const obs = new MutationObserver(() => {
+    if (_injecting || track.querySelector('.t-alert-item')) return;
+    _injecting = true;
+    track.insertAdjacentHTML('afterbegin', alertHtml);
+    _injecting = false;
+  });
+  obs.observe(track, { childList: true });
+  // Also inject immediately if ticker already populated
+  if (track.children.length > 0 && !track.querySelector('.t-alert-item')) {
+    track.insertAdjacentHTML('afterbegin', alertHtml);
+  }
+})();
+
+/* ══ Intel quote rotator ══ */
+(function() {
+  const QUOTES = [
+    '"The market is a device for transferring money from the impatient to the patient." — Buffett',
+    '"In the short run, the market is a voting machine. In the long run, it is a weighing machine." — Graham',
+    '"The trend is your friend until the end when it bends." — Ed Seykota',
+    '"Risk comes from not knowing what you\'re doing." — Warren Buffett',
+    '"The four most dangerous words in investing: This time it\'s different." — Templeton',
+    '"Markets are never wrong — opinions often are." — Jesse Livermore',
+    '"Price is what you pay. Value is what you get." — Warren Buffett',
+    '"Know what you own, and know why you own it." — Peter Lynch',
+    '"An investment in knowledge pays the best interest." — Benjamin Franklin',
+    '"The stock market is filled with individuals who know the price of everything, but the value of nothing." — Philip Fisher',
+  ];
+  let idx = Math.floor(Math.random() * QUOTES.length);
+  const el = document.getElementById('brief-quote');
+
+  function setQuote() {
+    el.classList.add('fading');
+    setTimeout(() => {
+      el.textContent = QUOTES[idx];
+      el.classList.remove('fading');
+      idx = (idx + 1) % QUOTES.length;
+    }, 450);
+  }
+
+  setQuote();
+  setInterval(setQuote, 9000);
+})();
+
+/* ══ Sidebar toggle ══ */
+(function() {
+  const sidebar = document.getElementById('arcane-sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const toggle  = document.getElementById('sidebar-toggle');
+
+  function openSidebar()  { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  toggle?.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+  overlay?.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+})();
+
+/* ══ Free card stagger entrance ══ */
+(function() {
+  const cards = document.querySelectorAll('.free-card');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  cards.forEach((card, i) => {
+    card.style.transitionDelay = `${i * 0.07}s`;
+    obs.observe(card);
+  });
+
+  // Admin cards — no stagger delay, just make visible immediately (they're conditionally shown)
+  const adminCards = document.querySelectorAll('.admin-card');
+  adminCards.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
+})();
 
 /* ══ Carousel scroll ══ */
 function scrollCarousel() {
-  const t = document.getElementById('carousel-track');
-  t.scrollBy({ left: 290, behavior: 'smooth' });
+  document.getElementById('carousel-track').scrollBy({ left: 290, behavior: 'smooth' });
 }
 
 /* ══ Upgrade Modal ══ */
-
 function openUpgradeModal() {
   document.getElementById('upgrade-modal-backdrop').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1409,15 +1560,11 @@ function closeUpgradeModal() {
   document.getElementById('upgrade-modal-backdrop').classList.remove('open');
   document.body.style.overflow = '';
 }
-// Close on backdrop click (only if clicking the backdrop itself, not modal)
 document.getElementById('upgrade-modal-backdrop').addEventListener('click', e => {
   if (e.target === document.getElementById('upgrade-modal-backdrop')) closeUpgradeModal();
 });
-// Close on Escape key
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeUpgradeModal();
-});
-// Stripe CTA — uses same Netlify checkout function as index.html
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpgradeModal(); });
+
 document.getElementById('upgrade-modal-cta').addEventListener('click', async () => {
   const btn = document.getElementById('upgrade-modal-cta');
   btn.textContent = 'Loading…';
@@ -1430,7 +1577,7 @@ document.getElementById('upgrade-modal-cta').addEventListener('click', async () 
       body: JSON.stringify({ priceId: 'price_1SkbkNCXghparoQFd6flbwip', uid: window._upgradeModalUserUid || '' })
     });
     const session = await res.json();
-    if (!session.id) throw new Error('No session ID returned');
+    if (!session.id) throw new Error('No session ID');
     await stripe.redirectToCheckout({ sessionId: session.id });
   } catch (err) {
     console.error('Checkout error:', err);
@@ -1440,110 +1587,6 @@ document.getElementById('upgrade-modal-cta').addEventListener('click', async () 
   }
 });
 </script>
-
-<!-- ── Upgrade Modal ── -->
-<div class="upgrade-modal-backdrop" id="upgrade-modal-backdrop">
-  <div class="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-heading">
-    <button class="upgrade-modal-close" onclick="closeUpgradeModal()" aria-label="Close">✕</button>
-
-    <div class="upgrade-modal-badge">
-      <span class="upgrade-modal-badge-dot"></span>
-      Premium Access
-    </div>
-
-    <h2 class="upgrade-modal-title" id="upgrade-modal-heading">
-      Unlock the full<br><span>Arcane Archives</span>
-    </h2>
-    <p class="upgrade-modal-sub">
-      Join traders who get real-time intelligence, live sessions, curated picks, and exclusive tools — all in one place.
-    </p>
-
-    <div class="upgrade-modal-divider"></div>
-
-    <div class="upgrade-modal-unlock-label">What you'll unlock</div>
-
-    <!-- Featured: The Knowledge Library -->
-    <div class="upgrade-modal-featured">
-      <div class="upgrade-modal-featured-icon">🏛️</div>
-      <div>
-        <strong>The Arcane Archives — 3,330+ Knowledge Modules</strong>
-        <p>The core of the platform. Deep, structured knowledge across Trading, Business & Entrepreneurship, Health & Optimisation, Psychology & Mindset, Investing & Wealth, Life Strategy, Dating & Relationships, Alternative Knowledge, and more. Built to make you a better person in every area of life — not just your portfolio.</p>
-      </div>
-    </div>
-
-    <div class="upgrade-modal-features">
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">🌐</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Watchtower</strong>
-          <span>Global intel, fear/greed & FX heatmaps</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">📈</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Trading Floor</strong>
-          <span>Live charts, watchlists & trade signals</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">🎯</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Stock Picks</strong>
-          <span>Curated picks with entry, target & stops</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">🎙️</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>War Room</strong>
-          <span>Live video calls, recordings & schedule</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">📞</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Live Calls</strong>
-          <span>Weekly calls with full playback archive</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">💬</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Community</strong>
-          <span>Exclusive member chat & peer network</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">📰</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Market Reports</strong>
-          <span>Daily briefings & macro analysis</span>
-        </div>
-      </div>
-      <div class="upgrade-modal-feature">
-        <div class="upgrade-modal-feature-icon">⚡</div>
-        <div class="upgrade-modal-feature-text">
-          <strong>Priority Support</strong>
-          <span>Direct access to the Arcane team</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="upgrade-modal-pricing">
-      <div class="upgrade-modal-price-left">
-        <strong>£128</strong><span>/ month</span>
-      </div>
-      <div class="upgrade-modal-price-badge">Cancel anytime</div>
-    </div>
-
-    <button class="upgrade-modal-cta" id="upgrade-modal-cta">
-      Unlock Full Access →
-    </button>
-
-    <p class="upgrade-modal-footer">Secure payment via Stripe · Cancel anytime · Instant access</p>
-  </div>
-</div>
 
 </body>
 </html>
