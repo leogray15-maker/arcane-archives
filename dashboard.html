@@ -1307,9 +1307,6 @@
     window._upgradeModalUserEmail = user.email || '';
     window._upgradeModalUserUid   = user.uid   || '';
 
-    // Firebase connected
-    document.getElementById('dot-firebase').className = 'dot dot-green';
-
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
@@ -1330,17 +1327,6 @@
       const balance = data.balance ?? 0;
       document.getElementById('nav-balance').textContent = `£${balance.toFixed(2)}`;
 
-      const xp = data.xp ?? 0;
-      document.getElementById('nav-xp').textContent = xp.toLocaleString();
-
-      const rank = getRank(xp);
-      const rankEl = document.getElementById('nav-rank');
-      rankEl.textContent  = rank.label;
-      rankEl.style.color  = rank.color;
-
-      // Stat pills
-      document.getElementById('pill-rank').textContent    = rank.label;
-      document.getElementById('pill-xp').textContent      = xp.toLocaleString() + ' XP';
       document.getElementById('pill-credits').textContent = `£${balance.toFixed(2)}`;
 
       if (data.streak) {
@@ -1391,27 +1377,8 @@
     dotEl.className = 'dot dot-market-closed';
   }
 
-  /* Health timestamp */
-  const ts = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  document.getElementById('health-ts').textContent = 'UPDATED ' + ts;
-  setInterval(() => {
-    const now = new Date();
-    document.getElementById('health-ts').textContent =
-      'UPDATED ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }, 1000);
 })();
 
-/* ══ Prices loaded → green API dot ══ */
-(function waitForPrices() {
-  let tries = 0;
-  const iv = setInterval(() => {
-    if (window.ArcanePrices && window.ArcanePrices.get('BTC')) {
-      document.getElementById('dot-api').className = 'dot dot-green';
-      clearInterval(iv);
-    }
-    if (++tries > 20) clearInterval(iv);
-  }, 1000);
-})();
 
 /* ══ Geopolitical alert in ticker ══ */
 (function injectAlertTicker() {
