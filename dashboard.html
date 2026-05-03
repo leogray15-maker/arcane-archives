@@ -467,47 +467,43 @@
     .stocks-bg  { background: radial-gradient(ellipse 70% 70% at 50% 60%, rgba(0,230,118,0.08) 0%, transparent 70%), linear-gradient(180deg, #081008 0%, #0a0a0f 100%); }
     .courses-bg { background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(245,200,66,0.08) 0%, transparent 70%), linear-gradient(180deg, #0f0d06 0%, #0a0a0f 100%); }
 
-    /* Card visual animations */
-    .course-dots { position: absolute; inset: 0; overflow: hidden; }
-    .course-dot  { position: absolute; border-radius: 50%; background: rgba(245,200,66,0.6); animation: dotFloat 4s ease-in-out infinite; }
-    @keyframes dotFloat { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-12px); opacity: 0.85; } }
-
-    .chat-bubbles { position: absolute; inset: 0; overflow: hidden; }
-    .chat-bubble  { position: absolute; border-radius: 12px 12px 12px 2px; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.15); animation: float-up 4s ease-in-out infinite; }
-    .chat-bubble:nth-child(2) { border-radius: 12px 12px 2px 12px; background: rgba(245,200,66,0.06); border-color: rgba(245,200,66,0.12); animation-delay: -1.5s; }
-    .chat-bubble:nth-child(3) { animation-delay: -3s; }
-    @keyframes float-up { 0%, 100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(-8px); opacity: 1; } }
-
-    .candle-chart { position: absolute; bottom: 20px; left: 16px; right: 16px; display: flex; align-items: flex-end; gap: 3px; height: 120px; }
-    .candle { flex: 1; border-radius: 2px 2px 0 0; position: relative; }
-    .candle.bull { background: rgba(0,230,118,0.35); border: 1px solid rgba(0,230,118,0.5); }
-    .candle.bear { background: rgba(255,59,59,0.35); border: 1px solid rgba(255,59,59,0.5); }
-    .candle-wick { position: absolute; left: 50%; width: 1px; transform: translateX(-50%); }
-    .candle.bull .candle-wick { top: -12px; height: 12px; background: rgba(0,230,118,0.6); }
-    .candle.bear .candle-wick { top: -8px;  height: 8px;  background: rgba(255,59,59,0.6); }
-
-    .globe-dots { position: absolute; inset: 0; overflow: hidden; }
-    .globe-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(0,212,255,0.4); animation: ring-pulse 3s ease-in-out infinite; }
-    .sat-dot    { position: absolute; animation: sat-orbit 6s linear infinite; }
-    @keyframes sat-orbit   { from { transform: rotate(0deg) translateX(95px) rotate(0deg); } to { transform: rotate(360deg) translateX(95px) rotate(-360deg); } }
-    @keyframes ring-pulse  { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.03); } }
-
-    .radar-wrap   { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-    .radar-circle { position: absolute; border-radius: 50%; border: 1px solid rgba(255,59,59,0.15); }
-    .radar-sweep  { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(rgba(255,59,59,0.55) 0deg, transparent 60deg); animation: radar-spin 3s linear infinite; }
-    @keyframes radar-spin  { to { transform: rotate(360deg); } }
-    .radar-dot    { position: absolute; border-radius: 50%; background: var(--red); box-shadow: 0 0 6px var(--red); animation: radar-blink 2s ease-in-out infinite; }
-    @keyframes radar-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-
-    .card-icon-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-    .card-icon { font-size: 4rem; opacity: 0.15; transition: opacity 0.3s, transform 0.3s; }
-    .module-card:hover .card-icon { opacity: 0.28; transform: scale(1.08); }
-    .card-grid-pattern {
-      position: absolute; inset: 0;
-      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 28px 28px;
+    /* ── Card visual shared ── */
+    .card-grid-fine {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 22px 22px;
     }
+    .card-svg-wrap { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+
+    /* ── MODULE 01 — Neural network pulse ── */
+    @keyframes node-pulse { 0%,100%{r:3;opacity:.9} 50%{r:5;opacity:1} }
+    @keyframes node-pulse-sm { 0%,100%{r:2;opacity:.5} 50%{r:3.5;opacity:.9} }
+    @keyframes link-flow { 0%{stroke-dashoffset:120} 100%{stroke-dashoffset:0} }
+    @keyframes ripple-out { 0%{r:6;opacity:.7;stroke-width:1.5} 100%{r:38;opacity:0;stroke-width:.3} }
+
+    /* ── MODULE 02 — Candlestick chart ── */
+    @keyframes ma-draw { from{stroke-dashoffset:400} to{stroke-dashoffset:0} }
+    @keyframes vol-rise { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+
+    /* ── MODULE 03 — Watchtower pings ── */
+    @keyframes ping-expand { 0%{r:4;opacity:.8} 70%{r:14;opacity:0} 100%{r:14;opacity:0} }
+    @keyframes ping-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── MODULE 04 — Command ring ── */
+    @keyframes ring-rotate { to{transform:rotate(360deg)} }
+    @keyframes ring-rotate-rev { to{transform:rotate(-360deg)} }
+    @keyframes alert-pulse { 0%,100%{opacity:1;r:5} 50%{opacity:.2;r:3} }
+    @keyframes cmd-sweep { to{transform:rotate(360deg)} }
+
+    /* ── MODULE 05 — Equity curve draw ── */
+    @keyframes curve-draw { from{stroke-dashoffset:600} to{stroke-dashoffset:0} }
+    @keyframes badge-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+    /* ── MODULE 06 — Constellation ── */
+    @keyframes star-glow { 0%,100%{opacity:.5;r:3} 50%{opacity:1;r:5} }
+    @keyframes star-glow-lg { 0%,100%{opacity:.6;r:5} 50%{opacity:1;r:7} }
+    @keyframes edge-shimmer { 0%{opacity:.15} 50%{opacity:.5} 100%{opacity:.15} }
 
     /* Locked state */
     .module-card.locked { cursor: default; }
@@ -918,15 +914,50 @@
         <!-- 1. COMMUNICATION -->
         <a class="module-card teal-card" href="live-calls.html">
           <div class="card-visual comm-bg">
-            <div class="card-grid-pattern"></div>
+            <div class="card-grid-fine"></div>
             <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
-            <div class="chat-bubbles">
-              <div class="chat-bubble" style="width:90px;height:18px;left:30px;top:60px"></div>
-              <div class="chat-bubble" style="width:70px;height:18px;left:60px;top:95px;animation-delay:-1.5s"></div>
-              <div class="chat-bubble" style="width:110px;height:18px;left:20px;top:130px;animation-delay:-3s"></div>
-              <div class="chat-bubble" style="width:80px;height:18px;left:50px;top:165px;animation-delay:-0.8s"></div>
-            </div>
-            <div class="card-icon-wrap"><span class="card-icon">💬</span></div>
+            <!-- Neural network signal propagation -->
+            <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="comm-glow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                </radialGradient>
+                <filter id="comm-blur"><feGaussianBlur stdDeviation="2.5"/></filter>
+              </defs>
+              <!-- Background glow -->
+              <ellipse cx="135" cy="115" rx="90" ry="75" fill="url(#comm-glow)"/>
+              <!-- Edges / signal lines -->
+              <g stroke="#00d4ff" fill="none" opacity="0.35">
+                <line x1="135" y1="115" x2="68"  y2="62"  stroke-dasharray="8 4" style="animation:link-flow 2.2s linear infinite"/>
+                <line x1="135" y1="115" x2="202" y2="62"  stroke-dasharray="8 4" style="animation:link-flow 2.2s linear infinite .4s"/>
+                <line x1="135" y1="115" x2="48"  y2="148" stroke-dasharray="8 4" style="animation:link-flow 2.8s linear infinite .8s"/>
+                <line x1="135" y1="115" x2="222" y2="148" stroke-dasharray="8 4" style="animation:link-flow 2.8s linear infinite 1.2s"/>
+                <line x1="135" y1="115" x2="135" y2="40"  stroke-dasharray="8 4" style="animation:link-flow 2.5s linear infinite .2s"/>
+                <line x1="135" y1="115" x2="88"  y2="185" stroke-dasharray="8 4" style="animation:link-flow 3.1s linear infinite .6s"/>
+                <line x1="135" y1="115" x2="182" y2="185" stroke-dasharray="8 4" style="animation:link-flow 3.1s linear infinite 1s"/>
+                <line x1="68"  y1="62"  x2="135" y2="40"  stroke-opacity="0.5"/>
+                <line x1="202" y1="62"  x2="135" y2="40"  stroke-opacity="0.5"/>
+                <line x1="48"  y1="148" x2="88"  y2="185" stroke-opacity="0.5"/>
+                <line x1="222" y1="148" x2="182" y2="185" stroke-opacity="0.5"/>
+              </g>
+              <!-- Ripple rings from centre -->
+              <circle cx="135" cy="115" r="6" fill="none" stroke="#00d4ff" stroke-width="1.5" style="animation:ripple-out 2.4s ease-out infinite"/>
+              <circle cx="135" cy="115" r="6" fill="none" stroke="#00d4ff" stroke-width="1.5" style="animation:ripple-out 2.4s ease-out infinite 1.2s"/>
+              <!-- Outer nodes -->
+              <circle cx="68"  cy="62"  r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 0s"/>
+              <circle cx="202" cy="62"  r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite .5s"/>
+              <circle cx="48"  cy="148" r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 1s"/>
+              <circle cx="222" cy="148" r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 1.5s"/>
+              <circle cx="135" cy="40"  r="3" fill="#00d4ff" opacity="0.6" style="animation:node-pulse-sm 3.5s ease-in-out infinite .3s"/>
+              <circle cx="88"  cy="185" r="3" fill="#00d4ff" opacity="0.5" style="animation:node-pulse-sm 3.5s ease-in-out infinite .9s"/>
+              <circle cx="182" cy="185" r="3" fill="#00d4ff" opacity="0.5" style="animation:node-pulse-sm 3.5s ease-in-out infinite 1.4s"/>
+              <!-- Central hub -->
+              <circle cx="135" cy="115" r="8" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1.2"/>
+              <circle cx="135" cy="115" r="4" fill="#00d4ff" style="animation:node-pulse 2s ease-in-out infinite"/>
+              <!-- Glow bloom (blurred duplicate) -->
+              <circle cx="135" cy="115" r="4" fill="#00d4ff" filter="url(#comm-blur)" opacity="0.6"/>
+            </svg>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 01</div>
@@ -939,34 +970,94 @@
         <!-- 2. TRADING FLOOR -->
         <a class="module-card gold-card" href="trading-floor.html">
           <div class="card-visual floor-bg">
-            <div class="card-grid-pattern"></div>
+            <div class="card-grid-fine"></div>
             <div class="card-live-tag gold"><div class="card-live-dot"></div>Live</div>
-            <div class="candle-chart">
-              <div class="candle bull" style="height:28px"><div class="candle-wick"></div></div>
-              <div class="candle bear" style="height:24px"><div class="candle-wick"></div></div>
-              <div class="candle bull" style="height:38px"><div class="candle-wick"></div></div>
-              <div class="candle bear" style="height:32px"><div class="candle-wick"></div></div>
-              <div class="candle bull" style="height:52px"><div class="candle-wick"></div></div>
-              <div class="candle bear" style="height:44px"><div class="candle-wick"></div></div>
-              <div class="candle bull" style="height:68px"><div class="candle-wick"></div></div>
-              <div class="candle bear" style="height:58px"><div class="candle-wick"></div></div>
-              <div class="candle bull" style="height:84px"><div class="candle-wick"></div></div>
-              <div class="candle bear" style="height:72px"><div class="candle-wick"></div></div>
-              <div class="candle bull" style="height:100px"><div class="candle-wick"></div></div>
-              <div class="candle bull" style="height:112px"><div class="candle-wick"></div></div>
-            </div>
-            <svg style="position:absolute;bottom:20px;left:16px;right:16px;width:calc(100% - 32px);height:120px;overflow:visible;pointer-events:none" viewBox="0 0 260 120" preserveAspectRatio="none">
+            <!-- Premium OHLC + MA + Volume chart -->
+            <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#f5c842" stop-opacity="0.25"/>
-                  <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
+                <linearGradient id="floor-area" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f5a623" stop-opacity="0.22"/>
+                  <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
                 </linearGradient>
+                <filter id="ma-glow"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
               </defs>
-              <path d="M0,108 L22,108 L44,96 L66,88 L88,76 L110,68 L132,52 L154,44 L176,28 L198,20 L220,8 L260,0 L260,120 L0,120 Z" fill="url(#lineGrad)"/>
-              <polyline points="0,108 22,108 44,96 66,88 88,76 110,68 132,52 154,44 176,28 198,20 220,8 260,0" fill="none" stroke="#f5c842" stroke-width="1.5" stroke-linejoin="round"/>
-              <polyline points="0,112 44,104 88,88 132,68 176,44 220,20 260,4" fill="none" stroke="#00d4ff" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+              <!-- Grid lines -->
+              <g stroke="rgba(255,255,255,0.06)" stroke-width="0.7">
+                <line x1="20" y1="50"  x2="255" y2="50"/>
+                <line x1="20" y1="85"  x2="255" y2="85"/>
+                <line x1="20" y1="120" x2="255" y2="120"/>
+                <line x1="20" y1="155" x2="255" y2="155"/>
+              </g>
+              <!-- Price labels -->
+              <g fill="rgba(255,255,255,0.22)" font-size="7" font-family="monospace">
+                <text x="4" y="53">H</text>
+                <text x="4" y="123">M</text>
+                <text x="4" y="158">L</text>
+              </g>
+              <!-- Volume bars (bottom strip) -->
+              <g transform="translate(0,175)" opacity="0.45">
+                <rect x="22"  y="0" width="12" height="14" rx="1" fill="#00c853" transform-origin="22 14" style="animation:vol-rise .6s ease-out both .1s"/>
+                <rect x="40"  y="0" width="12" height="8"  rx="1" fill="#ff3b3b" transform-origin="40 8"  style="animation:vol-rise .6s ease-out both .2s"/>
+                <rect x="58"  y="0" width="12" height="18" rx="1" fill="#00c853" transform-origin="58 18" style="animation:vol-rise .6s ease-out both .3s"/>
+                <rect x="76"  y="0" width="12" height="11" rx="1" fill="#ff3b3b" transform-origin="76 11" style="animation:vol-rise .6s ease-out both .4s"/>
+                <rect x="94"  y="0" width="12" height="22" rx="1" fill="#00c853" transform-origin="94 22" style="animation:vol-rise .6s ease-out both .5s"/>
+                <rect x="112" y="0" width="12" height="16" rx="1" fill="#ff3b3b" transform-origin="112 16" style="animation:vol-rise .6s ease-out both .6s"/>
+                <rect x="130" y="0" width="12" height="28" rx="1" fill="#00c853" transform-origin="130 28" style="animation:vol-rise .6s ease-out both .7s"/>
+                <rect x="148" y="0" width="12" height="19" rx="1" fill="#ff3b3b" transform-origin="148 19" style="animation:vol-rise .6s ease-out both .8s"/>
+                <rect x="166" y="0" width="12" height="32" rx="1" fill="#00c853" transform-origin="166 32" style="animation:vol-rise .6s ease-out both .9s"/>
+                <rect x="184" y="0" width="12" height="24" rx="1" fill="#ff3b3b" transform-origin="184 24" style="animation:vol-rise .6s ease-out both 1s"/>
+                <rect x="202" y="0" width="12" height="36" rx="1" fill="#00c853" transform-origin="202 36" style="animation:vol-rise .6s ease-out both 1.1s"/>
+                <rect x="220" y="0" width="12" height="30" rx="1" fill="#00c853" transform-origin="220 30" style="animation:vol-rise .6s ease-out both 1.2s"/>
+              </g>
+              <!-- OHLC candles — bear -->
+              <g fill="#ff3b3b" stroke="#ff3b3b" stroke-width="0.8" opacity="0.85">
+                <rect x="41" y="108" width="10" height="20" rx="1"/>
+                <line x1="46" y1="100" x2="46" y2="108"/>
+                <line x1="46" y1="128" x2="46" y2="135"/>
+                <rect x="77" y="95"  width="10" height="24" rx="1"/>
+                <line x1="82" y1="87"  x2="82" y2="95"/>
+                <line x1="82" y1="119" x2="82" y2="128"/>
+                <rect x="113" y="88" width="10" height="22" rx="1"/>
+                <line x1="118" y1="80" x2="118" y2="88"/>
+                <line x1="118" y1="110" x2="118" y2="118"/>
+                <rect x="149" y="74" width="10" height="20" rx="1"/>
+                <line x1="154" y1="66" x2="154" y2="74"/>
+                <line x1="154" y1="94"  x2="154" y2="103"/>
+                <rect x="185" y="62" width="10" height="18" rx="1"/>
+                <line x1="190" y1="55" x2="190" y2="62"/>
+                <line x1="190" y1="80"  x2="190" y2="90"/>
+              </g>
+              <!-- OHLC candles — bull -->
+              <g fill="#00c853" stroke="#00c853" stroke-width="0.8" opacity="0.85">
+                <rect x="23"  y="118" width="10" height="28" rx="1"/>
+                <line x1="28"  y1="110" x2="28"  y2="118"/>
+                <line x1="28"  y1="146" x2="28"  y2="154"/>
+                <rect x="59"  y="90"  width="10" height="26" rx="1"/>
+                <line x1="64"  y1="82"  x2="64"  y2="90"/>
+                <line x1="64"  y1="116" x2="64"  y2="124"/>
+                <rect x="95"  y="78"  width="10" height="22" rx="1"/>
+                <line x1="100" y1="70"  x2="100" y2="78"/>
+                <line x1="100" y1="100" x2="100" y2="108"/>
+                <rect x="131" y="60"  width="10" height="22" rx="1"/>
+                <line x1="136" y1="52"  x2="136" y2="60"/>
+                <line x1="136" y1="82"  x2="136" y2="90"/>
+                <rect x="167" y="48"  width="10" height="20" rx="1"/>
+                <line x1="172" y1="40"  x2="172" y2="48"/>
+                <line x1="172" y1="68"  x2="172" y2="78"/>
+                <rect x="203" y="36"  width="10" height="18" rx="1"/>
+                <line x1="208" y1="28"  x2="208" y2="36"/>
+                <line x1="208" y1="54"  x2="208" y2="64"/>
+                <rect x="221" y="28"  width="10" height="16" rx="1"/>
+                <line x1="226" y1="20"  x2="226" y2="28"/>
+                <line x1="226" y1="44"  x2="226" y2="54"/>
+              </g>
+              <!-- MA area fill -->
+              <path d="M23,130 C60,118 95,95 135,72 C175,49 210,38 240,26 L240,175 L23,175 Z" fill="url(#floor-area)"/>
+              <!-- MA line — glowing gold -->
+              <path d="M23,130 C60,118 95,95 135,72 C175,49 210,38 240,26" fill="none" stroke="#f5a623" stroke-width="1.8" stroke-linecap="round" filter="url(#ma-glow)" stroke-dasharray="400" style="animation:ma-draw 1.8s ease-out both"/>
+              <!-- Current price tick -->
+              <line x1="240" y1="26" x2="255" y2="26" stroke="#f5a623" stroke-width="1" stroke-dasharray="3 2" opacity="0.7"/>
             </svg>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.5rem"><span class="card-icon" style="font-size:3rem">📈</span></div>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 02</div>
@@ -979,36 +1070,75 @@
         <!-- 3. WATCHTOWER -->
         <a class="module-card teal-card" href="https://arcane-watchtower.vercel.app" target="_blank">
           <div class="card-visual watch-bg">
-            <div class="card-grid-pattern"></div>
+            <div class="card-grid-fine"></div>
             <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
-            <div class="globe-dots">
-              <div class="globe-ring" style="width:200px;height:200px;left:35px;top:30px;animation-delay:0s"></div>
-              <div class="globe-ring" style="width:150px;height:150px;left:60px;top:55px;animation-delay:-1s"></div>
-              <div class="globe-ring" style="width:100px;height:100px;left:85px;top:80px;animation-delay:-2s"></div>
-              <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.45" viewBox="0 0 270 240">
-                <ellipse cx="135" cy="130" rx="100" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.8"/>
-                <ellipse cx="135" cy="130" rx="60" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.8"/>
-                <ellipse cx="135" cy="130" rx="30" ry="60" fill="none" stroke="#00d4ff" stroke-width="0.8"/>
-                <line x1="35" y1="130" x2="235" y2="130" stroke="#00d4ff" stroke-width="0.8"/>
-                <line x1="55" y1="100" x2="215" y2="100" stroke="#00d4ff" stroke-width="0.8"/>
-                <line x1="55" y1="160" x2="215" y2="160" stroke="#00d4ff" stroke-width="0.8"/>
-                <circle cx="90" cy="110" r="3" fill="#00d4ff" opacity="0.9"/>
-                <circle cx="150" cy="125" r="3" fill="#f5c842" opacity="0.9"/>
-                <circle cx="180" cy="115" r="3" fill="#00d4ff" opacity="0.9"/>
-                <circle cx="70" cy="140" r="2" fill="#00e676" opacity="0.9"/>
-                <circle cx="210" cy="130" r="2" fill="#ff3b3b" opacity="0.9"/>
-              </svg>
-              <div class="sat-dot" style="top:50%;left:50%;margin:-6px 0 0 -6px">
-                <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
-                  <rect x="0" y="5" width="6" height="4" rx="1" fill="#00d4ff" opacity="0.9"/>
-                  <rect x="16" y="5" width="6" height="4" rx="1" fill="#00d4ff" opacity="0.9"/>
-                  <rect x="7" y="3" width="8" height="8" rx="1.5" fill="#a0c4ff" opacity="0.95"/>
-                  <line x1="11" y1="3" x2="11" y2="0" stroke="#00d4ff" stroke-width="1"/>
-                  <circle cx="11" cy="0" r="1" fill="#f5c842"/>
-                </svg>
-              </div>
-            </div>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-left:1.25rem"><span class="card-icon" style="font-size:2.5rem">🌍</span></div>
+            <!-- Orthographic world map + intelligence pings -->
+            <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="watch-glow" cx="50%" cy="48%" r="45%">
+                  <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.1"/>
+                  <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                </radialGradient>
+                <clipPath id="globe-clip">
+                  <ellipse cx="135" cy="115" rx="98" ry="90"/>
+                </clipPath>
+              </defs>
+              <!-- Globe fill glow -->
+              <ellipse cx="135" cy="115" rx="98" ry="90" fill="url(#watch-glow)"/>
+              <!-- Globe outline -->
+              <ellipse cx="135" cy="115" rx="98" ry="90" fill="none" stroke="#00d4ff" stroke-width="0.8" opacity="0.5"/>
+              <!-- Lat/lon grid inside globe -->
+              <g clip-path="url(#globe-clip)" stroke="#00d4ff" stroke-width="0.5" fill="none" opacity="0.2">
+                <line x1="37" y1="115" x2="233" y2="115"/>
+                <line x1="44" y1="85"  x2="226" y2="85"/>
+                <line x1="44" y1="145" x2="226" y2="145"/>
+                <line x1="65" y1="58"  x2="205" y2="58"/>
+                <line x1="65" y1="172" x2="205" y2="172"/>
+                <ellipse cx="135" cy="115" rx="50" ry="90"/>
+                <ellipse cx="135" cy="115" rx="90" ry="90"/>
+                <line x1="135" y1="25" x2="135" y2="205"/>
+              </g>
+              <!-- Simplified continent outlines (approximate) -->
+              <g clip-path="url(#globe-clip)" fill="rgba(0,212,255,0.07)" stroke="#00d4ff" stroke-width="0.7" stroke-linejoin="round" opacity="0.7">
+                <!-- North America -->
+                <path d="M62,68 L80,58 L92,62 L98,72 L102,88 L94,100 L82,108 L72,104 L62,92 L58,78 Z"/>
+                <!-- South America -->
+                <path d="M88,118 L100,112 L106,122 L108,140 L104,158 L96,162 L86,150 L82,132 Z"/>
+                <!-- Europe -->
+                <path d="M128,62 L142,58 L150,64 L148,76 L138,80 L126,76 L124,68 Z"/>
+                <!-- Africa -->
+                <path d="M128,84 L144,80 L152,90 L154,110 L150,130 L140,140 L128,134 L120,118 L118,98 L122,88 Z"/>
+                <!-- Asia -->
+                <path d="M150,58 L175,54 L195,62 L200,78 L192,90 L178,96 L162,92 L150,82 L148,70 Z"/>
+                <!-- Oceania -->
+                <path d="M188,128 L202,122 L210,130 L208,142 L196,146 L184,140 Z"/>
+              </g>
+              <!-- Intel ping points — each has a dot + expanding ring -->
+              <!-- US (West) -->
+              <circle cx="78"  cy="88"  r="3" fill="#00d4ff" opacity="0.9" style="animation:ping-dot 2s ease-in-out infinite 0s"/>
+              <circle cx="78"  cy="88"  r="4" fill="none" stroke="#00d4ff" stroke-width="1" style="animation:ping-expand 2s ease-out infinite 0s"/>
+              <!-- UK -->
+              <circle cx="130" cy="68"  r="3" fill="#f5c842" opacity="0.9" style="animation:ping-dot 2s ease-in-out infinite .5s"/>
+              <circle cx="130" cy="68"  r="4" fill="none" stroke="#f5c842" stroke-width="1" style="animation:ping-expand 2s ease-out infinite .5s"/>
+              <!-- Middle East -->
+              <circle cx="162" cy="90"  r="3" fill="#ff3b3b" opacity="0.9" style="animation:ping-dot 2s ease-in-out infinite 1s"/>
+              <circle cx="162" cy="90"  r="4" fill="none" stroke="#ff3b3b" stroke-width="1" style="animation:ping-expand 2s ease-out infinite 1s"/>
+              <!-- East Asia -->
+              <circle cx="196" cy="74"  r="3" fill="#00d4ff" opacity="0.9" style="animation:ping-dot 2s ease-in-out infinite 1.5s"/>
+              <circle cx="196" cy="74"  r="4" fill="none" stroke="#00d4ff" stroke-width="1" style="animation:ping-expand 2s ease-out infinite 1.5s"/>
+              <!-- US East -->
+              <circle cx="92"  cy="80"  r="2.5" fill="#00e676" opacity="0.8" style="animation:ping-dot 2.5s ease-in-out infinite .25s"/>
+              <circle cx="92"  cy="80"  r="3" fill="none" stroke="#00e676" stroke-width="0.8" style="animation:ping-expand 2.5s ease-out infinite .25s"/>
+              <!-- Data connector lines between hotspots -->
+              <g stroke="#00d4ff" stroke-width="0.5" stroke-dasharray="3 4" opacity="0.25">
+                <line x1="78"  y1="88"  x2="130" y2="68"/>
+                <line x1="130" y1="68"  x2="162" y2="90"/>
+                <line x1="162" y1="90"  x2="196" y2="74"/>
+              </g>
+              <!-- Corner readout -->
+              <rect x="14" y="14" width="56" height="16" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="0.7"/>
+              <text x="42" y="25" fill="#00d4ff" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.8">GLOBAL · LIVE</text>
+            </svg>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 03</div>
@@ -1021,18 +1151,68 @@
         <!-- 4. WAR ROOM -->
         <a class="module-card red-card" href="war-room.html">
           <div class="card-visual war-bg">
-            <div class="card-grid-pattern"></div>
+            <div class="card-grid-fine"></div>
             <div class="card-live-tag red"><div class="card-live-dot"></div>Active</div>
-            <div class="radar-wrap">
-              <div class="radar-circle" style="width:200px;height:200px;border-color:rgba(255,59,59,0.4)"></div>
-              <div class="radar-circle" style="width:150px;height:150px;border-color:rgba(255,59,59,0.5)"></div>
-              <div class="radar-circle" style="width:100px;height:100px;border-color:rgba(255,59,59,0.6)"></div>
-              <div class="radar-sweep"></div>
-              <div class="radar-dot" style="width:5px;height:5px;left:118px;top:88px"></div>
-              <div class="radar-dot" style="width:4px;height:4px;left:148px;top:105px;animation-delay:-0.8s"></div>
-              <div class="radar-dot" style="width:4px;height:4px;left:100px;top:115px;animation-delay:-1.5s"></div>
-            </div>
-            <div class="card-icon-wrap" style="align-items:flex-start;padding-top:1.25rem;padding-right:1.25rem;justify-content:flex-end"><span class="card-icon" style="font-size:2.5rem">🎖️</span></div>
+            <!-- NORAD-style command ring interface -->
+            <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="war-core" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ff2d2d" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#ff2d2d" stop-opacity="0"/>
+                </radialGradient>
+                <filter id="war-glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="war-glow-sm"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <!-- Core glow -->
+              <circle cx="135" cy="115" r="80" fill="url(#war-core)"/>
+              <!-- Outer ring — slow rotate -->
+              <g style="transform-origin:135px 115px;animation:ring-rotate 18s linear infinite">
+                <circle cx="135" cy="115" r="95" fill="none" stroke="rgba(255,45,45,0.15)" stroke-width="1"/>
+                <!-- tick marks on outer ring -->
+                <g stroke="#ff2d2d" stroke-width="0.8" opacity="0.4">
+                  <line x1="135" y1="20"  x2="135" y2="32"/>
+                  <line x1="135" y1="198" x2="135" y2="210"/>
+                  <line x1="40"  y1="115" x2="52"  y2="115"/>
+                  <line x1="218" y1="115" x2="230" y2="115"/>
+                  <line x1="68"  y1="48"  x2="76"  y2="56"/>
+                  <line x1="194" y1="174" x2="202" y2="182"/>
+                  <line x1="194" y1="48"  x2="202" y2="56"/>
+                  <line x1="68"  y1="174" x2="76"  y2="182"/>
+                </g>
+              </g>
+              <!-- Middle ring — counter rotate -->
+              <g style="transform-origin:135px 115px;animation:ring-rotate-rev 10s linear infinite">
+                <circle cx="135" cy="115" r="72" fill="none" stroke="rgba(255,45,45,0.25)" stroke-width="0.8"/>
+                <!-- Arc segment -->
+                <path d="M135,43 A72,72 0 0,1 207,115" fill="none" stroke="#ff2d2d" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+                <path d="M135,187 A72,72 0 0,1 63,115" fill="none" stroke="#ff2d2d" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
+              </g>
+              <!-- Inner ring — rotate -->
+              <g style="transform-origin:135px 115px;animation:ring-rotate 6s linear infinite">
+                <circle cx="135" cy="115" r="48" fill="none" stroke="rgba(255,45,45,0.3)" stroke-width="0.8"/>
+                <path d="M135,67 A48,48 0 0,1 183,115" fill="none" stroke="#ff2d2d" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+              </g>
+              <!-- Static innermost ring -->
+              <circle cx="135" cy="115" r="28" fill="rgba(255,45,45,0.06)" stroke="rgba(255,45,45,0.4)" stroke-width="0.8"/>
+              <!-- Crosshair -->
+              <g stroke="#ff2d2d" stroke-width="0.8" opacity="0.6">
+                <line x1="135" y1="92"  x2="135" y2="104"/>
+                <line x1="135" y1="126" x2="135" y2="138"/>
+                <line x1="112" y1="115" x2="124" y2="115"/>
+                <line x1="146" y1="115" x2="158" y2="115"/>
+              </g>
+              <!-- Cardinal alert dots -->
+              <circle cx="135" cy="20"  r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite 0s"/>
+              <circle cx="135" cy="210" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite .45s"/>
+              <circle cx="40"  cy="115" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite .9s"/>
+              <circle cx="230" cy="115" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite 1.35s"/>
+              <!-- Centre pip -->
+              <circle cx="135" cy="115" r="5" fill="rgba(255,45,45,0.2)" stroke="#ff2d2d" stroke-width="1"/>
+              <circle cx="135" cy="115" r="2.5" fill="#ff2d2d" filter="url(#war-glow)"/>
+              <!-- Status readout -->
+              <rect x="14" y="14" width="68" height="16" rx="2" fill="rgba(255,45,45,0.08)" stroke="rgba(255,45,45,0.25)" stroke-width="0.7"/>
+              <text x="48" y="25" fill="#ff2d2d" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.85">CMD · ONLINE</text>
+            </svg>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 04</div>
@@ -1045,32 +1225,58 @@
         <!-- 5. STOCK PICKS -->
         <a class="module-card green-card" href="stock-picks.html">
           <div class="card-visual stocks-bg">
-            <div class="card-grid-pattern"></div>
+            <div class="card-grid-fine"></div>
             <div class="card-live-tag green"><div class="card-live-dot"></div>Updated</div>
-            <svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible" viewBox="0 0 270 180" preserveAspectRatio="xMidYMid meet">
+            <!-- Clean institutional equity curve -->
+            <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="breakGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#00e676" stop-opacity="0.3"/>
-                  <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+                <linearGradient id="equity-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00ff88" stop-opacity="0.28"/>
+                  <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
                 </linearGradient>
-                <filter id="scopeGlow">
-                  <feGaussianBlur stdDeviation="2" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
+                <filter id="curve-glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="badge-glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
               </defs>
-              <path d="M10,155 L50,148 L90,138 L120,125 L150,108 L175,80 L200,55 L200,180 L10,180 Z" fill="url(#breakGrad)"/>
-              <polyline points="10,155 50,148 90,138 120,125 150,108 175,80 200,55" fill="none" stroke="#00e676" stroke-width="1.5" stroke-linejoin="round"/>
-              <circle cx="185" cy="65" r="52" fill="none" stroke="#00e676" stroke-width="1" opacity="0.5" filter="url(#scopeGlow)"/>
-              <circle cx="185" cy="65" r="32" fill="none" stroke="#00e676" stroke-width="1" opacity="0.7"/>
-              <line x1="185" y1="13" x2="185" y2="117" stroke="#00e676" stroke-width="0.7" opacity="0.6"/>
-              <line x1="133" y1="65" x2="237" y2="65" stroke="#00e676" stroke-width="0.7" opacity="0.6"/>
-              <line x1="185" y1="40" x2="185" y2="55" stroke="#0a0a0f" stroke-width="2"/>
-              <line x1="185" y1="75" x2="185" y2="90" stroke="#0a0a0f" stroke-width="2"/>
-              <line x1="158" y1="65" x2="173" y2="65" stroke="#0a0a0f" stroke-width="2"/>
-              <line x1="197" y1="65" x2="212" y2="65" stroke="#0a0a0f" stroke-width="2"/>
-              <circle cx="185" cy="65" r="3" fill="#00e676" opacity="0.9"/>
-              <rect x="10" y="10" width="72" height="22" rx="4" fill="rgba(0,230,118,0.12)" stroke="rgba(0,230,118,0.3)" stroke-width="0.7"/>
-              <text x="46" y="25" fill="#00e676" font-size="9" font-family="monospace" text-anchor="middle" font-weight="bold">PICK  +12.4%</text>
+              <!-- Faint horizontal grid -->
+              <g stroke="rgba(0,255,136,0.08)" stroke-width="0.8">
+                <line x1="22" y1="55"  x2="252" y2="55"/>
+                <line x1="22" y1="90"  x2="252" y2="90"/>
+                <line x1="22" y1="125" x2="252" y2="125"/>
+                <line x1="22" y1="160" x2="252" y2="160"/>
+                <line x1="22" y1="195" x2="252" y2="195"/>
+              </g>
+              <!-- Faint vertical grid -->
+              <g stroke="rgba(0,255,136,0.05)" stroke-width="0.8">
+                <line x1="70"  y1="40" x2="70"  y2="200"/>
+                <line x1="118" y1="40" x2="118" y2="200"/>
+                <line x1="166" y1="40" x2="166" y2="200"/>
+                <line x1="214" y1="40" x2="214" y2="200"/>
+              </g>
+              <!-- Area under curve -->
+              <path d="M22,185 C55,182 80,175 105,162 C130,148 148,128 170,105 C192,82 210,62 248,42 L248,200 L22,200 Z" fill="url(#equity-fill)"/>
+              <!-- Equity S-curve — drawn with animation -->
+              <path d="M22,185 C55,182 80,175 105,162 C130,148 148,128 170,105 C192,82 210,62 248,42" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" filter="url(#curve-glow)" stroke-dasharray="600" style="animation:curve-draw 2s ease-out both"/>
+              <!-- Baseline -->
+              <line x1="22" y1="200" x2="252" y2="200" stroke="rgba(0,255,136,0.18)" stroke-width="0.8"/>
+              <!-- Peak dot -->
+              <circle cx="248" cy="42" r="4" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="1.2"/>
+              <circle cx="248" cy="42" r="2" fill="#00ff88" filter="url(#curve-glow)"/>
+              <!-- Floating +12.4% badge -->
+              <g style="animation:badge-float 3s ease-in-out infinite">
+                <rect x="178" y="22" width="68" height="22" rx="3" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.4)" stroke-width="0.8" filter="url(#badge-glow)"/>
+                <text x="212" y="37" fill="#00ff88" font-size="10" font-family="monospace" text-anchor="middle" font-weight="700">+12.4%</text>
+              </g>
+              <!-- Entry marker -->
+              <line x1="22" y1="185" x2="22" y2="200" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <!-- Axis labels -->
+              <g fill="rgba(0,255,136,0.3)" font-size="6.5" font-family="monospace">
+                <text x="8" y="57">H</text>
+                <text x="8" y="127">M</text>
+                <text x="8" y="197">L</text>
+              </g>
+              <!-- Corner tag -->
+              <rect x="14" y="14" width="58" height="15" rx="2" fill="rgba(0,255,136,0.07)" stroke="rgba(0,255,136,0.2)" stroke-width="0.7"/>
+              <text x="43" y="24.5" fill="#00ff88" font-size="6" font-family="monospace" text-anchor="middle" opacity="0.75">EQUITY · CURVE</text>
             </svg>
           </div>
           <div class="card-footer">
@@ -1084,26 +1290,63 @@
         <!-- 6. ARCANE COURSES -->
         <a class="module-card gold-card" href="notion-invite.html">
           <div class="card-visual courses-bg">
-            <div class="card-grid-pattern"></div>
+            <div class="card-grid-fine"></div>
             <div class="card-live-tag gold"><div class="card-live-dot"></div>3,330+ Modules</div>
-            <div class="course-dots">
-              <div class="course-dot" style="width:10px;height:10px;left:50px;top:50px;animation-delay:0s"></div>
-              <div class="course-dot" style="width:7px;height:7px;left:100px;top:80px;animation-delay:-0.7s"></div>
-              <div class="course-dot" style="width:12px;height:12px;left:160px;top:55px;animation-delay:-1.4s"></div>
-              <div class="course-dot" style="width:6px;height:6px;left:70px;top:130px;animation-delay:-2.1s"></div>
-              <div class="course-dot" style="width:9px;height:9px;left:140px;top:120px;animation-delay:-0.35s"></div>
-              <div class="course-dot" style="width:8px;height:8px;left:200px;top:90px;animation-delay:-1.05s"></div>
-              <div class="course-dot" style="width:5px;height:5px;left:120px;top:160px;animation-delay:-1.75s"></div>
-              <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.5" viewBox="0 0 270 240">
-                <line x1="55" y1="55" x2="105" y2="83" stroke="#f5c842" stroke-width="1.2"/>
-                <line x1="105" y1="83" x2="165" y2="58" stroke="#f5c842" stroke-width="1.2"/>
-                <line x1="105" y1="83" x2="75" y2="133" stroke="#f5c842" stroke-width="1.2"/>
-                <line x1="165" y1="58" x2="145" y2="123" stroke="#f5c842" stroke-width="1.2"/>
-                <line x1="145" y1="123" x2="205" y2="93" stroke="#f5c842" stroke-width="1.2"/>
-                <line x1="145" y1="123" x2="125" y2="163" stroke="#f5c842" stroke-width="1.2"/>
-              </svg>
-            </div>
-            <div class="card-icon-wrap" style="align-items:flex-end;justify-content:flex-end;padding:1.25rem"><span class="card-icon" style="font-size:2.5rem">📚</span></div>
+            <!-- Constellation / knowledge graph -->
+            <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="courses-glow" cx="50%" cy="50%" r="55%">
+                  <stop offset="0%" stop-color="#f5a623" stop-opacity="0.12"/>
+                  <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
+                </radialGradient>
+                <filter id="node-bloom"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="node-bloom-sm"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <!-- Background radial glow -->
+              <ellipse cx="135" cy="115" rx="100" ry="88" fill="url(#courses-glow)"/>
+              <!-- Constellation edges — shimmer on hover -->
+              <g stroke="#f5a623" fill="none">
+                <!-- Primary edges -->
+                <line x1="135" y1="55"  x2="80"  y2="90"  stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 0s"/>
+                <line x1="135" y1="55"  x2="195" y2="85"  stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .4s"/>
+                <line x1="135" y1="55"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .8s"/>
+                <line x1="80"  y1="90"  x2="55"  y2="145" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .2s"/>
+                <line x1="80"  y1="90"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .6s"/>
+                <line x1="195" y1="85"  x2="220" y2="140" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 1s"/>
+                <line x1="195" y1="85"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 1.4s"/>
+                <line x1="135" y1="115" x2="55"  y2="145" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite .3s"/>
+                <line x1="135" y1="115" x2="220" y2="140" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite .7s"/>
+                <line x1="135" y1="115" x2="100" y2="175" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite 1.1s"/>
+                <line x1="135" y1="115" x2="175" y2="178" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite 1.5s"/>
+                <line x1="55"  y1="145" x2="100" y2="175" stroke-width="0.6" opacity="0.2" style="animation:edge-shimmer 5s ease-in-out infinite .5s"/>
+                <line x1="220" y1="140" x2="175" y2="178" stroke-width="0.6" opacity="0.2" style="animation:edge-shimmer 5s ease-in-out infinite .9s"/>
+                <!-- Secondary cross-links -->
+                <line x1="80"  y1="90"  x2="195" y2="85"  stroke-width="0.5" opacity="0.15" stroke-dasharray="3 4"/>
+                <line x1="55"  y1="145" x2="220" y2="140" stroke-width="0.5" opacity="0.12" stroke-dasharray="3 4"/>
+                <line x1="100" y1="175" x2="175" y2="178" stroke-width="0.5" opacity="0.15" stroke-dasharray="3 4"/>
+              </g>
+              <!-- Outer / tertiary nodes (small) -->
+              <g fill="#f5a623" filter="url(#node-bloom-sm)">
+                <circle cx="55"  cy="145" r="3"   opacity="0.55" style="animation:star-glow 4s ease-in-out infinite 0s"/>
+                <circle cx="220" cy="140" r="3"   opacity="0.55" style="animation:star-glow 4s ease-in-out infinite .7s"/>
+                <circle cx="100" cy="175" r="2.5" opacity="0.45" style="animation:star-glow 4.5s ease-in-out infinite 1.4s"/>
+                <circle cx="175" cy="178" r="2.5" opacity="0.45" style="animation:star-glow 4.5s ease-in-out infinite 2.1s"/>
+              </g>
+              <!-- Mid nodes -->
+              <g fill="#f5a623" filter="url(#node-bloom-sm)">
+                <circle cx="80"  cy="90"  r="4.5" opacity="0.65" style="animation:star-glow 3s ease-in-out infinite .3s"/>
+                <circle cx="195" cy="85"  r="4.5" opacity="0.65" style="animation:star-glow 3s ease-in-out infinite 1s"/>
+              </g>
+              <!-- Primary hub node — apex -->
+              <circle cx="135" cy="55" r="7" fill="rgba(245,166,35,0.15)" stroke="#f5a623" stroke-width="1" opacity="0.8"/>
+              <circle cx="135" cy="55" r="5" fill="#f5a623" filter="url(#node-bloom)" style="animation:star-glow-lg 2.5s ease-in-out infinite 0s"/>
+              <!-- Central nexus node -->
+              <circle cx="135" cy="115" r="9" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.2"/>
+              <circle cx="135" cy="115" r="6" fill="#f5a623" filter="url(#node-bloom)" style="animation:star-glow-lg 3s ease-in-out infinite .8s"/>
+              <!-- Corner readout -->
+              <rect x="14" y="14" width="70" height="15" rx="2" fill="rgba(245,166,35,0.07)" stroke="rgba(245,166,35,0.2)" stroke-width="0.7"/>
+              <text x="49" y="24.5" fill="#f5a623" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.75">KNOWLEDGE · MAP</text>
+            </svg>
           </div>
           <div class="card-footer">
             <div class="card-tag">Module 06</div>
