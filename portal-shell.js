@@ -155,7 +155,7 @@ function bindLogout() {
 }
 
 function loadTicker() {
-  if (document.querySelector('script[data-arcane-prices]')) return;
+  if (document.querySelector('script[data-arcane-prices], script[src*="arcane-prices"]')) return;
   const s = document.createElement('script');
   s.src = 'arcane-prices.js';
   s.defer = true;
