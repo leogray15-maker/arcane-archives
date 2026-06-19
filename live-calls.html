@@ -1,806 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Live Calls & Education | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
-    <link rel="apple-touch-icon" href="ArcaneA.png">
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Calendly CSS -->
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-
-    <style>
-        :root {
-            --bg-primary: #09090b;
-            --bg-secondary: #18181b;
-            --bg-glass: rgba(24, 24, 27, 0.7);
-            --accent: #8b5cf6;
-            --accent-light: #a78bfa;
-            --accent-glow: rgba(139, 92, 246, 0.15);
-            --accent-border: rgba(139, 92, 246, 0.25);
-            --white: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-300: #d4d4d8;
-            --gray-400: #a1a1aa;
-            --gray-500: #71717a;
-            --gray-600: #52525b;
-            --border: rgba(63, 63, 70, 0.5);
-            --gold: #fbbf24;
-            --gold-glow: rgba(251, 191, 36, 0.1);
-            --gold-border: rgba(251, 191, 36, 0.2);
-            --red: #ef4444;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html {
-            height: 100%;
-            overflow-x: hidden;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--white);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: radial-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px);
-            background-size: 24px 24px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: -30%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            height: 60%;
-            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.06), transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .back-btn {
-            position: fixed;
-            top: calc(1.5rem + env(safe-area-inset-top, 0));
-            left: 1.5rem;
-            z-index: 40;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-glass);
-            color: var(--gray-400);
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 500;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            transition: all 0.2s ease;
-            letter-spacing: -0.01em;
-        }
-
-        .back-btn:hover {
-            border-color: var(--accent-border);
-            color: var(--accent-light);
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 5rem 1.5rem 4rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.85rem;
-            background: var(--accent-glow);
-            border: 1px solid var(--accent-border);
-            border-radius: 50px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--accent-light);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero h1 {
-            font-size: clamp(1.75rem, 4.5vw, 2.5rem);
-            font-weight: 900;
-            margin-bottom: 0.75rem;
-            color: var(--white);
-            letter-spacing: -0.04em;
-            line-height: 1.15;
-            overflow-wrap: break-word;
-        }
-
-        .hero p {
-            color: var(--gray-400);
-            font-size: 1rem;
-            max-width: 560px;
-            margin: 0 auto;
-            line-height: 1.7;
-            letter-spacing: -0.01em;
-        }
-
-        /* Cards */
-        .card {
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .section-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--gray-500);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: var(--white);
-            letter-spacing: -0.03em;
-        }
-
-        /* 1:1 Call Section */
-        .one-on-one-section {
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--gold-border);
-            border-radius: 20px;
-            padding: 2.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .one-on-one-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--gold), var(--accent));
-        }
-
-        .one-on-one-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .one-on-one-header h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 0.6rem;
-            color: var(--white);
-            letter-spacing: -0.03em;
-        }
-
-        .one-on-one-header .subtitle {
-            color: var(--gray-400);
-            font-size: 0.95rem;
-            line-height: 1.7;
-            letter-spacing: -0.01em;
-        }
-
-        .rules-box {
-            background: rgba(139, 92, 246, 0.03);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            border-radius: 14px;
-            padding: 1.25rem 1.5rem;
-            margin: 1.25rem 0;
-        }
-
-        .rules-box h3 {
-            color: var(--gray-400);
-            margin-bottom: 0.875rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .rules-box ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .rules-box ul li {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.6rem;
-            padding: 0.35rem 0;
-            color: var(--gray-300);
-            font-size: 0.875rem;
-            line-height: 1.6;
-            letter-spacing: -0.01em;
-        }
-
-        .rules-box ul li::before {
-            content: "";
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--accent);
-            flex-shrink: 0;
-            margin-top: 0.55rem;
-        }
-
-        .rules-box ul li strong {
-            color: var(--white);
-            font-weight: 600;
-        }
-
-        .warning-box {
-            background: rgba(239, 68, 68, 0.04);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 12px;
-            padding: 0.875rem 1.25rem;
-            margin: 1.25rem 0;
-            text-align: center;
-        }
-
-        .warning-box p {
-            color: var(--red);
-            font-weight: 600;
-            margin: 0;
-            font-size: 0.8rem;
-            letter-spacing: -0.01em;
-        }
-
-        .cta-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            padding: 0.95rem 2.5rem;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            background: var(--white);
-            color: var(--bg-primary);
-            width: 100%;
-            max-width: 380px;
-            margin: 1.5rem auto 0;
-            letter-spacing: -0.01em;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 32px rgba(250, 250, 250, 0.15);
-        }
-
-        .pro-tip {
-            text-align: center;
-            margin-top: 1.25rem;
-            font-size: 0.8rem;
-            color: var(--gray-500);
-            letter-spacing: -0.01em;
-        }
-
-        .pro-tip strong {
-            color: var(--gold);
-            font-weight: 600;
-        }
-
-        /* Schedule */
-        .schedule-grid {
-            display: grid;
-            gap: 0.75rem;
-            margin: 1.5rem 0;
-        }
-
-        .schedule-card {
-            background: rgba(139, 92, 246, 0.03);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            border-radius: 14px;
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: all 0.2s ease;
-        }
-
-        .schedule-card:hover {
-            border-color: var(--accent-border);
-        }
-
-        .schedule-icon {
-            font-size: 1.75rem;
-            flex-shrink: 0;
-        }
-
-        .schedule-content {
-            flex: 1;
-        }
-
-        .schedule-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 0.2rem;
-            color: var(--white);
-            letter-spacing: -0.02em;
-        }
-
-        .schedule-time {
-            color: var(--gray-500);
-            font-size: 0.8rem;
-            letter-spacing: -0.01em;
-        }
-
-        /* Quick Links */
-        .quick-links {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 0.75rem;
-            margin: 1.5rem 0;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            padding: 0.875rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            letter-spacing: -0.01em;
-        }
-
-        .btn-primary {
-            background: var(--white);
-            color: var(--bg-primary);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(250, 250, 250, 0.15);
-        }
-
-        .btn-secondary {
-            background: var(--bg-secondary);
-            color: var(--white);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-1px);
-            border-color: var(--accent-border);
-            background: rgba(139, 92, 246, 0.08);
-        }
-
-        .btn-tertiary {
-            background: rgba(139, 92, 246, 0.06);
-            border: 1px solid var(--accent-border);
-            color: var(--accent-light);
-        }
-
-        .btn-tertiary:hover {
-            background: rgba(139, 92, 246, 0.12);
-        }
-
-        /* Info Box */
-        .info-box {
-            background: rgba(139, 92, 246, 0.03);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            border-radius: 14px;
-            padding: 1.25rem 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .info-box h3 {
-            color: var(--gray-400);
-            margin-bottom: 0.875rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .info-box ul li {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.6rem;
-            padding: 0.35rem 0;
-            color: var(--gray-300);
-            font-size: 0.875rem;
-            line-height: 1.6;
-            letter-spacing: -0.01em;
-        }
-
-        .info-box ul li::before {
-            content: "";
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--accent);
-            flex-shrink: 0;
-            margin-top: 0.55rem;
-        }
-
-        .info-box ul li strong {
-            color: var(--white);
-            font-weight: 600;
-        }
-
-        .tip-box {
-            margin-top: 1.5rem;
-            padding: 1.25rem 1.5rem;
-            background: rgba(139, 92, 246, 0.04);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .tip-box p {
-            color: var(--gray-500);
-            font-size: 0.8rem;
-            line-height: 1.7;
-            letter-spacing: -0.01em;
-        }
-
-        .tip-box p strong {
-            color: var(--accent-light);
-            font-weight: 600;
-        }
-
-        .tip-box a {
-            color: var(--accent-light);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .tip-box a:hover {
-            color: var(--accent);
-        }
-
-        /* CALENDLY MODAL */
-        .calendly-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(9, 9, 11, 0.95);
-            z-index: 9999;
-            padding: 1rem;
-        }
-
-        .calendly-overlay.active {
-            display: block;
-        }
-
-        .calendly-modal {
-            background: #fff;
-            border-radius: 16px;
-            width: 100%;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .calendly-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 10001;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #fff;
-            color: #fff;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .calendly-inline-widget {
-            width: 100%;
-            height: 100%;
-            min-height: 600px;
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 1.75rem;
-            }
-
-            .card,
-            .one-on-one-section {
-                padding: 1.75rem 1.25rem;
-            }
-
-            .schedule-card {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .quick-links {
-                grid-template-columns: 1fr;
-            }
-
-            .one-on-one-header h2 {
-                font-size: 1.25rem;
-            }
-
-            .cta-button {
-                width: 100%;
-                padding: 0.875rem 1.5rem;
-                font-size: 0.9rem;
-            }
-
-            .calendly-overlay {
-                padding: 0;
-            }
-
-            .calendly-modal {
-                border-radius: 0;
-            }
-
-            .calendly-inline-widget {
-                min-height: 100vh;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Live Calls &amp; Education | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png">
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#030303">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <link rel="stylesheet" href="arcane-portal.css">
+  <style>
+    .lc-hero { text-align: center; margin-bottom: 2.5rem; }
+    .lc-hero .hero-badge { display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.25rem; padding: 0.35rem 0.85rem; border-radius: 999px; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); color: var(--purple-light); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .lc-hero h1 { font-size: clamp(1.8rem, 4.5vw, 2.5rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .lc-hero h1 span { background: linear-gradient(135deg, var(--purple-light), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .lc-hero p { color: var(--text-secondary); font-size: 1rem; max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; margin-bottom: 1.5rem; }
+    .section-label { font-size: 0.66rem; font-weight: 700; color: var(--purple-light); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em; }
+
+    .one-on-one-section { position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(251,191,36,0.06), var(--bg-card)); border: 1px solid rgba(251,191,36,0.25); border-radius: 20px; padding: 2.5rem; margin-bottom: 1.5rem; }
+    .one-on-one-section::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, var(--gold), var(--purple)); }
+    .one-on-one-header { text-align: center; margin-bottom: 2rem; }
+    .one-on-one-header h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.6rem; letter-spacing: -0.02em; }
+    .one-on-one-header .subtitle { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+
+    .rules-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; margin: 1.25rem 0; }
+    .rules-box h3 { color: var(--text-muted); margin-bottom: 0.85rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .rules-box ul { list-style: none; margin: 0; padding: 0; }
+    .rules-box li { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.35rem 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; }
+    .rules-box li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--purple); flex-shrink: 0; margin-top: 0.55rem; }
+    .rules-box li strong { color: var(--text); font-weight: 700; }
+
+    .warning-box { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 0.875rem 1.25rem; margin: 1.25rem 0; text-align: center; }
+    .warning-box p { color: #fca5a5; font-weight: 600; margin: 0; font-size: 0.8rem; }
+
+    .cta-button { display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.95rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; width: 100%; max-width: 380px; margin: 1.5rem auto 0; cursor: pointer; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff; box-shadow: 0 4px 18px var(--purple-glow); transition: transform 0.2s, box-shadow 0.2s; }
+    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 8px 26px var(--purple-glow); }
+    .pro-tip { text-align: center; margin-top: 1.25rem; font-size: 0.8rem; color: var(--text-muted); }
+    .pro-tip strong { color: var(--gold); font-weight: 700; }
+
+    .schedule-grid { display: grid; gap: 0.75rem; margin: 1.5rem 0; }
+    .schedule-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; transition: border-color 0.2s, transform 0.2s; }
+    .schedule-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .schedule-icon { font-size: 1.75rem; flex-shrink: 0; }
+    .schedule-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; letter-spacing: -0.01em; }
+    .schedule-time { color: var(--text-muted); font-size: 0.8rem; }
+
+    .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; margin: 1.5rem 0; }
+    .btn { display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.875rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 0.875rem; transition: transform 0.2s, border-color 0.2s, background 0.2s; cursor: pointer; }
+    .btn-primary { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff; box-shadow: 0 4px 18px var(--purple-glow); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-secondary { background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { transform: translateY(-2px); border-color: var(--border-hover); }
+    .btn-tertiary { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.28); color: var(--purple-light); }
+    .btn-tertiary:hover { background: rgba(139,92,246,0.14); transform: translateY(-2px); }
+
+    .info-box { background: rgba(139,92,246,0.04); border: 1px solid rgba(139,92,246,0.12); border-radius: 14px; padding: 1.25rem 1.5rem; margin-top: 1.5rem; }
+    .info-box h3 { color: var(--text-muted); margin-bottom: 0.85rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .info-box ul { list-style: none; padding: 0; margin: 0; }
+    .info-box li { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.35rem 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; }
+    .info-box li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--purple); flex-shrink: 0; margin-top: 0.55rem; }
+    .info-box li strong { color: var(--text); font-weight: 700; }
+
+    .tip-box { margin-top: 1.5rem; padding: 1.25rem 1.5rem; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; text-align: center; }
+    .tip-box p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.7; }
+    .tip-box p strong { color: var(--purple-light); font-weight: 700; }
+    .tip-box a { color: var(--purple-light); font-weight: 700; }
+
+    /* Calendly modal */
+    .calendly-overlay { display: none; position: fixed; inset: 0; background: rgba(3,3,3,0.95); z-index: 9999; padding: 1rem; }
+    .calendly-overlay.active { display: block; }
+    .calendly-modal { background: #fff; border-radius: 16px; width: 100%; height: 100%; position: relative; overflow: hidden; }
+    .calendly-close { position: absolute; top: 1rem; right: 1rem; z-index: 10001; background: rgba(0,0,0,0.8); border: 2px solid #fff; color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; font-weight: bold; }
+    .calendly-inline-widget { width: 100%; height: 100%; min-height: 600px; }
+
+    @media (max-width: 768px) {
+      .card, .one-on-one-section { padding: 1.75rem 1.25rem; }
+      .schedule-card { flex-direction: column; text-align: center; }
+      .quick-links { grid-template-columns: 1fr; }
+      .calendly-overlay { padding: 0; }
+      .calendly-modal { border-radius: 0; }
+      .calendly-inline-widget { min-height: 100vh; }
+    }
+  </style>
 </head>
-<body>
-    <a href="dashboard.html" class="back-btn">← Back</a>
+<body data-page="live-calls">
+  <div class="bg-gradient"></div>
+  <div class="grid-overlay"></div>
 
-    <div class="container">
-        <div class="hero">
-            <div class="hero-badge">Members Only</div>
-            <h1>Live Calls & Education</h1>
-            <p>Weekly group sessions, live Q&A, and exclusive 1:1 mentorship with Leo</p>
-        </div>
-
-        <!-- WEEKLY 1:1 CALL SECTION -->
-        <div class="one-on-one-section">
-            <div class="one-on-one-header">
-                <p class="section-label">Premium Access</p>
-                <h2>Weekly 1:1 Call</h2>
-                <p class="subtitle">
-                    Get direct access to Leo for personalized guidance, strategy review, and accountability.
-                    Limited to one call per member per week.
-                </p>
-            </div>
-
-            <div class="rules-box">
-                <h3>What to Expect</h3>
-                <ul>
-                    <li><strong>Duration:</strong> 30-45 minutes of focused, 1:1 time</li>
-                    <li><strong>Topics:</strong> Trading strategy, mindset, business growth, or personal development</li>
-                    <li><strong>Format:</strong> Video call via Zoom (link sent after booking)</li>
-                    <li><strong>Preparation:</strong> Come with specific questions or goals for maximum value</li>
-                    <li><strong>Recording:</strong> Calls are not recorded to maintain privacy and candid discussion</li>
-                </ul>
-            </div>
-
-            <div class="rules-box">
-                <h3>Scheduling Rules</h3>
-                <ul>
-                    <li><strong>Limit:</strong> One (1) call per member per 7-day period</li>
-                    <li><strong>Cancellation:</strong> Must cancel at least 24 hours in advance to reschedule</li>
-                    <li><strong>No-shows:</strong> Missing a scheduled call without notice counts as your weekly slot</li>
-                    <li><strong>Availability:</strong> Slots are limited and filled on a first-come, first-served basis</li>
-                </ul>
-            </div>
-
-            <div class="warning-box">
-                <p>Abuse of the scheduling system may result in temporary or permanent loss of 1:1 call privileges</p>
-            </div>
-
-            <button class="cta-button" id="schedule1on1Btn">
-                Schedule Your Weekly 1:1 Call
-            </button>
-
-            <p class="pro-tip">
-                <strong>Tip:</strong> Book early in the week for maximum flexibility and availability
-            </p>
-        </div>
-
-        <!-- GROUP CALLS SECTION -->
-        <div class="card">
-            <p class="section-label">Weekly Schedule</p>
-            <h2 class="section-title">Group Calls</h2>
-
-            <div class="schedule-grid">
-                <div class="schedule-card">
-                    <div class="schedule-icon">🎯</div>
-                    <div class="schedule-content">
-                        <div class="schedule-title">Market Analysis Call</div>
-                        <div class="schedule-time">Every Wednesday &middot; 7:00 PM UK Time</div>
-                    </div>
-                </div>
-
-                <div class="schedule-card">
-                    <div class="schedule-icon">💡</div>
-                    <div class="schedule-content">
-                        <div class="schedule-title">Q&A Session</div>
-                        <div class="schedule-time">Every Friday &middot; 7:00 PM UK Time</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="quick-links">
-                <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33"
-                   target="_blank"
-                   class="btn btn-primary">
-                    View Full Calendar
-                </a>
-
-                <a href="https://t.me/thearcanearchives"
-                   target="_blank"
-                   class="btn btn-secondary">
-                    Announcements Channel
-                </a>
-
-                <a href="https://t.me/+JuTWVrAx5okwNzk0"
-                   target="_blank"
-                   class="btn btn-tertiary">
-                    Community Chat
-                </a>
-            </div>
-
-            <div class="info-box">
-                <h3>What We Cover in Group Calls</h3>
-                <ul>
-                    <li><strong>Market Deep-Dives:</strong> In-depth analysis of current market conditions and trade setups</li>
-                    <li><strong>Live Q&A:</strong> Ask questions and get real-time answers</li>
-                    <li><strong>Strategy Reviews:</strong> Review recent trades and discuss what worked</li>
-                    <li><strong>Education:</strong> Learn advanced concepts, psychology, and risk management</li>
-                    <li><strong>Community:</strong> Network with other Arcane members and share insights</li>
-                </ul>
-            </div>
-
-            <div class="tip-box">
-                <p>
-                    <strong>Tip:</strong>
-                    Group calls are recorded and uploaded to Notion within 24 hours if you miss a session.
-                </p>
-                <p style="margin-top: 0.5rem;">
-                    Join the
-                    <a href="https://t.me/thearcanearchives" target="_blank">Announcements Channel</a>
-                    to get notified 30 minutes before each call.
-                </p>
-            </div>
-        </div>
+  <main class="portal-page" style="max-width:960px">
+    <div class="lc-hero">
+      <div class="hero-badge">Members Only</div>
+      <h1>Live Calls &amp; <span>Education</span></h1>
+      <p>Weekly group sessions, live Q&amp;A, and exclusive 1:1 mentorship with Leo.</p>
     </div>
 
-    <!-- CALENDLY MODAL -->
-    <div class="calendly-overlay" id="calendlyOverlay">
-        <div class="calendly-modal">
-            <button class="calendly-close" id="closeCalendly">&times;</button>
-            <div class="calendly-inline-widget"
-                 data-url="https://calendly.com/leogray15/1-1-call-with-leo-founder?hide_gdpr_banner=1&primary_color=9333ea">
-            </div>
-        </div>
+    <!-- WEEKLY 1:1 CALL SECTION -->
+    <div class="one-on-one-section">
+      <div class="one-on-one-header">
+        <p class="section-label">Premium Access</p>
+        <h2>Weekly 1:1 Call</h2>
+        <p class="subtitle">Get direct access to Leo for personalized guidance, strategy review, and accountability. Limited to one call per member per week.</p>
+      </div>
+
+      <div class="rules-box">
+        <h3>What to Expect</h3>
+        <ul>
+          <li><strong>Duration:</strong> 30-45 minutes of focused, 1:1 time</li>
+          <li><strong>Topics:</strong> Trading strategy, mindset, business growth, or personal development</li>
+          <li><strong>Format:</strong> Video call via Zoom (link sent after booking)</li>
+          <li><strong>Preparation:</strong> Come with specific questions or goals for maximum value</li>
+          <li><strong>Recording:</strong> Calls are not recorded to maintain privacy and candid discussion</li>
+        </ul>
+      </div>
+
+      <div class="rules-box">
+        <h3>Scheduling Rules</h3>
+        <ul>
+          <li><strong>Limit:</strong> One (1) call per member per 7-day period</li>
+          <li><strong>Cancellation:</strong> Must cancel at least 24 hours in advance to reschedule</li>
+          <li><strong>No-shows:</strong> Missing a scheduled call without notice counts as your weekly slot</li>
+          <li><strong>Availability:</strong> Slots are limited and filled on a first-come, first-served basis</li>
+        </ul>
+      </div>
+
+      <div class="warning-box">
+        <p>Abuse of the scheduling system may result in temporary or permanent loss of 1:1 call privileges</p>
+      </div>
+
+      <button class="cta-button" id="schedule1on1Btn">Schedule Your Weekly 1:1 Call</button>
+      <p class="pro-tip"><strong>Tip:</strong> Book early in the week for maximum flexibility and availability</p>
     </div>
 
-    <!-- Calendly JS -->
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    <!-- GROUP CALLS SECTION -->
+    <div class="card">
+      <p class="section-label">Weekly Schedule</p>
+      <h2 class="section-title">Group Calls</h2>
 
-    <script type="module">
-        import { protectPage, db } from './auth-guard.js';
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+      <div class="schedule-grid">
+        <div class="schedule-card">
+          <div class="schedule-icon">🎯</div>
+          <div class="schedule-content">
+            <div class="schedule-title">Market Analysis Call</div>
+            <div class="schedule-time">Every Wednesday &middot; 7:00 PM UK Time</div>
+          </div>
+        </div>
+        <div class="schedule-card">
+          <div class="schedule-icon">💡</div>
+          <div class="schedule-content">
+            <div class="schedule-title">Q&amp;A Session</div>
+            <div class="schedule-time">Every Friday &middot; 7:00 PM UK Time</div>
+          </div>
+        </div>
+      </div>
 
-        let currentUserEmail = '';
+      <div class="quick-links">
+        <a href="courses.html" class="btn btn-primary">View Course Library</a>
+        <a href="https://t.me/thearcanearchives" target="_blank" rel="noopener" class="btn btn-secondary">Announcements Channel</a>
+        <a href="https://t.me/+JuTWVrAx5okwNzk0" target="_blank" rel="noopener" class="btn btn-tertiary">Community Chat</a>
+      </div>
 
-        protectPage({
-            requirePayment: true,
-            allowAdmin: true,
-            onSuccess: (user, userData) => {
-                currentUserEmail = user.email;
-            },
-            onFailure: () => {
-                window.location.href = 'login.html';
-            }
-        });
+      <div class="info-box">
+        <h3>What We Cover in Group Calls</h3>
+        <ul>
+          <li><strong>Market Deep-Dives:</strong> In-depth analysis of current market conditions and trade setups</li>
+          <li><strong>Live Q&amp;A:</strong> Ask questions and get real-time answers</li>
+          <li><strong>Strategy Reviews:</strong> Review recent trades and discuss what worked</li>
+          <li><strong>Education:</strong> Learn advanced concepts, psychology, and risk management</li>
+          <li><strong>Community:</strong> Network with other Arcane members and share insights</li>
+        </ul>
+      </div>
 
-        // Schedule 1:1 button
-        document.getElementById('schedule1on1Btn').addEventListener('click', () => {
-            const overlay = document.getElementById('calendlyOverlay');
-            overlay.classList.add('active');
+      <div class="tip-box">
+        <p><strong>Tip:</strong> Group calls are recorded and uploaded within 24 hours if you miss a session.</p>
+        <p style="margin-top: 0.5rem;">Join the <a href="https://t.me/thearcanearchives" target="_blank" rel="noopener">Announcements Channel</a> to get notified 30 minutes before each call.</p>
+      </div>
+    </div>
 
-            const calendlyWidget = document.querySelector('.calendly-inline-widget');
-            let url = 'https://calendly.com/leogray15/1-1-call-with-leo-founder?hide_gdpr_banner=1&primary_color=9333ea';
+    <div class="dash-footer">
+      <span class="version-tag">The Arcane Archives · v3.0</span>
+      <a class="btn-ghost" href="dashboard.html">← Dashboard</a>
+    </div>
+  </main>
 
-            if (currentUserEmail) {
-                url += `&email=${encodeURIComponent(currentUserEmail)}`;
-            }
+  <!-- CALENDLY MODAL -->
+  <div class="calendly-overlay" id="calendlyOverlay">
+    <div class="calendly-modal">
+      <button class="calendly-close" id="closeCalendly">&times;</button>
+      <div class="calendly-inline-widget" data-url="https://calendly.com/leogray15/1-1-call-with-leo-founder?hide_gdpr_banner=1&primary_color=8b5cf6"></div>
+    </div>
+  </div>
 
-            calendlyWidget.setAttribute('data-url', url);
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+  <script type="module" src="portal-shell.js"></script>
 
-            if (window.Calendly) {
-                window.Calendly.initInlineWidget({
-                    url: url,
-                    parentElement: calendlyWidget
-                });
-            }
-        });
+  <script type="module">
+    import { protectPage, db } from './auth-guard.js';
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-        // Close modal
-        document.getElementById('closeCalendly').addEventListener('click', () => {
-            document.getElementById('calendlyOverlay').classList.remove('active');
-        });
+    let currentUserEmail = '';
 
-        // Close on overlay click
-        document.getElementById('calendlyOverlay').addEventListener('click', (e) => {
-            if (e.target.id === 'calendlyOverlay') {
-                document.getElementById('calendlyOverlay').classList.remove('active');
-            }
-        });
+    protectPage({
+      requirePayment: true,
+      allowAdmin: true,
+      onSuccess: (user, userData) => { currentUserEmail = user.email; },
+      onFailure: () => { window.location.href = 'login.html'; }
+    });
 
-        // Close on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.getElementById('calendlyOverlay').classList.remove('active');
-            }
-        });
-    </script>
+    document.getElementById('schedule1on1Btn').addEventListener('click', () => {
+      const overlay = document.getElementById('calendlyOverlay');
+      overlay.classList.add('active');
+      const calendlyWidget = document.querySelector('.calendly-inline-widget');
+      let url = 'https://calendly.com/leogray15/1-1-call-with-leo-founder?hide_gdpr_banner=1&primary_color=8b5cf6';
+      if (currentUserEmail) url += `&email=${encodeURIComponent(currentUserEmail)}`;
+      calendlyWidget.setAttribute('data-url', url);
+      if (window.Calendly) {
+        window.Calendly.initInlineWidget({ url: url, parentElement: calendlyWidget });
+      }
+    });
+
+    document.getElementById('closeCalendly').addEventListener('click', () => {
+      document.getElementById('calendlyOverlay').classList.remove('active');
+    });
+    document.getElementById('calendlyOverlay').addEventListener('click', (e) => {
+      if (e.target.id === 'calendlyOverlay') document.getElementById('calendlyOverlay').classList.remove('active');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') document.getElementById('calendlyOverlay').classList.remove('active');
+    });
+  </script>
 </body>
 </html>

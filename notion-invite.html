@@ -1,369 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Course Access | The Arcane Archives</title>
-    <link rel="icon" href="ArcaneA.png">
-    <link rel="apple-touch-icon" href="ArcaneA.png">
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --bg-primary: #09090b;
-            --bg-secondary: #18181b;
-            --bg-tertiary: #27272a;
-            --bg-glass: rgba(24, 24, 27, 0.7);
-            --accent: #8b5cf6;
-            --accent-light: #a78bfa;
-            --accent-glow: rgba(139, 92, 246, 0.15);
-            --accent-border: rgba(139, 92, 246, 0.25);
-            --white: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-300: #d4d4d8;
-            --gray-400: #a1a1aa;
-            --gray-500: #71717a;
-            --gray-600: #52525b;
-            --gray-800: #27272a;
-            --border: rgba(63, 63, 70, 0.5);
-            --green: #22c55e;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html {
-            height: 100%;
-            overflow-x: hidden;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
-            color: var(--white);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            padding: 1.5rem;
-            padding: env(safe-area-inset-top, 1.5rem) env(safe-area-inset-right, 1.5rem) env(safe-area-inset-bottom, 1.5rem) env(safe-area-inset-left, 1.5rem);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            position: relative;
-        }
-
-        /* Subtle dot pattern background */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: radial-gradient(rgba(139, 92, 246, 0.07) 1px, transparent 1px);
-            background-size: 24px 24px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Top ambient glow */
-        body::after {
-            content: '';
-            position: fixed;
-            top: -40%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 60%;
-            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.08), transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .back-btn {
-            position: fixed;
-            top: calc(1.5rem + env(safe-area-inset-top, 0px));
-            left: 1.5rem;
-            z-index: 40;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-glass);
-            color: var(--gray-400);
-            text-decoration: none;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            transition: all 0.2s ease;
-            font-weight: 500;
-            letter-spacing: -0.01em;
-        }
-
-        .back-btn:hover {
-            border-color: var(--accent-border);
-            color: var(--accent-light);
-            background: rgba(139, 92, 246, 0.08);
-        }
-
-        .container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            position: relative;
-            z-index: 1;
-        }
-
-        .access-card {
-            max-width: 560px;
-            width: 100%;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 3rem 2.5rem;
-            text-align: center;
-        }
-
-        .logo {
-            display: block;
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 2rem;
-            opacity: 0.9;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.85rem;
-            background: var(--accent-glow);
-            border: 1px solid var(--accent-border);
-            border-radius: 50px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--accent-light);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 1.25rem;
-        }
-
-        .badge-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--green);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            margin-bottom: 0.75rem;
-            color: var(--white);
-            letter-spacing: -0.03em;
-            line-height: 1.2;
-        }
-
-        p {
-            color: var(--gray-400);
-            line-height: 1.7;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
-            letter-spacing: -0.01em;
-        }
-
-        .access-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            padding: 0.875rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            letter-spacing: -0.01em;
-        }
-
-        .btn-notion {
-            background: var(--white);
-            color: var(--bg-primary);
-        }
-
-        .btn-notion:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 32px rgba(250, 250, 250, 0.15);
-        }
-
-        .btn-telegram {
-            background: var(--bg-secondary);
-            color: var(--white);
-            border: 1px solid var(--border);
-        }
-
-        .btn-telegram:hover {
-            transform: translateY(-1px);
-            border-color: rgba(139, 92, 246, 0.4);
-            background: rgba(139, 92, 246, 0.08);
-        }
-
-        .btn-icon {
-            font-size: 1.1rem;
-        }
-
-        .info-box {
-            background: rgba(139, 92, 246, 0.04);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 2rem;
-            text-align: left;
-        }
-
-        .info-box h3 {
-            font-size: 0.8rem;
-            margin-bottom: 0.875rem;
-            color: var(--gray-400);
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .info-box li {
-            padding: 0.35rem 0;
-            color: var(--gray-300);
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-size: 0.875rem;
-            letter-spacing: -0.01em;
-        }
-
-        .info-box li::before {
-            content: "";
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--accent);
-            flex-shrink: 0;
-        }
-
-        .pro-tip {
-            font-size: 0.8rem !important;
-            margin-bottom: 0 !important;
-            color: var(--gray-500) !important;
-            padding-top: 0.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .pro-tip strong {
-            color: var(--gray-400);
-        }
-
-        @media (max-width: 480px) {
-            .access-card {
-                padding: 2rem 1.5rem;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .btn {
-                padding: 0.8rem 1.25rem;
-                font-size: 0.85rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Course Access | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png">
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#030303">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="arcane-portal.css">
+  <style>
+    .access-wrap { display: flex; justify-content: center; }
+    .access-card { max-width: 560px; width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 22px; padding: 2.75rem 2.5rem; text-align: center; position: relative; overflow: hidden; }
+    .access-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, var(--purple), var(--gold)); opacity:0.7; }
+    .access-card .logo { width: 60px; height: 60px; border-radius: 15px; margin: 0 auto 1.5rem; border: 1px solid rgba(251,191,36,0.4); }
+    .access-card .badge { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.35rem 0.85rem; border-radius: 999px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.28); color: #86efac; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.25rem; }
+    .access-card .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+    .access-card h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+    .access-card > p { color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.75rem; font-size: 0.95rem; }
+    .info-box { background: rgba(139,92,246,0.04); border: 1px solid rgba(139,92,246,0.12); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; text-align: left; }
+    .info-box h3 { font-size: 0.7rem; margin-bottom: 0.85rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .info-box ul { list-style: none; padding: 0; }
+    .info-box li { padding: 0.35rem 0; color: var(--text-secondary); display: flex; align-items: center; gap: 0.6rem; font-size: 0.875rem; }
+    .info-box li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
+    .access-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .btn { display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.9rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s; }
+    .btn-portal { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff; box-shadow: 0 4px 18px var(--purple-glow); }
+    .btn-portal:hover { transform: translateY(-2px); box-shadow: 0 8px 26px var(--purple-glow); }
+    .btn-notion { background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); }
+    .btn-notion:hover { transform: translateY(-2px); border-color: var(--border-hover); }
+    .btn-telegram { background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); }
+    .btn-telegram:hover { transform: translateY(-2px); border-color: var(--purple); background: rgba(139,92,246,0.08); }
+    .pro-tip { font-size: 0.8rem; color: var(--text-muted); padding-top: 1rem; border-top: 1px solid var(--border); }
+    .pro-tip strong { color: var(--text-secondary); }
+    @media (max-width: 480px) { .access-card { padding: 2rem 1.5rem; } }
+  </style>
 </head>
-<body>
-    <a href="dashboard.html" class="back-btn">← Dashboard</a>
+<body data-page="courses">
+  <div class="bg-gradient"></div>
+  <div class="grid-overlay"></div>
 
-    <div class="container">
-        <div class="access-card">
-            <img src="ArcaneA.png" alt="The Arcane Archives" class="logo">
+  <main class="portal-page" style="max-width:760px">
+    <div class="access-wrap">
+      <div class="access-card">
+        <img src="ArcaneA.png" alt="The Arcane Archives" class="logo">
+        <div class="badge"><span class="badge-dot"></span>Active Member</div>
+        <h1>Your Course Access</h1>
+        <p>Read your complete curriculum right here in the portal, and join the community.</p>
 
-            <div class="badge">
-                <span class="badge-dot"></span>
-                Active Member
-            </div>
-
-            <h1>Your Course Access</h1>
-            <p>Access your complete curriculum and join the community.</p>
-
-            <div class="info-box">
-                <h3>What's included</h3>
-                <ul>
-                    <li>Full course library in Notion</li>
-                    <li>Private Telegram community</li>
-                    <li>Weekly live calls and Q&A</li>
-                    <li>Real-time trade alerts</li>
-                    <li>Lifetime updates</li>
-                </ul>
-            </div>
-
-            <div class="access-buttons">
-                <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33"
-                   target="_blank"
-                   class="btn btn-notion">
-                    <span class="btn-icon">📖</span>
-                    Open Course Library
-                </a>
-
-                <a href="https://t.me/+JuTWVrAx5okwNzk0"
-                   target="_blank"
-                   class="btn btn-telegram">
-                    <span class="btn-icon">💬</span>
-                    Join Community Chat
-                </a>
-            </div>
-
-            <p class="pro-tip">
-                <strong>Tip:</strong> Bookmark both links for easy access. The community is where you'll get real-time updates and connect with other members.
-            </p>
+        <div class="info-box">
+          <h3>What's included</h3>
+          <ul>
+            <li>Full course library — read on-site in the portal</li>
+            <li>Private Telegram community</li>
+            <li>Weekly live calls and Q&amp;A</li>
+            <li>Real-time trade alerts</li>
+            <li>Lifetime updates</li>
+          </ul>
         </div>
+
+        <div class="access-buttons">
+          <a href="courses.html" class="btn btn-portal"><span>📚</span> Browse Courses in Portal</a>
+          <a href="https://www.notion.so/the2028uk/The-Arcane-Archives-2317f6a404fe80f49812c1e75ba60d33" target="_blank" rel="noopener" class="btn btn-notion"><span>📖</span> Open in Notion</a>
+          <a href="https://t.me/+JuTWVrAx5okwNzk0" target="_blank" rel="noopener" class="btn btn-telegram"><span>💬</span> Join Community Chat</a>
+        </div>
+
+        <p class="pro-tip"><strong>Tip:</strong> The community is where you'll get real-time updates and connect with other members.</p>
+      </div>
     </div>
 
-    <script type="module">
-        import { protectPage } from './auth-guard.js';
+    <div class="dash-footer">
+      <span class="version-tag">The Arcane Archives · v3.0</span>
+      <a class="btn-ghost" href="dashboard.html">← Dashboard</a>
+    </div>
+  </main>
 
-        protectPage({
-            requirePayment: true,
-            allowAdmin: true,
-            onSuccess: (user, userData) => {},
-            onFailure: () => {
-                window.location.href = 'login.html';
-            }
-        });
-    </script>
+  <script type="module" src="portal-shell.js"></script>
+  <script type="module">
+    import { protectPage } from './auth-guard.js';
+    protectPage({
+      requirePayment: true,
+      allowAdmin: true,
+      onSuccess: (user, userData) => {},
+      onFailure: () => { window.location.href = 'login.html'; }
+    });
+  </script>
 </body>
 </html>
