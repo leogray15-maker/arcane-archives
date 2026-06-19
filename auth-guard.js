@@ -2,7 +2,7 @@
 // Authentication and protection system - Silicon Valley Edition
 // Handles auth, subscription verification, admin detection, and page locking
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
 import {
     getAuth,
     onAuthStateChanged
@@ -26,8 +26,10 @@ const firebaseConfig = {
 // Admin UIDs - centralized whitelist
 export const ADMIN_UIDS = ['U4PvQ0dilBco97hgXp3Awl45JX92', 'liMx3vjGGrgAta12IlKclq3Xwvr2'];
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase (reuse an existing default app if the page already created
+// one — prevents "Firebase App named '[DEFAULT]' already exists" when a page both
+// initializes Firebase itself and loads portal-shell.js)
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
