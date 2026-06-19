@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Reader | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png">
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#030303">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="arcane-portal.css">
+  <style>
+    .reader-wrap { display: grid; grid-template-columns: 288px 1fr; gap: 1.6rem; align-items: start; }
+
+    /* Lesson list (course contents) */
+    .lessons-panel {
+      position: sticky; top: calc(var(--nav-h) + 1.5rem);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
+      max-height: calc(100vh - var(--nav-h) - 3rem); overflow: hidden; display: flex; flex-direction: column;
+    }
+    .lessons-head { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--border); }
+    .lessons-head .eyebrow { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-light); margin-bottom: 0.35rem; }
+    .lessons-head .ctitle { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.25; }
+    .lessons-head .cmeta { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); margin-top: 0.4rem; }
+    .lessons-list { overflow-y: auto; padding: 0.5rem; }
+    .lesson-link {
+      display: flex; gap: 0.6rem; align-items: baseline; padding: 0.55rem 0.7rem; border-radius: 9px;
+      color: var(--text-secondary); font-size: 0.84rem; font-weight: 500; line-height: 1.4; transition: all 0.16s; cursor: pointer;
+    }
+    .lesson-link .num { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); flex-shrink: 0; min-width: 1.4em; }
+    .lesson-link:hover { background: var(--bg-elevated); color: var(--text); }
+    .lesson-link.active { background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.28); color: var(--text); }
+    .lesson-link.active .num { color: var(--purple-light); }
+
+    /* Reading view */
+    .reader-main { min-width: 0; }
+    .reader-card {
+      position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 2.5rem 2.75rem; overflow: hidden;
+    }
+    .reader-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, var(--purple), var(--gold)); opacity:0.7; }
+    .reader-crumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .reader-crumb a { color: var(--purple-light); }
+    .reader-title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1.5rem; }
+
+    /* Prose */
+    .prose { color: var(--text-secondary); font-size: 1.02rem; line-height: 1.8; }
+    .prose > *:first-child { margin-top: 0; }
+    .prose h1, .prose h2, .prose h3 { color: var(--text); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin: 2rem 0 0.85rem; }
+    .prose h1 { font-size: 1.55rem; }
+    .prose h2 { font-size: 1.3rem; }
+    .prose h3 { font-size: 1.1rem; }
+    .prose p { margin: 0 0 1rem; }
+    .prose strong { color: var(--text); font-weight: 700; }
+    .prose em { color: var(--purple-light); font-style: italic; }
+    .prose a { color: var(--purple-light); text-decoration: underline; text-underline-offset: 2px; }
+    .prose ul, .prose ol { margin: 0 0 1.1rem 1.4rem; }
+    .prose li { margin: 0.35rem 0; }
+    .prose li.todo { list-style: none; }
+    .prose li.todo::before { content: "☐ "; color: var(--text-muted); }
+    .prose li.todo.done::before { content: "☑ "; color: var(--green); }
+    .prose blockquote { border-left: 3px solid var(--purple); background: rgba(139,92,246,0.05); padding: 0.85rem 1.2rem; border-radius: 0 10px 10px 0; margin: 0 0 1.1rem; color: var(--text-secondary); font-style: italic; }
+    .prose .callout { display: flex; gap: 0.6rem; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin: 0 0 1.1rem; }
+    .prose pre { background: #0c0c12; border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.3rem; overflow-x: auto; margin: 0 0 1.1rem; }
+    .prose code { font-family: var(--mono); font-size: 0.88em; background: var(--bg-elevated); padding: 0.1em 0.4em; border-radius: 5px; }
+    .prose pre code { background: none; padding: 0; }
+    .prose hr { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
+    .prose figure { margin: 0 0 1.2rem; }
+    .prose img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+
+    /* Lesson pager */
+    .lesson-pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .pager-btn { flex: 1; max-width: 48%; }
+    .pager-btn.next { margin-left: auto; text-align: right; }
+
+    /* States */
+    .reader-state { text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); }
+    .reader-state .spin { width: 38px; height: 38px; margin: 0 auto 1.25rem; border: 3px solid rgba(139,92,246,0.2); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .reader-state h3 { color: var(--text-secondary); font-weight: 700; margin-bottom: 0.5rem; }
+    .reader-state a.btn-primary { margin-top: 1rem; }
+
+    /* Mobile lessons toggle */
+    .lessons-toggle { display: none; }
+    @media (max-width: 900px) {
+      .reader-wrap { grid-template-columns: 1fr; }
+      .lessons-panel { position: static; max-height: none; }
+      .lessons-list { max-height: 320px; }
+      .reader-card { padding: 1.75rem 1.4rem; }
+    }
+  </style>
+</head>
+<body data-page="courses">
+  <div class="bg-gradient"></div>
+  <div class="grid-overlay"></div>
+
+  <main class="portal-page" style="max-width:1240px">
+    <div class="reader-wrap">
+      <!-- Lessons -->
+      <aside class="lessons-panel">
+        <div class="lessons-head">
+          <div class="eyebrow">Course</div>
+          <div class="ctitle" id="course-title">Loading…</div>
+          <div class="cmeta" id="course-meta"></div>
+        </div>
+        <div class="lessons-list" id="lessons-list"></div>
+      </aside>
+
+      <!-- Reading view -->
+      <div class="reader-main">
+        <div class="reader-card">
+          <div class="reader-crumb">
+            <a href="courses.html">← All Courses</a>
+          </div>
+          <h1 class="reader-title" id="reader-title">&nbsp;</h1>
+          <div class="prose" id="reader-content">
+            <div class="reader-state"><div class="spin"></div><div>Loading content…</div></div>
+          </div>
+          <div class="lesson-pager" id="lesson-pager" style="display:none">
+            <a class="btn-ghost pager-btn prev" id="pager-prev" style="visibility:hidden">← Previous</a>
+            <a class="btn-ghost pager-btn next" id="pager-next" style="visibility:hidden">Next →</a>
+          </div>
+        </div>
+
+        <div class="dash-footer">
+          <span class="version-tag">The Arcane Archives · v3.0</span>
+          <a class="btn-ghost" href="courses.html">← Courses</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="portal-shell.js"></script>
+
+  <script type="module">
+    import { protectPage } from './auth-guard.js';
+
+    const params = new URLSearchParams(location.search);
+    const courseId = (params.get('course') || '').replace(/-/g, '');
+    let lessonId = (params.get('lesson') || '').replace(/-/g, '');
+
+    const $ = id => document.getElementById(id);
+    let LESSONS = [];
+
+    // Try the live Notion API, then fall back to a committed static snapshot.
+    async function fetchPage(id) {
+      try {
+        const r = await fetch(`/api/notion?id=${id}`);
+        if (r.ok) {
+          const j = await r.json();
+          if (!j.error) return j;
+        }
+      } catch (_) {}
+      try {
+        const r = await fetch(`content/${id}.json`);
+        if (r.ok) return await r.json();
+      } catch (_) {}
+      return null;
+    }
+
+    function renderLessons(activeId) {
+      const list = $('lessons-list');
+      if (!LESSONS.length) { list.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.82rem">No sub-lessons.</div>'; return; }
+      list.innerHTML = LESSONS.map((l, i) => `
+        <a class="lesson-link${l.id === activeId ? ' active' : ''}" data-id="${l.id}">
+          <span class="num">${String(i + 1).padStart(2, '0')}</span>
+          <span>${l.title}</span>
+        </a>`).join('');
+      list.querySelectorAll('.lesson-link').forEach(el => {
+        el.addEventListener('click', () => openLesson(el.dataset.id));
+      });
+    }
+
+    function renderPager(activeId) {
+      const pager = $('lesson-pager');
+      const idx = LESSONS.findIndex(l => l.id === activeId);
+      if (idx === -1 || !LESSONS.length) { pager.style.display = 'none'; return; }
+      pager.style.display = 'flex';
+      const prev = $('pager-prev'), next = $('pager-next');
+      if (idx > 0) { prev.style.visibility = 'visible'; prev.textContent = '← ' + LESSONS[idx-1].title; prev.onclick = () => openLesson(LESSONS[idx-1].id); }
+      else prev.style.visibility = 'hidden';
+      if (idx < LESSONS.length - 1) { next.style.visibility = 'visible'; next.textContent = LESSONS[idx+1].title + ' →'; next.onclick = () => openLesson(LESSONS[idx+1].id); }
+      else next.style.visibility = 'hidden';
+    }
+
+    function notFound(id, title) {
+      $('reader-title').textContent = title || 'Lesson';
+      $('reader-content').innerHTML = `
+        <div class="reader-state">
+          <h3>This lesson isn't on-site yet</h3>
+          <p>Connect Notion (or import it) to read it here. For now you can open it directly.</p>
+          <a class="btn-primary" href="https://www.notion.so/${id}" target="_blank" rel="noopener">Open in Notion ↗</a>
+        </div>`;
+      $('lesson-pager').style.display = 'none';
+    }
+
+    async function openLesson(id) {
+      id = id.replace(/-/g, '');
+      lessonId = id;
+      const lessonMeta = LESSONS.find(l => l.id === id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      $('reader-content').innerHTML = '<div class="reader-state"><div class="spin"></div><div>Loading content…</div></div>';
+      $('reader-title').textContent = lessonMeta ? lessonMeta.title : 'Loading…';
+      renderLessons(id);
+      history.replaceState(null, '', `read.html?course=${courseId}&lesson=${id}`);
+
+      const data = await fetchPage(id);
+      if (!data) return notFound(id, lessonMeta && lessonMeta.title);
+      $('reader-title').textContent = data.title || (lessonMeta && lessonMeta.title) || 'Lesson';
+      $('reader-content').innerHTML = data.html && data.html.trim()
+        ? data.html
+        : '<div class="reader-state"><h3>This lesson has no readable content yet.</h3></div>';
+      renderPager(id);
+    }
+
+    async function init() {
+      if (!courseId) { location.href = 'courses.html'; return; }
+      const course = await fetchPage(courseId);
+      if (!course) { notFound(courseId, 'Course'); $('course-title').textContent = 'Course'; return; }
+      $('course-title').textContent = course.title || 'Course';
+      LESSONS = course.lessons || [];
+      $('course-meta').textContent = LESSONS.length ? `${LESSONS.length} lessons` : '';
+
+      if (lessonId) {
+        openLesson(lessonId);
+      } else {
+        // Show the course's own intro content + lesson list
+        $('reader-title').textContent = course.title || 'Course';
+        renderLessons(null);
+        $('reader-content').innerHTML = course.html && course.html.trim()
+          ? course.html
+          : '<div class="reader-state"><h3>Select a lesson to begin →</h3></div>';
+        $('lesson-pager').style.display = 'none';
+      }
+    }
+
+    protectPage({
+      requirePayment: true,
+      allowAdmin: true,
+      onSuccess: () => init(),
+      onFailure: () => { location.href = 'login.html'; }
+    });
+  </script>
+</body>
+</html>
