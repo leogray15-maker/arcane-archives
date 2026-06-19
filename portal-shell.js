@@ -163,7 +163,19 @@ function loadTicker() {
   document.body.appendChild(s);
 }
 
+function ensureChromeCss() {
+  const links = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.getAttribute('href') || '');
+  const hasChrome = links.some(h => h.includes('arcane-portal.css') || h.includes('portal-shell.css'));
+  if (!hasChrome) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'portal-shell.css';
+    document.head.appendChild(l);
+  }
+}
+
 function init() {
+  ensureChromeCss();
   const active = document.body.dataset.page || (location.pathname.split('/').pop() || '').replace('.html', '');
   buildShell(active);
   wireShell();
