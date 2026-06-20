@@ -840,13 +840,13 @@
         <!-- ROW 2 — Three panels -->
         <div class="intel-panels">
 
-          <!-- LEFT: Sector Intelligence heatmap -->
+          <!-- LEFT: Live Global Markets (TradingView) -->
           <div class="intel-panel-card">
             <div class="ipc-header">
-              <div class="ipc-title">Sector Intelligence</div>
+              <div class="ipc-title">Global Markets</div>
               <div class="ipc-badge">LIVE</div>
             </div>
-            <div class="ipc-body" id="sector-heatmap">
+            <div class="ipc-body" id="sector-heatmap" style="padding:0">
               <div style="font-family:var(--font-head);font-size:0.44rem;color:var(--text-muted);text-align:center;padding:1.5rem 0;">Loading market data…</div>
             </div>
           </div>
@@ -874,6 +874,22 @@
           </div>
 
         </div><!-- /intel-panels -->
+
+        <!-- ROW 3 — Live market intel widgets (TradingView · free, no key) -->
+        <div class="intel-panels">
+          <div class="intel-panel-card">
+            <div class="ipc-header"><div class="ipc-title">Market Intel Feed</div><div class="ipc-badge">LIVE</div></div>
+            <div class="ipc-body" id="tv-news" style="padding:0"></div>
+          </div>
+          <div class="intel-panel-card">
+            <div class="ipc-header"><div class="ipc-title">Technical Outlook</div><div class="ipc-badge">XAUUSD · 4H</div></div>
+            <div class="ipc-body" id="tv-technical" style="padding:0"></div>
+          </div>
+          <div class="intel-panel-card">
+            <div class="ipc-header"><div class="ipc-title">Crypto Heatmap</div><div class="ipc-badge">LIVE</div></div>
+            <div class="ipc-body" id="tv-cryptoheat" style="padding:0"></div>
+          </div>
+        </div>
 
       </div><!-- /intel-panel -->
 
@@ -1489,11 +1505,47 @@ function _renderEcoCalendar() {
   host.appendChild(wrap);
 }
 
+/* ── Live TradingView intel widgets (free, no API key) ── */
+function _tvWidget(elId, src, config) {
+  const host = document.getElementById(elId);
+  if (!host || host.dataset.tv) return;
+  host.dataset.tv = '1';
+  host.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div class="tradingview-widget-container__widget"></div></div>';
+  const s = document.createElement('script'); s.src = src; s.async = true; s.text = JSON.stringify(config);
+  host.querySelector('.tradingview-widget-container').appendChild(s);
+}
+/* Replaced: the old simulated sector grid is now the live Global Markets widget */
+function _renderSectorHeatmap() { /* no-op — see _initTvWidgets */ }
+let _tvInit = false;
+function _initTvWidgets() {
+  if (_tvInit) return; _tvInit = true;
+  _tvWidget('sector-heatmap', 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js', {
+    colorTheme:'dark', isTransparent:true, showSymbolLogo:true, width:'100%', height:420, locale:'en', tabs:[
+      { title:'Indices', symbols:[{s:'FOREXCOM:SPXUSD',d:'S&P 500'},{s:'FOREXCOM:NSXUSD',d:'Nasdaq 100'},{s:'FOREXCOM:DJI',d:'Dow 30'},{s:'INDEX:UKX',d:'FTSE 100'},{s:'INDEX:DEU40',d:'DAX'},{s:'TVC:VIX',d:'VIX'}] },
+      { title:'Commodities', symbols:[{s:'TVC:GOLD',d:'Gold'},{s:'TVC:SILVER',d:'Silver'},{s:'TVC:USOIL',d:'WTI Oil'},{s:'TVC:UKOIL',d:'Brent'},{s:'COMEX:HG1!',d:'Copper'}] },
+      { title:'Forex', symbols:[{s:'FX:EURUSD'},{s:'FX:GBPUSD'},{s:'FX:USDJPY'},{s:'TVC:DXY',d:'Dollar Index'},{s:'FX:AUDUSD'},{s:'FX:USDCAD'}] },
+      { title:'Crypto', symbols:[{s:'BINANCE:BTCUSDT',d:'Bitcoin'},{s:'BINANCE:ETHUSDT',d:'Ethereum'},{s:'BINANCE:SOLUSDT',d:'Solana'}] },
+      { title:'Bonds', symbols:[{s:'TVC:US10Y',d:'US 10Y'},{s:'TVC:GB10Y',d:'UK 10Y'},{s:'TVC:DE10Y',d:'Germany 10Y'},{s:'TVC:JP10Y',d:'Japan 10Y'}] },
+    ]
+  });
+  _tvWidget('tv-news', 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js', {
+    feedMode:'all_symbols', isTransparent:true, displayMode:'regular', width:'100%', height:440, colorTheme:'dark', locale:'en'
+  });
+  _tvWidget('tv-technical', 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js', {
+    interval:'4h', width:'100%', height:440, isTransparent:true, symbol:'OANDA:XAUUSD', showIntervalTabs:true, locale:'en', colorTheme:'dark'
+  });
+  _tvWidget('tv-cryptoheat', 'https://s3.tradingview.com/external-embedding/embed-widget-crypto-coins-heatmap.js', {
+    dataSource:'Crypto', blockSize:'market_cap_calc', blockColor:'change', locale:'en', colorTheme:'dark',
+    hasTopBar:false, isDataSetEnabled:false, isZoomEnabled:true, hasSymbolTooltip:true, width:'100%', height:440
+  });
+}
+
 /* ══ Init ══ */
 document.addEventListener('DOMContentLoaded', () => {
   renderWatchlist();
   renderSignals();
   _renderEcoCalendar();
+  _initTvWidgets();
   _renderMacroPulse({});
   loadSimpleChart('XAUUSD', '240');
   updateStats('XAUUSD');
