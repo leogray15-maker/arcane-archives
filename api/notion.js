@@ -142,9 +142,14 @@ module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const token = process.env.NOTION_TOKEN;
+  // Accept any of the common env-var names so it works regardless of what it was called
+  const token = process.env.NOTION_TOKEN || process.env.NOTION_KEY || process.env.NOTION_API_KEY
+             || process.env.NOTION_SECRET || process.env.NOTION_INTEGRATION_TOKEN || process.env.NOTION;
   if (!token) {
-    return res.status(503).json({ error: "not_configured", message: "NOTION_TOKEN env var not set" });
+    return res.status(503).json({
+      error: "not_configured",
+      message: "No Notion token found. Set an env var named NOTION_TOKEN (or NOTION_KEY) in Vercel → Settings → Environment Variables (Production), then Redeploy."
+    });
   }
 
   const id = (req.query && req.query.id ? String(req.query.id) : "").replace(/-/g, "");
