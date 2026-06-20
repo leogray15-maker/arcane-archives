@@ -54,8 +54,20 @@
       padding: 2.5rem 2.75rem; overflow: hidden;
     }
     .reader-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, var(--purple), var(--gold)); opacity:0.7; }
-    .reader-crumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; }
-    .reader-crumb a { color: var(--purple-light); }
+    .reader-crumb { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .reader-crumb a { color: var(--purple-light); cursor: pointer; }
+    .reader-crumb a:hover { text-decoration: underline; }
+    .reader-crumb .crumb-sep { color: var(--text-muted); }
+
+    /* Module index (folder contents shown in the reading pane) */
+    .mod-index { display: grid; gap: 0.6rem; margin-top: 1.25rem; }
+    .mod-card { display: flex; align-items: center; gap: 0.9rem; padding: 0.9rem 1.1rem; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+    .mod-card:hover { border-color: var(--border-hover); transform: translateX(3px); }
+    .mod-card.done { border-color: rgba(34,197,94,0.3); }
+    .mod-num { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); min-width: 1.6em; }
+    .mod-name { flex: 1; font-weight: 600; color: var(--text); }
+    .mod-arrow { color: var(--purple-light); font-weight: 700; flex-shrink: 0; }
+    .mod-card.done .mod-arrow { color: var(--green); }
     .reader-title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1.5rem; }
 
     /* Prose */
@@ -160,34 +172,19 @@
     let lessonId = (params.get('lesson') || '').replace(/-/g, '');
 
     const $ = id => document.getElementById(id);
-    let LESSONS = [];
+    let crumbs = [];           // folder path from course root → current folder
+    let LEVEL = [];            // current folder's child modules (sidebar list)
+    let ROOT_LESSONS = [];     // course root's direct children (for completion)
+    let activeLeaf = null;     // currently-open leaf module id
     let UID = null;
-    let COMPLETED = new Set();   // completed lesson IDs for this course
+    let COMPLETED = new Set();  // completed module IDs for this course
 
-    function renderProgress() {
-      const total = LESSONS.length;
-      const done = LESSONS.filter(l => COMPLETED.has(l.id)).length;
-      const wrap = $('course-progress');
-      if (!total) { wrap.style.display = 'none'; return; }
-      wrap.style.display = '';
-      $('progress-fill').style.width = Math.round(done / total * 100) + '%';
-      $('progress-count').textContent = `${done} / ${total} complete`;
-    }
+    const cur = () => crumbs[crumbs.length - 1] || { id: courseId, title: 'Course' };
+    const escAttr = s => String(s || '').replace(/"/g, '&quot;');
 
-    async function markComplete(id) {
-      if (!id || COMPLETED.has(id)) return;
-      COMPLETED.add(id);
-      renderLessons(lessonId);
-      renderProgress();
-      if (UID) {
-        const update = { ['courseProgress.' + courseId + '.' + id]: true };
-        // When every lesson is ticked, flag the whole course complete (shown on Courses grid)
-        if (LESSONS.length > 0 && LESSONS.every(l => COMPLETED.has(l.id))) {
-          update['coursesCompleted.' + courseId] = true;
-        }
-        try { await updateDoc(doc(db, 'Users', UID), update); }
-        catch (e) { console.warn('Progress save failed:', e.message); }
-      }
+    function loading() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      $('reader-content').innerHTML = '<div class="reader-state"><div class="spin"></div><div>Loading content…</div></div>';
     }
 
     // Try the live Notion API, then fall back to a committed static snapshot.
@@ -206,92 +203,175 @@
       return null;
     }
 
-    function renderLessons(activeId) {
-      const list = $('lessons-list');
-      if (!LESSONS.length) { list.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.82rem">No sub-lessons.</div>'; return; }
-      list.innerHTML = LESSONS.map((l, i) => {
-        const done = COMPLETED.has(l.id);
-        return `
-        <a class="lesson-link${l.id === activeId ? ' active' : ''}${done ? ' done' : ''}" data-id="${l.id}">
-          <span class="num">${String(i + 1).padStart(2, '0')}</span>
-          <span class="ltitle">${l.title}</span>
-          ${done ? '<span class="ldone">✓</span>' : ''}
-        </a>`;
-      }).join('');
-      list.querySelectorAll('.lesson-link').forEach(el => {
-        el.addEventListener('click', () => openLesson(el.dataset.id));
-      });
-    }
-
-    function renderPager(activeId) {
-      const pager = $('lesson-pager');
-      const idx = LESSONS.findIndex(l => l.id === activeId);
-      if (idx === -1 || !LESSONS.length) { pager.style.display = 'none'; return; }
-      pager.style.display = 'flex';
-      const prev = $('pager-prev'), next = $('pager-next');
-      if (idx > 0) { prev.style.visibility = 'visible'; prev.textContent = '← ' + LESSONS[idx-1].title; prev.onclick = () => openLesson(LESSONS[idx-1].id); }
-      else prev.style.visibility = 'hidden';
-
-      next.style.visibility = 'visible';
-      if (idx < LESSONS.length - 1) {
-        next.textContent = 'Complete & Continue →';
-        next.onclick = async () => { await markComplete(activeId); openLesson(LESSONS[idx+1].id); };
-      } else {
-        next.textContent = COMPLETED.has(activeId) ? '✓ Completed' : '✓ Mark Complete';
-        next.onclick = async () => { await markComplete(activeId); next.textContent = '✓ Completed'; };
-      }
-    }
-
     function notFound(id, title) {
-      $('reader-title').textContent = title || 'Lesson';
+      $('reader-title').textContent = title || 'Module';
       $('reader-content').innerHTML = `
         <div class="reader-state">
-          <h3>This lesson isn't on-site yet</h3>
+          <h3>This module isn't on-site yet</h3>
           <p>Connect Notion (or import it) to read it here. For now you can open it directly.</p>
           <a class="btn-primary" href="https://www.notion.so/${id}" target="_blank" rel="noopener">Open in Notion ↗</a>
         </div>`;
       $('lesson-pager').style.display = 'none';
     }
 
-    async function openLesson(id) {
-      id = id.replace(/-/g, '');
-      lessonId = id;
-      const lessonMeta = LESSONS.find(l => l.id === id);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      $('reader-content').innerHTML = '<div class="reader-state"><div class="spin"></div><div>Loading content…</div></div>';
-      $('reader-title').textContent = lessonMeta ? lessonMeta.title : 'Loading…';
-      renderLessons(id);
-      history.replaceState(null, '', `read.html?course=${courseId}&lesson=${id}`);
+    function renderProgress() {
+      const total = LEVEL.length;
+      const done = LEVEL.filter(l => COMPLETED.has(l.id)).length;
+      const wrap = $('course-progress');
+      if (!total) { wrap.style.display = 'none'; return; }
+      wrap.style.display = '';
+      $('progress-fill').style.width = Math.round(done / total * 100) + '%';
+      $('progress-count').textContent = `${done} / ${total} complete`;
+    }
 
-      const data = await fetchPage(id);
-      if (!data) return notFound(id, lessonMeta && lessonMeta.title);
-      $('reader-title').textContent = data.title || (lessonMeta && lessonMeta.title) || 'Lesson';
-      $('reader-content').innerHTML = data.html && data.html.trim()
+    function renderBreadcrumb() {
+      const parts = ['<a href="courses.html">All Courses</a>'];
+      crumbs.forEach((c, i) => {
+        const isLast = i === crumbs.length - 1 && !activeLeaf;
+        parts.push(isLast ? `<span>${c.title}</span>` : `<a data-crumb="${i}">${c.title}</a>`);
+      });
+      if (activeLeaf) {
+        const lt = (LEVEL.find(l => l.id === activeLeaf) || {}).title || '';
+        parts.push(`<span>${lt}</span>`);
+      }
+      const el = $('reader-crumb');
+      el.innerHTML = parts.join(' <span class="crumb-sep">›</span> ');
+      el.querySelectorAll('[data-crumb]').forEach(a => a.addEventListener('click', () => goToCrumb(+a.dataset.crumb)));
+    }
+
+    function renderLessons() {
+      const list = $('lessons-list');
+      if (!LEVEL.length) { list.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.82rem">No sub-modules.</div>'; return; }
+      list.innerHTML = LEVEL.map((l, i) => {
+        const done = COMPLETED.has(l.id);
+        return `
+        <a class="lesson-link${l.id === activeLeaf ? ' active' : ''}${done ? ' done' : ''}" data-id="${l.id}" data-title="${escAttr(l.title)}">
+          <span class="num">${String(i + 1).padStart(2, '0')}</span>
+          <span class="ltitle">${l.title}</span>
+          ${done ? '<span class="ldone">✓</span>' : ''}
+        </a>`;
+      }).join('');
+      list.querySelectorAll('.lesson-link').forEach(el => el.addEventListener('click', () => openItem(el.dataset.id, el.dataset.title)));
+    }
+
+    function childIndexHtml(items) {
+      return '<div class="mod-index">' + items.map((l, i) => {
+        const done = COMPLETED.has(l.id);
+        return `<a class="mod-card${done ? ' done' : ''}" data-id="${l.id}" data-title="${escAttr(l.title)}">
+          <span class="mod-num">${String(i + 1).padStart(2, '0')}</span>
+          <span class="mod-name">${l.title}</span>
+          <span class="mod-arrow">${done ? '✓' : '→'}</span>
+        </a>`;
+      }).join('') + '</div>';
+    }
+
+    function renderHeader() {
+      $('course-title').textContent = (crumbs[0] && crumbs[0].title) || 'Course';
+      $('course-meta').textContent = LEVEL.length ? `${LEVEL.length} ${LEVEL.length === 1 ? 'module' : 'modules'}` : '';
+      renderBreadcrumb();
+    }
+
+    function renderPager(id, isFolder) {
+      const pager = $('lesson-pager'), prev = $('pager-prev'), next = $('pager-next');
+      pager.style.display = 'flex';
+      if (isFolder) {
+        prev.style.visibility = 'hidden';
+        next.style.visibility = 'visible';
+        next.textContent = COMPLETED.has(id) ? '✓ Section Completed' : '✓ Mark Section Complete';
+        next.onclick = async () => { await markComplete(id); next.textContent = '✓ Section Completed'; };
+        return;
+      }
+      const idx = LEVEL.findIndex(l => l.id === id);
+      if (idx === -1) { pager.style.display = 'none'; return; }
+      if (idx > 0) { prev.style.visibility = 'visible'; prev.textContent = '← ' + LEVEL[idx-1].title; prev.onclick = () => openItem(LEVEL[idx-1].id, LEVEL[idx-1].title); }
+      else prev.style.visibility = 'hidden';
+      next.style.visibility = 'visible';
+      if (idx < LEVEL.length - 1) {
+        next.textContent = 'Complete & Continue →';
+        next.onclick = async () => { await markComplete(id); openItem(LEVEL[idx+1].id, LEVEL[idx+1].title); };
+      } else {
+        next.textContent = COMPLETED.has(id) ? '✓ Completed' : '✓ Mark Complete';
+        next.onclick = async () => { await markComplete(id); next.textContent = '✓ Completed'; };
+      }
+    }
+
+    function enterFolder(data) {
+      activeLeaf = null;
+      LEVEL = data.lessons || [];
+      renderHeader();
+      renderLessons();
+      renderProgress();
+      let html = (data.html && data.html.trim()) ? data.html : '';
+      if (LEVEL.length) html += childIndexHtml(LEVEL);
+      $('reader-title').textContent = cur().title;
+      $('reader-content').innerHTML = html || '<div class="reader-state"><h3>Select a module to begin →</h3></div>';
+      $('reader-content').querySelectorAll('.mod-card').forEach(el => el.addEventListener('click', () => openItem(el.dataset.id, el.dataset.title)));
+      renderPager(cur().id, true);
+    }
+
+    function enterLeaf(id, data) {
+      activeLeaf = id;
+      renderHeader();
+      renderLessons();
+      renderProgress();
+      $('reader-title').textContent = data.title || 'Module';
+      $('reader-content').innerHTML = (data.html && data.html.trim())
         ? data.html
-        : '<div class="reader-state"><h3>This lesson has no readable content yet.</h3></div>';
-      renderPager(id);
+        : '<div class="reader-state"><h3>This module has no readable content yet.</h3></div>';
+      renderPager(id, false);
+    }
+
+    async function openItem(id, title) {
+      id = (id || '').replace(/-/g, '');
+      loading();
+      const data = await fetchPage(id);
+      if (!data) { notFound(id, title); return; }
+      if ((data.lessons || []).length > 0) {
+        crumbs.push({ id, title: data.title || title || 'Section' });
+        enterFolder(data);
+      } else {
+        enterLeaf(id, data);
+      }
+      history.replaceState(null, '', `read.html?course=${courseId}&lesson=${id}`);
+    }
+
+    async function goToCrumb(i) {
+      crumbs = crumbs.slice(0, i + 1);
+      activeLeaf = null;
+      loading();
+      const c = crumbs[i];
+      const data = await fetchPage(c.id);
+      if (!data) { notFound(c.id, c.title); return; }
+      enterFolder(data);
+      history.replaceState(null, '', `read.html?course=${courseId}&lesson=${c.id}`);
+    }
+
+    async function markComplete(id) {
+      if (!id || COMPLETED.has(id)) return;
+      COMPLETED.add(id);
+      renderLessons();
+      renderProgress();
+      $('reader-content').querySelectorAll(`.mod-card[data-id="${id}"]`).forEach(el => {
+        el.classList.add('done'); const a = el.querySelector('.mod-arrow'); if (a) a.textContent = '✓';
+      });
+      if (UID) {
+        const update = { ['courseProgress.' + courseId + '.' + id]: true };
+        if (ROOT_LESSONS.length > 0 && ROOT_LESSONS.every(l => COMPLETED.has(l.id))) {
+          update['coursesCompleted.' + courseId] = true;
+        }
+        try { await updateDoc(doc(db, 'Users', UID), update); }
+        catch (e) { console.warn('Progress save failed:', e.message); }
+      }
     }
 
     async function init() {
       if (!courseId) { location.href = 'courses.html'; return; }
-      const course = await fetchPage(courseId);
-      if (!course) { notFound(courseId, 'Course'); $('course-title').textContent = 'Course'; return; }
-      $('course-title').textContent = course.title || 'Course';
-      LESSONS = course.lessons || [];
-      $('course-meta').textContent = LESSONS.length ? `${LESSONS.length} lessons` : '';
-      renderProgress();
-
-      if (lessonId) {
-        openLesson(lessonId);
-      } else {
-        // Show the course's own intro content + lesson list
-        $('reader-title').textContent = course.title || 'Course';
-        renderLessons(null);
-        $('reader-content').innerHTML = course.html && course.html.trim()
-          ? course.html
-          : '<div class="reader-state"><h3>Select a lesson to begin →</h3></div>';
-        $('lesson-pager').style.display = 'none';
-      }
+      const root = await fetchPage(courseId);
+      if (!root) { notFound(courseId, 'Course'); $('course-title').textContent = 'Course'; return; }
+      crumbs = [{ id: courseId, title: root.title || 'Course' }];
+      ROOT_LESSONS = root.lessons || [];
+      enterFolder(root);
+      if (lessonId && lessonId !== courseId) openItem(lessonId, '');
     }
 
     protectPage({
