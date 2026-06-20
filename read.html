@@ -180,7 +180,12 @@
       renderLessons(lessonId);
       renderProgress();
       if (UID) {
-        try { await updateDoc(doc(db, 'Users', UID), { ['courseProgress.' + courseId + '.' + id]: true }); }
+        const update = { ['courseProgress.' + courseId + '.' + id]: true };
+        // When every lesson is ticked, flag the whole course complete (shown on Courses grid)
+        if (LESSONS.length > 0 && LESSONS.every(l => COMPLETED.has(l.id))) {
+          update['coursesCompleted.' + courseId] = true;
+        }
+        try { await updateDoc(doc(db, 'Users', UID), update); }
         catch (e) { console.warn('Progress save failed:', e.message); }
       }
     }

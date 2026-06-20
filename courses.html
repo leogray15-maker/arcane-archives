@@ -93,6 +93,10 @@
       font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; padding: 0.18rem 0.5rem; border-radius: 6px;
       background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); color: var(--gold);
     }
+    .course-tag.done { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #86efac; }
+    .course-card.done { border-color: rgba(34,197,94,0.3); }
+    .course-card.done::before { background: linear-gradient(90deg, var(--green), #86efac); opacity: 1; }
+    .course-card.done .course-open { color: var(--green); }
     .course-card.locked { cursor: pointer; }
     .course-card.locked .course-name { color: var(--text-secondary); }
     .course-lock { color: var(--text-muted); font-size: 0.78rem; }
@@ -325,6 +329,7 @@
   ];
 
   window.IS_LOCKED = false; // set true for non-members by auth guard
+  window.COURSES_DONE = {};  // map of completed courseId -> true (from member profile)
 
   function renderRealms(filter = '') {
     const root = document.getElementById('realms-root');
@@ -337,7 +342,9 @@
       if (!cards.length) return '';
       const cardsHtml = cards.map((c, i) => {
         const idx = String(realm.courses.indexOf(c) + 1).padStart(2, '0');
-        const tags = (c.v ? `<span class="course-tag">${c.v} Value</span>` : '');
+        const done = !!window.COURSES_DONE[c.id];
+        const doneTag = done ? '<span class="course-tag done">✓ Completed</span>' : '';
+        const tags = (c.v ? `<span class="course-tag">${c.v} Value</span>` : '') + doneTag;
         if (window.IS_LOCKED) {
           return `<a class="course-card locked" href="dashboard.html">
             <div class="course-top"><span class="course-idx">${idx}</span><span class="course-lock">🔒</span></div>
@@ -345,8 +352,8 @@
             <div class="course-tags">${tags}</div>
           </a>`;
         }
-        return `<a class="course-card" href="read.html?course=${c.id}">
-          <div class="course-top"><span class="course-idx">${idx}</span><span class="course-open">→</span></div>
+        return `<a class="course-card${done ? ' done' : ''}" href="read.html?course=${c.id}">
+          <div class="course-top"><span class="course-idx">${idx}</span><span class="course-open">${done ? '✓' : '→'}</span></div>
           <div class="course-name">${c.t}</div>
           <div class="course-tags">${tags}</div>
         </a>`;
@@ -395,8 +402,10 @@
       if (!isAdmin && !isPaid) {
         window.IS_LOCKED = true;
         document.getElementById('upgrade-banner').classList.add('visible');
-        if (typeof renderRealms === 'function') renderRealms(document.getElementById('course-search').value || '');
       }
+      // Completed-course badges (from the member's saved progress)
+      window.COURSES_DONE = data.coursesCompleted || {};
+      if (typeof renderRealms === 'function') renderRealms(document.getElementById('course-search').value || '');
       if (isAdmin) document.getElementById('sidebar-admin-link').style.display = '';
 
       const balance = data.balance ?? 0;
