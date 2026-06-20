@@ -262,42 +262,38 @@
     all() { return { ..._data }; },
   };
 
-  /* ─── Auto-update shared navbar ticker ─── */
+  /* ─── Shared navbar ticker — LIVE TradingView Ticker Tape (free, no key) ─── */
   function updateTicker() {
-    const TICKER_MAP = [
-      { sym: 'XAU',    label: 'GOLD',    dec: 2 },
-      { sym: 'XAG',    label: 'SILVER',  dec: 3 },
-      { sym: 'BTC',    label: 'BTC/USD', dec: 0 },
-      { sym: 'ETH',    label: 'ETH/USD', dec: 2 },
-      { sym: 'WTI',    label: 'WTI OIL', dec: 2 },
-      { sym: 'SPX',    label: 'S&P 500', dec: 2 },
-      { sym: 'VIX',    label: 'VIX',     dec: 2 },
-      { sym: 'DXY',    label: 'DXY',     dec: 2 },
-      { sym: 'US10Y',  label: 'US 10Y',  dec: 3 },
-      { sym: 'EURUSD', label: 'EUR/USD', dec: 4 },
-      { sym: 'GBPUSD', label: 'GBP/USD', dec: 4 },
-      { sym: 'USDJPY', label: 'USD/JPY', dec: 2 },
-    ];
-
-    const track = document.getElementById('nav-ticker-track');
-    if (!track) return;
-
-    const items = [...TICKER_MAP, ...TICKER_MAP].map(t => {
-      const d     = _data[t.sym];
-      const price = d ? fmtPrice(d.price, t.dec) : '—';
-      const chg   = d ? fmtChg(d.change) : '';
-      const cls   = d ? d.dir : 'flat';
-      return `<div class="nav-ticker-item">
-        <span class="t-sym">${t.label}</span>
-        <span class="t-price">${price}</span>
-        ${chg ? `<span class="t-chg ${cls}">${chg}</span>` : ''}
-      </div>`;
-    }).join('');
-
-    track.innerHTML = items;
+    const wrap = document.querySelector('.nav-ticker-wrap');
+    if (!wrap || wrap.dataset.tv) return;   // mount once
+    wrap.dataset.tv = '1';
+    wrap.innerHTML = '<div class="tradingview-widget-container" style="width:100%"><div class="tradingview-widget-container__widget"></div></div>';
+    const s = document.createElement('script');
+    s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+    s.async = true;
+    s.text = JSON.stringify({
+      symbols: [
+        { proName: 'TVC:GOLD',         title: 'Gold' },
+        { proName: 'TVC:SILVER',       title: 'Silver' },
+        { proName: 'BINANCE:BTCUSDT',  title: 'BTC' },
+        { proName: 'BINANCE:ETHUSDT',  title: 'ETH' },
+        { proName: 'TVC:USOIL',        title: 'WTI Oil' },
+        { proName: 'FOREXCOM:SPXUSD',  title: 'S&P 500' },
+        { proName: 'TVC:VIX',          title: 'VIX' },
+        { proName: 'TVC:DXY',          title: 'Dollar' },
+        { proName: 'TVC:US10Y',        title: 'US 10Y' },
+        { proName: 'FX:EURUSD',        title: 'EUR/USD' },
+        { proName: 'FX:GBPUSD',        title: 'GBP/USD' },
+        { proName: 'FX:USDJPY',        title: 'USD/JPY' },
+      ],
+      showSymbolLogo: true, isTransparent: true, displayMode: 'compact', colorTheme: 'dark', locale: 'en'
+    });
+    wrap.querySelector('.tradingview-widget-container').appendChild(s);
   }
 
   ArcanePrices.subscribe(updateTicker);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateTicker);
+  else updateTicker();
 
   /* ─── Boot ───────────────────────────────── */
   refresh();
