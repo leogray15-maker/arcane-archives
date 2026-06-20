@@ -148,7 +148,10 @@ module.exports = async (req, res) => {
   if (!token) {
     return res.status(503).json({
       error: "not_configured",
-      message: "No Notion token found. Set an env var named NOTION_TOKEN (or NOTION_KEY) in Vercel → Settings → Environment Variables (Production), then Redeploy."
+      message: "No Notion token found. Set an env var named NOTION_TOKEN (or NOTION_KEY) in Vercel → Settings → Environment Variables (Production), then Redeploy.",
+      // Diagnostic: which Notion-related env keys this deployment can actually see
+      // (names only, never values). Empty array = the var is NOT in this build.
+      presentEnvKeys: Object.keys(process.env).filter(k => /notion/i.test(k))
     });
   }
 
