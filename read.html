@@ -187,10 +187,13 @@
       $('reader-content').innerHTML = '<div class="reader-state"><div class="spin"></div><div>Loading content…</div></div>';
     }
 
-    // Try the live Notion API, then fall back to a committed static snapshot.
+    // Try the live Notion API (with a timeout), then fall back to a committed snapshot.
     async function fetchPage(id) {
       try {
-        const r = await fetch(`/api/notion?id=${id}`);
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 12000);
+        const r = await fetch(`/api/notion?id=${id}`, { signal: ctrl.signal });
+        clearTimeout(t);
         if (r.ok) {
           const j = await r.json();
           if (!j.error) return j;
@@ -203,15 +206,19 @@
       return null;
     }
 
-    function notFound(id, title) {
+    function showError(id, title, retryFn) {
       $('reader-title').textContent = title || 'Module';
       $('reader-content').innerHTML = `
         <div class="reader-state">
-          <h3>This module isn't on-site yet</h3>
-          <p>Connect Notion (or import it) to read it here. For now you can open it directly.</p>
-          <a class="btn-primary" href="https://www.notion.so/${id}" target="_blank" rel="noopener">Open in Notion ↗</a>
+          <h3>Couldn't load this content</h3>
+          <p>The connection may be slow or interrupted. Try again, or open it directly in Notion.</p>
+          <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+            <button class="btn-primary" id="retry-btn">↻ Retry</button>
+            <a class="btn-ghost" href="https://www.notion.so/${id}" target="_blank" rel="noopener">Open in Notion ↗</a>
+          </div>
         </div>`;
       $('lesson-pager').style.display = 'none';
+      const rb = $('retry-btn'); if (rb && retryFn) rb.addEventListener('click', retryFn);
     }
 
     function renderProgress() {
@@ -325,7 +332,7 @@
       id = (id || '').replace(/-/g, '');
       loading();
       const data = await fetchPage(id);
-      if (!data) { notFound(id, title); return; }
+      if (!data) { showError(id, title, () => openItem(id, title)); return; }
       if ((data.lessons || []).length > 0) {
         crumbs.push({ id, title: data.title || title || 'Section' });
         enterFolder(data);
@@ -341,7 +348,7 @@
       loading();
       const c = crumbs[i];
       const data = await fetchPage(c.id);
-      if (!data) { notFound(c.id, c.title); return; }
+      if (!data) { showError(c.id, c.title, () => goToCrumb(i)); return; }
       enterFolder(data);
       history.replaceState(null, '', `read.html?course=${courseId}&lesson=${c.id}`);
     }
@@ -367,7 +374,7 @@
     async function init() {
       if (!courseId) { location.href = 'courses.html'; return; }
       const root = await fetchPage(courseId);
-      if (!root) { notFound(courseId, 'Course'); $('course-title').textContent = 'Course'; return; }
+      if (!root) { $('course-title').textContent = 'Course'; showError(courseId, 'Course', init); return; }
       crumbs = [{ id: courseId, title: root.title || 'Course' }];
       ROOT_LESSONS = root.lessons || [];
       enterFolder(root);
