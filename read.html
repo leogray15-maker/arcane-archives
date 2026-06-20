@@ -36,6 +36,16 @@
     .lesson-link:hover { background: var(--bg-elevated); color: var(--text); }
     .lesson-link.active { background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.05)); border: 1px solid rgba(139,92,246,0.28); color: var(--text); }
     .lesson-link.active .num { color: var(--purple-light); }
+    .lesson-link .ltitle { flex: 1; min-width: 0; }
+    .lesson-link .ldone { color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .lesson-link.done .num { color: var(--green); }
+    .lesson-link.done .ltitle { color: var(--text-muted); }
+
+    /* Course progress */
+    .cprogress { margin-top: 0.85rem; }
+    .cprogress-bar { height: 6px; border-radius: 6px; background: var(--bg-elevated); overflow: hidden; }
+    .cprogress-fill { height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, var(--purple), var(--gold)); transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .cprogress-count { font-family: var(--mono); font-size: 0.62rem; color: var(--text-muted); margin-top: 0.45rem; letter-spacing: 0.04em; }
 
     /* Reading view */
     .reader-main { min-width: 0; }
@@ -107,6 +117,10 @@
           <div class="eyebrow">Course</div>
           <div class="ctitle" id="course-title">Loading…</div>
           <div class="cmeta" id="course-meta"></div>
+          <div class="cprogress" id="course-progress" style="display:none">
+            <div class="cprogress-bar"><div class="cprogress-fill" id="progress-fill"></div></div>
+            <div class="cprogress-count" id="progress-count">0 / 0 complete</div>
+          </div>
         </div>
         <div class="lessons-list" id="lessons-list"></div>
       </aside>
@@ -123,7 +137,7 @@
           </div>
           <div class="lesson-pager" id="lesson-pager" style="display:none">
             <a class="btn-ghost pager-btn prev" id="pager-prev" style="visibility:hidden">← Previous</a>
-            <a class="btn-ghost pager-btn next" id="pager-next" style="visibility:hidden">Next →</a>
+            <button class="btn-primary pager-btn next" id="pager-next" style="visibility:hidden">Complete &amp; Continue →</button>
           </div>
         </div>
 
@@ -138,7 +152,8 @@
   <script type="module" src="portal-shell.js"></script>
 
   <script type="module">
-    import { protectPage } from './auth-guard.js';
+    import { protectPage, db } from './auth-guard.js';
+    import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
     const params = new URLSearchParams(location.search);
     const courseId = (params.get('course') || '').replace(/-/g, '');
@@ -146,6 +161,29 @@
 
     const $ = id => document.getElementById(id);
     let LESSONS = [];
+    let UID = null;
+    let COMPLETED = new Set();   // completed lesson IDs for this course
+
+    function renderProgress() {
+      const total = LESSONS.length;
+      const done = LESSONS.filter(l => COMPLETED.has(l.id)).length;
+      const wrap = $('course-progress');
+      if (!total) { wrap.style.display = 'none'; return; }
+      wrap.style.display = '';
+      $('progress-fill').style.width = Math.round(done / total * 100) + '%';
+      $('progress-count').textContent = `${done} / ${total} complete`;
+    }
+
+    async function markComplete(id) {
+      if (!id || COMPLETED.has(id)) return;
+      COMPLETED.add(id);
+      renderLessons(lessonId);
+      renderProgress();
+      if (UID) {
+        try { await updateDoc(doc(db, 'Users', UID), { ['courseProgress.' + courseId + '.' + id]: true }); }
+        catch (e) { console.warn('Progress save failed:', e.message); }
+      }
+    }
 
     // Try the live Notion API, then fall back to a committed static snapshot.
     async function fetchPage(id) {
@@ -166,11 +204,15 @@
     function renderLessons(activeId) {
       const list = $('lessons-list');
       if (!LESSONS.length) { list.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:0.82rem">No sub-lessons.</div>'; return; }
-      list.innerHTML = LESSONS.map((l, i) => `
-        <a class="lesson-link${l.id === activeId ? ' active' : ''}" data-id="${l.id}">
+      list.innerHTML = LESSONS.map((l, i) => {
+        const done = COMPLETED.has(l.id);
+        return `
+        <a class="lesson-link${l.id === activeId ? ' active' : ''}${done ? ' done' : ''}" data-id="${l.id}">
           <span class="num">${String(i + 1).padStart(2, '0')}</span>
-          <span>${l.title}</span>
-        </a>`).join('');
+          <span class="ltitle">${l.title}</span>
+          ${done ? '<span class="ldone">✓</span>' : ''}
+        </a>`;
+      }).join('');
       list.querySelectorAll('.lesson-link').forEach(el => {
         el.addEventListener('click', () => openLesson(el.dataset.id));
       });
@@ -184,8 +226,15 @@
       const prev = $('pager-prev'), next = $('pager-next');
       if (idx > 0) { prev.style.visibility = 'visible'; prev.textContent = '← ' + LESSONS[idx-1].title; prev.onclick = () => openLesson(LESSONS[idx-1].id); }
       else prev.style.visibility = 'hidden';
-      if (idx < LESSONS.length - 1) { next.style.visibility = 'visible'; next.textContent = LESSONS[idx+1].title + ' →'; next.onclick = () => openLesson(LESSONS[idx+1].id); }
-      else next.style.visibility = 'hidden';
+
+      next.style.visibility = 'visible';
+      if (idx < LESSONS.length - 1) {
+        next.textContent = 'Complete & Continue →';
+        next.onclick = async () => { await markComplete(activeId); openLesson(LESSONS[idx+1].id); };
+      } else {
+        next.textContent = COMPLETED.has(activeId) ? '✓ Completed' : '✓ Mark Complete';
+        next.onclick = async () => { await markComplete(activeId); next.textContent = '✓ Completed'; };
+      }
     }
 
     function notFound(id, title) {
@@ -225,6 +274,7 @@
       $('course-title').textContent = course.title || 'Course';
       LESSONS = course.lessons || [];
       $('course-meta').textContent = LESSONS.length ? `${LESSONS.length} lessons` : '';
+      renderProgress();
 
       if (lessonId) {
         openLesson(lessonId);
@@ -242,7 +292,12 @@
     protectPage({
       requirePayment: true,
       allowAdmin: true,
-      onSuccess: () => init(),
+      onSuccess: (user, userData) => {
+        UID = user.uid;
+        const cp = userData && userData.courseProgress && userData.courseProgress[courseId];
+        COMPLETED = new Set(cp ? Object.keys(cp) : []);
+        init();
+      },
       onFailure: () => { location.href = 'login.html'; }
     });
   </script>
