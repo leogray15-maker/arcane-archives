@@ -1041,6 +1041,70 @@
 /* Economic calendar day header (custom) */
 .eco-day-hdr { font-family:var(--font-head); font-size:0.46rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); padding:0.5rem 0.2rem 0.35rem; border-bottom:1px solid var(--border); margin-top:0.3rem; }
 .eco-day-hdr:first-child { margin-top:0; }
+
+/* ════════════════════════════════════════════════════════════════
+   POLISHED INTEL PANELS — match the dashboard card system
+   (elevated surfaces, generous radius, soft shadows, clean headers)
+═══════════════════════════════════════════════════════════════════ */
+#intel-panel { padding: 1.1rem 1.15rem 2.2rem; }
+.intel-strip  { gap: 0.8rem; margin-bottom: 1rem; }
+.intel-panels { gap: 0.9rem;  margin-bottom: 0.9rem; }
+
+/* Sentiment metric cards */
+.intel-metric-card {
+  background: linear-gradient(180deg, var(--bg-4), var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 1rem 0.85rem;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.intel-metric-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.12); box-shadow: 0 16px 36px rgba(0,0,0,0.5); }
+.intel-metric-card::before { height: 2px; opacity: 0.55; }
+.imc-label { font-size: 0.46rem; color: var(--text-dim); letter-spacing: 0.12em; margin-bottom: 0.5rem; }
+.imc-value { font-size: 1.32rem; }
+.imc-sub   { font-size: 0.55rem; }
+
+/* Panel cards (Global Markets, Macro Pulse, Calendar, Feed, Technical, Crypto) */
+.intel-panel-card {
+  background: linear-gradient(180deg, var(--bg-4), var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 14px 38px rgba(0,0,0,0.4);
+  position: relative;
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+.intel-panel-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 3; border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--teal), var(--gold)); opacity: 0; transition: opacity .3s ease;
+}
+.intel-panel-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.12); box-shadow: 0 22px 50px rgba(0,0,0,0.55); }
+.intel-panel-card:hover::before { opacity: 0.85; }
+
+.ipc-header { padding: 0.8rem 1rem; background: rgba(255,255,255,0.015); border-bottom: 1px solid var(--border); }
+.ipc-title  { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text); display:flex; align-items:center; gap:0.45rem; }
+.ipc-title::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); flex-shrink:0; }
+.ipc-badge  { font-size: 0.46rem; padding: 0.16rem 0.5rem; border-radius: 5px; }
+.ipc-body   { padding: 0.9rem 1rem; }
+
+/* Sentiment strip section sub-labels inside the heatmap */
+.sector-group-label { font-size:0.44rem; color:var(--text-dim); letter-spacing:0.12em; }
+.sector-cell { border-radius: 8px; padding: 0.5rem 0.55rem; }
+.sector-cell-sym { font-size:0.52rem; }
+.sector-cell-chg { font-size:0.6rem; }
+
+/* Macro pulse rows a touch airier */
+.macro-row { padding: 0.5rem 0.1rem; }
+.macro-phase { border-radius: 10px; }
+
+/* Economic events as soft inset rows */
+.eco-event { border-radius: 10px; padding: 0.6rem 0.7rem; background: var(--bg-3); border: 1px solid var(--border); margin-bottom: 0.5rem; transition: border-color .2s ease; }
+.eco-event:hover { border-color: rgba(255,255,255,0.12); }
+
+/* Watchlist rows in the side panel — give them card feel too */
+.wl-item { border-radius: 10px; margin: 0 0.3rem 0.3rem; padding: 0.5rem 0.6rem; border:1px solid transparent; }
+.wl-item:hover { background: var(--bg-3); border-color: var(--border); }
+.wl-item.active { background: rgba(139,92,246,0.08); border-color: var(--border-hi); border-left: 2px solid var(--teal); }
 </style>
 <script>
 /* Claim the nav ticker BEFORE arcane-prices.js loads so its shared
@@ -1690,7 +1754,18 @@ async function _renderCryptoHeat(){
         <div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
     }).join('')+'</div>';
   }catch(e){
-    if(!host.querySelector('.cheat-grid')) host.innerHTML='<div class="intel-load">Crypto market data unavailable — retrying…</div>';
+    // Graceful fallback — render from live ArcanePrices crypto data so the panel is never empty
+    const d=_latestPriceData||{};
+    const coins=[['BTC',d.BTC],['ETH',d.ETH],['SOL',d.SOL]].filter(([,v])=>v&&v.price!=null);
+    if(coins.length){
+      host.innerHTML='<div class="cheat-grid">'+coins.map(([sym,v])=>{
+        const chg=v.change??0; const col=chg>=0?'#22c55e':'#ef4444'; const a=Math.min(0.6,0.12+Math.abs(chg)*0.05);
+        return `<div class="cheat-cell" style="background:${col}${_hex(a)};border-color:${col}33">
+          <div class="cheat-sym">${sym}</div><div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
+      }).join('')+'</div>';
+    } else if(!host.querySelector('.cheat-grid')){
+      host.innerHTML='<div class="intel-load">Crypto market loading…</div>';
+    }
   } finally { _cheatBusy=false; }
 }
 
