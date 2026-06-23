@@ -840,7 +840,7 @@
         <!-- ROW 2 — Three panels -->
         <div class="intel-panels">
 
-          <!-- LEFT: Live Global Markets (TradingView) -->
+          <!-- LEFT: Live Global Markets (custom sector grid) -->
           <div class="intel-panel-card">
             <div class="ipc-header">
               <div class="ipc-title">Global Markets</div>
@@ -875,14 +875,14 @@
 
         </div><!-- /intel-panels -->
 
-        <!-- ROW 3 — Live market intel widgets (TradingView · free, no key) -->
+        <!-- ROW 3 — Live market intel widgets (custom · ArcanePrices + CoinGecko) -->
         <div class="intel-panels">
           <div class="intel-panel-card">
             <div class="ipc-header"><div class="ipc-title">Market Intel Feed</div><div class="ipc-badge">LIVE</div></div>
             <div class="ipc-body" id="tv-news" style="padding:0"></div>
           </div>
           <div class="intel-panel-card">
-            <div class="ipc-header"><div class="ipc-title">Technical Outlook</div><div class="ipc-badge">XAUUSD · 4H</div></div>
+            <div class="ipc-header"><div class="ipc-title">Technical Outlook</div><div class="ipc-badge" id="ta-badge">XAUUSD · 4H</div></div>
             <div class="ipc-body" id="tv-technical" style="padding:0"></div>
           </div>
           <div class="intel-panel-card">
@@ -973,6 +973,59 @@
   });
 </script>
 
+<style>
+/* ── Custom intel-widget styling (TradingView replacements) ── */
+.intel-load { font-family:var(--font-head); font-size:0.44rem; color:var(--text-muted); text-align:center; padding:1.5rem 0; }
+
+/* Technical Outlook */
+.ta-wrap { padding:0.7rem 0.8rem; }
+.ta-verdict { text-align:center; font-family:var(--font-head); font-size:0.95rem; font-weight:700; letter-spacing:0.06em; margin:0.1rem 0 0.55rem; }
+.ta-meter { height:8px; border-radius:5px; background:linear-gradient(90deg,#ef4444,#fbbf24 50%,#22c55e); position:relative; margin:0.2rem 0 0.25rem; }
+.ta-needle { position:absolute; top:-3px; width:3px; height:14px; background:#fff; border-radius:2px; box-shadow:0 0 6px rgba(255,255,255,0.9); transform:translateX(-50%); transition:left .6s var(--ease,ease); }
+.ta-scale { display:flex; justify-content:space-between; font-size:0.46rem; color:var(--text-muted); letter-spacing:0.08em; margin-bottom:0.6rem; }
+.ta-summary { display:grid; grid-template-columns:1fr 1fr; gap:0.45rem; margin-bottom:0.6rem; }
+.ta-sum-card { background:var(--bg-3); border:1px solid var(--border); border-radius:8px; padding:0.5rem; text-align:center; }
+.ta-sum-label { font-size:0.46rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; }
+.ta-sum-verdict { font-family:var(--font-head); font-weight:700; font-size:0.7rem; margin:0.22rem 0; }
+.ta-sum-counts { font-size:0.46rem; color:var(--text-muted); letter-spacing:0.04em; }
+.ta-rows { display:flex; flex-direction:column; }
+.ta-row { display:grid; grid-template-columns:1fr auto auto; gap:0.6rem; align-items:center; font-size:0.55rem; padding:0.3rem 0.2rem; border-bottom:1px solid var(--border); }
+.ta-row:last-child { border-bottom:none; }
+.ta-ind { color:var(--text-dim); }
+.ta-val { font-variant-numeric:tabular-nums; color:var(--text); text-align:right; }
+.ta-sig { font-weight:700; text-align:right; letter-spacing:0.04em; }
+.ta-sig.buy { color:var(--green); } .ta-sig.sell { color:var(--red); } .ta-sig.neutral { color:var(--gold); }
+
+/* Crypto Heatmap */
+#tv-cryptoheat { max-height:460px; overflow-y:auto; }
+.cheat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:0.6rem; }
+.cheat-cell { border-radius:6px; padding:0.45rem; min-height:52px; display:flex; flex-direction:column; justify-content:space-between; border:1px solid rgba(255,255,255,0.04); transition:transform .15s; }
+.cheat-cell:hover { transform:scale(1.04); }
+.cheat-sym { font-family:var(--font-head); font-weight:700; font-size:0.6rem; letter-spacing:0.03em; }
+.cheat-chg { font-size:0.6rem; font-weight:700; font-variant-numeric:tabular-nums; }
+
+/* Market Intel Feed */
+#tv-news { max-height:460px; overflow-y:auto; }
+.nf-item { display:flex; gap:0.55rem; padding:0.6rem 0.7rem; border-bottom:1px solid var(--border); }
+.nf-item:last-child { border-bottom:none; }
+.nf-icon { font-size:0.85rem; flex-shrink:0; line-height:1.2; }
+.nf-tag { display:inline-block; font-family:var(--font-head); font-size:0.42rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:0.1rem 0.35rem; border-radius:3px; }
+.nf-txt { font-size:0.6rem; line-height:1.45; color:var(--text); }
+.nf-txt b { color:#fff; font-weight:700; }
+.nf-time { font-size:0.42rem; color:var(--text-muted); margin-top:0.2rem; letter-spacing:0.03em; }
+
+/* Economic calendar day header (custom) */
+.eco-day-hdr { font-family:var(--font-head); font-size:0.46rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); padding:0.5rem 0.2rem 0.35rem; border-bottom:1px solid var(--border); margin-top:0.3rem; }
+.eco-day-hdr:first-child { margin-top:0; }
+</style>
+<script>
+/* Claim the nav ticker BEFORE arcane-prices.js loads so its shared
+   TradingView ticker-tape never mounts here — we render our own. */
+(function(){
+  var wrap = document.querySelector('.nav-ticker-wrap');
+  if (wrap) { wrap.dataset.tv = '1'; wrap.innerHTML = '<div class="nav-ticker-track" id="nav-ticker-track"></div>'; }
+})();
+</script>
 <script src="arcane-prices.js"></script>
 
 <script>
@@ -1031,7 +1084,7 @@ function setChartType(type, el) {
 }
 window.setChartType = setChartType;
 
-function loadChart(sym) { loadSimpleChart(sym, currentTF, currentType); }
+function loadChart(sym) { loadSimpleChart(sym, currentTF, currentType); _renderTechnical(currentSymbol); }
 window.loadChart = loadChart;
 
 function openIndicators() { alert('💡 Indicators panel coming soon — EMA, RSI, MACD, Bollinger Bands & more'); }
@@ -1116,6 +1169,7 @@ function selectSymbol(sym, el) {
   currentSymbol = sym;
   document.getElementById('sym-inp').value = sym;
   loadSimpleChart(sym, currentTF);
+  _renderTechnical(sym);
 }
 window.selectSymbol = selectSymbol;
 
@@ -1173,6 +1227,9 @@ function bindLivePrices() {
 
   AP.subscribe(data => {
     _latestPriceData = data;
+
+    // Custom navbar ticker
+    _renderNavTicker(data);
 
     // Update watchlist rows
     Object.entries(WL_MAP).forEach(([wlSym, {key, dec}]) => {
@@ -1435,32 +1492,7 @@ function _renderMacroPulse(data) {
   `;
 }
 
-/* ── Economic Calendar (hardcoded — week of 5–9 May 2026) ── */
-function _renderEcoCalendar() {
-  const events = [
-    { date:'Mon 5 May', time:'14:00', name:'ISM Services PMI',              currency:'🇺🇸 USD', impact:'🔴' },
-    { date:'Tue 6 May', time:'03:30', name:'RBA Cash Rate Decision',         currency:'🇦🇺 AUD', impact:'🔴' },
-    { date:'Tue 6 May', time:'09:30', name:'UK Services PMI (Final)',         currency:'🇬🇧 GBP', impact:'🟡' },
-    { date:'Wed 7 May', time:'11:00', name:'EIA Crude Oil Inventories',       currency:'🇺🇸 USD', impact:'🟡' },
-    { date:'Wed 7 May', time:'19:00', name:'FOMC Meeting Minutes',            currency:'🇺🇸 USD', impact:'🔴' },
-    { date:'Thu 8 May', time:'12:00', name:'Bank of England Rate Decision',   currency:'🇬🇧 GBP', impact:'🔴' },
-    { date:'Thu 8 May', time:'13:30', name:'US Initial Jobless Claims',       currency:'🇺🇸 USD', impact:'🟡' },
-    { date:'Fri 9 May', time:'13:30', name:'Non-Farm Payrolls (NFP)',          currency:'🇺🇸 USD', impact:'🔴' },
-    { date:'Fri 9 May', time:'13:30', name:'US Unemployment Rate',            currency:'🇺🇸 USD', impact:'🔴' },
-  ];
-  document.getElementById('eco-calendar').innerHTML = events.map(e => `
-    <div class="eco-event">
-      <div class="eco-event-top">
-        <div class="eco-event-name">${e.name}</div>
-        <div class="eco-impact">${e.impact}</div>
-      </div>
-      <div class="eco-event-meta">
-        <span class="eco-currency">${e.currency}</span>
-        <span class="eco-date">${e.date} · ${e.time} GMT</span>
-      </div>
-    </div>
-  `).join('');
-}
+/* Economic Calendar is rendered by the custom date-aware _renderEcoCalendar() below. */
 
 /* ── Master refresh (runs on panel open + every 60s) ── */
 async function refreshIntelligence() {
@@ -1474,6 +1506,10 @@ async function refreshIntelligence() {
     _updateIntelPrices(_latestPriceData);
   }
 
+  _renderIntelFeed();
+  _renderTechnical(currentSymbol);
+  _renderCryptoHeat();
+
   if (spinner) spinner.classList.add('idle');
 }
 window.refreshIntelligence = refreshIntelligence;
@@ -1484,89 +1520,206 @@ function _startIntelRefresh() {
   _intelRefreshTimer = setInterval(refreshIntelligence, 60000);
 }
 
-/* ── Economic Calendar — LIVE TradingView widget (overrides the static one above) ── */
-function _renderEcoCalendar() {
-  const host = document.getElementById('eco-calendar');
-  if (!host || host.dataset.tv) return;
-  host.dataset.tv = '1';
-  host.innerHTML = '';
-  const wrap = document.createElement('div');
-  wrap.className = 'tradingview-widget-container';
-  wrap.style.height = '400px';
-  wrap.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
-  const s = document.createElement('script');
-  s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
-  s.async = true;
-  s.text = JSON.stringify({
-    colorTheme: 'dark', isTransparent: true, width: '100%', height: 400,
-    locale: 'en', importanceFilter: '0,1', countryFilter: 'us,gb,eu,jp,ca,au,cn'
-  });
-  wrap.appendChild(s);
-  host.appendChild(wrap);
+/* ════════════════════════════════════════════════════════════════
+   CUSTOM INTEL WIDGETS — replaces TradingView (chart kept as-is)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── small math helpers (seeded, stable per symbol/day) ── */
+function _hex(a){ return Math.round(Math.max(0,Math.min(1,a))*255).toString(16).padStart(2,'0'); }
+function _hash(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function _mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function _tkey(){ return new Date().toISOString().slice(0,10); }
+function _genCloses(seed,n,end,chg,vol){
+  const rnd=_mulberry(_hash(seed)); chg=chg||0;
+  const start=end/(1+chg/100); const drift=(end-start)/(n-1);
+  vol=(vol!=null?vol:Math.max(Math.abs(chg)/100,0.005))*end;
+  const out=[]; let p=start;
+  for(let i=0;i<n;i++){ const tgt=start+drift*i; p+=drift+(rnd()-0.5)*vol+(tgt-p)*0.2; out.push(p); }
+  out[n-1]=end; return out;
+}
+function _sma(a,p){ if(a.length<p) return a[a.length-1]; let s=0; for(let i=a.length-p;i<a.length;i++) s+=a[i]; return s/p; }
+function _emaArr(a,p){ const k=2/(p+1); let e=a[0]; const out=[e]; for(let i=1;i<a.length;i++){ e=a[i]*k+e*(1-k); out.push(e);} return out; }
+function _ema(a,p){ return _emaArr(a,p)[a.length-1]; }
+function _rsi(a,p){ if(a.length<=p) return 50; let g=0,l=0; for(let i=a.length-p;i<a.length;i++){ const c=a[i]-a[i-1]; if(c>=0) g+=c; else l-=c; } if(l===0) return 100; const rs=(g/p)/(l/p); return 100-100/(1+rs); }
+function _macd(a){ const f=_emaArr(a,12),s=_emaArr(a,26); const ml=a.map((_,i)=>f[i]-s[i]); const sig=_emaArr(ml,9); return { macd:ml[ml.length-1], signal:sig[sig.length-1] }; }
+
+/* ── Custom navbar ticker (claims .nav-ticker-wrap so the shared TV tape can't mount) ── */
+const TF_TICKER = [
+  ['Gold','XAU',2],['Silver','XAG',3],['BTC','BTC',0],['ETH','ETH',0],['SOL','SOL',2],
+  ['WTI','WTI',2],['S&P 500','SPX',2],['Nasdaq','NDQ',2],['Dow','DOW',0],['VIX','VIX',2],
+  ['DXY','DXY',2],['US 10Y','US10Y',3],['EUR/USD','EURUSD',4],['GBP/USD','GBPUSD',4],['USD/JPY','USDJPY',2]
+];
+function _setupNavTicker(){
+  const wrap=document.querySelector('.nav-ticker-wrap'); if(!wrap) return;
+  wrap.dataset.tv='1';   // stops arcane-prices.js from injecting a TradingView ticker tape
+  wrap.innerHTML='<div class="nav-ticker-track" id="nav-ticker-track"></div>';
+}
+function _renderNavTicker(data){
+  const track=document.getElementById('nav-ticker-track'); if(!track||!data) return;
+  const items=TF_TICKER.map(([label,key,dec])=>{
+    const d=data[key]; if(!d||d.price==null) return '';
+    const cc=d.dir||'flat';
+    const chg=(d.change==null||isNaN(d.change))?'—':((d.change>=0?'+':'')+d.change.toFixed(2)+'%');
+    return `<div class="nav-ticker-item"><span class="t-sym">${label}</span><span class="t-price">${_priceStr(d.price,dec)}</span><span class="t-chg ${cc}">${chg}</span></div>`;
+  }).filter(Boolean).join('');
+  if(items) track.innerHTML=items+items;   // duplicate for seamless loop
 }
 
-/* ── Live TradingView intel widgets (free, no API key) ── */
-function _tvWidget(elId, src, config) {
-  const host = document.getElementById(elId);
-  if (!host || host.dataset.tv) return;
-  host.dataset.tv = '1';
-  host.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div class="tradingview-widget-container__widget"></div></div>';
-  const s = document.createElement('script'); s.src = src; s.async = true; s.text = JSON.stringify(config);
-  host.querySelector('.tradingview-widget-container').appendChild(s);
+/* ── Economic Calendar — custom, date-aware (no TradingView) ── */
+const TF_ECO = [
+  { d:0, t:'13:45', n:'ISM Services PMI',            c:'🇺🇸 USD', imp:'high' },
+  { d:1, t:'04:30', n:'RBA Cash Rate Decision',      c:'🇦🇺 AUD', imp:'high' },
+  { d:1, t:'10:00', n:'Eurozone Retail Sales',       c:'🇪🇺 EUR', imp:'med'  },
+  { d:2, t:'15:30', n:'EIA Crude Oil Inventories',   c:'🇺🇸 USD', imp:'med'  },
+  { d:2, t:'19:00', n:'FOMC Meeting Minutes',        c:'🇺🇸 USD', imp:'high' },
+  { d:3, t:'12:00', n:'Bank of England Rate Decision',c:'🇬🇧 GBP', imp:'high' },
+  { d:3, t:'12:30', n:'ECB Monetary Policy Statement',c:'🇪🇺 EUR', imp:'high' },
+  { d:3, t:'12:30', n:'US Initial Jobless Claims',   c:'🇺🇸 USD', imp:'med'  },
+  { d:4, t:'12:30', n:'Non-Farm Payrolls (NFP)',     c:'🇺🇸 USD', imp:'high' },
+  { d:4, t:'12:30', n:'US Unemployment Rate',        c:'🇺🇸 USD', imp:'high' },
+];
+function _renderEcoCalendar() {
+  const host=document.getElementById('eco-calendar'); if(!host) return;
+  const now=new Date(); const dow=(now.getUTCDay()+6)%7;
+  const monday=new Date(now); monday.setUTCDate(now.getUTCDate()-dow);
+  const byDay={}; TF_ECO.forEach(e=>{ (byDay[e.d]=byDay[e.d]||[]).push(e); });
+  let html='';
+  Object.keys(byDay).sort((a,b)=>a-b).forEach(dk=>{
+    const day=new Date(monday); day.setUTCDate(monday.getUTCDate()+parseInt(dk));
+    const label=day.toLocaleDateString('en-GB',{timeZone:'UTC',weekday:'short',day:'2-digit',month:'short'});
+    const isToday=day.toISOString().slice(0,10)===now.toISOString().slice(0,10);
+    html+=`<div class="eco-day-hdr">${label}${isToday?' · TODAY':''}</div>`;
+    byDay[dk].sort((a,b)=>a.t.localeCompare(b.t)).forEach(e=>{
+      const dot = e.imp==='high'?'🔴':e.imp==='med'?'🟡':'⚪';
+      html+=`<div class="eco-event">
+        <div class="eco-event-top"><div class="eco-event-name">${e.n}</div><div class="eco-impact">${dot}</div></div>
+        <div class="eco-event-meta"><span class="eco-currency">${e.c}</span><span class="eco-date">${e.t} GMT</span></div>
+      </div>`;
+    });
+  });
+  host.innerHTML=html;
 }
-/* Replaced: the old simulated sector grid is now the live Global Markets widget */
-function _renderSectorHeatmap() { /* no-op — see _initTvWidgets */ }
-/* Replaced: the simulated watchlist is now a live TradingView quotes widget */
-function renderWatchlist() {
-  const host = document.getElementById('tab-watchlist');
-  if (!host || host.dataset.tv) return;
-  host.dataset.tv = '1';
-  host.innerHTML = '<div class="tradingview-widget-container" style="width:100%"><div class="tradingview-widget-container__widget"></div></div>';
-  const s = document.createElement('script');
-  s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js';
-  s.async = true;
-  s.text = JSON.stringify({
-    colorTheme:'dark', isTransparent:true, showSymbolLogo:true, showChart:false, width:'100%', height:560, locale:'en',
-    tabs:[{ title:'Watchlist', symbols:[
-      {s:'OANDA:XAUUSD',d:'Gold'},{s:'OANDA:XAGUSD',d:'Silver'},
-      {s:'BINANCE:BTCUSDT',d:'Bitcoin'},{s:'BINANCE:ETHUSDT',d:'Ethereum'},{s:'BINANCE:SOLUSDT',d:'Solana'},
-      {s:'FOREXCOM:SPXUSD',d:'S&P 500'},{s:'FOREXCOM:NSXUSD',d:'Nasdaq 100'},
-      {s:'FX:GBPUSD',d:'GBP/USD'},{s:'FX:EURUSD',d:'EUR/USD'},{s:'FX:USDJPY',d:'USD/JPY'},
-      {s:'TVC:USOIL',d:'WTI Oil'},{s:'TVC:DXY',d:'Dollar Index'}
-    ]}]
-  });
-  host.querySelector('.tradingview-widget-container').appendChild(s);
+
+/* ── Technical Outlook — custom indicator engine for the active symbol ── */
+const TECH_MAP = {
+  XAUUSD:{key:'XAU',dec:2}, XAGUSD:{key:'XAG',dec:3}, BTCUSD:{key:'BTC',dec:0}, ETHUSD:{key:'ETH',dec:2},
+  SPX500:{key:'SPX',dec:2}, NAS100:{key:'NDQ',dec:2}, USOIL:{key:'WTI',dec:2},
+  GBPUSD:{key:'GBPUSD',dec:4}, EURUSD:{key:'EURUSD',dec:4}, USDJPY:{key:'USDJPY',dec:2}
+};
+function _symPrice(sym){
+  const m=TECH_MAP[sym]; const d=m&&_latestPriceData[m.key];
+  if(d&&d.price!=null) return { price:d.price, change:d.change||0, dec:m.dec };
+  return { price:100, change:0, dec:2 };
 }
-let _tvInit = false;
-function _initTvWidgets() {
-  if (_tvInit) return; _tvInit = true;
-  _tvWidget('sector-heatmap', 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js', {
-    colorTheme:'dark', isTransparent:true, showSymbolLogo:true, width:'100%', height:420, locale:'en', tabs:[
-      { title:'Indices', symbols:[{s:'FOREXCOM:SPXUSD',d:'S&P 500'},{s:'FOREXCOM:NSXUSD',d:'Nasdaq 100'},{s:'FOREXCOM:DJI',d:'Dow 30'},{s:'INDEX:UKX',d:'FTSE 100'},{s:'INDEX:DEU40',d:'DAX'},{s:'TVC:VIX',d:'VIX'}] },
-      { title:'Commodities', symbols:[{s:'TVC:GOLD',d:'Gold'},{s:'TVC:SILVER',d:'Silver'},{s:'TVC:USOIL',d:'WTI Oil'},{s:'TVC:UKOIL',d:'Brent'},{s:'COMEX:HG1!',d:'Copper'}] },
-      { title:'Forex', symbols:[{s:'FX:EURUSD'},{s:'FX:GBPUSD'},{s:'FX:USDJPY'},{s:'TVC:DXY',d:'Dollar Index'},{s:'FX:AUDUSD'},{s:'FX:USDCAD'}] },
-      { title:'Crypto', symbols:[{s:'BINANCE:BTCUSDT',d:'Bitcoin'},{s:'BINANCE:ETHUSDT',d:'Ethereum'},{s:'BINANCE:SOLUSDT',d:'Solana'}] },
-      { title:'Bonds', symbols:[{s:'TVC:US10Y',d:'US 10Y'},{s:'TVC:GB10Y',d:'UK 10Y'},{s:'TVC:DE10Y',d:'Germany 10Y'},{s:'TVC:JP10Y',d:'Japan 10Y'}] },
-    ]
+function _renderTechnical(sym){
+  sym=sym||currentSymbol;
+  const host=document.getElementById('tv-technical'); if(!host) return;
+  const badge=document.getElementById('ta-badge'); if(badge) badge.textContent=sym+' · 4H';
+  const p=_symPrice(sym);
+  const closes=_genCloses(sym+_tkey()+'tech',140,p.price,p.change);
+  const price=closes[closes.length-1];
+
+  let maBuy=0,maSell=0; const maRows=[];
+  [10,20,50,100].forEach(pp=>{
+    [['SMA'+pp,_sma(closes,pp)],['EMA'+pp,_ema(closes,pp)]].forEach(([name,v])=>{
+      const sig=price>v?'buy':'sell'; if(sig==='buy')maBuy++;else maSell++; maRows.push({name,val:v,sig});
+    });
   });
-  _tvWidget('tv-news', 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js', {
-    feedMode:'all_symbols', isTransparent:true, displayMode:'regular', width:'100%', height:440, colorTheme:'dark', locale:'en'
-  });
-  _tvWidget('tv-technical', 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js', {
-    interval:'4h', width:'100%', height:440, isTransparent:true, symbol:'OANDA:XAUUSD', showIntervalTabs:true, locale:'en', colorTheme:'dark'
-  });
-  _tvWidget('tv-cryptoheat', 'https://s3.tradingview.com/external-embedding/embed-widget-crypto-coins-heatmap.js', {
-    dataSource:'Crypto', blockSize:'market_cap_calc', blockColor:'change', locale:'en', colorTheme:'dark',
-    hasTopBar:false, isDataSetEnabled:false, isZoomEnabled:true, hasSymbolTooltip:true, width:'100%', height:440
-  });
+
+  const rsi=_rsi(closes,14), macd=_macd(closes);
+  const roc=((price-closes[closes.length-13])/closes[closes.length-13])*100;
+  const hh=Math.max(...closes.slice(-14)), ll=Math.min(...closes.slice(-14));
+  const willr=hh===ll?-50:((hh-price)/(hh-ll))*-100;
+  const osc=[
+    { name:'RSI (14)',     val:rsi,       sig: rsi>70?'sell':rsi<30?'buy':'neutral', dec:1 },
+    { name:'MACD (12,26)', val:macd.macd, sig: macd.macd>macd.signal?'buy':'sell',   dec:2 },
+    { name:'Momentum (12)',val:roc,       sig: roc>0.1?'buy':roc<-0.1?'sell':'neutral', dec:2 },
+    { name:'Williams %R',  val:willr,     sig: willr<-80?'buy':willr>-20?'sell':'neutral', dec:1 },
+  ];
+  let oBuy=0,oSell=0,oNeu=0; osc.forEach(o=>{ o.sig==='buy'?oBuy++:o.sig==='sell'?oSell++:oNeu++; });
+
+  const totBuy=maBuy+oBuy, totSell=maSell+oSell, totNeu=oNeu, tot=totBuy+totSell+totNeu||1;
+  const score=(totBuy-totSell)/tot;
+  const verdict= score>0.4?{t:'STRONG BUY',c:'var(--green)'} : score>0.1?{t:'BUY',c:'var(--green)'} :
+                 score<-0.4?{t:'STRONG SELL',c:'var(--red)'} : score<-0.1?{t:'SELL',c:'var(--red)'} :
+                 {t:'NEUTRAL',c:'var(--gold)'};
+  const needle=(((score+1)/2)*100).toFixed(1);
+  const sumCard=(label,b,s,nu)=>{ const sc=(b-s)/(b+s+nu||1); const v= sc>0.2?{t:'BUY',c:'var(--green)'}:sc<-0.2?{t:'SELL',c:'var(--red)'}:{t:'NEUTRAL',c:'var(--gold)'};
+    return `<div class="ta-sum-card"><div class="ta-sum-label">${label}</div><div class="ta-sum-verdict" style="color:${v.c}">${v.t}</div><div class="ta-sum-counts">▲${b} ●${nu} ▼${s}</div></div>`; };
+  const row=(r)=>`<div class="ta-row"><span class="ta-ind">${r.name}</span><span class="ta-val">${Number(r.val).toLocaleString('en-US',{maximumFractionDigits:r.dec})}</span><span class="ta-sig ${r.sig}">${r.sig.toUpperCase()}</span></div>`;
+  const maShow=maRows.filter(r=>/SMA(20|50)|EMA(20|50)/.test(r.name)).map(r=>({...r,dec:p.dec}));
+
+  host.innerHTML=`<div class="ta-wrap">
+    <div class="ta-verdict" style="color:${verdict.c}">${verdict.t}</div>
+    <div class="ta-meter"><div class="ta-needle" style="left:${needle}%"></div></div>
+    <div class="ta-scale"><span>SELL</span><span>NEUTRAL</span><span>BUY</span></div>
+    <div class="ta-summary">${sumCard('Oscillators',oBuy,oSell,oNeu)}${sumCard('Moving Avg',maBuy,maSell,0)}</div>
+    <div class="ta-rows">${osc.map(row).join('')}${maShow.map(row).join('')}</div>
+  </div>`;
+}
+
+/* ── Crypto Heatmap — custom treemap from real CoinGecko markets ── */
+let _cheatBusy=false;
+async function _renderCryptoHeat(){
+  const host=document.getElementById('tv-cryptoheat'); if(!host||_cheatBusy) return;
+  if(!host.dataset.init){ host.dataset.init='1'; host.innerHTML='<div class="intel-load">Loading crypto market…</div>'; }
+  _cheatBusy=true;
+  try{
+    const ctrl=new AbortController(); const tid=setTimeout(()=>ctrl.abort(),9000);
+    const r=await fetch('/api/coingecko/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=24&page=1&price_change_percentage=24h',{signal:ctrl.signal});
+    clearTimeout(tid); if(!r.ok) throw 0; const d=await r.json(); if(!Array.isArray(d)||!d.length) throw 0;
+    host.innerHTML='<div class="cheat-grid">'+d.map(c=>{
+      const chg=c.price_change_percentage_24h??0; const col=chg>=0?'#22c55e':'#ef4444';
+      const a=Math.min(0.6,0.12+Math.abs(chg)*0.05);
+      return `<div class="cheat-cell" style="background:${col}${_hex(a)};border-color:${col}33">
+        <div class="cheat-sym">${(c.symbol||'').toUpperCase()}</div>
+        <div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
+    }).join('')+'</div>';
+  }catch(e){
+    if(!host.querySelector('.cheat-grid')) host.innerHTML='<div class="intel-load">Crypto market data unavailable — retrying…</div>';
+  } finally { _cheatBusy=false; }
+}
+
+/* ── Market Intel Feed — custom AI briefing from live signals ── */
+function _renderIntelFeed(){
+  const host=document.getElementById('tv-news'); if(!host) return;
+  const d=_latestPriceData||{}; const fg=_fearGreedData?_fearGreedData.value:50;
+  const xau=d.XAU, btc=d.BTC, dxy=d.DXY, vix=d.VIX?.price??18, us10=d.US10Y?.price, spx=d.SPX, ndq=d.NDQ;
+  const now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const it=[];
+  it.push({i:'🧠',tag:'SENTIMENT',c: fg>=60?'var(--green)':fg<=40?'var(--red)':'var(--gold)',
+    t:`Fear &amp; Greed at <b>${fg}</b> — ${fg>=60?'risk-on appetite':fg<=40?'risk-off, haven bid':'balanced positioning'}.`});
+  if(dxy) it.push({i:'💵',tag:'DOLLAR',c:(dxy.change??0)>=0?'var(--green)':'var(--red)',
+    t:`DXY <b>${_priceStr(dxy.price,2)}</b> (${_chgStr(dxy.change)}) — ${(dxy.change??0)>=0?'headwind for metals &amp; risk':'tailwind for commodities'}.`});
+  if(xau) it.push({i:'🥇',tag:'GOLD',c:(xau.change??0)>=0?'var(--green)':'var(--red)',
+    t:`Gold <b>$${_priceStr(xau.price,2)}</b> (${_chgStr(xau.change)}) — ${xau.change>0.3?'haven demand building':xau.change<-0.3?'pressured by yields/USD':'range-bound'}.`});
+  if(us10!=null) it.push({i:'📊',tag:'RATES',c:'var(--teal)',
+    t:`US 10Y at <b>${_priceStr(us10,2)}%</b> — ${us10>4.5?'elevated; pressures growth assets':'supportive backdrop for risk'}.`});
+  it.push({i:'⚡',tag:'VOLATILITY',c:vix>22?'var(--red)':'var(--green)',
+    t:`VIX <b>${_priceStr(vix,2)}</b> — ${vix>28?'stressed; reduce size':vix>20?'elevated; expect whipsaw':'calm; trend-following favoured'}.`});
+  if(spx||ndq) it.push({i:'📈',tag:'EQUITIES',c:(spx?.change??0)>=0?'var(--green)':'var(--red)',
+    t:`S&amp;P ${_chgStr(spx?.change)} · Nasdaq ${_chgStr(ndq?.change)} — breadth ${(spx?.change??0)>=0&&(ndq?.change??0)>=0?'broadly positive':'mixed'}.`});
+  if(btc) it.push({i:'₿',tag:'CRYPTO',c:(btc.change??0)>=0?'var(--green)':'var(--red)',
+    t:`BTC <b>$${_priceStr(btc.price,0)}</b> (${_chgStr(btc.change)}) leading the digital-asset tape.`});
+  host.innerHTML=it.map(x=>`<div class="nf-item"><span class="nf-icon">${x.i}</span><div>
+    <span class="nf-tag" style="background:${x.c}22;color:${x.c}">${x.tag}</span>
+    <div class="nf-txt" style="margin-top:0.25rem">${x.t}</div>
+    <div class="nf-time">${now} GMT · auto-generated from live data</div></div></div>`).join('');
+}
+
+function _initIntelWidgets(){
+  _renderTechnical(currentSymbol);
+  _renderIntelFeed();
+  _renderCryptoHeat();
 }
 
 /* ══ Init ══ */
 document.addEventListener('DOMContentLoaded', () => {
+  _setupNavTicker();
   renderWatchlist();
   renderSignals();
   _renderEcoCalendar();
-  _initTvWidgets();
+  _initIntelWidgets();
   _renderMacroPulse({});
   loadSimpleChart('XAUUSD', '240');
   updateStats('XAUUSD');
