@@ -8,8 +8,32 @@
   <title>Trading Floor | The Arcane Archives</title>
   <link rel="icon" href="ArcaneA.png"/>
   <link rel="stylesheet" href="arcane-globals.css"/>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
   <style>
+    /* ── Match the site-wide clean design (Inter + JetBrains Mono, purple accent, flat dark) ── */
+    :root {
+      --font-head: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:      'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    }
+    /* Flat backdrop — drop the starfield + scanlines used by the old "command-deck" look */
+    #stars-canvas, .scanlines { display: none !important; }
+    /* Numeric / ticker values in the clean tabular mono face, like the rest of the site */
+    .nav-ticker-item,
+    #live-price, #live-chg,
+    .wl-price, .wl-chg, .wl-sym,
+    .qs-val,
+    .sector-cell-chg,
+    .imc-value, #fg-value,
+    .sig-level span,
+    .eco-date,
+    .cheat-sym, .cheat-chg,
+    .ta-val, .nf-time {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+    }
     body { overflow: hidden; }
 
     /* ── Full-height layout ── */
@@ -82,9 +106,9 @@
     }
     .view-tab:hover:not(.active) { color: var(--text); background: var(--bg-4); }
     .view-tab.active {
-      background: rgba(0,212,255,0.18);
+      background: rgba(139,92,246,0.18);
       color: var(--teal);
-      box-shadow: 0 0 12px rgba(0,212,255,0.2);
+      box-shadow: 0 0 12px rgba(139,92,246,0.2);
     }
 
     .tf-sep { width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem; flex-shrink: 0; }
@@ -219,8 +243,8 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      border: 1px solid rgba(0,212,255,0.12);
-      box-shadow: inset 0 0 40px rgba(0,212,255,0.03), 0 0 24px rgba(0,212,255,0.05);
+      border: 1px solid rgba(139,92,246,0.12);
+      box-shadow: inset 0 0 40px rgba(139,92,246,0.03), 0 0 24px rgba(139,92,246,0.05);
       transition: opacity 0.2s ease;
     }
 
@@ -429,7 +453,7 @@
     .macro-status.low      { background: rgba(0,230,118,0.12); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
     .macro-status.elevated { background: var(--gold-glow); color: var(--gold); border: 1px solid var(--border-gold); }
     .macro-status.high     { background: var(--red-glow); color: var(--red); border: 1px solid var(--border-red); }
-    .macro-status.strong   { background: rgba(0,212,255,0.12); color: var(--teal); border: 1px solid var(--border-hi); }
+    .macro-status.strong   { background: rgba(139,92,246,0.12); color: var(--teal); border: 1px solid var(--border-hi); }
     .macro-status.weak     { background: var(--red-glow); color: var(--red); border: 1px solid var(--border-red); }
 
     .macro-phase {
@@ -464,13 +488,13 @@
     .intel-spinner {
       width: 8px;
       height: 8px;
-      border: 1.5px solid rgba(0,212,255,0.2);
+      border: 1.5px solid rgba(139,92,246,0.2);
       border-top-color: var(--teal);
       border-radius: 50%;
       flex-shrink: 0;
       animation: tf-spin 0.9s linear infinite;
     }
-    .intel-spinner.idle { animation: none; border-top-color: rgba(0,212,255,0.2); }
+    .intel-spinner.idle { animation: none; border-top-color: rgba(139,92,246,0.2); }
     @keyframes tf-spin { to { transform: rotate(360deg); } }
 
     /* ── Economic Calendar ── */
@@ -605,7 +629,7 @@
       transition: background 0.15s, border-left-color 0.15s;
     }
     .wl-item:hover { background: var(--bg-3); }
-    .wl-item.active { background: rgba(0,212,255,0.04); border-left-color: var(--teal); }
+    .wl-item.active { background: rgba(139,92,246,0.04); border-left-color: var(--teal); }
     .wl-left { display: flex; align-items: center; gap: 0.45rem; }
     .wl-dir-arrow { font-size: 0.55rem; line-height: 1; flex-shrink: 0; }
     .wl-dir-arrow.up   { color: var(--green); }
@@ -1029,17 +1053,7 @@
 <script src="arcane-prices.js"></script>
 
 <script>
-/* ══ Stars ══ */
-(function(){
-  const canvas = document.getElementById('stars-canvas');
-  const ctx = canvas.getContext('2d');
-  let stars = [];
-  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
-  function initStars(){ stars=[]; for(let i=0;i<150;i++) stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2,a:Math.random()*0.5+0.05,da:(Math.random()-0.5)*0.006}); }
-  function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); stars.forEach(s=>{ ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${s.a})`; ctx.fill(); s.a+=s.da; if(s.a>0.7||s.a<0.05) s.da*=-1; }); requestAnimationFrame(draw); }
-  resize(); initStars(); draw();
-  window.addEventListener('resize',()=>{ resize(); initStars(); });
-})();
+/* ══ Stars ══ — removed for a clean, flat backdrop matching the rest of the site */
 
 /* ══ TradingView chart ══ */
 let currentSymbol = 'XAUUSD';
@@ -1062,7 +1076,7 @@ function loadSimpleChart(symbol, tf, type) {
     symbol, interval:tvTF, style:tvStyle, theme:'dark', timezone:'Etc/UTC', locale:'en',
     toolbar_bg:'#0a0a0f', hide_top_toolbar:'0', hide_legend:'0',
     allow_symbol_change:'0', save_image:'0',
-    backgroundColor:'rgba(10,10,15,1)', gridColor:'rgba(0,212,255,0.05)',
+    backgroundColor:'rgba(10,10,15,1)', gridColor:'rgba(139,92,246,0.05)',
     up_color:'#00e676', down_color:'#ff3b3b',
   });
 
