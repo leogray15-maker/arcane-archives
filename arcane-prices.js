@@ -7,8 +7,11 @@
  *  • CoinGecko /global        → total market cap, BTC dominance
  *  • metals.live              → XAU (Gold), XAG (Silver) spot prices
  *  • open.er-api.com          → FX rates (EUR, GBP, JPY, AUD, CAD, CHF vs USD)
- *  • Simulation               → DOW, NDQ, VIX, WTI, BRENT, NATGAS, COPPER,
- *                               US10Y, UK10Y, DE10Y, JP10Y, DXY, SPX
+ *  • /api/quotes (Twelve Data)→ real SPX, DOW, NDQ, VIX, DXY, WTI, BRENT,
+ *                               NATGAS, COPPER, bond yields + FX % change,
+ *                               IF TWELVEDATA_API_KEY is set server-side.
+ *  • Simulation               → fallback for any of the above when no key /
+ *                               provider data is available (nothing breaks).
  */
 
 (function () {
@@ -213,6 +216,20 @@
     set('DXY', dxyNew, parseFloat(((dxyNew - 104.12) / 104.12 * 100).toFixed(2)));
   }
 
+  /* ─── Real quotes (Twelve Data via server-side /api/quotes proxy) ─── */
+  async function fetchQuotes() {
+    try {
+      const r = await fetch('/api/quotes', { cache: 'no-cache' });
+      if (!r.ok) return;
+      const j = await r.json();
+      if (!j || !j.data) return;
+      // Overlay real values on top of the simulated defaults
+      Object.entries(j.data).forEach(([sym, v]) => {
+        if (v && v.price != null) set(sym, v.price, v.change == null ? _data[sym]?.change : v.change);
+      });
+    } catch (e) { /* keep simulated values — provider/key may be absent */ }
+  }
+
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
     await Promise.allSettled([
@@ -221,7 +238,8 @@
       fetchMetals(),
       fetchFX(),
     ]);
-    simulateMarkets();
+    simulateMarkets();          // fills defaults / fallback
+    await fetchQuotes();        // real data overrides where available
     notify();
     _initialised = true;
   }
