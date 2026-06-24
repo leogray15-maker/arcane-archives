@@ -104,14 +104,41 @@ async function yahooAll() {
   return data;
 }
 
-/* ─── Alpha Vantage (authenticated → never IP-blocked like Yahoo/CoinGecko).
- *     Used for commodities + the US 10Y, which kept falling back to sim.
- *     Free tier is tiny (≈25/day), and this data is daily-resolution anyway,
- *     so we cache it AV_TTL (default 6h) → ~20 calls/day, within the limit. ─── */
+/* ─── Alpha Vantage — PRIMARY TradFi source. Authenticated, so (unlike free
+ *     Yahoo/CoinGecko) it is never IP-blocked from a datacenter. Covers
+ *     indices (via ETF proxies), metals (ETF proxies), the dollar index,
+ *     commodities and the US 10Y. Free tier is small, so cache AV_TTL
+ *     (default 1h). If your key is the 25/day tier, raise AV_TTL (e.g. 43200
+ *     = 12h) or trim AV_PROXY. % changes are exact; proxy prices are scaled
+ *     index levels (SPY≈SPX/10 and DIA≈DJI/100 are exact by design). ─── */
 const AV = 'https://www.alphavantage.co/query';
 const AV_KEY = process.env.ALPHAVANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || '';
-const AV_TTL = (parseInt(process.env.AV_TTL || '21600', 10)) * 1000;
+const AV_TTL = (parseInt(process.env.AV_TTL || '3600', 10)) * 1000;
 let _avCache = { t: 0, data: {} };
+
+// internal symbol -> [ Alpha Vantage ETF symbol, price scale to index level ]
+const AV_PROXY = [
+  ['SPX', 'SPY', 10.0],
+  ['DOW', 'DIA', 100.0],
+  ['NDQ', 'QQQ', 41.0],
+  ['XAU', 'GLD', 10.8],
+  ['XAG', 'SLV', 1.10],
+  ['DXY', 'UUP', 3.71],
+];
+
+async function avQuote(sym) {
+  try {
+    const r = await fetch(`${AV}?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(AV_KEY)}`, { headers: { 'User-Agent': UA } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const g = j && j['Global Quote'];
+    if (!g) return null; // rate-limit Note/Information → no Global Quote
+    const price = parseFloat(g['05. price']);
+    const chg = parseFloat(String(g['10. change percent'] || '').replace('%', ''));
+    if (isNaN(price)) return null;
+    return { price, change: isNaN(chg) ? null : chg };
+  } catch (e) { return null; }
+}
 
 async function avSeries(url) {
   try {
@@ -133,7 +160,8 @@ async function avAll() {
   if (!AV_KEY) return {};
   if (Object.keys(_avCache.data).length && Date.now() - _avCache.t < AV_TTL) return _avCache.data;
   const q = (fn, extra) => `${AV}?function=${fn}&interval=daily${extra || ''}&apikey=${encodeURIComponent(AV_KEY)}`;
-  const [wti, brent, ng, copper, us10] = await Promise.all([
+  const [proxies, wti, brent, ng, copper, us10] = await Promise.all([
+    Promise.all(AV_PROXY.map(([, sym]) => avQuote(sym))),
     avSeries(q('WTI')),
     avSeries(q('BRENT')),
     avSeries(q('NATURAL_GAS')),
@@ -141,6 +169,10 @@ async function avAll() {
     avSeries(q('TREASURY_YIELD', '&maturity=10year')),
   ]);
   const out = {};
+  AV_PROXY.forEach(([key, , scale], i) => {
+    const v = proxies[i];
+    if (v) out[key] = { price: v.price * scale, change: v.change };
+  });
   if (wti) out.WTI = wti;
   if (brent) out.BRENT = brent;
   if (ng) out.NATGAS = ng;
