@@ -1490,7 +1490,7 @@ function _renderSectorHeatmap(data) {
       { sym:'S&P 500',  p: data.SPX?.price, c: data.SPX?.change, dec:2 },
       { sym:'NASDAQ',   p: data.NDQ?.price, c: data.NDQ?.change, dec:2 },
       { sym:'DOW',      p: data.DOW?.price, c: data.DOW?.change, dec:0 },
-      { sym:'FTSE 100', p: 8082.5,           c: 0.42,              dec:1 },
+      { sym:'FTSE 100', p: data.FTSE?.price ?? 8082.5, c: data.FTSE?.change ?? 0.42, dec:1 },
     ]},
     { label: 'FOREX', assets: [
       { sym:'GBP/USD', p: data.GBPUSD?.price, c: data.GBPUSD?.change, dec:4 },
@@ -1736,7 +1736,8 @@ function _renderTechnical(sym){
   </div>`;
 }
 
-/* ── Crypto Heatmap — custom treemap from real CoinGecko markets ── */
+/* ── Crypto Heatmap — top coins direct from Binance (free, no key, CORS) ── */
+const _CHEAT_PAIRS=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','LTCUSDT','BCHUSDT','ATOMUSDT','UNIUSDT','ETCUSDT','XLMUSDT','NEARUSDT','APTUSDT'];
 let _cheatBusy=false;
 async function _renderCryptoHeat(){
   const host=document.getElementById('tv-cryptoheat'); if(!host||_cheatBusy) return;
@@ -1744,13 +1745,14 @@ async function _renderCryptoHeat(){
   _cheatBusy=true;
   try{
     const ctrl=new AbortController(); const tid=setTimeout(()=>ctrl.abort(),9000);
-    const r=await fetch('/api/coingecko/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=24&page=1&price_change_percentage=24h',{signal:ctrl.signal});
+    const q=encodeURIComponent(JSON.stringify(_CHEAT_PAIRS));
+    const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols='+q,{signal:ctrl.signal});
     clearTimeout(tid); if(!r.ok) throw 0; const d=await r.json(); if(!Array.isArray(d)||!d.length) throw 0;
     host.innerHTML='<div class="cheat-grid">'+d.map(c=>{
-      const chg=c.price_change_percentage_24h??0; const col=chg>=0?'#22c55e':'#ef4444';
+      const chg=parseFloat(c.priceChangePercent)||0; const col=chg>=0?'#22c55e':'#ef4444';
       const a=Math.min(0.6,0.12+Math.abs(chg)*0.05);
       return `<div class="cheat-cell" style="background:${col}${_hex(a)};border-color:${col}33">
-        <div class="cheat-sym">${(c.symbol||'').toUpperCase()}</div>
+        <div class="cheat-sym">${(c.symbol||'').replace(/USDT$/,'')}</div>
         <div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
     }).join('')+'</div>';
   }catch(e){

@@ -188,13 +188,53 @@
     const dxyBase = _data.DXY?.price || 104.12;
     const dxyNew  = parseFloat((dxyBase + noise(0.12)).toFixed(2));
     set('DXY', dxyNew, parseFloat(((dxyNew - 104.12) / 104.12 * 100).toFixed(2)));
+
+    // ── Crypto + metals baselines (always present so panels never stall;
+    //    overridden each cycle by the live Binance / Yahoo feeds below) ──
+    const xauB = _data.XAU?.price || 2643.20;
+    set('XAU', parseFloat((xauB + noise(1.5)).toFixed(2)), _data.XAU?.change ?? 0.42);
+    const xagB = _data.XAG?.price || 29.84;
+    set('XAG', parseFloat((xagB + noise(0.06)).toFixed(3)), _data.XAG?.change ?? -0.18);
+
+    const btcB = _data.BTC?.price || 96000;
+    set('BTC', parseFloat((btcB + noise(120)).toFixed(0)), _data.BTC?.change ?? 0,
+        { mcap: _data.BTC?.mcap, vol: _data.BTC?.vol });
+    const ethB = _data.ETH?.price || 3400;
+    set('ETH', parseFloat((ethB + noise(8)).toFixed(2)), _data.ETH?.change ?? 0);
+    const solB = _data.SOL?.price || 190;
+    set('SOL', parseFloat((solB + noise(1)).toFixed(2)), _data.SOL?.change ?? 0);
+  }
+
+  /* ─── Crypto direct from Binance (free, no key, CORS — uses the visitor's
+   *     own IP so it never hits the datacenter rate-limits that block us) ─── */
+  async function fetchCryptoDirect() {
+    try {
+      const r = await fetch(
+        'https://api.binance.com/api/v3/ticker/24hr' +
+        '?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D'
+      );
+      if (!r.ok) return;
+      const arr = await r.json();
+      if (!Array.isArray(arr)) return;
+      const by = {}; arr.forEach(t => { by[t.symbol] = t; });
+      const map = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT' };
+      Object.entries(map).forEach(([sym, bs]) => {
+        const t = by[bs];
+        if (!t) return;
+        const prev = _data[sym] || {};
+        const extra = sym === 'BTC'
+          ? { mcap: prev.mcap, vol: prev.vol || fmtBig(parseFloat(t.quoteVolume) || 0) }
+          : undefined;
+        set(sym, parseFloat(t.lastPrice), parseFloat(t.priceChangePercent), extra);
+      });
+    } catch (e) { /* fall back to Yahoo/sim values */ }
   }
 
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
-    simulateMarkets();                       // baseline fallback for all symbols
-    await Promise.allSettled([ fetchFX() ]); // FX rate fallback (no % change)
-    await fetchMarkets();                     // real data (Yahoo + CoinPaprika) overrides
+    simulateMarkets();                                  // baseline so nothing is ever blank
+    await Promise.allSettled([ fetchFX(), fetchMarkets() ]); // FX rates + Yahoo/CoinPaprika
+    await fetchCryptoDirect();                          // most reliable crypto, wins last
     notify();
     _initialised = true;
   }
