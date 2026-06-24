@@ -2,16 +2,17 @@
  * arcane-prices.js — Live market data service
  * The Arcane Archives | v2.1
  *
- * Sources (all free, no API key required):
- *  • CoinGecko /simple/price  → BTC, ETH, SOL prices + 24h change
- *  • CoinGecko /global        → total market cap, BTC dominance
- *  • metals.live              → XAU (Gold), XAG (Silver) spot prices
- *  • open.er-api.com          → FX rates (EUR, GBP, JPY, AUD, CAD, CHF vs USD)
- *  • /api/quotes (Twelve Data)→ real SPX, DOW, NDQ, VIX, DXY, WTI, BRENT,
- *                               NATGAS, COPPER, bond yields + FX % change,
- *                               IF TWELVEDATA_API_KEY is set server-side.
- *  • Simulation               → fallback for any of the above when no key /
- *                               provider data is available (nothing breaks).
+ * Sources (all free, NO API key required):
+ *  • /api/markets (Yahoo Finance) → real prices + day % change for indices
+ *      (SPX, NDQ, DOW, FTSE), VIX, DXY, commodities (WTI, BRENT, NATGAS,
+ *      COPPER), metals (XAU, XAG), US10Y, FX pairs AND crypto (BTC, ETH, SOL).
+ *  • /api/markets (CoinPaprika)   → crypto market cap, volume, BTC dominance.
+ *  • open.er-api.com              → FX rate fallback (no % change).
+ *  • Simulation                   → fallback for anything a provider doesn't
+ *      return (e.g. UK/DE/JP 10Y yields). Nothing ever breaks.
+ *
+ * CoinGecko + metals.live were removed: their free tiers block/rate-limit
+ * server IPs (HTTP 403/429). Yahoo Finance covers all of it for free.
  */
 
 (function () {
@@ -60,66 +61,39 @@
 
   /* ─── Fetchers ───────────────────────────── */
 
-  async function fetchCrypto() {
+  async function fetchMarkets() {
     try {
-      const r = await fetch(
-        '/api/coingecko/simple/price' +
-        '?ids=bitcoin,ethereum,solana' +
-        '&vs_currencies=usd' +
-        '&include_24hr_change=true' +
-        '&include_market_cap=true' +
-        '&include_24hr_vol=true'
-      );
+      const r = await fetch('/api/markets', { cache: 'no-cache' });
       if (!r.ok) return;
-      const d = await r.json();
+      const j = await r.json();
+      const d = j && j.data;
+      if (!d) return;
 
-      set('BTC', d.bitcoin?.usd,  d.bitcoin?.usd_24h_change, {
-        mcap: fmtBig((d.bitcoin?.usd_market_cap || 0)),
-        vol:  fmtBig((d.bitcoin?.usd_24h_vol    || 0)),
+      // Real price + day % change for every instrument Yahoo returned
+      // (indices, commodities, bonds, metals, FX, crypto). Overrides sim.
+      Object.entries(d).forEach(([sym, v]) => {
+        if (v && v.price != null) set(sym, v.price, v.change);
       });
-      set('ETH', d.ethereum?.usd, d.ethereum?.usd_24h_change);
-      set('SOL', d.solana?.usd,   d.solana?.usd_24h_change);
-    } catch(e) { /* silent fallback */ }
-  }
 
-  async function fetchCryptoGlobal() {
-    try {
-      const r = await fetch('/api/coingecko/global');
-      if (!r.ok) return;
-      const d = await r.json();
-      const gd = d.data;
-      if (!gd) return;
-      const totalMcap = gd.total_market_cap?.usd || 0;
-      const totalVol  = gd.total_volume?.usd     || 0;
-      const btcDom    = gd.market_cap_percentage?.btc || 0;
-      const ethDom    = gd.market_cap_percentage?.eth || 0;
-      set('CRYPTO_GLOBAL', totalMcap, null, {
-        totalMcap:  fmtBig(totalMcap),
-        totalVol:   fmtBig(totalVol),
-        btcDom:     btcDom.toFixed(1) + '%',
-        ethDom:     ethDom.toFixed(1) + '%',
-        altDom:     (100 - btcDom - ethDom).toFixed(1) + '%',
-        activeCoinCount: (gd.active_cryptocurrencies || 0).toLocaleString(),
-      });
-    } catch(e) { /* silent */ }
-  }
+      // BTC card extras (market cap / 24h volume) from CoinPaprika
+      if (j.crypto && _data.BTC) {
+        if (j.crypto.btcMcap != null) _data.BTC.mcap = fmtBig(j.crypto.btcMcap);
+        if (j.crypto.btcVol  != null) _data.BTC.vol  = fmtBig(j.crypto.btcVol);
+      }
 
-  async function fetchMetals() {
-    try {
-      const r = await fetch('/api/metals/spot', { cache: 'no-cache' });
-      if (!r.ok) throw new Error('metals.live ' + r.status);
-      const d = await r.json();
-      const metals = Array.isArray(d) ? d : Object.values(d);
-      metals.forEach(m => {
-        const metal = (m.metal || m.name || '').toLowerCase();
-        if (metal === 'gold'   || metal === 'xau') set('XAU', m.price, m.change);
-        if (metal === 'silver' || metal === 'xag') set('XAG', m.price, m.change);
-      });
-    } catch(e) {
-      const base = { XAU: _data.XAU?.price || 2643.20, XAG: _data.XAG?.price || 29.84 };
-      set('XAU', base.XAU + noise(2),  (_data.XAU?.change || 0.42) + noise(0.05));
-      set('XAG', base.XAG + noise(0.1), (_data.XAG?.change || -0.18) + noise(0.03));
-    }
+      // Crypto overview panel (total cap, volume, dominance) from CoinPaprika
+      if (j.global) {
+        const g = j.global;
+        const btcDom = g.btcDom || 0;
+        set('CRYPTO_GLOBAL', g.totalMcap || 0, g.change ?? null, {
+          totalMcap: fmtBig(g.totalMcap || 0),
+          totalVol:  fmtBig(g.totalVol  || 0),
+          btcDom:    btcDom.toFixed(1) + '%',
+          altDom:    Math.max(0, 100 - btcDom).toFixed(1) + '%',
+          activeCoinCount: (g.coins || 0).toLocaleString(),
+        });
+      }
+    } catch (e) { /* keep simulated / fallback values */ }
   }
 
   async function fetchFX() {
@@ -216,30 +190,11 @@
     set('DXY', dxyNew, parseFloat(((dxyNew - 104.12) / 104.12 * 100).toFixed(2)));
   }
 
-  /* ─── Real quotes (Twelve Data via server-side /api/quotes proxy) ─── */
-  async function fetchQuotes() {
-    try {
-      const r = await fetch('/api/quotes', { cache: 'no-cache' });
-      if (!r.ok) return;
-      const j = await r.json();
-      if (!j || !j.data) return;
-      // Overlay real values on top of the simulated defaults
-      Object.entries(j.data).forEach(([sym, v]) => {
-        if (v && v.price != null) set(sym, v.price, v.change == null ? _data[sym]?.change : v.change);
-      });
-    } catch (e) { /* keep simulated values — provider/key may be absent */ }
-  }
-
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
-    await Promise.allSettled([
-      fetchCrypto(),
-      fetchCryptoGlobal(),
-      fetchMetals(),
-      fetchFX(),
-    ]);
-    simulateMarkets();          // fills defaults / fallback
-    await fetchQuotes();        // real data overrides where available
+    simulateMarkets();                       // baseline fallback for all symbols
+    await Promise.allSettled([ fetchFX() ]); // FX rate fallback (no % change)
+    await fetchMarkets();                     // real data (Yahoo + CoinPaprika) overrides
     notify();
     _initialised = true;
   }
