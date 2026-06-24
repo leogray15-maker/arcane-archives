@@ -232,9 +232,10 @@
 
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
-    simulateMarkets();                                  // baseline so nothing is ever blank
-    await Promise.allSettled([ fetchFX(), fetchMarkets() ]); // FX rates + Yahoo/CoinPaprika
-    await fetchCryptoDirect();                          // most reliable crypto, wins last
+    simulateMarkets();          // baseline so nothing is ever blank
+    await fetchFX();            // er-api FX rates (no % change) — baseline only
+    await fetchMarkets();       // Yahoo: real prices + % change (overrides FX & sim)
+    await fetchCryptoDirect();  // Binance: most reliable crypto, wins last
     notify();
     _initialised = true;
   }

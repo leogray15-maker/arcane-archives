@@ -2,11 +2,12 @@
  * netlify/functions/market-data.js — free, no-key market data proxy (Netlify)
  * Mirror of api/markets.js. See that file for the full description.
  *
- * Sources (all free, NO API key): Yahoo Finance (indices, commodities, bonds,
- * FX, metals, crypto prices + day % change) and CoinPaprika (crypto market-cap
- * / dominance). Cached server-side via MARKETS_TTL (default 60s).
+ * Yahoo Finance (cookie+crumb, single batched quote) for indices, commodities,
+ * bonds, FX, metals and crypto; CoinPaprika for crypto market-cap/dominance.
+ * Cached server-side via MARKETS_TTL (default 60s). No API key anywhere.
  */
-const Y = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+const Q = 'https://query1.finance.yahoo.com';
+const CHART = Q + '/v8/finance/chart/';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36';
 const TTL = (parseInt(process.env.MARKETS_TTL || '60', 10)) * 1000;
 
@@ -21,10 +22,48 @@ const MAP = {
 };
 
 let _cache = { t: 0, data: null };
+let _yc = { cookie: null, crumb: null, t: 0 };
 
-async function yq(sym) {
+async function getCrumb() {
+  if (_yc.crumb && Date.now() - _yc.t < 30 * 60 * 1000) return _yc;
+  const r1 = await fetch('https://fc.yahoo.com/', { headers: { 'User-Agent': UA } });
+  let cookie = '';
+  if (typeof r1.headers.getSetCookie === 'function') {
+    cookie = r1.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+  } else {
+    cookie = (r1.headers.get('set-cookie') || '').split(';')[0];
+  }
+  const r2 = await fetch(Q + '/v1/test/getcrumb', { headers: { 'User-Agent': UA, Cookie: cookie } });
+  const crumb = (await r2.text()).trim();
+  if (!crumb || crumb.length > 40 || /[<>{}]/.test(crumb)) throw new Error('bad crumb');
+  _yc = { cookie, crumb, t: Date.now() };
+  return _yc;
+}
+
+async function batchQuote(symbols) {
+  const { cookie, crumb } = await getCrumb();
+  const url = Q + '/v7/finance/quote?symbols=' + encodeURIComponent(symbols.join(',')) +
+    '&crumb=' + encodeURIComponent(crumb);
+  const r = await fetch(url, { headers: { 'User-Agent': UA, Cookie: cookie } });
+  if (!r.ok) throw new Error('quote ' + r.status);
+  const j = await r.json();
+  const rows = j && j.quoteResponse && j.quoteResponse.result;
+  if (!Array.isArray(rows)) throw new Error('no rows');
+  const out = {};
+  rows.forEach((q) => {
+    if (q.symbol && q.regularMarketPrice != null) {
+      out[q.symbol] = {
+        price: q.regularMarketPrice,
+        change: q.regularMarketChangePercent != null ? q.regularMarketChangePercent : null,
+      };
+    }
+  });
+  return out;
+}
+
+async function chartQuote(sym) {
   try {
-    const r = await fetch(`${Y}${encodeURIComponent(sym)}?range=1d&interval=1d`, {
+    const r = await fetch(`${CHART}${encodeURIComponent(sym)}?range=1d&interval=1d`, {
       headers: { 'User-Agent': UA, Accept: 'application/json' },
     });
     if (!r.ok) return null;
@@ -36,6 +75,20 @@ async function yq(sym) {
     const change = (prev != null && prev !== 0) ? ((price - prev) / prev) * 100 : null;
     return { price, change };
   } catch (e) { return null; }
+}
+
+async function yahooAll() {
+  const symbols = [...new Set(Object.values(MAP))];
+  let bySym = {};
+  try { bySym = await batchQuote(symbols); } catch (e) { bySym = {}; }
+  const missing = symbols.filter((s) => !bySym[s]);
+  if (missing.length) {
+    const charted = await Promise.all(missing.map((s) => chartQuote(s)));
+    missing.forEach((s, i) => { if (charted[i]) bySym[s] = charted[i]; });
+  }
+  const data = {};
+  Object.entries(MAP).forEach(([k, ys]) => { if (bySym[ys]) data[k] = bySym[ys]; });
+  return data;
 }
 
 async function cryptoExtras() {
@@ -75,15 +128,7 @@ exports.handler = async function () {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cached: true, ..._cache.data }) };
   }
 
-  const keys = Object.keys(MAP);
-  const [prices, extras] = await Promise.all([
-    Promise.all(keys.map((k) => yq(MAP[k]))),
-    cryptoExtras(),
-  ]);
-
-  const data = {};
-  keys.forEach((k, i) => { if (prices[i]) data[k] = prices[i]; });
-
+  const [data, extras] = await Promise.all([yahooAll(), cryptoExtras()]);
   const payload = { data, crypto: extras.crypto, global: extras.global };
   if (Object.keys(data).length) _cache = { t: Date.now(), data: payload };
 
