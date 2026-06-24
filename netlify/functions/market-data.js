@@ -91,6 +91,50 @@ async function yahooAll() {
   return data;
 }
 
+/* Alpha Vantage (authenticated → never IP-blocked). Commodities + US 10Y,
+ * cached AV_TTL (default 6h) → ~20 calls/day, within the free limit. */
+const AV = 'https://www.alphavantage.co/query';
+const AV_KEY = process.env.ALPHAVANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || '';
+const AV_TTL = (parseInt(process.env.AV_TTL || '21600', 10)) * 1000;
+let _avCache = { t: 0, data: {} };
+
+async function avSeries(url) {
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': UA } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const arr = j && j.data;
+    if (!Array.isArray(arr) || !arr.length) return null;
+    const vals = arr.filter((d) => d.value && d.value !== '.').map((d) => parseFloat(d.value));
+    if (!vals.length) return null;
+    const price = vals[0];
+    const prev = vals[1];
+    const change = (prev != null && prev !== 0) ? ((price - prev) / prev) * 100 : null;
+    return { price, change };
+  } catch (e) { return null; }
+}
+
+async function avAll() {
+  if (!AV_KEY) return {};
+  if (Object.keys(_avCache.data).length && Date.now() - _avCache.t < AV_TTL) return _avCache.data;
+  const q = (fn, extra) => `${AV}?function=${fn}&interval=daily${extra || ''}&apikey=${encodeURIComponent(AV_KEY)}`;
+  const [wti, brent, ng, copper, us10] = await Promise.all([
+    avSeries(q('WTI')),
+    avSeries(q('BRENT')),
+    avSeries(q('NATURAL_GAS')),
+    avSeries(q('COPPER')),
+    avSeries(q('TREASURY_YIELD', '&maturity=10year')),
+  ]);
+  const out = {};
+  if (wti) out.WTI = wti;
+  if (brent) out.BRENT = brent;
+  if (ng) out.NATGAS = ng;
+  if (copper) out.COPPER = copper;
+  if (us10) out.US10Y = us10;
+  if (Object.keys(out).length) _avCache = { t: Date.now(), data: out };
+  return _avCache.data;
+}
+
 async function cryptoExtras() {
   const out = { crypto: null, global: null };
   try {
@@ -128,7 +172,8 @@ exports.handler = async function () {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cached: true, ..._cache.data }) };
   }
 
-  const [data, extras] = await Promise.all([yahooAll(), cryptoExtras()]);
+  const [data, extras, av] = await Promise.all([yahooAll(), cryptoExtras(), avAll()]);
+  Object.assign(data, av); // authenticated AV values override flaky Yahoo ones
   const payload = { data, crypto: extras.crypto, global: extras.global };
   if (Object.keys(data).length) _cache = { t: Date.now(), data: payload };
 
