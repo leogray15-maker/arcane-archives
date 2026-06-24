@@ -64,8 +64,16 @@
   async function fetchMarkets() {
     try {
       const r = await fetch('/api/markets', { cache: 'no-cache' });
-      if (!r.ok) return;
+      if (!r.ok) { console.log('[ArcanePrices] /api/markets HTTP', r.status); return; }
       const j = await r.json();
+      try {
+        console.log('%c[ArcanePrices] data sources →',
+          'color:#f5c842;font-weight:bold',
+          'AV key:', j.meta?.avKey, '| Yahoo symbols:', j.meta?.yahooCount,
+          '| AlphaVantage symbols:', j.meta?.avCount, j.meta?.avSymbols || [],
+          '| total real:', j.meta?.total,
+          '| keys:', Object.keys(j.data || {}).join(','));
+      } catch (_) {}
       const d = j && j.data;
       if (!d) return;
 

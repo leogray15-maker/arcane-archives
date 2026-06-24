@@ -202,9 +202,16 @@ exports.handler = async function () {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cached: true, ..._cache.data }) };
   }
 
-  const [data, extras, av] = await Promise.all([yahooAll(), cryptoExtras(), avAll()]);
-  Object.assign(data, av); // authenticated AV values override flaky Yahoo ones
-  const payload = { data, crypto: extras.crypto, global: extras.global };
+  const [yData, extras, av] = await Promise.all([yahooAll(), cryptoExtras(), avAll()]);
+  const data = { ...yData, ...av }; // authenticated AV overrides flaky Yahoo
+  const meta = {
+    avKey: !!AV_KEY,
+    yahooCount: Object.keys(yData).length,
+    avCount: Object.keys(av).length,
+    avSymbols: Object.keys(av),
+    total: Object.keys(data).length,
+  };
+  const payload = { data, crypto: extras.crypto, global: extras.global, meta };
   if (Object.keys(data).length) _cache = { t: Date.now(), data: payload };
 
   return { statusCode: 200, headers, body: JSON.stringify({ ok: true, ...payload }) };
