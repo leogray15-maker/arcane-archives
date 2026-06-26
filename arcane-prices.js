@@ -1,18 +1,21 @@
 /**
  * arcane-prices.js — Live market data service
- * The Arcane Archives | v2.1
+ * The Arcane Archives | v3.0
  *
- * Sources (all free, NO API key required):
- *  • /api/markets (Yahoo Finance) → real prices + day % change for indices
- *      (SPX, NDQ, DOW, FTSE), VIX, DXY, commodities (WTI, BRENT, NATGAS,
- *      COPPER), metals (XAU, XAG), US10Y, FX pairs AND crypto (BTC, ETH, SOL).
- *  • /api/markets (CoinPaprika)   → crypto market cap, volume, BTC dominance.
+ * Sources:
+ *  • /api/markets (Alpha Vantage) → real prices + day % change for indices
+ *      (SPX, NDQ, DOW), DXY, commodities (WTI, BRENT, NATGAS, COPPER),
+ *      metals (XAU, XAG), US10Y AND crypto (BTC, ETH, SOL).
+ *  • /api/markets (CoinPaprika)   → crypto market cap, volume, BTC dominance
+ *      (Alpha Vantage has no market-cap/dominance equivalent).
  *  • open.er-api.com              → FX rate fallback (no % change).
  *  • Simulation                   → fallback for anything a provider doesn't
- *      return (e.g. UK/DE/JP 10Y yields). Nothing ever breaks.
+ *      return (e.g. FTSE, VIX, UK/DE/JP 10Y yields — no clean free-tier
+ *      Alpha Vantage equivalent). Nothing ever breaks.
  *
- * CoinGecko + metals.live were removed: their free tiers block/rate-limit
- * server IPs (HTTP 403/429). Yahoo Finance covers all of it for free.
+ * Yahoo Finance and the direct Binance feed were removed: Alpha Vantage is
+ * authenticated and never IP-blocked from a datacenter, and now covers
+ * crypto directly, so neither is needed.
  */
 
 (function () {
@@ -69,7 +72,7 @@
       try {
         console.log('%c[ArcanePrices] data sources →',
           'color:#f5c842;font-weight:bold',
-          'AV key:', j.meta?.avKey, '| Yahoo symbols:', j.meta?.yahooCount,
+          'AV key:', j.meta?.avKey,
           '| AlphaVantage symbols:', j.meta?.avCount, j.meta?.avSymbols || [],
           '| total real:', j.meta?.total,
           '| keys:', Object.keys(j.data || {}).join(','));
@@ -77,8 +80,8 @@
       const d = j && j.data;
       if (!d) return;
 
-      // Real price + day % change for every instrument Yahoo returned
-      // (indices, commodities, bonds, metals, FX, crypto). Overrides sim.
+      // Real price + day % change for every instrument Alpha Vantage
+      // returned (indices, commodities, metals, US10Y, crypto). Overrides sim.
       Object.entries(d).forEach(([sym, v]) => {
         if (v && v.price != null) set(sym, v.price, v.change);
       });
@@ -145,6 +148,11 @@
     const ndqBase = _data.NDQ?.price || 18820.00;
     const ndqNew  = parseFloat((ndqBase + (Math.random() - 0.47) * 22).toFixed(2));
     set('NDQ', ndqNew, parseFloat(((ndqNew - 18820) / 18820 * 100).toFixed(2)));
+
+    // FTSE 100 — no clean free-tier Alpha Vantage equivalent, always simulated
+    const ftseBase = _data.FTSE?.price || 8210.40;
+    const ftseNew  = parseFloat((ftseBase + (Math.random() - 0.48) * 6).toFixed(2));
+    set('FTSE', ftseNew, parseFloat(((ftseNew - 8210.40) / 8210.40 * 100).toFixed(2)));
 
     // VIX — mean-revert around 18
     const vixBase = _data.VIX?.price || 18.45;
@@ -213,37 +221,11 @@
     set('SOL', parseFloat((solB + noise(1)).toFixed(2)), _data.SOL?.change ?? 0);
   }
 
-  /* ─── Crypto direct from Binance (free, no key, CORS — uses the visitor's
-   *     own IP so it never hits the datacenter rate-limits that block us) ─── */
-  async function fetchCryptoDirect() {
-    try {
-      const r = await fetch(
-        'https://api.binance.com/api/v3/ticker/24hr' +
-        '?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D'
-      );
-      if (!r.ok) return;
-      const arr = await r.json();
-      if (!Array.isArray(arr)) return;
-      const by = {}; arr.forEach(t => { by[t.symbol] = t; });
-      const map = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT' };
-      Object.entries(map).forEach(([sym, bs]) => {
-        const t = by[bs];
-        if (!t) return;
-        const prev = _data[sym] || {};
-        const extra = sym === 'BTC'
-          ? { mcap: prev.mcap, vol: prev.vol || fmtBig(parseFloat(t.quoteVolume) || 0) }
-          : undefined;
-        set(sym, parseFloat(t.lastPrice), parseFloat(t.priceChangePercent), extra);
-      });
-    } catch (e) { /* fall back to Yahoo/sim values */ }
-  }
-
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
-    simulateMarkets();          // baseline so nothing is ever blank
-    await fetchFX();            // er-api FX rates (no % change) — baseline only
-    await fetchMarkets();       // Yahoo: real prices + % change (overrides FX & sim)
-    await fetchCryptoDirect();  // Binance: most reliable crypto, wins last
+    simulateMarkets();      // baseline so nothing is ever blank
+    await fetchFX();        // er-api FX rates (no % change) — baseline only
+    await fetchMarkets();   // Alpha Vantage: real prices + % change (overrides FX & sim)
     notify();
     _initialised = true;
   }

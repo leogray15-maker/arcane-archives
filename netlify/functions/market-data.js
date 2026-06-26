@@ -1,103 +1,27 @@
 /**
- * netlify/functions/market-data.js — free, no-key market data proxy (Netlify)
+ * netlify/functions/market-data.js — Alpha Vantage market data proxy (Netlify)
  * Mirror of api/markets.js. See that file for the full description.
  *
- * Yahoo Finance (cookie+crumb, single batched quote) for indices, commodities,
- * bonds, FX, metals and crypto; CoinPaprika for crypto market-cap/dominance.
- * Cached server-side via MARKETS_TTL (default 60s). No API key anywhere.
+ * Alpha Vantage covers indices (ETF proxies), metals (ETF proxies), the
+ * dollar index, commodities, the US 10Y and crypto (BTC/ETH/SOL). CoinPaprika
+ * supplies crypto market-cap/dominance (no AV equivalent). FTSE/VIX/FX have
+ * no clean free-tier AV path and fall back to client-side simulation /
+ * open.er-api.com in arcane-prices.js. Cached server-side via AV_TTL
+ * (default 24h, since the free AV tier is 25 requests/day).
  */
-const Q = 'https://query1.finance.yahoo.com';
-const CHART = Q + '/v8/finance/chart/';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36';
 const TTL = (parseInt(process.env.MARKETS_TTL || '60', 10)) * 1000;
 
-const MAP = {
-  BTC: 'BTC-USD', ETH: 'ETH-USD', SOL: 'SOL-USD',
-  XAU: 'GC=F', XAG: 'SI=F',
-  SPX: '^GSPC', NDQ: '^IXIC', DOW: '^DJI', FTSE: '^FTSE', VIX: '^VIX', DXY: 'DX-Y.NYB',
-  WTI: 'CL=F', BRENT: 'BZ=F', NATGAS: 'NG=F', COPPER: 'HG=F',
-  US10Y: '^TNX',
-  EURUSD: 'EURUSD=X', GBPUSD: 'GBPUSD=X', USDJPY: 'USDJPY=X',
-  AUDUSD: 'AUDUSD=X', USDCAD: 'USDCAD=X', USDCHF: 'USDCHF=X',
-};
-
 let _cache = { t: 0, data: null };
-let _yc = { cookie: null, crumb: null, t: 0 };
 
-async function getCrumb() {
-  if (_yc.crumb && Date.now() - _yc.t < 30 * 60 * 1000) return _yc;
-  const r1 = await fetch('https://fc.yahoo.com/', { headers: { 'User-Agent': UA } });
-  let cookie = '';
-  if (typeof r1.headers.getSetCookie === 'function') {
-    cookie = r1.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
-  } else {
-    cookie = (r1.headers.get('set-cookie') || '').split(';')[0];
-  }
-  const r2 = await fetch(Q + '/v1/test/getcrumb', { headers: { 'User-Agent': UA, Cookie: cookie } });
-  const crumb = (await r2.text()).trim();
-  if (!crumb || crumb.length > 40 || /[<>{}]/.test(crumb)) throw new Error('bad crumb');
-  _yc = { cookie, crumb, t: Date.now() };
-  return _yc;
-}
-
-async function batchQuote(symbols) {
-  const { cookie, crumb } = await getCrumb();
-  const url = Q + '/v7/finance/quote?symbols=' + encodeURIComponent(symbols.join(',')) +
-    '&crumb=' + encodeURIComponent(crumb);
-  const r = await fetch(url, { headers: { 'User-Agent': UA, Cookie: cookie } });
-  if (!r.ok) throw new Error('quote ' + r.status);
-  const j = await r.json();
-  const rows = j && j.quoteResponse && j.quoteResponse.result;
-  if (!Array.isArray(rows)) throw new Error('no rows');
-  const out = {};
-  rows.forEach((q) => {
-    if (q.symbol && q.regularMarketPrice != null) {
-      out[q.symbol] = {
-        price: q.regularMarketPrice,
-        change: q.regularMarketChangePercent != null ? q.regularMarketChangePercent : null,
-      };
-    }
-  });
-  return out;
-}
-
-async function chartQuote(sym) {
-  try {
-    const r = await fetch(`${CHART}${encodeURIComponent(sym)}?range=1d&interval=1d`, {
-      headers: { 'User-Agent': UA, Accept: 'application/json' },
-    });
-    if (!r.ok) return null;
-    const j = await r.json();
-    const m = j && j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
-    if (!m || m.regularMarketPrice == null) return null;
-    const price = m.regularMarketPrice;
-    const prev = m.chartPreviousClose != null ? m.chartPreviousClose : m.previousClose;
-    const change = (prev != null && prev !== 0) ? ((price - prev) / prev) * 100 : null;
-    return { price, change };
-  } catch (e) { return null; }
-}
-
-async function yahooAll() {
-  const symbols = [...new Set(Object.values(MAP))];
-  let bySym = {};
-  try { bySym = await batchQuote(symbols); } catch (e) { bySym = {}; }
-  const missing = symbols.filter((s) => !bySym[s]);
-  if (missing.length) {
-    const charted = await Promise.all(missing.map((s) => chartQuote(s)));
-    missing.forEach((s, i) => { if (charted[i]) bySym[s] = charted[i]; });
-  }
-  const data = {};
-  Object.entries(MAP).forEach(([k, ys]) => { if (bySym[ys]) data[k] = bySym[ys]; });
-  return data;
-}
-
-/* Alpha Vantage — PRIMARY TradFi source (authenticated → never IP-blocked).
- * Indices/metals/dollar via ETF proxies, plus commodities + US 10Y. Cached
- * AV_TTL (default 1h). On the 25/day tier, raise AV_TTL or trim AV_PROXY.
- * % changes are exact; SPY≈SPX/10 and DIA≈DJI/100 are exact by design. */
+/* Alpha Vantage — sole TradFi + crypto source (authenticated → never
+ * IP-blocked). Indices/metals/dollar via ETF proxies, plus commodities,
+ * US 10Y and crypto. Cached AV_TTL (default 24h for the 25/day free tier;
+ * lower it on a paid key). % changes are exact; SPY≈SPX/10 and DIA≈DJI/100
+ * are exact by design. */
 const AV = 'https://www.alphavantage.co/query';
 const AV_KEY = process.env.ALPHAVANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || '';
-const AV_TTL = (parseInt(process.env.AV_TTL || '3600', 10)) * 1000;
+const AV_TTL = (parseInt(process.env.AV_TTL || '86400', 10)) * 1000;
 let _avCache = { t: 0, data: {} };
 
 const AV_PROXY = [
@@ -139,17 +63,38 @@ async function avSeries(url) {
   } catch (e) { return null; }
 }
 
+// internal symbol -> Alpha Vantage digital currency symbol
+const AV_CRYPTO = { BTC: 'BTC', ETH: 'ETH', SOL: 'SOL' };
+
+async function avCrypto(sym) {
+  try {
+    const r = await fetch(`${AV}?function=DIGITAL_CURRENCY_DAILY&symbol=${encodeURIComponent(sym)}&market=USD&apikey=${encodeURIComponent(AV_KEY)}`, { headers: { 'User-Agent': UA } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const series = j && j['Time Series (Digital Currency Daily)'];
+    if (!series) return null;
+    const days = Object.keys(series).sort().reverse();
+    if (!days.length) return null;
+    const price = parseFloat(series[days[0]]['4a. close (USD)']);
+    const prev = days[1] ? parseFloat(series[days[1]]['4a. close (USD)']) : null;
+    if (isNaN(price)) return null;
+    const change = (prev != null && !isNaN(prev) && prev !== 0) ? ((price - prev) / prev) * 100 : null;
+    return { price, change };
+  } catch (e) { return null; }
+}
+
 async function avAll() {
   if (!AV_KEY) return {};
   if (Object.keys(_avCache.data).length && Date.now() - _avCache.t < AV_TTL) return _avCache.data;
   const q = (fn, extra) => `${AV}?function=${fn}&interval=daily${extra || ''}&apikey=${encodeURIComponent(AV_KEY)}`;
-  const [proxies, wti, brent, ng, copper, us10] = await Promise.all([
+  const [proxies, wti, brent, ng, copper, us10, cryptos] = await Promise.all([
     Promise.all(AV_PROXY.map(([, sym]) => avQuote(sym))),
     avSeries(q('WTI')),
     avSeries(q('BRENT')),
     avSeries(q('NATURAL_GAS')),
     avSeries(q('COPPER')),
     avSeries(q('TREASURY_YIELD', '&maturity=10year')),
+    Promise.all(Object.values(AV_CRYPTO).map((sym) => avCrypto(sym))),
   ]);
   const out = {};
   AV_PROXY.forEach(([key, , scale], i) => {
@@ -161,6 +106,7 @@ async function avAll() {
   if (ng) out.NATGAS = ng;
   if (copper) out.COPPER = copper;
   if (us10) out.US10Y = us10;
+  Object.keys(AV_CRYPTO).forEach((key, i) => { if (cryptos[i]) out[key] = cryptos[i]; });
   if (Object.keys(out).length) _avCache = { t: Date.now(), data: out };
   return _avCache.data;
 }
@@ -202,11 +148,10 @@ exports.handler = async function () {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cached: true, ..._cache.data }) };
   }
 
-  const [yData, extras, av] = await Promise.all([yahooAll(), cryptoExtras(), avAll()]);
-  const data = { ...yData, ...av }; // authenticated AV overrides flaky Yahoo
+  const [extras, av] = await Promise.all([cryptoExtras(), avAll()]);
+  const data = { ...av };
   const meta = {
     avKey: !!AV_KEY,
-    yahooCount: Object.keys(yData).length,
     avCount: Object.keys(av).length,
     avSymbols: Object.keys(av),
     total: Object.keys(data).length,
