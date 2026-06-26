@@ -1736,39 +1736,23 @@ function _renderTechnical(sym){
   </div>`;
 }
 
-/* ── Crypto Heatmap — top coins direct from Binance (free, no key, CORS) ── */
-const _CHEAT_PAIRS=['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','LTCUSDT','BCHUSDT','ATOMUSDT','UNIUSDT','ETCUSDT','XLMUSDT','NEARUSDT','APTUSDT'];
-let _cheatBusy=false;
-async function _renderCryptoHeat(){
-  const host=document.getElementById('tv-cryptoheat'); if(!host||_cheatBusy) return;
+/* ── Crypto Heatmap — Alpha Vantage, via the shared ArcanePrices feed
+ *    (/api/markets). No direct Binance/exchange call. ── */
+const _CHEAT_SYMS=['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','AVAX','LINK','DOT','LTC','BCH','ATOM','UNI','ETC','XLM','NEAR','APT'];
+function _renderCryptoHeat(){
+  const host=document.getElementById('tv-cryptoheat'); if(!host) return;
   if(!host.dataset.init){ host.dataset.init='1'; host.innerHTML='<div class="intel-load">Loading crypto market…</div>'; }
-  _cheatBusy=true;
-  try{
-    const ctrl=new AbortController(); const tid=setTimeout(()=>ctrl.abort(),9000);
-    const q=encodeURIComponent(JSON.stringify(_CHEAT_PAIRS));
-    const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols='+q,{signal:ctrl.signal});
-    clearTimeout(tid); if(!r.ok) throw 0; const d=await r.json(); if(!Array.isArray(d)||!d.length) throw 0;
-    host.innerHTML='<div class="cheat-grid">'+d.map(c=>{
-      const chg=parseFloat(c.priceChangePercent)||0; const col=chg>=0?'#22c55e':'#ef4444';
-      const a=Math.min(0.6,0.12+Math.abs(chg)*0.05);
+  const d=_latestPriceData||{};
+  const coins=_CHEAT_SYMS.map(sym=>[sym,d[sym]]).filter(([,v])=>v&&v.price!=null);
+  if(coins.length){
+    host.innerHTML='<div class="cheat-grid">'+coins.map(([sym,v])=>{
+      const chg=v.change??0; const col=chg>=0?'#22c55e':'#ef4444'; const a=Math.min(0.6,0.12+Math.abs(chg)*0.05);
       return `<div class="cheat-cell" style="background:${col}${_hex(a)};border-color:${col}33">
-        <div class="cheat-sym">${(c.symbol||'').replace(/USDT$/,'')}</div>
-        <div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
+        <div class="cheat-sym">${sym}</div><div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
     }).join('')+'</div>';
-  }catch(e){
-    // Graceful fallback — render from live ArcanePrices crypto data so the panel is never empty
-    const d=_latestPriceData||{};
-    const coins=[['BTC',d.BTC],['ETH',d.ETH],['SOL',d.SOL]].filter(([,v])=>v&&v.price!=null);
-    if(coins.length){
-      host.innerHTML='<div class="cheat-grid">'+coins.map(([sym,v])=>{
-        const chg=v.change??0; const col=chg>=0?'#22c55e':'#ef4444'; const a=Math.min(0.6,0.12+Math.abs(chg)*0.05);
-        return `<div class="cheat-cell" style="background:${col}${_hex(a)};border-color:${col}33">
-          <div class="cheat-sym">${sym}</div><div class="cheat-chg" style="color:${col}">${_chgStr(chg)}</div></div>`;
-      }).join('')+'</div>';
-    } else if(!host.querySelector('.cheat-grid')){
-      host.innerHTML='<div class="intel-load">Crypto market loading…</div>';
-    }
-  } finally { _cheatBusy=false; }
+  } else if(!host.querySelector('.cheat-grid')){
+    host.innerHTML='<div class="intel-load">Crypto market loading…</div>';
+  }
 }
 
 /* ── Market Intel Feed — custom AI briefing from live signals ── */

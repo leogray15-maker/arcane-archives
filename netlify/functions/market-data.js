@@ -2,12 +2,11 @@
  * netlify/functions/market-data.js — Alpha Vantage market data proxy (Netlify)
  * Mirror of api/markets.js. See that file for the full description.
  *
- * Alpha Vantage covers indices (ETF proxies), metals (ETF proxies), the
- * dollar index, commodities, the US 10Y and crypto (BTC/ETH/SOL). CoinPaprika
- * supplies crypto market-cap/dominance (no AV equivalent). FTSE/VIX/FX have
- * no clean free-tier AV path and fall back to client-side simulation /
- * open.er-api.com in arcane-prices.js. Cached server-side via AV_TTL
- * (default 24h, since the free AV tier is 25 requests/day).
+ * Alpha Vantage covers indices (native ticker, falling back to ETF proxy),
+ * metals (ETF proxies), the dollar index, commodities, the US 10Y and the
+ * full crypto heatmap (BTC/ETH/SOL + 15 altcoins). CoinPaprika supplies
+ * crypto market-cap/dominance (no AV equivalent). Cached server-side via
+ * AV_TTL (default 1h; raise it if you're on AV's 25 req/day free tier).
  */
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36';
 const TTL = (parseInt(process.env.MARKETS_TTL || '60', 10)) * 1000;
@@ -15,23 +14,15 @@ const TTL = (parseInt(process.env.MARKETS_TTL || '60', 10)) * 1000;
 let _cache = { t: 0, data: null };
 
 /* Alpha Vantage — sole TradFi + crypto source (authenticated → never
- * IP-blocked). Indices/metals/dollar via ETF proxies, plus commodities,
- * US 10Y and crypto. Cached AV_TTL (default 24h for the 25/day free tier;
- * lower it on a paid key). % changes are exact; SPY≈SPX/10 and DIA≈DJI/100
- * are exact by design. */
+ * IP-blocked). The free tier is 25 req/day — this fans out one request per
+ * symbol (≈30 with the full crypto heatmap), so raise AV_TTL on the free
+ * tier or lower it once you confirm a higher-rate-limit key. % changes are
+ * exact; ETF-proxy prices are scaled index levels (SPY≈SPX/10 and
+ * DIA≈DJI/100 are exact by design). */
 const AV = 'https://www.alphavantage.co/query';
 const AV_KEY = process.env.ALPHAVANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || '';
-const AV_TTL = (parseInt(process.env.AV_TTL || '86400', 10)) * 1000;
+const AV_TTL = (parseInt(process.env.AV_TTL || '3600', 10)) * 1000;
 let _avCache = { t: 0, data: {} };
-
-const AV_PROXY = [
-  ['SPX', 'SPY', 10.0],
-  ['DOW', 'DIA', 100.0],
-  ['NDQ', 'QQQ', 41.0],
-  ['XAU', 'GLD', 10.8],
-  ['XAG', 'SLV', 1.10],
-  ['DXY', 'UUP', 3.71],
-];
 
 async function avQuote(sym) {
   try {
@@ -45,6 +36,42 @@ async function avQuote(sym) {
     if (isNaN(price)) return null;
     return { price, change: isNaN(chg) ? null : chg };
   } catch (e) { return null; }
+}
+
+/* internal symbol -> [ native AV index ticker (tried first, scale 1),
+ *                       fallback ETF proxy symbol, fallback scale ].
+ * AV's Index Data APIs (Dow/S&P 500/Nasdaq/VIX/Russell) are only confirmed
+ * to exist behind a "Premium" badge in their docs — we can't verify the
+ * exact ticker without a live key, so we try the obvious AV-style ticker
+ * via GLOBAL_QUOTE first and fall back to the ETF proxy (or, for VIX/FTSE,
+ * to client-side simulation) if it doesn't resolve. */
+const AV_INDEX = [
+  ['SPX', 'SPX', 'SPY', 10.0],
+  ['DOW', 'DJI', 'DIA', 100.0],
+  ['NDQ', 'IXIC', 'QQQ', 41.0],
+  ['VIX', 'VIX', null, 1],
+  ['FTSE', 'FTSE', null, 1],
+];
+
+// internal symbol -> [ Alpha Vantage ETF symbol, price scale to index level ]
+// (no plausible native AV ticker, so these go straight to the ETF proxy)
+const AV_PROXY = [
+  ['XAU', 'GLD', 10.8],
+  ['XAG', 'SLV', 1.10],
+  ['DXY', 'UUP', 3.71],
+];
+
+async function avIndexAll() {
+  const rows = await Promise.all(AV_INDEX.map(async ([, native, proxy, scale]) => {
+    const v = await avQuote(native);
+    if (v) return v;
+    if (!proxy) return null;
+    const p = await avQuote(proxy);
+    return p ? { price: p.price * scale, change: p.change } : null;
+  }));
+  const out = {};
+  AV_INDEX.forEach(([key], i) => { if (rows[i]) out[key] = rows[i]; });
+  return out;
 }
 
 async function avSeries(url) {
@@ -63,8 +90,17 @@ async function avSeries(url) {
   } catch (e) { return null; }
 }
 
-// internal symbol -> Alpha Vantage digital currency symbol
-const AV_CRYPTO = { BTC: 'BTC', ETH: 'ETH', SOL: 'SOL' };
+// internal symbol -> Alpha Vantage digital currency symbol. Covers the
+// trading-floor crypto heatmap (previously a direct Binance call) plus the
+// BTC/ETH/SOL cards. Not every symbol is guaranteed to exist on AV's digital
+// currency list — avCrypto() returns null for unsupported ones and they're
+// simply omitted (the heatmap renders whatever AV actually returns).
+const AV_CRYPTO = {
+  BTC: 'BTC', ETH: 'ETH', SOL: 'SOL', BNB: 'BNB', XRP: 'XRP', ADA: 'ADA',
+  DOGE: 'DOGE', AVAX: 'AVAX', LINK: 'LINK', DOT: 'DOT', LTC: 'LTC',
+  BCH: 'BCH', ATOM: 'ATOM', UNI: 'UNI', ETC: 'ETC', XLM: 'XLM',
+  NEAR: 'NEAR', APT: 'APT',
+};
 
 async function avCrypto(sym) {
   try {
@@ -87,7 +123,8 @@ async function avAll() {
   if (!AV_KEY) return {};
   if (Object.keys(_avCache.data).length && Date.now() - _avCache.t < AV_TTL) return _avCache.data;
   const q = (fn, extra) => `${AV}?function=${fn}&interval=daily${extra || ''}&apikey=${encodeURIComponent(AV_KEY)}`;
-  const [proxies, wti, brent, ng, copper, us10, cryptos] = await Promise.all([
+  const [indices, proxies, wti, brent, ng, copper, us10, cryptos] = await Promise.all([
+    avIndexAll(),
     Promise.all(AV_PROXY.map(([, sym]) => avQuote(sym))),
     avSeries(q('WTI')),
     avSeries(q('BRENT')),
@@ -96,7 +133,7 @@ async function avAll() {
     avSeries(q('TREASURY_YIELD', '&maturity=10year')),
     Promise.all(Object.values(AV_CRYPTO).map((sym) => avCrypto(sym))),
   ]);
-  const out = {};
+  const out = { ...indices };
   AV_PROXY.forEach(([key, , scale], i) => {
     const v = proxies[i];
     if (v) out[key] = { price: v.price * scale, change: v.change };
