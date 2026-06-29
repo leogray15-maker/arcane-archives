@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Admin | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png">
+  <link rel="apple-touch-icon" href="ArcaneA.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#030303">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal-shell.css">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       THE ARCANE ARCHIVES — UNIFIED ADMIN HUB
+       Single entry point for all admin functions.
+       Design system mirrored from dashboard.html
+       ═══════════════════════════════════════════════════════════ */
+    :root {
+      --bg-primary:   #030303;
+      --bg-secondary: #0a0a0a;
+      --bg-card:      #0f0f0f;
+      --bg-elevated:  #161616;
+      --bg-hover:     #1a1a1a;
+
+      --purple:       #8b5cf6;
+      --purple-light: #a78bfa;
+      --purple-dark:  #7c3aed;
+      --purple-glow:  rgba(139, 92, 246, 0.4);
+
+      --gold:         #fbbf24;
+      --gold-light:   #fcd34d;
+
+      --blue:         #38bdf8;
+      --green:        #22c55e;
+      --red:          #ef4444;
+
+      --text:         #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted:   #71717a;
+
+      --border:       rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; }
+    svg { display: block; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+
+    /* ── Ambient background ── */
+    .bg-gradient {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(139,92,246,0.14), transparent),
+        radial-gradient(ellipse 50% 40% at 100% 0%, rgba(139,92,246,0.06), transparent),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(251,191,36,0.04), transparent),
+        var(--bg-primary);
+    }
+    .grid-overlay {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 40%, transparent 100%);
+    }
+
+    /* ════════ MAIN ════════ */
+    .admin-main {
+      position: relative; z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.75rem 3rem;
+    }
+
+    /* ── Page header ── */
+    .admin-hero { margin-bottom: 2.5rem; }
+    .admin-hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0.8rem; border-radius: 999px;
+      background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25);
+      color: var(--gold); font-size: 0.68rem; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .admin-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+    .admin-hero-title {
+      font-size: clamp(1.6rem, 4vw, 2.3rem); font-weight: 900; letter-spacing: -0.02em;
+      margin: 0.9rem 0 0.4rem;
+    }
+    .admin-hero-title span {
+      background: linear-gradient(135deg, #fff 0%, var(--purple-light) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .admin-hero-sub { color: var(--text-secondary); font-size: 0.95rem; max-width: 620px; }
+
+    /* ── Loading / access states ── */
+    .admin-gate {
+      position: fixed; inset: 0; z-index: 5000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+      background: var(--bg-primary);
+    }
+    .admin-gate.hidden { display: none; }
+    .admin-gate-spinner {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 3px solid rgba(139,92,246,0.2); border-top-color: var(--purple);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .admin-gate-text { color: var(--text-muted); font-size: 0.85rem; letter-spacing: 0.04em; }
+
+    /* ── Section ── */
+    .admin-group { margin-bottom: 2.5rem; }
+    .admin-group-header { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 1.2rem; }
+    .admin-group-title { font-size: 0.95rem; font-weight: 800; letter-spacing: 0.02em; color: var(--gold-light); }
+    .admin-group-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+    /* ── Card grid ── */
+    .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .admin-card {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1.1rem 1.2rem; border-radius: 14px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .admin-card:hover { transform: translateY(-4px); border-color: var(--border-hover); background: var(--bg-elevated); box-shadow: 0 18px 40px rgba(0,0,0,0.4); }
+    .admin-icon {
+      width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; font-size: 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.04));
+      border: 1px solid rgba(251,191,36,0.25);
+    }
+    .admin-info { flex: 1; min-width: 0; }
+    .admin-title { font-weight: 700; font-size: 0.95rem; }
+    .admin-desc { color: var(--text-muted); font-size: 0.8rem; }
+    .admin-arrow { color: var(--text-muted); font-size: 1.05rem; transition: transform 0.25s, color 0.25s; }
+    .admin-card:hover .admin-arrow { color: var(--purple-light); transform: translateX(3px); }
+
+    /* ── Footer ── */
+    .admin-footer {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+    }
+    .version-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.04em; }
+    .logout-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1.2rem; border-radius: 10px;
+      border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.06); color: #fca5a5;
+      font-weight: 700; font-size: 0.82rem; transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.4); color: #fff; }
+
+    @media (max-width: 640px) {
+      .admin-main { padding: 1.5rem 1.1rem 2.5rem; }
+    }
+  </style>
+</head>
+<body data-page="admin">
+  <div class="bg-gradient"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- ════════ ACCESS GATE (shown until admin verified) ════════ -->
+  <div class="admin-gate" id="admin-gate">
+    <div class="admin-gate-spinner"></div>
+    <div class="admin-gate-text">Verifying admin access…</div>
+  </div>
+
+  <main class="admin-main" id="admin-main" style="display:none">
+
+    <!-- ── Hero ── -->
+    <div class="admin-hero">
+      <span class="admin-hero-badge"><span class="admin-hero-badge-dot"></span>Admin Only</span>
+      <h1 class="admin-hero-title">Admin <span>Control Center</span></h1>
+      <p class="admin-hero-sub">Every admin function in one place — trading operations, members &amp; sales, commerce, and content.</p>
+    </div>
+
+    <!-- ── Trading & Signals ── -->
+    <section class="admin-group">
+      <div class="admin-group-header">
+        <div class="admin-group-title">Trading &amp; Signals</div>
+        <div class="admin-group-line"></div>
+      </div>
+      <div class="tile-grid">
+        <a class="admin-card" href="admin-panel.html">
+          <div class="admin-icon">🛡️</div>
+          <div class="admin-info"><div class="admin-title">Trades &amp; Alerts</div><div class="admin-desc">Stock picks, trade alerts &amp; history</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+        <a class="admin-card" href="stock-picks-admin.html">
+          <div class="admin-icon">📊</div>
+          <div class="admin-info"><div class="admin-title">Stock Picks</div><div class="admin-desc">Manage investment picks</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+        <a class="admin-card" href="arcane-insight-admin.html">
+          <div class="admin-icon">🧠</div>
+          <div class="admin-info"><div class="admin-title">Arcane Insights</div><div class="admin-desc">Posts &amp; intel updates</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Members & Sales ── -->
+    <section class="admin-group">
+      <div class="admin-group-header">
+        <div class="admin-group-title">Members &amp; Sales</div>
+        <div class="admin-group-line"></div>
+      </div>
+      <div class="tile-grid">
+        <a class="admin-card" href="arcane-crm.html">
+          <div class="admin-icon">👥</div>
+          <div class="admin-info"><div class="admin-title">Member CRM</div><div class="admin-desc">Members &amp; subscriptions</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+        <a class="admin-card" href="arcane-consulting-crm.html">
+          <div class="admin-icon">💼</div>
+          <div class="admin-info"><div class="admin-title">Consulting CRM</div><div class="admin-desc">Leads, pipeline &amp; payments</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+        <a class="admin-card" href="affiliate-admin.html">
+          <div class="admin-icon">🔗</div>
+          <div class="admin-info"><div class="admin-title">Affiliates</div><div class="admin-desc">Referrals &amp; commissions</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Commerce ── -->
+    <section class="admin-group">
+      <div class="admin-group-header">
+        <div class="admin-group-title">Commerce</div>
+        <div class="admin-group-line"></div>
+      </div>
+      <div class="tile-grid">
+        <a class="admin-card" href="store-admin.html">
+          <div class="admin-icon">🏪</div>
+          <div class="admin-info"><div class="admin-title">Store Admin</div><div class="admin-desc">Products &amp; orders</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+        <a class="admin-card" href="bullion-admin.html">
+          <div class="admin-icon">🥇</div>
+          <div class="admin-info"><div class="admin-title">Bullion Admin</div><div class="admin-desc">Products &amp; enquiries</div></div>
+          <span class="admin-arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Footer ── -->
+    <div class="admin-footer">
+      <span class="version-tag">The Arcane Archives · Admin · v2.0</span>
+      <button class="logout-btn" id="logout-btn"><span>⏻</span> Log Out</button>
+    </div>
+
+  </main>
+
+  <!-- ════════ SCRIPTS ════════ -->
+  <script type="module">
+    import { auth, ADMIN_UIDS } from './auth-guard.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+
+    onAuthStateChanged(auth, user => {
+      if (!user) { location.href = 'login.html'; return; }
+      if (!ADMIN_UIDS.includes(user.uid)) { location.href = 'dashboard.html'; return; }
+      // Admin verified — reveal the hub
+      document.getElementById('admin-gate').classList.add('hidden');
+      document.getElementById('admin-main').style.display = '';
+    });
+  </script>
+  <script type="module" src="portal-shell.js"></script>
+</body>
+</html>

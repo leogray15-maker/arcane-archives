@@ -81,7 +81,7 @@ function buildShell(active) {
     ${NAV.intel.map(it => navItem(it, active)).join('')}
     <div class="sidebar-divider"></div>
     ${NAV.footer.map(it => navItem(it, active)).join('')}
-    <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
+    <a class="sidebar-nav-item admin-item${active === 'admin' ? ' active' : ''}" href="admin.html" id="sidebar-admin-link" style="display:none">
       <span class="sidebar-nav-icon">${svg('shield')}</span>
       <span class="sidebar-nav-label">Admin</span>
     </a>
