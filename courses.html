@@ -89,15 +89,22 @@
     .course-card:hover .course-open { color: var(--purple-light); transform: translate(2px,-2px); }
     .course-name { font-size: 0.96rem; font-weight: 700; line-height: 1.35; }
 
-    /* Course line-art graphic — subtle white linework on the near-black card */
-    .course-art { height: 56px; display: flex; align-items: center; justify-content: flex-start; margin: 0.15rem 0 0.1rem; }
-    .course-art svg {
-      width: 54px; height: 54px; color: #fff; opacity: 0.42;
-      transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    /* Course line-art graphic — white linework on the near-black card */
+    .course-art {
+      height: 92px; display: flex; align-items: center; justify-content: center; margin: 0.45rem 0 0.3rem;
+      border-radius: 12px; background:
+        radial-gradient(120% 120% at 50% 0%, rgba(139,92,246,0.08), transparent 70%),
+        rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.04);
     }
-    .course-card:hover .course-art svg { opacity: 0.92; transform: translateY(-1px); }
+    .course-art svg {
+      width: 80px; height: 80px; color: #fff; opacity: 0.88;
+      transition: opacity 0.28s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .course-card:hover .course-art svg { opacity: 1; transform: scale(1.06); }
+    .course-card:hover .course-art { border-color: rgba(139,92,246,0.25); }
     .course-card.done .course-art svg { color: #86efac; }
-    .course-card.locked .course-art svg { opacity: 0.28; }
+    .course-card.locked .course-art svg { opacity: 0.5; }
 
     .course-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
     .course-tag {
@@ -343,59 +350,105 @@
      Each entry is the inner markup of a 64×64 SVG. Stroke is set on the wrapper
      so every glyph is fine-medium white linework on the card's black background. */
   const COURSE_ART = {
-    // Mind & Psychology
-    '2677f6a404fe804c8b53e10177638ec3': '<path d="M34 16c-5-3-12 0-13 6-4 1-6 5-4 9-2 2-2 6 1 8 0 4 4 6 8 5 2 2 6 2 8-1"/><path d="M34 16v28"/><path d="M34 21c4-3 10-1 11 4"/><path d="M48 10l5 5-5 5"/><path d="M53 15H39"/>', // Mind HiJacking
-    '2677f6a404fe804a9fccc156423ff112': '<circle cx="32" cy="28" r="15"/><path d="M32 21l2.3 4.6 5 .7-3.6 3.6.9 5-4.6-2.4-4.6 2.4.9-5-3.6-3.6 5-.7z"/><path d="M23 47h18"/>', // Mindset Mastery
-    '2677f6a404fe80e699fdecef3da543e0': '<circle cx="32" cy="30" r="13"/><path d="M32 24l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z"/><path d="M32 9v6M32 45v6M9 30h6M49 30h6M16 14l4 4M48 14l-4 4"/>', // Advanced Mindset Mastery
-    '2657f6a404fe802f8d8df4b24b9bd03b': '<circle cx="32" cy="32" r="19"/><circle cx="32" cy="27" r="5"/><path d="M23 43a9 9 0 0 1 18 0"/>', // Productive Isolation
-    '2677f6a404fe80659c7ed148ab377d1c': '<circle cx="29" cy="34" r="15"/><path d="M29 25v9l6 4"/><path d="M44 13h9v9"/><path d="M53 13l-9 9"/>', // Never Procrastinate Again
-    '2677f6a404fe8007aa3cc3f575c9d5f1': '<circle cx="32" cy="16" r="5"/><circle cx="16" cy="44" r="5"/><circle cx="48" cy="44" r="5"/><path d="M29 20 19 40M35 20l10 20M21 44h22"/>', // 1st Principles / Mental Models
-    '2677f6a404fe805ab4b5c4cd892a1028': '<path d="M16 14h32"/><path d="M19 14l3-4h20l3 4"/><path d="M23 14v32M32 14v32M41 14v32"/><path d="M16 50h32M20 46h24"/>', // Full Stoicism Course
-    '2677f6a404fe802384fcdf86577e375e': '<path d="M32 10a14 14 0 0 0-8 25c1.5 1.3 2.5 3 3 5h10c.5-2 1.5-3.7 3-5a14 14 0 0 0-8-25z"/><path d="M27 44h10M29 50h6"/><path d="M32 21v9M28 25l4 4 4-4"/>', // Full Thinking Course
-    '2677f6a404fe80f8abe5fa8862d6b59d': '<path d="M20 52V14"/><path d="M20 14h22l-5 6 5 6H20"/><path d="M12 52h40"/>', // Leadership Protocol
-    '2677f6a404fe802b919fcbf0b041f583': '<path d="M34 16c-5-3-12 0-13 6-4 1-6 5-4 9-2 2-2 6 1 8 0 4 4 6 8 5 2 2 6 2 8-1V16z"/><path d="M34 16c5-3 12 0 13 6 4 1 6 5 4 9 2 2 2 6-1 8 0 4-4 6-8 5"/><path d="M12 28h13M41 36h13M18 44h11"/>', // The Glitched Brain Protocol
-    '2677f6a404fe806293f5d55f7afaf658': '<path d="M32 10l16 6v12c0 11-7 18-16 22-9-4-16-11-16-22V16z"/><path d="M24 31l6 6 11-12"/>', // Discipline Mastery Protocol
-    '2677f6a404fe8056a8b3d139dc8e31ec': '<circle cx="26" cy="28" r="8"/><path d="M26 16v4M26 36v4M14 28h4M34 28h4M18 20l3 3M34 33l-3-3M18 36l3-3M34 23l-3 3"/><circle cx="42" cy="42" r="6"/><path d="M42 33v3M42 48v3M33 42h3M48 42h3"/>', // Mastering The Silent Grind
-    '2677f6a404fe8020acf2e1cbd9d800eb': '<path d="M32 18v30"/><path d="M32 18c-4-3-12-4-18-3v30c6-1 14 0 18 3 4-3 12-4 18-3V15c-6-1-14 0-18 3z"/>', // The Red Book
-    '2677f6a404fe80b8bd14f7e1046381c7': '<rect x="16" y="12" width="32" height="40" rx="4"/><path d="M23 24h18M23 32h18M23 40h12"/>', // Rules For Life
-    '2827f6a404fe80b2a893d4fec7f346ca': '<path d="M14 16c8-2 12 0 12 0s0 14-6 18-12-4-12-12c0-3 2-5 6-6z"/><path d="M38 22c8-2 12 0 12 0s0 14-6 18-12-4-12-12c0-3 2-5 6-6z"/>', // Dark Psychology
-    '2377f6a404fe8051ada2e45ed5081b84': '<path d="M12 32s8-12 20-12 20 12 20 12-8 12-20 12-20-12-20-12z"/><circle cx="32" cy="32" r="6"/><path d="M32 14v6M32 44v6"/>', // Arcane Philosophies
-    '3027f6a404fe8082bbf6e48d25e3fa96': '<path d="M16 26h32"/><path d="M32 14l11 12H21z"/><path d="M21 26l11 24 11-24"/><path d="M14 31c4 2 7 2 11 0M39 35c4 2 7 2 11 0"/>', // Deep Psychology
-    '2317f6a404fe80bfa2cbe3ebed76076b': '<path d="M32 12l18 38H14z"/><path d="M26 32h12"/><path d="M32 12l-3 20h6z"/>', // Top 1%
+    // ───────── Mind & Psychology ─────────
+    // Mind HiJacking — brain on puppet strings + control bar
+    '2677f6a404fe804c8b53e10177638ec3': '<path d="M30 26c-3-3-8-2-9 2-4 0-6 4-3 7-3 2-2 6 1 7 0 3 3 5 6 4 2 2 5 1 6-1V26z"/><path d="M30 26c2-2 4-2 6-1M24 31c-2 0-3 2-2 4M22 39c1-1 4-1 5 1"/><path d="M18 8h28M24 8v9M40 8v9M32 8v6"/><path d="M24 26l-6-9M40 25l4-8"/>',
+    // Mindset Mastery — detailed folded brain
+    '2677f6a404fe804a9fccc156423ff112': '<path d="M32 13c-3-2-7-2-10 0-2 1-3 3-3 5-3 0-6 3-6 6 0 2 .7 3 2 4-2 2-2 5 0 7-1 3 1 6 4 7 1 3 4 4 7 3 1 .7 2 .7 4 0V13z"/><path d="M32 13c3-2 7-2 10 0 2 1 3 3 3 5 3 0 6 3 6 6 0 2-.7 3-2 4 2 2 2 5 0 7 1 3-1 6-4 7-1 3-4 4-7 3-1 .7-2 .7-4 0"/><path d="M27 21c-3 1-4 3-3 6M22 30c2-1 5 0 6 3M27 41c-1-3 1-5 4-5"/><path d="M37 21c3 1 4 3 3 6M42 30c-2-1-5 0-6 3M37 41c1-3-1-5-4-5"/>',
+    // Advanced Mindset Mastery — brain + crown of rays + nodes
+    '2677f6a404fe80e699fdecef3da543e0': '<path d="M32 22c-3-2-7-1-9 2-3 0-5 3-3 6-2 2-1 5 2 6 0 3 3 5 6 3 1 .6 2 .6 4 0V22z"/><path d="M32 22c3-2 7-1 9 2 3 0 5 3 3 6 2 2 1 5-2 6 0 3-3 5-6 3-1 .6-2 .6-4 0"/><circle cx="24" cy="30" r="1.4"/><circle cx="40" cy="30" r="1.4"/><path d="M20 14l4 5M32 10v6M44 14l-4 5M12 28h5M47 28h5"/>',
+    // Productive Isolation — lone meditating figure within an aura ring
+    '2657f6a404fe802f8d8df4b24b9bd03b': '<circle cx="32" cy="32" r="19"/><circle cx="32" cy="25" r="4"/><path d="M24 42c0-4 3-8 8-8s8 4 8 8"/><path d="M21 40l-4 2M43 40l4 2"/><path d="M32 7v4M32 53v4M7 32h4M53 32h4"/>',
+    // Never Procrastinate Again — alarm clock + lightning bolt
+    '2677f6a404fe80659c7ed148ab377d1c': '<circle cx="29" cy="35" r="14"/><path d="M29 27v8l5 3"/><path d="M20 23l-4-4M38 23l4-4M29 21v-3"/><path d="M48 28l-6 9h5l-4 8"/>',
+    // 1st Principles / Mental Models — connected node lattice
+    '2677f6a404fe8007aa3cc3f575c9d5f1': '<circle cx="32" cy="32" r="4"/><circle cx="15" cy="19" r="3"/><circle cx="49" cy="19" r="3"/><circle cx="18" cy="48" r="3"/><circle cx="46" cy="48" r="3"/><path d="M29 30 17 21M35 30l12-9M30 35l-10 11M34 35l10 11M18 22v23M46 22v23"/>',
+    // Full Stoicism Course — fluted Greek column
+    '2677f6a404fe805ab4b5c4cd892a1028': '<path d="M16 16h32M21 16l3-5h16l3 5"/><path d="M24 16v30M32 16v30M40 16v30"/><path d="M15 50h34M19 46h26"/>',
+    // Full Thinking Course — head silhouette with gear + idea bulb
+    '2677f6a404fe802384fcdf86577e375e': '<circle cx="29" cy="34" r="14"/><circle cx="29" cy="34" r="5"/><path d="M29 25v3M29 40v3M20 34h3M35 34h3M23 28l2 2M35 28l-2 2M23 40l2-2M35 40l-2-2"/><path d="M44 13a5 5 0 1 0-6 0c.6.7 1 1.4 1 2.2h4c0-.8.4-1.5 1-2.2z"/><path d="M39 18h4"/>',
+    // Leadership Protocol — chess king
+    '2677f6a404fe80f8abe5fa8862d6b59d': '<path d="M32 8v6M28 11h8"/><path d="M26 20h12l-2 14H28z"/><path d="M23 34h18l3 10H20z"/><path d="M23 44h18"/>',
+    // The Glitched Brain Protocol — brain sliced by glitch bars
+    '2677f6a404fe802b919fcbf0b041f583': '<path d="M30 18c-3-2-7-1-9 2-3 0-5 3-3 6-2 2-1 5 2 6 0 3 3 4 6 3 1 .6 2 .6 4 0V18z"/><path d="M30 18c3-2 7-1 9 2 3 0 5 3 3 6 2 2 1 5-2 6 0 3-3 4-6 3-1 .6-2 .6-4 0"/><path d="M12 30h11M41 38h11M16 44h10"/><path d="M44 13h5v5M49 13l-7 7"/>',
+    // Discipline Mastery Protocol — shield + check
+    '2677f6a404fe806293f5d55f7afaf658': '<path d="M32 9l17 6v13c0 12-7 19-17 23-10-4-17-11-17-23V15z"/><path d="M23 31l6 7 12-14"/>',
+    // Mastering The Silent Grind — hourglass with sand
+    '2677f6a404fe8056a8b3d139dc8e31ec': '<path d="M19 11h26M19 53h26"/><path d="M22 11c0 9 10 13 10 16M42 11c0 9-10 13-10 16M22 53c0-9 10-13 10-16M42 53c0-9-10-13-10-16"/><path d="M26 17h12M28 47h8"/>',
+    // The Red Book — open book + ribbon bookmark
+    '2677f6a404fe8020acf2e1cbd9d800eb': '<path d="M32 17v31"/><path d="M32 17c-4-3-13-4-19-3v31c6-1 15 0 19 3 4-3 13-4 19-3V14c-6-1-15 0-19 3z"/><path d="M38 12v13l3-2 3 2V11"/>',
+    // Rules For Life — scroll + wax seal
+    '2677f6a404fe80b8bd14f7e1046381c7': '<path d="M19 13h23a3 3 0 0 1 3 3v29a3 3 0 0 1-3 3H19z"/><path d="M19 13a3 3 0 0 0-3 3v3h6"/><path d="M24 23h13M24 30h13M24 37h8"/><circle cx="39" cy="42" r="4"/>',
+    // Dark Psychology — twin theatre masks
+    '2827f6a404fe80b2a893d4fec7f346ca': '<path d="M13 18c8-2 13-1 13-1s1 13-5 18-13-3-13-11c0-3 2-5 5-6z"/><path d="M16 25c1 1 3 1 4 0M16 31c1 1 3 1 4 0"/><path d="M38 21c8-2 13-1 13-1s1 13-5 18-13-3-13-11c0-3 2-5 5-6z"/><path d="M41 28c1 1 3 1 4 0M41 34c1-1 3-1 4 0"/>',
+    // Arcane Philosophies — all-seeing eye in triangle
+    '2377f6a404fe8051ada2e45ed5081b84': '<path d="M32 11l21 38H11z"/><path d="M19 40s5-7 13-7 13 7 13 7-5 7-13 7-13-7-13-7z"/><circle cx="32" cy="40" r="3.5"/><path d="M32 22v7"/>',
+    // Deep Psychology — iceberg above & below waterline
+    '3027f6a404fe8082bbf6e48d25e3fa96': '<path d="M13 27h38"/><path d="M32 13l11 14H21z"/><path d="M21 27l11 24 11-24"/><path d="M11 32c4 2 7 2 11 0M30 36c4 2 7 2 11 0M14 41c4 2 7 2 11 0"/>',
+    // Top 1% — pyramid with illuminated apex
+    '2317f6a404fe80bfa2cbe3ebed76076b': '<path d="M32 11l19 39H13z"/><path d="M24 33h16"/><path d="M32 11l-4 22h8z"/><path d="M32 4v4M25 7l2 3M39 7l-2 3"/>',
 
-    // Wealth & Business
-    '2677f6a404fe800d98d4f47dc636a634': '<path d="M32 10c7 6 10 14 10 24l-5 6h-10l-5-6c0-10 3-18 10-24z"/><circle cx="32" cy="26" r="4"/><path d="M27 40l-6 8 8-3M37 40l6 8-8-3"/>', // Entrepreneurship Mastery
-    '2677f6a404fe80f5a01dc15e5d3a2bb5': '<path d="M16 50c10 0 6-10 16-10s6-12 16-12"/><circle cx="16" cy="50" r="2"/><path d="M46 14l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z"/>', // The Journey To Getting Rich
-    '2657f6a404fe80a39377f818f69088e8': '<rect x="14" y="26" width="16" height="12" rx="6"/><rect x="34" y="26" width="16" height="12" rx="6"/><path d="M31 22l3 5M33 42l-3-5"/>', // Escaping Hell
-    '2677f6a404fe80868f23f0d4a9e4a10f': '<ellipse cx="32" cy="32" rx="10" ry="20"/><ellipse cx="32" cy="32" rx="20" ry="10"/><circle cx="32" cy="32" r="3"/>', // The Reality Shifting Entrepreneur
-    '2677f6a404fe80b68ca1d3a0b89935cb': '<circle cx="22" cy="26" r="9"/><path d="M28 32l16 16M40 44l4-4M44 48l4-4"/>', // The Secrets Of The Rich
-    '2657f6a404fe8063b28befa244d242fb': '<path d="M44 14l6 6-22 22-8 2 2-8z"/><path d="M14 24h8M10 32h10M14 40h6"/>', // Copywriting Accelerator
-    '2677f6a404fe80a5883bd11bf46f12df': '<rect x="16" y="14" width="30" height="36" rx="3"/><path d="M16 14v36"/><path d="M23 24h16M23 31h16M23 38h10"/>', // Copywriting Ebook
-    '2677f6a404fe80c0ad50cad95fe64ad8': '<path d="M32 10l10 26-10 10-10-10z"/><path d="M32 26v20"/><circle cx="32" cy="30" r="3"/>', // Copywriting Mastery
-    '2677f6a404fe808d8570d2e480640ed0': '<rect x="14" y="16" width="36" height="32" rx="3"/><path d="M14 26h36M22 12v8M42 12v8"/><path d="M32 42V32M27 37l5-5 5 5"/>', // 30 Day: Build A Profitable Business
-    '2677f6a404fe800f961fc556fca02dd7': '<path d="M32 12l18 9-18 9-18-9z"/><path d="M14 21v18l18 9 18-9V21"/><path d="M32 30v18"/>', // Make A Product That Prints $
-    '2677f6a404fe803a8e7de03cb9780d01': '<path d="M20 16v14a12 12 0 0 0 24 0V16"/><path d="M20 16h8v14a4 4 0 0 0 8 0V16h8"/><circle cx="14" cy="48" r="1.6"/><circle cx="50" cy="48" r="1.6"/>', // The Inbound Method
-    '2677f6a404fe80aebc39fc995d17b4ca': '<path d="M14 48h36M14 48V14"/><path d="M20 40l8-10 6 6 12-16"/><path d="M40 14h6v6"/>', // The Sales Mastery Protocol
-    '2677f6a404fe80e1b484fb5a002d6be0': '<rect x="12" y="16" width="40" height="28" rx="5"/><path d="M28 26l10 6-10 6z"/>', // Advanced Content Playbook
-    '2677f6a404fe8001a04ddb7ac6510f10': '<circle cx="32" cy="26" r="8"/><path d="M18 50a14 14 0 0 1 28 0"/><path d="M32 6l1.6 3.3 3.6.5-2.6 2.6.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.6 3.6-.5z"/>', // Personal Brand Mastery
-    '2677f6a404fe808aa16dd9956de183e3': '<circle cx="32" cy="28" r="15"/><path d="M32 37c-4-3-7-5-7-9a3.5 3.5 0 0 1 7-1 3.5 3.5 0 0 1 7 1c0 4-3 6-7 9z"/><path d="M23 47h18"/>', // AI Human Behavioural / Emotion Vault
-    '2677f6a404fe80889e57fd29dd27764c': '<path d="M42 12l6 6-16 16-7 1 1-7z"/><path d="M14 44c-2-2-2-6 1-7-1-3 2-6 5-4 2-2 5-1 6 1"/>', // Diving Into The Writing Psychology
-    '2677f6a404fe808484cac7637b635c97': '<path d="M20 16h24l8 10-20 22-20-22z"/><path d="M12 26h40M26 16l-6 10 12 22M38 16l6 10-12 22"/>', // Premium Archive
+    // ───────── Wealth & Business ─────────
+    // Entrepreneurship Mastery — rocket with flame
+    '2677f6a404fe800d98d4f47dc636a634': '<path d="M32 7c8 7 11 16 11 27l-4 5H25l-4-5c0-11 3-20 11-27z"/><circle cx="32" cy="23" r="4"/><path d="M25 38l-7 8 9-2M39 38l7 8-9-2"/><path d="M28 49l4 8 4-8"/>',
+    // The Journey To Getting Rich — winding road to a star
+    '2677f6a404fe80f5a01dc15e5d3a2bb5': '<path d="M14 52c12 3 5-13 18-13s8-15 18-17"/><circle cx="14" cy="52" r="2"/><path d="M50 14l2.2 4.5 4.9.7-3.6 3.4.8 4.9-4.3-2.3-4.3 2.3.8-4.9-3.6-3.4 4.9-.7z"/>',
+    // Escaping Hell — chain link snapping free
+    '2657f6a404fe80a39377f818f69088e8': '<path d="M19 39a8 8 0 0 1 0-15h4"/><path d="M45 25a8 8 0 0 1 0 15h-4"/><path d="M21 31h6M37 31h6"/><path d="M28 20l4 6M32 34l4 6"/><path d="M30 16l2 4 3-3"/>',
+    // The Reality Shifting Entrepreneur — orbiting portal
+    '2677f6a404fe80868f23f0d4a9e4a10f': '<ellipse cx="32" cy="32" rx="9" ry="21"/><ellipse cx="32" cy="32" rx="21" ry="9"/><circle cx="32" cy="32" r="15"/><circle cx="32" cy="32" r="3"/>',
+    // The Secrets Of The Rich — ornate key
+    '2677f6a404fe80b68ca1d3a0b89935cb': '<circle cx="22" cy="24" r="8"/><circle cx="22" cy="24" r="3"/><path d="M27 29l16 16M38 40l5 5M43 45l4-4"/>',
+    // Copywriting Accelerator — quill pen with speed lines
+    '2657f6a404fe8063b28befa244d242fb': '<path d="M46 12l6 6-23 23-9 2 2-9z"/><path d="M41 17l6 6"/><path d="M12 22h9M8 31h12M12 40h7"/>',
+    // Copywriting Ebook — e-reader with text + edit pen
+    '2677f6a404fe80a5883bd11bf46f12df': '<rect x="15" y="12" width="30" height="40" rx="4"/><path d="M21 22h18M21 29h18M21 36h12"/><path d="M34 45l6-6 3 3-6 6z"/>',
+    // Copywriting Mastery — fountain pen nib
+    '2677f6a404fe80c0ad50cad95fe64ad8': '<path d="M32 9l11 27-11 13-11-13z"/><path d="M32 22v27"/><path d="M26 31h12"/><circle cx="32" cy="28" r="2.6"/>',
+    // 30 Day: Build A Profitable Business — calendar with growth bars
+    '2677f6a404fe808d8570d2e480640ed0': '<rect x="13" y="15" width="38" height="35" rx="3"/><path d="M13 25h38M23 11v8M41 11v8"/><path d="M22 43v-5M30 43v-11M38 43v-7"/>',
+    // Make A Product That Prints $ — 3D product box
+    '2677f6a404fe800f961fc556fca02dd7': '<path d="M32 11l19 9-19 9-19-9z"/><path d="M13 20v19l19 9 19-9V20"/><path d="M32 29v19"/><path d="M41 15l-18 9"/>',
+    // The Inbound Method — magnet attracting leads
+    '2677f6a404fe803a8e7de03cb9780d01': '<path d="M21 13v16a11 11 0 0 0 22 0V13"/><path d="M21 13h8v16a3 3 0 0 0 6 0V13h8"/><path d="M21 29h8M35 29h8"/><circle cx="12" cy="47" r="2"/><circle cx="52" cy="47" r="2"/><path d="M15 44l6-4M49 44l-6-4"/>',
+    // The Sales Mastery Protocol — growth bars + uptrend arrow
+    '2677f6a404fe80aebc39fc995d17b4ca': '<path d="M13 50h38M13 50V13"/><path d="M18 42l9-11 7 7 15-19"/><path d="M43 13h6v6"/><rect x="18" y="44" width="5" height="6"/><rect x="28" y="40" width="5" height="10"/><rect x="38" y="35" width="5" height="15"/>',
+    // Advanced Content Playbook — video play card
+    '2677f6a404fe80e1b484fb5a002d6be0': '<rect x="12" y="13" width="40" height="30" rx="6"/><path d="M27 23l11 7-11 7z"/><path d="M20 50h24"/>',
+    // Personal Brand Mastery — figure inside badge ring + star
+    '2677f6a404fe8001a04ddb7ac6510f10': '<circle cx="32" cy="25" r="6"/><path d="M21 44a11 11 0 0 1 22 0"/><circle cx="32" cy="32" r="20"/><path d="M32 7l1.5 3 3.4.5-2.5 2.4.6 3.4-3-1.6-3 1.6.6-3.4L27 10.5l3.4-.5z"/>',
+    // AI Human Behavioural / Emotion Vault — head + heart + circuit
+    '2677f6a404fe808aa16dd9956de183e3': '<circle cx="32" cy="29" r="15"/><path d="M32 38c-5-3-8-6-8-10a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 4-3 7-8 10z"/><path d="M17 24h-5M52 24h-5M21 14l-3-3M43 14l3-3"/>',
+    // Diving Into The Writing Psychology — pen nib meets brain
+    '2677f6a404fe80889e57fd29dd27764c': '<path d="M40 9l8 8-15 15-6 1 1-6z"/><path d="M40 9l8 8"/><path d="M22 35c-3 0-5 2-5 5s2 5 5 5c1 2 4 2 6 1 2 1 5 0 5-3 3-1 2-5-1-6 1-3-2-6-5-4-2-2-5-1-6 2z"/>',
+    // Premium Archive — faceted gem
+    '2677f6a404fe808484cac7637b635c97': '<path d="M20 14h24l9 12-21 23-21-23z"/><path d="M11 26h42M24 14l-4 12 12 23M40 14l4 12-12 23M28 14l-4 12M36 14l4 12"/>',
 
-    // Health & Investing
-    '2677f6a404fe8023bd9ffa086c0964cd': '<path d="M26 44V18l16-4v26"/><circle cx="22" cy="44" r="5"/><circle cx="38" cy="40" r="5"/><path d="M26 24l16-4"/>', // Terminate Playlist
-    '2677f6a404fe80f38c4efd11bdff48de': '<path d="M16 24v16M22 20v24M42 20v24M48 24v16M22 32h20"/>', // Bulking Protocol
-    '2677f6a404fe804b853ce30243211e3a': '<path d="M32 46C20 38 14 32 14 24a9 9 0 0 1 18-3 9 9 0 0 1 18 3c0 8-6 14-18 22z"/><path d="M20 30h6l3-6 4 12 3-6h8"/>', // Health Ascendance
-    '2677f6a404fe809a999aef95cdf1bdec': '<path d="M22 12c0 10 20 10 20 20s-20 10-20 20"/><path d="M42 12c0 10-20 10-20 20s20 10 20 20"/><path d="M24 18h16M22 32h20M24 46h16"/>', // Biohacking
-    '2677f6a404fe800498ade17f513f47b0': '<path d="M14 48h36"/><path d="M21.5 20v8M21.5 36v6M31.5 16v6M31.5 34v8M41.5 24v6M41.5 40v4"/><rect x="18" y="28" width="7" height="8"/><rect x="28" y="22" width="7" height="12"/><rect x="38" y="30" width="7" height="10"/>', // Full Investing Guide
+    // ───────── Health & Investing ─────────
+    // Terminate Playlist — headphones
+    '2677f6a404fe8023bd9ffa086c0964cd': '<path d="M15 37v-5a17 17 0 0 1 34 0v5"/><rect x="11" y="35" width="8" height="15" rx="3"/><rect x="45" y="35" width="8" height="15" rx="3"/>',
+    // Bulking Protocol — dumbbell
+    '2677f6a404fe80f38c4efd11bdff48de': '<path d="M14 24v16M20 19v26M44 19v26M50 24v16M20 32h24"/>',
+    // Health Ascendance — heart with EKG pulse
+    '2677f6a404fe804b853ce30243211e3a': '<path d="M32 47C19 38 13 32 13 23a9 9 0 0 1 19-3 9 9 0 0 1 19 3c0 9-6 15-19 24z"/><path d="M18 27h6l3-7 4 14 3-7h9"/>',
+    // Biohacking — DNA double helix
+    '2677f6a404fe809a999aef95cdf1bdec': '<path d="M22 11c0 11 20 11 20 21s-20 10-20 21"/><path d="M42 11c0 11-20 11-20 21s20 10 20 21"/><path d="M25 16h14M23 24h18M23 40h18M25 48h14"/>',
+    // Full Investing Guide — candlestick chart
+    '2677f6a404fe800498ade17f513f47b0': '<path d="M13 49h38"/><rect x="17" y="28" width="7" height="9"/><path d="M20.5 21v7M20.5 37v6"/><rect x="28" y="22" width="7" height="13"/><path d="M31.5 15v7M31.5 35v6"/><rect x="39" y="31" width="7" height="9"/><path d="M42.5 25v6M42.5 40v5"/>',
 
-    // Courses & Systems
-    '26d7f6a404fe80cd86c8cc94b01c2d8c': '<path d="M14 50h36"/><path d="M18 42l8-8 6 4 14-16"/><path d="M40 22h6v6"/><rect x="18" y="30" width="6" height="9"/><rect x="30" y="24" width="6" height="11"/>', // Full Trading Course
-    '26d7f6a404fe8086a447d548edbcaaa8': '<rect x="18" y="18" width="28" height="24" rx="6"/><circle cx="26" cy="30" r="3"/><circle cx="38" cy="30" r="3"/><path d="M32 12v6M26 42v4M38 42v4M46 28h4M14 28h4"/>', // Full AI Girl Course
-    '3027f6a404fe806291f9ffd34e31e573': '<circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="10"/><circle cx="32" cy="32" r="2.5"/>', // The Deep Work System
-    '3027f6a404fe80fe9bfdc1bf1952ed30': '<rect x="14" y="14" width="36" height="36" rx="3"/><path d="M14 26h36M14 38h36M26 14v36M38 14v36"/><circle cx="32" cy="32" r="5"/>', // Efficiency Blueprint
-    '2677f6a404fe8085ada4c31614f46332': '<rect x="16" y="12" width="32" height="40" rx="3"/><path d="M22 22l3 3 5-6M22 34l3 3 5-6"/><path d="M34 22h8M34 36h8"/>', // Daily Quests
-    '27c7f6a404fe8061b8bed99d2bae344f': '<rect x="14" y="14" width="14" height="14" rx="2"/><rect x="36" y="14" width="14" height="14" rx="2"/><rect x="14" y="36" width="14" height="14" rx="2"/><path d="M43 36v14M36 43h14"/>', // More Courses
+    // ───────── Courses & Systems ─────────
+    // Full Trading Course — candles + trend arrow
+    '26d7f6a404fe80cd86c8cc94b01c2d8c': '<path d="M13 50h38"/><path d="M18 43l9-10 6 5 16-18"/><path d="M43 20h6v6"/><rect x="18" y="33" width="6" height="9"/><rect x="30" y="27" width="6" height="11"/>',
+    // Full AI Girl Course — android head + antenna
+    '26d7f6a404fe8086a447d548edbcaaa8': '<rect x="18" y="16" width="28" height="26" rx="8"/><circle cx="26" cy="29" r="3"/><circle cx="38" cy="29" r="3"/><path d="M27 36h10"/><path d="M32 9v7M27 42v4M37 42v4M46 26h5M13 26h5"/><circle cx="32" cy="8" r="2"/>',
+    // The Deep Work System — focus target + crosshair
+    '3027f6a404fe806291f9ffd34e31e573': '<circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="11"/><circle cx="32" cy="32" r="4"/><path d="M32 6v6M32 52v6M6 32h6M52 32h6"/>',
+    // Efficiency Blueprint — blueprint grid + gear
+    '3027f6a404fe80fe9bfdc1bf1952ed30': '<rect x="13" y="13" width="38" height="38" rx="2"/><path d="M13 26h38M13 38h38M26 13v38M38 13v38"/><circle cx="32" cy="32" r="5"/><path d="M32 25v-2M32 41v-2M25 32h-2M41 32h-2"/>',
+    // Daily Quests — checklist scroll
+    '2677f6a404fe8085ada4c31614f46332': '<rect x="16" y="11" width="32" height="42" rx="3"/><path d="M22 21l3 3 5-6M22 31l3 3 5-6M22 41l3 3 5-6"/><path d="M34 21h9M34 31h9M34 41h6"/>',
+    // More Courses — card grid + plus
+    '27c7f6a404fe8061b8bed99d2bae344f': '<rect x="13" y="13" width="15" height="15" rx="2"/><rect x="36" y="13" width="15" height="15" rx="2"/><rect x="13" y="36" width="15" height="15" rx="2"/><rect x="36" y="36" width="15" height="15" rx="2"/><path d="M43.5 40v7M40 43.5h7"/>',
 
     _default: '<circle cx="32" cy="32" r="16"/><path d="M32 22v20M22 32h20"/>'
   };
