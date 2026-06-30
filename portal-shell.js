@@ -175,6 +175,9 @@ function ensureChromeCss() {
 }
 
 function init() {
+  // When embedded inside another page (e.g. the unified Admin console iframe),
+  // skip the sidebar/nav chrome — the host page already provides navigation.
+  if (window.self !== window.top) { document.body.classList.add('is-embedded'); return; }
   ensureChromeCss();
   const active = document.body.dataset.page || (location.pathname.split('/').pop() || '').replace('.html', '');
   buildShell(active);

@@ -18,9 +18,9 @@
 
   <style>
     /* ═══════════════════════════════════════════════════════════
-       THE ARCANE ARCHIVES — UNIFIED ADMIN HUB
-       Single entry point for all admin functions.
-       Design system mirrored from dashboard.html
+       THE ARCANE ARCHIVES — UNIFIED ADMIN CONSOLE
+       Every admin feature on one page. Each tool runs in its own
+       isolated iframe panel, switched via the tab rail.
        ═══════════════════════════════════════════════════════════ */
     :root {
       --bg-primary:   #030303;
@@ -32,12 +32,10 @@
       --purple:       #8b5cf6;
       --purple-light: #a78bfa;
       --purple-dark:  #7c3aed;
-      --purple-glow:  rgba(139, 92, 246, 0.4);
 
       --gold:         #fbbf24;
       --gold-light:   #fcd34d;
 
-      --blue:         #38bdf8;
       --green:        #22c55e;
       --red:          #ef4444;
 
@@ -48,232 +46,154 @@
       --border:       rgba(255, 255, 255, 0.06);
       --border-hover: rgba(255, 255, 255, 0.12);
 
+      --nav-h: 64px;
+
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --mono: 'JetBrains Mono', monospace;
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    html { -webkit-tap-highlight-color: transparent; }
     body {
       font-family: var(--font);
       background: var(--bg-primary);
       color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
     a { text-decoration: none; color: inherit; }
-    button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; }
+    button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; color: inherit; }
     svg { display: block; }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
 
-    /* ── Ambient background ── */
-    .bg-gradient {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(139,92,246,0.14), transparent),
-        radial-gradient(ellipse 50% 40% at 100% 0%, rgba(139,92,246,0.06), transparent),
-        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(251,191,36,0.04), transparent),
-        var(--bg-primary);
-    }
-    .grid-overlay {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 40%, transparent 100%);
+    /* ════════ CONSOLE LAYOUT ════════ */
+    .admin-console {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - var(--nav-h) - env(safe-area-inset-top, 0px));
     }
 
-    /* ════════ MAIN ════════ */
-    .admin-main {
-      position: relative; z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem 1.75rem 3rem;
+    /* ── Header strip ── */
+    .console-head {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1.4rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
     }
-
-    /* ── Page header ── */
-    .admin-hero { margin-bottom: 2.5rem; }
-    .admin-hero-badge {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.35rem 0.8rem; border-radius: 999px;
+    .console-title { font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em; }
+    .console-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.22rem 0.6rem; border-radius: 999px;
       background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25);
-      color: var(--gold); font-size: 0.68rem; font-weight: 800;
+      color: var(--gold); font-size: 0.6rem; font-weight: 800;
       letter-spacing: 0.12em; text-transform: uppercase;
     }
-    .admin-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
-    .admin-hero-title {
-      font-size: clamp(1.6rem, 4vw, 2.3rem); font-weight: 900; letter-spacing: -0.02em;
-      margin: 0.9rem 0 0.4rem;
+    .console-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+    .console-open {
+      margin-left: auto;
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.45rem 0.85rem; border-radius: 9px;
+      border: 1px solid var(--border-hover); background: var(--bg-card);
+      color: var(--text-secondary); font-size: 0.78rem; font-weight: 600;
+      transition: all 0.2s;
     }
-    .admin-hero-title span {
-      background: linear-gradient(135deg, #fff 0%, var(--purple-light) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .admin-hero-sub { color: var(--text-secondary); font-size: 0.95rem; max-width: 620px; }
+    .console-open:hover { color: #fff; border-color: var(--purple); background: var(--bg-elevated); }
 
-    /* ── Loading / access states ── */
+    /* ── Tab rail ── */
+    .console-tabs {
+      flex-shrink: 0;
+      display: flex; gap: 0.4rem;
+      padding: 0.6rem 1.4rem;
+      overflow-x: auto; overflow-y: hidden;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,10,0.6);
+      scrollbar-width: thin;
+    }
+    .console-tabs::-webkit-scrollbar { height: 6px; }
+    .console-tabs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+    .tab {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      flex-shrink: 0;
+      padding: 0.55rem 0.95rem; border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 0.83rem; font-weight: 600; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab .tab-ico { font-size: 1rem; line-height: 1; }
+    .tab:hover { color: #fff; border-color: var(--border-hover); background: var(--bg-elevated); }
+    .tab.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(139,92,246,0.22), rgba(139,92,246,0.06));
+      border-color: rgba(139,92,246,0.4);
+      box-shadow: 0 0 0 1px rgba(139,92,246,0.12);
+    }
+
+    /* ── Frame area ── */
+    .console-stage { position: relative; flex: 1; min-height: 0; background: var(--bg-primary); }
+    .console-frame { width: 100%; height: 100%; border: 0; display: block; background: var(--bg-primary); }
+    .console-loading {
+      position: absolute; inset: 0; z-index: 5;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.9rem;
+      background: var(--bg-primary);
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .console-loading.show { opacity: 1; pointer-events: all; }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid rgba(139,92,246,0.2); border-top-color: var(--purple);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .console-loading-text { color: var(--text-muted); font-size: 0.82rem; letter-spacing: 0.04em; }
+
+    /* ── Access gate ── */
     .admin-gate {
       position: fixed; inset: 0; z-index: 5000;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
       background: var(--bg-primary);
     }
     .admin-gate.hidden { display: none; }
-    .admin-gate-spinner {
-      width: 38px; height: 38px; border-radius: 50%;
-      border: 3px solid rgba(139,92,246,0.2); border-top-color: var(--purple);
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
     .admin-gate-text { color: var(--text-muted); font-size: 0.85rem; letter-spacing: 0.04em; }
 
-    /* ── Section ── */
-    .admin-group { margin-bottom: 2.5rem; }
-    .admin-group-header { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 1.2rem; }
-    .admin-group-title { font-size: 0.95rem; font-weight: 800; letter-spacing: 0.02em; color: var(--gold-light); }
-    .admin-group-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
-
-    /* ── Card grid ── */
-    .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .admin-card {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 1.1rem 1.2rem; border-radius: 14px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    .admin-card:hover { transform: translateY(-4px); border-color: var(--border-hover); background: var(--bg-elevated); box-shadow: 0 18px 40px rgba(0,0,0,0.4); }
-    .admin-icon {
-      width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; font-size: 1.25rem;
-      display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.04));
-      border: 1px solid rgba(251,191,36,0.25);
-    }
-    .admin-info { flex: 1; min-width: 0; }
-    .admin-title { font-weight: 700; font-size: 0.95rem; }
-    .admin-desc { color: var(--text-muted); font-size: 0.8rem; }
-    .admin-arrow { color: var(--text-muted); font-size: 1.05rem; transition: transform 0.25s, color 0.25s; }
-    .admin-card:hover .admin-arrow { color: var(--purple-light); transform: translateX(3px); }
-
-    /* ── Footer ── */
-    .admin-footer {
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
-      margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
-    }
-    .version-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.04em; }
-    .logout-btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.6rem 1.2rem; border-radius: 10px;
-      border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.06); color: #fca5a5;
-      font-weight: 700; font-size: 0.82rem; transition: all 0.2s;
-    }
-    .logout-btn:hover { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.4); color: #fff; }
-
     @media (max-width: 640px) {
-      .admin-main { padding: 1.5rem 1.1rem 2.5rem; }
+      .console-head { padding: 0.7rem 1rem 0.6rem; }
+      .console-tabs { padding: 0.55rem 1rem; }
+      .console-open .open-label { display: none; }
     }
   </style>
 </head>
 <body data-page="admin">
-  <div class="bg-gradient"></div>
-  <div class="grid-overlay"></div>
 
-  <!-- ════════ ACCESS GATE (shown until admin verified) ════════ -->
+  <!-- ════════ ACCESS GATE ════════ -->
   <div class="admin-gate" id="admin-gate">
-    <div class="admin-gate-spinner"></div>
+    <div class="spinner"></div>
     <div class="admin-gate-text">Verifying admin access…</div>
   </div>
 
-  <main class="admin-main" id="admin-main" style="display:none">
-
-    <!-- ── Hero ── -->
-    <div class="admin-hero">
-      <span class="admin-hero-badge"><span class="admin-hero-badge-dot"></span>Admin Only</span>
-      <h1 class="admin-hero-title">Admin <span>Control Center</span></h1>
-      <p class="admin-hero-sub">Every admin function in one place — trading operations, members &amp; sales, commerce, and content.</p>
+  <main class="admin-console" id="admin-console" style="display:none">
+    <div class="console-head">
+      <span class="console-title">Admin Control Center</span>
+      <span class="console-badge"><span class="console-badge-dot"></span>Admin Only</span>
+      <a class="console-open" id="open-standalone" href="#" target="_blank" rel="noopener" title="Open current tool in a full tab">
+        <span class="open-label">Open in tab</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
     </div>
 
-    <!-- ── Trading & Signals ── -->
-    <section class="admin-group">
-      <div class="admin-group-header">
-        <div class="admin-group-title">Trading &amp; Signals</div>
-        <div class="admin-group-line"></div>
-      </div>
-      <div class="tile-grid">
-        <a class="admin-card" href="admin-panel.html">
-          <div class="admin-icon">🛡️</div>
-          <div class="admin-info"><div class="admin-title">Trades &amp; Alerts</div><div class="admin-desc">Stock picks, trade alerts &amp; history</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-        <a class="admin-card" href="stock-picks-admin.html">
-          <div class="admin-icon">📊</div>
-          <div class="admin-info"><div class="admin-title">Stock Picks</div><div class="admin-desc">Manage investment picks</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-        <a class="admin-card" href="arcane-insight-admin.html">
-          <div class="admin-icon">🧠</div>
-          <div class="admin-info"><div class="admin-title">Arcane Insights</div><div class="admin-desc">Posts &amp; intel updates</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-      </div>
-    </section>
+    <nav class="console-tabs" id="console-tabs" role="tablist"></nav>
 
-    <!-- ── Members & Sales ── -->
-    <section class="admin-group">
-      <div class="admin-group-header">
-        <div class="admin-group-title">Members &amp; Sales</div>
-        <div class="admin-group-line"></div>
+    <div class="console-stage">
+      <iframe class="console-frame" id="console-frame" title="Admin tool" allow="clipboard-read; clipboard-write"></iframe>
+      <div class="console-loading show" id="console-loading">
+        <div class="spinner"></div>
+        <div class="console-loading-text">Loading…</div>
       </div>
-      <div class="tile-grid">
-        <a class="admin-card" href="arcane-crm.html">
-          <div class="admin-icon">👥</div>
-          <div class="admin-info"><div class="admin-title">Member CRM</div><div class="admin-desc">Members &amp; subscriptions</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-        <a class="admin-card" href="arcane-consulting-crm.html">
-          <div class="admin-icon">💼</div>
-          <div class="admin-info"><div class="admin-title">Consulting CRM</div><div class="admin-desc">Leads, pipeline &amp; payments</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-        <a class="admin-card" href="affiliate-admin.html">
-          <div class="admin-icon">🔗</div>
-          <div class="admin-info"><div class="admin-title">Affiliates</div><div class="admin-desc">Referrals &amp; commissions</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-      </div>
-    </section>
-
-    <!-- ── Commerce ── -->
-    <section class="admin-group">
-      <div class="admin-group-header">
-        <div class="admin-group-title">Commerce</div>
-        <div class="admin-group-line"></div>
-      </div>
-      <div class="tile-grid">
-        <a class="admin-card" href="store-admin.html">
-          <div class="admin-icon">🏪</div>
-          <div class="admin-info"><div class="admin-title">Store Admin</div><div class="admin-desc">Products &amp; orders</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-        <a class="admin-card" href="bullion-admin.html">
-          <div class="admin-icon">🥇</div>
-          <div class="admin-info"><div class="admin-title">Bullion Admin</div><div class="admin-desc">Products &amp; enquiries</div></div>
-          <span class="admin-arrow">→</span>
-        </a>
-      </div>
-    </section>
-
-    <!-- ── Footer ── -->
-    <div class="admin-footer">
-      <span class="version-tag">The Arcane Archives · Admin · v2.0</span>
-      <button class="logout-btn" id="logout-btn"><span>⏻</span> Log Out</button>
     </div>
-
   </main>
 
   <!-- ════════ SCRIPTS ════════ -->
@@ -281,12 +201,68 @@
     import { auth, ADMIN_UIDS } from './auth-guard.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 
+    // Every admin tool, grouped logically. id is used in the URL hash.
+    const TOOLS = [
+      { id: 'trades',     label: 'Trades & Alerts', icon: '🛡️', src: 'admin-panel.html' },
+      { id: 'stocks',     label: 'Stock Picks',     icon: '📊', src: 'stock-picks-admin.html' },
+      { id: 'insights',   label: 'Arcane Insights', icon: '🧠', src: 'arcane-insight-admin.html' },
+      { id: 'members',    label: 'Member CRM',      icon: '👥', src: 'arcane-crm.html' },
+      { id: 'consulting', label: 'Consulting CRM',  icon: '💼', src: 'arcane-consulting-crm.html' },
+      { id: 'affiliates', label: 'Affiliates',      icon: '🔗', src: 'affiliate-admin.html' },
+      { id: 'store',      label: 'Store Admin',     icon: '🏪', src: 'store-admin.html' },
+      { id: 'bullion',    label: 'Bullion Admin',   icon: '🥇', src: 'bullion-admin.html' },
+    ];
+
+    const tabsEl    = document.getElementById('console-tabs');
+    const frameEl   = document.getElementById('console-frame');
+    const loadingEl = document.getElementById('console-loading');
+    const openEl    = document.getElementById('open-standalone');
+    let activeId    = null;
+
+    // Build tabs
+    TOOLS.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'tab';
+      b.dataset.id = t.id;
+      b.setAttribute('role', 'tab');
+      b.innerHTML = `<span class="tab-ico">${t.icon}</span><span>${t.label}</span>`;
+      b.addEventListener('click', () => selectTool(t.id, true));
+      tabsEl.appendChild(b);
+    });
+
+    function selectTool(id, updateHash) {
+      const tool = TOOLS.find(t => t.id === id) || TOOLS[0];
+      if (tool.id === activeId) return;
+      activeId = tool.id;
+
+      tabsEl.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.id === tool.id));
+      openEl.href = tool.src;
+      loadingEl.classList.add('show');
+      frameEl.src = tool.src;
+
+      if (updateHash) {
+        const newHash = '#' + tool.id;
+        if (location.hash !== newHash) history.replaceState(null, '', newHash);
+      }
+      document.title = `${tool.label} · Admin | The Arcane Archives`;
+    }
+
+    frameEl.addEventListener('load', () => loadingEl.classList.remove('show'));
+
+    // Respond to hash changes (deep links / back-forward)
+    window.addEventListener('hashchange', () => {
+      const id = location.hash.replace('#', '');
+      if (TOOLS.some(t => t.id === id)) selectTool(id, false);
+    });
+
+    // ── Auth gate ──
     onAuthStateChanged(auth, user => {
       if (!user) { location.href = 'login.html'; return; }
       if (!ADMIN_UIDS.includes(user.uid)) { location.href = 'dashboard.html'; return; }
-      // Admin verified — reveal the hub
       document.getElementById('admin-gate').classList.add('hidden');
-      document.getElementById('admin-main').style.display = '';
+      document.getElementById('admin-console').style.display = '';
+      const initial = location.hash.replace('#', '');
+      selectTool(TOOLS.some(t => t.id === initial) ? initial : TOOLS[0].id, true);
     });
   </script>
   <script type="module" src="portal-shell.js"></script>
