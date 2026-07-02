@@ -43,6 +43,11 @@ service cloud.firestore {
       return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
     }
 
+    // Field must be absent or exactly zero (blocks self-assigned balances)
+    function zeroOrAbsent(field) {
+      return !(field in request.resource.data) || request.resource.data[field] == 0;
+    }
+
     // ============================================================
     // SYSTEM / SETTINGS
     // ============================================================
@@ -111,13 +116,19 @@ service cloud.firestore {
 
     match /Affiliates/{userId} {
       allow read: if isAdmin() || isOwner(userId);
-      // Admin: full access. Signup referral attribution: create new or increment totalReferrals
+      // Admin: full access. Signup referral attribution: create new or increment totalReferrals.
+      // Non-admins may only create an affiliate profile with ZERO balances — otherwise a
+      // signed-in user could self-assign a balance and drain it via the store balance-checkout.
       allow create: if isAdmin() || (isSignedIn() &&
         request.resource.data.keys().hasOnly([
           'userId', 'referralCode', 'availableBalance', 'pendingBalance',
           'totalEarnings', 'totalWithdrawn', 'activeReferrals', 'totalReferrals',
           'createdAt', 'lastUpdated'
-        ]));
+        ]) &&
+        zeroOrAbsent('availableBalance') &&
+        zeroOrAbsent('pendingBalance') &&
+        zeroOrAbsent('totalEarnings') &&
+        zeroOrAbsent('totalWithdrawn'));
       allow update: if isAdmin() || (isSignedIn() &&
         request.resource.data.diff(resource.data).changedKeys().hasOnly([
           'totalReferrals', 'lastUpdated'
