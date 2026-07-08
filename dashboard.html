@@ -592,7 +592,7 @@
     <span class="sidebar-nav-label">Dashboard</span>
   </a>
 
-  <a class="sidebar-nav-item" href="https://arcane-watchtower.vercel.app" target="_blank">
+  <a class="sidebar-nav-item" href="https://arcane-watchtower.vercel.app" target="_blank" rel="noopener">
     <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg></span>
     <span class="sidebar-nav-label">Watchtower</span>
   </a>
@@ -892,7 +892,7 @@
       </a>
 
       <!-- 3. WATCHTOWER -->
-      <a class="module-card teal-card" href="https://arcane-watchtower.vercel.app" target="_blank">
+      <a class="module-card teal-card" href="https://arcane-watchtower.vercel.app" target="_blank" rel="noopener">
         <div class="card-visual watch-bg">
           <div class="card-grid-fine"></div>
           <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
@@ -1319,7 +1319,7 @@
       const name = data.displayName || user.displayName || user.email?.split('@')[0] || 'Operator';
       document.getElementById('user-name').textContent = name;
 
-      const balance = data.balance ?? 0;
+      const balance = Number(data.balance) || 0;
       document.getElementById('nav-balance').textContent = `£${balance.toFixed(2)}`;
       document.getElementById('pill-credits').textContent = `£${balance.toFixed(2)}`;
 
@@ -1369,36 +1369,6 @@
     statusEl.textContent = 'MARKETS CLOSED';
     statusEl.style.color = 'var(--red)';
     dotEl.className = 'dot dot-market-closed';
-  }
-})();
-
-/* ══ Geopolitical alert in ticker ══ */
-(function injectAlertTicker() {
-  const ALERTS = [
-    '⚠ GEOPOLITICAL: Middle East tensions — Oil volatility elevated',
-    '⚠ MACRO ALERT: Fed rate decision pending — High-impact event',
-    '⚠ MARKET ALERT: VIX elevated — Risk-off conditions in play',
-    '⚠ GEOPOLITICAL: USD strength — EM currencies under pressure',
-  ];
-  const alert = ALERTS[Math.floor(Math.random() * ALERTS.length)];
-  const alertHtml = `<div class="nav-ticker-item t-alert-item" style="border-right:1px solid var(--border)">
-    <span class="t-sym">▲</span>
-    <span class="t-price">${alert}</span>
-  </div>`;
-
-  let _injecting = false;
-  const track = document.getElementById('nav-ticker-track');
-  if (!track) return;
-
-  const obs = new MutationObserver(() => {
-    if (_injecting || track.querySelector('.t-alert-item')) return;
-    _injecting = true;
-    track.insertAdjacentHTML('afterbegin', alertHtml);
-    _injecting = false;
-  });
-  obs.observe(track, { childList: true });
-  if (track.children.length > 0 && !track.querySelector('.t-alert-item')) {
-    track.insertAdjacentHTML('afterbegin', alertHtml);
   }
 })();
 
