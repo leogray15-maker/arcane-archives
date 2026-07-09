@@ -52,9 +52,19 @@ module.exports = async (req, res) => {
     const d2 = new Date();
     const d1 = new Date(Date.now() - days * 86400000);
     const url = `https://stooq.com/q/d/l/?s=${encodeURIComponent(stooqSym)}&i=d&d1=${ymd(d1)}&d2=${ymd(d2)}`;
-    const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/csv' } });
-    if (!r.ok) throw new Error('upstream ' + r.status);
-    const text = await r.text();
+    let text = null;
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/csv' } });
+      if (r.ok) { const t = await r.text(); if (/^date,open/i.test(t.trim())) text = t; }
+    } catch (e) { /* fall through to proxy */ }
+    if (!text) {
+      // Stooq refused this host — retry through AllOrigins
+      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), {
+        headers: { 'User-Agent': UA, Accept: 'text/csv' },
+      });
+      if (!r.ok) throw new Error('upstream ' + r.status);
+      text = await r.text();
+    }
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2 || !/^date,open/i.test(lines[0])) throw new Error('no data');
 

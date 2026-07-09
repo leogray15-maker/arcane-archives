@@ -160,13 +160,130 @@
         const price = parseFloat(j && j.price);
         if (isNaN(price) || price <= 0) return;
         const prev = _data[sym];
-        // Fresh real-time spot; keep the day % change (and OHLC) the server gave us
-        setLive(sym, price, prev && prev.live ? prev.change : null, prev && prev.live ? {
+        // Fresh real-time spot; keep the day % change (and OHLC) the server
+        // gave us, or fall back to today's local anchor movement
+        const change = (prev && prev.live && prev.change != null)
+          ? prev.change
+          : metalAnchorChange(sym, price);
+        setLive(sym, price, change, prev && prev.live ? {
           open: prev.open, high: prev.high, low: prev.low, vol: prev.vol,
         } : undefined);
       } catch (e) { /* optional */ }
     };
     await Promise.all([grab('XAU', 'XAU'), grab('XAG', 'XAG')]);
+  }
+
+  /* ─── Stooq snapshot from the BROWSER via AllOrigins — kicks in when the
+   *     server proxy comes back with little or no TradFi data (e.g. the
+   *     host's IP is blocked upstream). Same symbol map as the server. ─── */
+  const STOOQ_CLIENT_MAP = {
+    SPX: '^spx', NDQ: '^ndq', DOW: '^dji', FTSE: '^ukx', VIX: '^vix',
+    XAU: 'xauusd', XAG: 'xagusd',
+    WTI: 'cl.f', BRENT: 'cb.f', NATGAS: 'ng.f', COPPER: 'hg.f',
+    US10Y: '10yusy.b',
+    EURUSD: 'eurusd', GBPUSD: 'gbpusd', USDJPY: 'usdjpy',
+    AUDUSD: 'audusd', USDCAD: 'usdcad', USDCHF: 'usdchf',
+  };
+
+  async function fetchStooqDirect() {
+    // Only bother when the server pipeline failed to deliver the indices
+    if (_data.SPX?.live && _data.VIX?.live) return;
+    try {
+      const syms = Object.values(STOOQ_CLIENT_MAP).map(encodeURIComponent).join('+');
+      const url = `https://stooq.com/q/l/?s=${syms}&f=sd2t2ohlcv&h&e=csv`;
+      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+      if (!r.ok) return;
+      const text = await r.text();
+      if (!/^symbol,/i.test(text.trim())) return;
+      const rows = text.trim().split(/\r?\n/).slice(1);
+      const bySym = {};
+      rows.forEach(ln => {
+        const [sym, , , o, h, l, c, v] = ln.split(',');
+        const close = parseFloat(c), open = parseFloat(o);
+        if (!sym || isNaN(close)) return;
+        bySym[sym.toLowerCase()] = {
+          price: close,
+          change: (!isNaN(open) && open !== 0) ? ((close - open) / open) * 100 : null,
+          open: isNaN(open) ? undefined : open,
+          high: isNaN(parseFloat(h)) ? undefined : parseFloat(h),
+          low:  isNaN(parseFloat(l)) ? undefined : parseFloat(l),
+          vol:  parseFloat(v) > 0 ? parseFloat(v) : undefined,
+        };
+      });
+      Object.entries(STOOQ_CLIENT_MAP).forEach(([key, ss]) => {
+        const q = bySym[ss];
+        if (q && !_data[key]?.live) setLive(key, q.price, q.change, { open: q.open, high: q.high, low: q.low, vol: q.vol });
+      });
+    } catch (e) { /* optional layer */ }
+  }
+
+  /* ─── FX day % change from Frankfurter (ECB reference rates — free, CORS).
+   *     er-api/Stooq give prices; this fills the change when nothing else
+   *     did. Also feeds SEK into the computed DXY. ─── */
+  let _fxChange = null; // { EURUSD: pct, ... , _USDSEK: pct }
+  async function fetchFXChanges() {
+    try {
+      const start = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+      const r = await fetch(`https://api.frankfurter.dev/v1/${start}..?base=USD&symbols=EUR,GBP,JPY,AUD,CAD,CHF,SEK`);
+      if (!r.ok) return;
+      const j = await r.json();
+      const dates = Object.keys(j.rates || {}).sort();
+      if (dates.length < 2) return;
+      const cur = j.rates[dates[dates.length - 1]], prev = j.rates[dates[dates.length - 2]];
+      const usdChg = (ccy) => (cur[ccy] && prev[ccy]) ? ((cur[ccy] / prev[ccy]) - 1) * 100 : null;   // USDXXX pairs
+      const invChg = (ccy) => (cur[ccy] && prev[ccy]) ? ((prev[ccy] / cur[ccy]) - 1) * 100 : null;   // XXXUSD pairs
+      _fxChange = {
+        EURUSD: invChg('EUR'), GBPUSD: invChg('GBP'), AUDUSD: invChg('AUD'),
+        USDJPY: usdChg('JPY'), USDCAD: usdChg('CAD'), USDCHF: usdChg('CHF'),
+        _USDSEK: usdChg('SEK'),
+        _USDSEK_RATE: cur.SEK || null,
+      };
+      Object.entries(_fxChange).forEach(([sym, chg]) => {
+        if (sym.startsWith('_')) return;
+        const d = _data[sym];
+        if (d && d.price != null && (d.change == null || !d.live)) {
+          setLive(sym, d.price, chg, { open: d.open, high: d.high, low: d.low, vol: d.vol });
+        }
+      });
+      if (_data.EURUSD?.price && _data.GBPUSD?.price && _data.EURGBP && _data.EURGBP.change == null) {
+        const eg = (_fxChange.EURUSD != null && _fxChange.GBPUSD != null) ? _fxChange.EURUSD - _fxChange.GBPUSD : null;
+        setLive('EURGBP', _data.EURGBP.price, eg);
+      }
+    } catch (e) { /* optional layer */ }
+  }
+
+  /* ─── Computed ICE Dollar Index when no provider returns DXY ─── */
+  function computeDXYClient() {
+    if (_data.DXY?.live) return;
+    const p = (k) => _data[k]?.live ? _data[k].price : null;
+    const eur = p('EURUSD'), jpy = p('USDJPY'), gbp = p('GBPUSD'),
+          cad = p('USDCAD'), chf = p('USDCHF'), sek = _fxChange?._USDSEK_RATE;
+    if (!eur || !jpy || !gbp || !cad || !chf || !sek) return;
+    const price = 50.14348112 *
+      Math.pow(eur, -0.576) * Math.pow(jpy, 0.136) * Math.pow(gbp, -0.119) *
+      Math.pow(cad, 0.091) * Math.pow(sek, 0.042) * Math.pow(chf, 0.036);
+    let change = null;
+    if (_fxChange && _fxChange.EURUSD != null) {
+      change = (_fxChange.EURUSD * -0.576) + (_fxChange.USDJPY * 0.136) + (_fxChange.GBPUSD * -0.119) +
+               (_fxChange.USDCAD * 0.091) + ((_fxChange._USDSEK ?? 0) * 0.042) + (_fxChange.USDCHF * 0.036);
+    }
+    setLive('DXY', parseFloat(price.toFixed(2)), change != null ? parseFloat(change.toFixed(2)) : null);
+  }
+
+  /* ─── Metals day-change fallback: anchor the first spot seen each UTC day
+   *     in localStorage and measure movement against it (only used when no
+   *     provider supplied a real day change). ─── */
+  function metalAnchorChange(sym, price) {
+    try {
+      const day = new Date().toISOString().slice(0, 10);
+      const key = 'arcane_anchor_' + sym;
+      const stored = JSON.parse(localStorage.getItem(key) || 'null');
+      if (!stored || stored.day !== day) {
+        localStorage.setItem(key, JSON.stringify({ day, price }));
+        return 0;
+      }
+      return stored.price ? ((price / stored.price) - 1) * 100 : null;
+    } catch (e) { return null; }
   }
 
   /* ─── Crypto direct from Binance (free, no key, CORS — uses the visitor's
@@ -204,9 +321,12 @@
     await fetchFX();                 // er-api FX rates (baseline, no % change)
     await fetchMarkets();            // server: Stooq/Yahoo/AV + crypto globals
     await Promise.all([
+      fetchStooqDirect(),            // browser fallback if the server had no TradFi
+      fetchFXChanges(),              // Frankfurter/ECB: real FX day % changes
       fetchMetalsDirect(),           // gold-api: freshest XAU/XAG spot
       fetchCryptoDirect(),           // Binance: freshest crypto, wins last
     ]);
+    computeDXYClient();              // derived DXY if no provider had it
     notify();
     _initialised = true;
   }

@@ -197,13 +197,35 @@ const STOOQ_MAP = {
   _USDSEK: 'usdsek', // internal — only used for the computed DXY
 };
 
+async function stooqFetchCsv(url) {
+  // Direct first; if Stooq refuses this host's IP, retry through AllOrigins.
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/csv' } });
+    if (r.ok) {
+      const t = await r.text();
+      if (/^symbol,|^date,/i.test(t.trim())) return t;
+    }
+  } catch (e) { /* fall through */ }
+  try {
+    const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), {
+      headers: { 'User-Agent': UA, Accept: 'text/csv' },
+    });
+    if (r.ok) {
+      const t = await r.text();
+      if (/^symbol,|^date,/i.test(t.trim())) return t;
+    }
+  } catch (e) { /* give up */ }
+  return null;
+}
+
 async function stooqAll() {
   try {
-    const syms = Object.values(STOOQ_MAP).join('+');
-    const url = `https://stooq.com/q/l/?s=${encodeURIComponent(syms)}&f=sd2t2ohlcv&h&e=csv`;
-    const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/csv' } });
-    if (!r.ok) return {};
-    const text = await r.text();
+    // NOTE: '+' is Stooq's symbol separator and must stay a raw '+' in the
+    // query string (it decodes to a space); only the symbols get encoded.
+    const syms = Object.values(STOOQ_MAP).map(encodeURIComponent).join('+');
+    const url = `https://stooq.com/q/l/?s=${syms}&f=sd2t2ohlcv&h&e=csv`;
+    const text = await stooqFetchCsv(url);
+    if (!text) return {};
     const lines = text.trim().split(/\r?\n/).slice(1); // drop header
     const byStooq = {};
     lines.forEach((ln) => {
