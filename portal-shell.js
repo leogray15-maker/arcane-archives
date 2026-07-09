@@ -133,7 +133,7 @@ function populateNav() {
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
-      const balance = data.balance ?? 0;
+      const balance = Number(data.balance) || 0;
       const balEl = document.getElementById('nav-balance');
       if (balEl) balEl.textContent = `£${balance.toFixed(2)}`;
       if (user.photoURL) { const a = document.getElementById('nav-avatar'); if (a) a.src = user.photoURL; }
