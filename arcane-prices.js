@@ -303,7 +303,7 @@
         { proName: 'FOREXCOM:SPXUSD',  title: 'S&P 500' },
         { proName: 'CAPITALCOM:VIX',   title: 'VIX' },
         { proName: 'CAPITALCOM:DXY',   title: 'Dollar' },
-        { proName: 'TVC:US10Y',        title: 'US 10Y' },
+        { proName: 'CAPITALCOM:US10Y', title: 'US 10Y' },
         { proName: 'FX:EURUSD',        title: 'EUR/USD' },
         { proName: 'FX:GBPUSD',        title: 'GBP/USD' },
         { proName: 'FX:USDJPY',        title: 'USD/JPY' },
