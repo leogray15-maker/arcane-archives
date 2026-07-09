@@ -165,6 +165,61 @@ async function avAll() {
   return _avCache.data;
 }
 
+/* ─── Stooq — PRIMARY TradFi source (mirror of api/markets.js; see that file). ─── */
+const STOOQ_MAP = {
+  SPX: '^spx', NDQ: '^ndq', DOW: '^dji', FTSE: '^ukx', VIX: '^vix',
+  XAU: 'xauusd', XAG: 'xagusd',
+  WTI: 'cl.f', BRENT: 'cb.f', NATGAS: 'ng.f', COPPER: 'hg.f',
+  US10Y: '10yusy.b',
+  EURUSD: 'eurusd', GBPUSD: 'gbpusd', USDJPY: 'usdjpy',
+  AUDUSD: 'audusd', USDCAD: 'usdcad', USDCHF: 'usdchf',
+  _USDSEK: 'usdsek', // internal — only used for the computed DXY
+};
+
+async function stooqAll() {
+  try {
+    const syms = Object.values(STOOQ_MAP).join('+');
+    const url = `https://stooq.com/q/l/?s=${encodeURIComponent(syms)}&f=sd2t2ohlcv&h&e=csv`;
+    const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/csv' } });
+    if (!r.ok) return {};
+    const text = await r.text();
+    const lines = text.trim().split(/\r?\n/).slice(1);
+    const byStooq = {};
+    lines.forEach((ln) => {
+      const [sym, , , o, h, l, c, v] = ln.split(',');
+      const close = parseFloat(c), open = parseFloat(o);
+      if (!sym || isNaN(close)) return;
+      const entry = {
+        price: close,
+        change: (!isNaN(open) && open !== 0) ? ((close - open) / open) * 100 : null,
+      };
+      const high = parseFloat(h), low = parseFloat(l), vol = parseFloat(v);
+      if (!isNaN(open)) entry.open = open;
+      if (!isNaN(high)) entry.high = high;
+      if (!isNaN(low))  entry.low  = low;
+      if (!isNaN(vol) && vol > 0) entry.vol = vol;
+      byStooq[sym.toLowerCase()] = entry;
+    });
+    const out = {};
+    Object.entries(STOOQ_MAP).forEach(([k, ss]) => { if (byStooq[ss]) out[k] = byStooq[ss]; });
+    return out;
+  } catch (e) { return {}; }
+}
+
+function computeDXY(data) {
+  const g = (k) => data[k] && data[k].price;
+  const eur = g('EURUSD'), jpy = g('USDJPY'), gbp = g('GBPUSD'),
+        cad = g('USDCAD'), sek = g('_USDSEK'), chf = g('USDCHF');
+  if (!eur || !jpy || !gbp || !cad || !sek || !chf) return null;
+  const price = 50.14348112 *
+    Math.pow(eur, -0.576) * Math.pow(jpy, 0.136) * Math.pow(gbp, -0.119) *
+    Math.pow(cad, 0.091) * Math.pow(sek, 0.042) * Math.pow(chf, 0.036);
+  const c = (k, w) => (data[k] && data[k].change != null) ? data[k].change * w : 0;
+  const change = c('EURUSD', -0.576) + c('USDJPY', 0.136) + c('GBPUSD', -0.119) +
+                 c('USDCAD', 0.091) + c('_USDSEK', 0.042) + c('USDCHF', 0.036);
+  return { price: parseFloat(price.toFixed(3)), change: parseFloat(change.toFixed(3)) };
+}
+
 async function cryptoExtras() {
   const out = { crypto: null, global: null };
   try {
@@ -202,13 +257,18 @@ exports.handler = async function () {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, cached: true, ..._cache.data }) };
   }
 
-  const [yData, extras, av] = await Promise.all([yahooAll(), cryptoExtras(), avAll()]);
-  const data = { ...yData, ...av }; // authenticated AV overrides flaky Yahoo
+  const [yData, extras, av, sq] = await Promise.all([yahooAll(), cryptoExtras(), avAll(), stooqAll()]);
+  // Precedence: Stooq (fresh, datacenter-friendly) > AlphaVantage (authenticated) > Yahoo
+  const data = { ...yData, ...av, ...sq };
+  if (!data.DXY) { const dxy = computeDXY(data); if (dxy) data.DXY = dxy; }
+  delete data._USDSEK; // internal component only
   const meta = {
     avKey: !!AV_KEY,
     yahooCount: Object.keys(yData).length,
     avCount: Object.keys(av).length,
     avSymbols: Object.keys(av),
+    stooqCount: Object.keys(sq).filter(k => k[0] !== '_').length,
+    stooqSymbols: Object.keys(sq).filter(k => k[0] !== '_'),
     total: Object.keys(data).length,
   };
   const payload = { data, crypto: extras.crypto, global: extras.global, meta };

@@ -1,25 +1,30 @@
 /**
  * arcane-prices.js — Live market data service
- * The Arcane Archives | v2.1
+ * The Arcane Archives | v3.0
  *
- * Sources (all free, NO API key required):
- *  • /api/markets (Yahoo Finance) → real prices + day % change for indices
- *      (SPX, NDQ, DOW, FTSE), VIX, DXY, commodities (WTI, BRENT, NATGAS,
- *      COPPER), metals (XAU, XAG), US10Y, FX pairs AND crypto (BTC, ETH, SOL).
- *  • /api/markets (CoinPaprika)   → crypto market cap, volume, BTC dominance.
- *  • open.er-api.com              → FX rate fallback (no % change).
- *  • Simulation                   → fallback for anything a provider doesn't
- *      return (e.g. UK/DE/JP 10Y yields). Nothing ever breaks.
+ * 100% free sources, NO API keys, NO TradingView:
+ *  • /api/markets (server proxy)  → Stooq primary (indices, metals, energy,
+ *      FX, bonds — price + day % change + OHLC/vol), Yahoo/AlphaVantage
+ *      fallback, CoinPaprika crypto globals. Cached server-side.
+ *  • api.binance.com (direct)     → BTC/ETH/SOL real-time (uses the
+ *      visitor's own IP, so datacenter rate-limits never apply).
+ *  • api.gold-api.com (direct)    → live XAU/XAG spot, CORS-enabled.
+ *  • /api/fx (open.er-api.com)    → FX baseline (no % change).
  *
- * CoinGecko + metals.live were removed: their free tiers block/rate-limit
- * server IPs (HTTP 403/429). Yahoo Finance covers all of it for free.
+ * Anything no provider returns falls back to a STATIC seed value shown with
+ * no % change (— instead of a made-up number). Seeds never overwrite live
+ * data and never drift — the old "simulation" random-walk is gone.
+ *
+ * The shared navbar ticker is rendered by this file as plain DOM from the
+ * same live data (classes .nav-ticker-item / .t-sym / .t-price / .t-chg that
+ * every portal page already styles).
  */
 
 (function () {
   'use strict';
 
   /* ─── Internal state ─────────────────────── */
-  const _data = {};          // { SYM: { price, change, dir } }
+  const _data = {};          // { SYM: { price, change, dir, live?, sim?, open?, high?, low?, vol? } }
   const _callbacks = [];     // subscriber functions
   let   _initialised = false;
 
@@ -49,14 +54,32 @@
     return '$' + n.toLocaleString();
   }
 
-  function set(sym, price, change, extra) {
-    _data[sym] = { price, change, dir: dir(change), ...(extra || {}) };
+  // Live setter — marks the symbol as provider-backed so seeds never touch it
+  function setLive(sym, price, change, extra) {
+    _data[sym] = { price, change, dir: dir(change), live: true, ...(extra || {}) };
   }
 
-  function noise(range) { return (Math.random() - 0.5) * range; }
+  // Seed setter — only fills a hole; never overwrites anything
+  function seed(sym, price) {
+    if (_data[sym]) return;
+    _data[sym] = { price, change: null, dir: 'flat', sim: true };
+  }
 
   function notify() {
     _callbacks.forEach(cb => { try { cb({ ..._data }); } catch(e) {} });
+  }
+
+  /* ─── Last-resort placeholders (shown with "—" change, never drift) ─── */
+  function seedBaselines() {
+    seed('XAU', 4113);   seed('XAG', 48.2);
+    seed('BTC', 62000);  seed('ETH', 1740);   seed('SOL', 77);
+    seed('SPX', 7467);   seed('NDQ', 23900);  seed('DOW', 52200); seed('FTSE', 9200);
+    seed('VIX', 18.4);   seed('DXY', 104.1);
+    seed('WTI', 74.5);   seed('BRENT', 78.2); seed('NATGAS', 3.4); seed('COPPER', 5.1);
+    seed('US10Y', 4.40); seed('UK10Y', 4.55); seed('DE10Y', 2.60); seed('JP10Y', 1.60);
+    seed('EURUSD', 1.1414); seed('GBPUSD', 1.3374); seed('USDJPY', 162.52);
+    seed('AUDUSD', 0.6600); seed('USDCAD', 1.3600); seed('USDCHF', 0.8000);
+    seed('EURGBP', 0.8534);
   }
 
   /* ─── Fetchers ───────────────────────────── */
@@ -69,31 +92,34 @@
       try {
         console.log('%c[ArcanePrices] data sources →',
           'color:#f5c842;font-weight:bold',
-          'AV key:', j.meta?.avKey, '| Yahoo symbols:', j.meta?.yahooCount,
-          '| AlphaVantage symbols:', j.meta?.avCount, j.meta?.avSymbols || [],
-          '| total real:', j.meta?.total,
-          '| keys:', Object.keys(j.data || {}).join(','));
+          'Stooq:', j.meta?.stooqCount, j.meta?.stooqSymbols || [],
+          '| Yahoo:', j.meta?.yahooCount,
+          '| AV key:', j.meta?.avKey, 'AV:', j.meta?.avCount,
+          '| total real:', j.meta?.total);
       } catch (_) {}
       const d = j && j.data;
       if (!d) return;
 
-      // Real price + day % change for every instrument Yahoo returned
-      // (indices, commodities, bonds, metals, FX, crypto). Overrides sim.
+      // Real price + day % change (+ OHLC/volume when the source has them)
       Object.entries(d).forEach(([sym, v]) => {
-        if (v && v.price != null) set(sym, v.price, v.change);
+        if (v && v.price != null) {
+          setLive(sym, v.price, v.change, {
+            open: v.open, high: v.high, low: v.low, vol: v.vol,
+          });
+        }
       });
 
       // BTC card extras (market cap / 24h volume) from CoinPaprika
       if (j.crypto && _data.BTC) {
         if (j.crypto.btcMcap != null) _data.BTC.mcap = fmtBig(j.crypto.btcMcap);
-        if (j.crypto.btcVol  != null) _data.BTC.vol  = fmtBig(j.crypto.btcVol);
+        if (j.crypto.btcVol  != null) _data.BTC.vol24 = fmtBig(j.crypto.btcVol);
       }
 
       // Crypto overview panel (total cap, volume, dominance) from CoinPaprika
       if (j.global) {
         const g = j.global;
         const btcDom = g.btcDom || 0;
-        set('CRYPTO_GLOBAL', g.totalMcap || 0, g.change ?? null, {
+        setLive('CRYPTO_GLOBAL', g.totalMcap || 0, g.change ?? null, {
           totalMcap: fmtBig(g.totalMcap || 0),
           totalVol:  fmtBig(g.totalVol  || 0),
           btcDom:    btcDom.toFixed(1) + '%',
@@ -101,7 +127,7 @@
           activeCoinCount: (g.coins || 0).toLocaleString(),
         });
       }
-    } catch (e) { /* keep simulated / fallback values */ }
+    } catch (e) { /* keep whatever we already have */ }
   }
 
   async function fetchFX() {
@@ -111,106 +137,36 @@
       const d = await r.json();
       if (!d.rates) return;
       const { EUR, GBP, JPY, AUD, CAD, CHF } = d.rates;
-      if (EUR) set('EURUSD', parseFloat((1 / EUR).toFixed(4)), null);
-      if (GBP) set('GBPUSD', parseFloat((1 / GBP).toFixed(4)), null);
-      if (JPY) set('USDJPY', parseFloat(JPY.toFixed(2)),       null);
-      if (AUD) set('AUDUSD', parseFloat((1 / AUD).toFixed(4)), null);
-      if (CAD) set('USDCAD', parseFloat(CAD.toFixed(4)),       null);
-      if (CHF) set('USDCHF', parseFloat(CHF.toFixed(4)),       null);
-      if (EUR && GBP) set('EURGBP', parseFloat((GBP / EUR).toFixed(4)), null);
-    } catch(e) {
-      if (!_data.EURUSD) set('EURUSD', 1.0823, null);
-      if (!_data.GBPUSD) set('GBPUSD', 1.2641, null);
-      if (!_data.USDJPY) set('USDJPY', 149.82, null);
-      if (!_data.AUDUSD) set('AUDUSD', 0.6512, null);
-      if (!_data.USDCAD) set('USDCAD', 1.3541, null);
-      if (!_data.USDCHF) set('USDCHF', 0.8921, null);
-      if (!_data.EURGBP) set('EURGBP', 0.8571, null);
-    }
+      // Real rates but no day-change data — keep an existing live change if
+      // a better provider (server Stooq) already supplied one.
+      const keep = (sym) => (_data[sym] && _data[sym].live) ? _data[sym].change : null;
+      if (EUR && !_data.EURUSD?.live) setLive('EURUSD', parseFloat((1 / EUR).toFixed(4)), keep('EURUSD'));
+      if (GBP && !_data.GBPUSD?.live) setLive('GBPUSD', parseFloat((1 / GBP).toFixed(4)), keep('GBPUSD'));
+      if (JPY && !_data.USDJPY?.live) setLive('USDJPY', parseFloat(JPY.toFixed(2)),       keep('USDJPY'));
+      if (AUD && !_data.AUDUSD?.live) setLive('AUDUSD', parseFloat((1 / AUD).toFixed(4)), keep('AUDUSD'));
+      if (CAD && !_data.USDCAD?.live) setLive('USDCAD', parseFloat(CAD.toFixed(4)),       keep('USDCAD'));
+      if (CHF && !_data.USDCHF?.live) setLive('USDCHF', parseFloat(CHF.toFixed(4)),       keep('USDCHF'));
+      if (EUR && GBP && !_data.EURGBP?.live) setLive('EURGBP', parseFloat((GBP / EUR).toFixed(4)), null);
+    } catch(e) { /* seeds cover it */ }
   }
 
-  /* ─── Simulated instruments (no free API) ─── */
-  function simulateMarkets() {
-    // S&P 500
-    const spxBase = _data.SPX?.price || 5871.50;
-    const spxNew  = parseFloat((spxBase + (Math.random() - 0.48) * 8).toFixed(2));
-    set('SPX', spxNew, parseFloat(((spxNew - 5871.50) / 5871.50 * 100).toFixed(2)));
-
-    // Dow Jones
-    const dowBase = _data.DOW?.price || 43820.00;
-    const dowNew  = parseFloat((dowBase + (Math.random() - 0.48) * 45).toFixed(2));
-    set('DOW', dowNew, parseFloat(((dowNew - 43820) / 43820 * 100).toFixed(2)));
-
-    // NASDAQ 100
-    const ndqBase = _data.NDQ?.price || 18820.00;
-    const ndqNew  = parseFloat((ndqBase + (Math.random() - 0.47) * 22).toFixed(2));
-    set('NDQ', ndqNew, parseFloat(((ndqNew - 18820) / 18820 * 100).toFixed(2)));
-
-    // VIX — mean-revert around 18
-    const vixBase = _data.VIX?.price || 18.45;
-    const vixNew  = Math.max(9, parseFloat((vixBase + (Math.random() - 0.52) * 0.3).toFixed(2)));
-    const vixChg  = parseFloat(((vixNew - 18.45) / 18.45 * 100).toFixed(2));
-    set('VIX', vixNew, vixChg);
-
-    // WTI Crude
-    const wtiBase = _data.WTI?.price || 72.45;
-    const wtiNew  = parseFloat((wtiBase + noise(0.4)).toFixed(2));
-    set('WTI', wtiNew, parseFloat(((wtiNew - 72.45) / 72.45 * 100).toFixed(2)));
-
-    // Brent Crude
-    const brtBase = _data.BRENT?.price || 75.80;
-    const brtNew  = parseFloat((brtBase + noise(0.4)).toFixed(2));
-    set('BRENT', brtNew, parseFloat(((brtNew - 75.80) / 75.80 * 100).toFixed(2)));
-
-    // Natural Gas
-    const ngBase = _data.NATGAS?.price || 2.85;
-    const ngNew  = Math.max(1.5, parseFloat((ngBase + noise(0.025)).toFixed(3)));
-    set('NATGAS', ngNew, parseFloat(((ngNew - 2.85) / 2.85 * 100).toFixed(2)));
-
-    // Copper ($/lb)
-    const cuBase = _data.COPPER?.price || 4.12;
-    const cuNew  = parseFloat((cuBase + noise(0.018)).toFixed(3));
-    set('COPPER', cuNew, parseFloat(((cuNew - 4.12) / 4.12 * 100).toFixed(2)));
-
-    // US 10Y Yield
-    const us10Base = _data.US10Y?.price || 4.452;
-    const us10New  = Math.max(0.5, parseFloat((us10Base + noise(0.012)).toFixed(3)));
-    set('US10Y', us10New, parseFloat((us10New - 4.452).toFixed(3)));
-
-    // UK 10Y Gilt
-    const uk10Base = _data.UK10Y?.price || 4.281;
-    const uk10New  = Math.max(0.5, parseFloat((uk10Base + noise(0.010)).toFixed(3)));
-    set('UK10Y', uk10New, parseFloat((uk10New - 4.281).toFixed(3)));
-
-    // German 10Y Bund
-    const de10Base = _data.DE10Y?.price || 2.381;
-    const de10New  = Math.max(-0.5, parseFloat((de10Base + noise(0.008)).toFixed(3)));
-    set('DE10Y', de10New, parseFloat((de10New - 2.381).toFixed(3)));
-
-    // Japan 10Y JGB
-    const jp10Base = _data.JP10Y?.price || 1.042;
-    const jp10New  = Math.max(0, parseFloat((jp10Base + noise(0.005)).toFixed(3)));
-    set('JP10Y', jp10New, parseFloat((jp10New - 1.042).toFixed(3)));
-
-    // DXY (USD Index)
-    const dxyBase = _data.DXY?.price || 104.12;
-    const dxyNew  = parseFloat((dxyBase + noise(0.12)).toFixed(2));
-    set('DXY', dxyNew, parseFloat(((dxyNew - 104.12) / 104.12 * 100).toFixed(2)));
-
-    // ── Crypto + metals baselines (always present so panels never stall;
-    //    overridden each cycle by the live Binance / Yahoo feeds below) ──
-    const xauB = _data.XAU?.price || 2643.20;
-    set('XAU', parseFloat((xauB + noise(1.5)).toFixed(2)), _data.XAU?.change ?? 0.42);
-    const xagB = _data.XAG?.price || 29.84;
-    set('XAG', parseFloat((xagB + noise(0.06)).toFixed(3)), _data.XAG?.change ?? -0.18);
-
-    const btcB = _data.BTC?.price || 96000;
-    set('BTC', parseFloat((btcB + noise(120)).toFixed(0)), _data.BTC?.change ?? 0,
-        { mcap: _data.BTC?.mcap, vol: _data.BTC?.vol });
-    const ethB = _data.ETH?.price || 3400;
-    set('ETH', parseFloat((ethB + noise(8)).toFixed(2)), _data.ETH?.change ?? 0);
-    const solB = _data.SOL?.price || 190;
-    set('SOL', parseFloat((solB + noise(1)).toFixed(2)), _data.SOL?.change ?? 0);
+  /* ─── Metals spot direct from gold-api.com (free, no key, CORS) ─── */
+  async function fetchMetalsDirect() {
+    const grab = async (metal, sym) => {
+      try {
+        const r = await fetch('https://api.gold-api.com/price/' + metal);
+        if (!r.ok) return;
+        const j = await r.json();
+        const price = parseFloat(j && j.price);
+        if (isNaN(price) || price <= 0) return;
+        const prev = _data[sym];
+        // Fresh real-time spot; keep the day % change (and OHLC) the server gave us
+        setLive(sym, price, prev && prev.live ? prev.change : null, prev && prev.live ? {
+          open: prev.open, high: prev.high, low: prev.low, vol: prev.vol,
+        } : undefined);
+      } catch (e) { /* optional */ }
+    };
+    await Promise.all([grab('XAU', 'XAU'), grab('XAG', 'XAG')]);
   }
 
   /* ─── Crypto direct from Binance (free, no key, CORS — uses the visitor's
@@ -230,20 +186,27 @@
         const t = by[bs];
         if (!t) return;
         const prev = _data[sym] || {};
-        const extra = sym === 'BTC'
-          ? { mcap: prev.mcap, vol: prev.vol || fmtBig(parseFloat(t.quoteVolume) || 0) }
-          : undefined;
-        set(sym, parseFloat(t.lastPrice), parseFloat(t.priceChangePercent), extra);
+        setLive(sym, parseFloat(t.lastPrice), parseFloat(t.priceChangePercent), {
+          open: parseFloat(t.openPrice) || undefined,
+          high: parseFloat(t.highPrice) || undefined,
+          low:  parseFloat(t.lowPrice)  || undefined,
+          vol:  parseFloat(t.quoteVolume) || undefined,
+          mcap: prev.mcap,
+          vol24: prev.vol24 || (parseFloat(t.quoteVolume) ? fmtBig(parseFloat(t.quoteVolume)) : undefined),
+        });
       });
-    } catch (e) { /* fall back to Yahoo/sim values */ }
+    } catch (e) { /* server / seed values cover it */ }
   }
 
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
-    simulateMarkets();          // baseline so nothing is ever blank
-    await fetchFX();            // er-api FX rates (no % change) — baseline only
-    await fetchMarkets();       // Yahoo: real prices + % change (overrides FX & sim)
-    await fetchCryptoDirect();  // Binance: most reliable crypto, wins last
+    seedBaselines();                 // fill holes once — never overwrites
+    await fetchFX();                 // er-api FX rates (baseline, no % change)
+    await fetchMarkets();            // server: Stooq/Yahoo/AV + crypto globals
+    await Promise.all([
+      fetchMetalsDirect(),           // gold-api: freshest XAU/XAG spot
+      fetchCryptoDirect(),           // Binance: freshest crypto, wins last
+    ]);
     notify();
     _initialised = true;
   }
@@ -284,38 +247,38 @@
     all() { return { ..._data }; },
   };
 
-  /* ─── Shared navbar ticker — LIVE TradingView Ticker Tape (free, no key) ─── */
-  function updateTicker() {
+  /* ─── Shared navbar ticker — self-rendered DOM, no third-party embeds ─── */
+  const TICKER_SYMBOLS = [
+    ['Gold', 'XAU', 2], ['Silver', 'XAG', 2], ['BTC', 'BTC', 0], ['ETH', 'ETH', 0],
+    ['SOL', 'SOL', 2], ['WTI Oil', 'WTI', 2], ['S&P 500', 'SPX', 1], ['Nasdaq', 'NDQ', 0],
+    ['Dow', 'DOW', 0], ['VIX', 'VIX', 2], ['Dollar', 'DXY', 2], ['US 10Y', 'US10Y', 2],
+    ['EUR/USD', 'EURUSD', 4], ['GBP/USD', 'GBPUSD', 4], ['USD/JPY', 'USDJPY', 2],
+  ];
+
+  function updateTicker(data) {
     const wrap = document.querySelector('.nav-ticker-wrap');
-    if (!wrap || wrap.dataset.tv) return;   // mount once
-    wrap.dataset.tv = '1';
-    wrap.innerHTML = '<div class="tradingview-widget-container" style="width:100%"><div class="tradingview-widget-container__widget"></div></div>';
-    const s = document.createElement('script');
-    s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
-    s.async = true;
-    s.text = JSON.stringify({
-      symbols: [
-        { proName: 'TVC:GOLD',         title: 'Gold' },
-        { proName: 'TVC:SILVER',       title: 'Silver' },
-        { proName: 'BINANCE:BTCUSDT',  title: 'BTC' },
-        { proName: 'BINANCE:ETHUSDT',  title: 'ETH' },
-        { proName: 'TVC:USOIL',        title: 'WTI Oil' },
-        { proName: 'FOREXCOM:SPXUSD',  title: 'S&P 500' },
-        { proName: 'CAPITALCOM:VIX',   title: 'VIX' },
-        { proName: 'CAPITALCOM:DXY',   title: 'Dollar' },
-        { proName: 'CAPITALCOM:US10Y', title: 'US 10Y' },
-        { proName: 'FX:EURUSD',        title: 'EUR/USD' },
-        { proName: 'FX:GBPUSD',        title: 'GBP/USD' },
-        { proName: 'FX:USDJPY',        title: 'USD/JPY' },
-      ],
-      showSymbolLogo: true, isTransparent: true, displayMode: 'compact', colorTheme: 'dark', locale: 'en'
-    });
-    wrap.querySelector('.tradingview-widget-container').appendChild(s);
+    if (!wrap || wrap.dataset.tv) return;   // a page can claim the slot (trading floor does)
+    let track = wrap.querySelector('.nav-ticker-track');
+    if (!track) {
+      wrap.innerHTML = '<div class="nav-ticker-track" id="nav-ticker-track"></div>';
+      track = wrap.firstChild;
+    }
+    if (!data || !Object.keys(data).length) return;
+    const items = TICKER_SYMBOLS.map(([label, key, dec]) => {
+      const d = data[key];
+      if (!d || d.price == null) return '';
+      return `<div class="nav-ticker-item">
+        <span class="t-sym">${label}</span>
+        <span class="t-price">${fmtPrice(d.price, dec)}</span>
+        <span class="t-chg ${d.dir || 'flat'}">${fmtChg(d.change)}</span>
+      </div>`;
+    }).filter(Boolean).join('');
+    if (items) track.innerHTML = items + items; // duplicated for the seamless -50% loop
   }
 
   ArcanePrices.subscribe(updateTicker);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateTicker);
-  else updateTicker();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => updateTicker({ ..._data }));
+  else updateTicker({ ..._data });
 
   /* ─── Boot ───────────────────────────────── */
   refresh();
