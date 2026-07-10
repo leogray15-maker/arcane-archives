@@ -10,17 +10,28 @@
   <link rel="stylesheet" href="arcane-globals.css"/>
 
   <style>
-    html, body { height: 100%; overflow: hidden; }
-    body { background: #050508; }
+    html, body { height: 100%; }
+    html { overflow: hidden; }
+    body { background: #050508; overflow-y: auto; overflow-x: hidden; }
 
     /* ═══════════ LAYOUT ═══════════ */
     .wm-app {
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto auto;
       height: 100dvh;
       position: relative;
       z-index: 2;
     }
+    .wm-scrollhint {
+      padding: 0.3rem;
+      text-align: center;
+      background: rgba(8,8,13,0.98);
+      border-top: 1px solid var(--border);
+      font-family: var(--font-head); font-size: 0.44rem; font-weight: 700;
+      letter-spacing: 0.3em; color: var(--text-muted); text-transform: uppercase;
+      cursor: pointer; transition: color 0.2s;
+    }
+    .wm-scrollhint:hover { color: var(--teal); }
 
     /* ═══════════ TOP COMMAND BAR ═══════════ */
     .wm-topbar {
@@ -331,9 +342,101 @@
     .inf-num { font-family: var(--font-head); font-size: 0.78rem; font-weight: 800; color: var(--text); line-height: 1; }
     .inf-label { font-family: var(--font-head); font-size: 0.4rem; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase; margin-top: 0.15rem; }
 
+    /* ═══════════ EXTENDED MONITOR GRID ═══════════ */
+    .wm-mon { position: relative; z-index: 2; background: #050508; border-top: 1px solid var(--border-hi); }
+    .wm-mon-head {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      font-family: var(--font-head); font-size: 0.6rem; font-weight: 800;
+      letter-spacing: 0.3em; color: var(--text-dim); text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .wm-mon-head::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-hi), transparent); }
+    .wm-mon-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border);
+    }
+    .wm-gpanel { background: rgba(8,8,13,0.98); height: 315px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+    /* News rows */
+    .nw-row { display: flex; gap: 0.55rem; padding: 0.45rem 0.5rem; border-radius: 5px; align-items: flex-start; text-decoration: none; }
+    .nw-row:hover { background: rgba(255,255,255,0.03); }
+    .nw-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 0.32rem; }
+    .nw-main { flex: 1; min-width: 0; }
+    .nw-title { font-family: var(--font-body); font-size: 0.68rem; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .nw-row:hover .nw-title { color: var(--text); }
+    .nw-meta { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.2rem; flex-wrap: wrap; }
+    .nw-src { font-family: var(--font-head); font-size: 0.42rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .nw-time { font-family: var(--font-head); font-size: 0.42rem; color: var(--text-muted); letter-spacing: 0.04em; }
+    .nw-tag {
+      font-family: var(--font-head); font-size: 0.4rem; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.08rem 0.35rem; border-radius: 3px; border: 1px solid;
+    }
+    .tag-CONFLICT   { color: #ef4444; border-color: rgba(239,68,68,0.4);   background: rgba(239,68,68,0.08); }
+    .tag-ALERT      { color: #f97316; border-color: rgba(249,115,22,0.4);  background: rgba(249,115,22,0.08); }
+    .tag-CYBER      { color: #22c55e; border-color: rgba(34,197,94,0.4);   background: rgba(34,197,94,0.08); }
+    .tag-ECONOMIC   { color: #fbbf24; border-color: rgba(251,191,36,0.35); background: rgba(251,191,36,0.07); }
+    .tag-DISASTER   { color: #f97316; border-color: rgba(249,115,22,0.4);  background: rgba(249,115,22,0.08); }
+    .tag-DIPLOMATIC { color: #8b5cf6; border-color: rgba(139,92,246,0.4);  background: rgba(139,92,246,0.08); }
+    .tag-ENERGY     { color: #f59e0b; border-color: rgba(245,158,11,0.4);  background: rgba(245,158,11,0.08); }
+    .tag-NUCLEAR    { color: #22d3ee; border-color: rgba(34,211,238,0.4);  background: rgba(34,211,238,0.08); }
+
+    /* Market rows + stat tiles */
+    .mk-sub {
+      padding: 0.4rem 0.55rem 0.15rem;
+      font-family: var(--font-head); font-size: 0.42rem; font-weight: 800;
+      letter-spacing: 0.24em; color: var(--text-muted); text-transform: uppercase;
+    }
+    .mk-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.55rem; border-radius: 4px; }
+    .mk-row:hover { background: rgba(255,255,255,0.025); }
+    .mk-sym { font-family: var(--font-head); font-size: 0.52rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text-dim); width: 62px; flex-shrink: 0; }
+    .mk-name { flex: 1; min-width: 0; font-family: var(--font-head); font-size: 0.44rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mk-price { font-family: var(--font-head); font-size: 0.58rem; font-weight: 800; color: var(--text); }
+    .mk-chg { font-family: var(--font-head); font-size: 0.48rem; font-weight: 700; width: 52px; text-align: right; flex-shrink: 0; }
+    .mk-chg.up { color: var(--green); } .mk-chg.down { color: var(--red); } .mk-chg.flat { color: var(--text-muted); }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; padding: 0.45rem 0.5rem; }
+    .stat-tile { border: 1px solid var(--border); border-radius: 6px; background: var(--bg-2); padding: 0.55rem 0.6rem; }
+    .stat-label { font-family: var(--font-head); font-size: 0.4rem; letter-spacing: 0.16em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .stat-val { font-family: var(--font-head); font-size: 0.95rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-sub { font-family: var(--font-head); font-size: 0.42rem; margin-top: 0.25rem; letter-spacing: 0.06em; }
+    .stat-sub.up { color: var(--green); } .stat-sub.down { color: var(--red); } .stat-sub.flat { color: var(--text-muted); }
+    .macro-verdict {
+      margin: 0.15rem 0.5rem 0.4rem; padding: 0.5rem 0.6rem; border-radius: 6px;
+      border: 1px solid rgba(34,197,94,0.3); background: rgba(34,197,94,0.06);
+    }
+    .macro-verdict .mv-word { font-family: var(--font-head); font-size: 0.8rem; font-weight: 800; }
+    .macro-verdict .mv-note { font-family: var(--font-body); font-size: 0.62rem; color: var(--text-dim); margin-top: 0.2rem; line-height: 1.4; }
+
+    /* Threat timeline bars */
+    .tl-stats { display: flex; gap: 0.4rem; padding: 0.45rem 0.5rem 0.2rem; }
+    .tl-stat { flex: 1; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-2); padding: 0.45rem 0.55rem; }
+    .tl-num { font-family: var(--font-head); font-size: 0.9rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .tl-lab { font-family: var(--font-head); font-size: 0.38rem; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem; }
+    .tl-chart { flex: 1; display: flex; align-items: flex-end; gap: 0.45rem; padding: 0.6rem 0.75rem 0.3rem; min-height: 0; }
+    .tl-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; height: 100%; }
+    .tl-bar { border-radius: 2px 2px 0 0; min-height: 2px; }
+    .tl-day { text-align: center; font-family: var(--font-head); font-size: 0.38rem; color: var(--text-muted); letter-spacing: 0.06em; padding: 0.25rem 0 0.45rem; }
+    .tl-days { display: flex; gap: 0.45rem; padding: 0 0.75rem; }
+    .tl-days .tl-day { flex: 1; }
+
+    /* AI brief */
+    .brief-box { margin: 0.5rem; padding: 0.7rem 0.8rem; border-left: 2px solid var(--teal); background: var(--teal-glow2); border-radius: 0 6px 6px 0; }
+    .brief-text { font-family: var(--font-body); font-size: 0.72rem; color: var(--text-dim); line-height: 1.65; }
+    .brief-meta { font-family: var(--font-head); font-size: 0.4rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.5rem; }
+
+    /* Predictions */
+    .pm-row { padding: 0.45rem 0.55rem; border-bottom: 1px solid var(--border); }
+    .pm-q { font-family: var(--font-body); font-size: 0.66rem; color: var(--text-dim); line-height: 1.4; margin-bottom: 0.3rem; }
+    .pm-bar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; font-family: var(--font-head); font-size: 0.42rem; font-weight: 800; }
+    .pm-yes { background: rgba(34,197,94,0.35); color: #d9ffe6; display: flex; align-items: center; padding-left: 0.35rem; white-space: nowrap; }
+    .pm-no  { background: rgba(239,68,68,0.3); color: #ffe1e1; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.35rem; flex: 1; white-space: nowrap; }
+    .pm-meta { font-family: var(--font-head); font-size: 0.4rem; color: var(--text-muted); letter-spacing: 0.08em; margin-top: 0.25rem; text-transform: uppercase; }
+
     /* ═══════════ RESPONSIVE ═══════════ */
     @media (max-width: 1100px) {
       .wm-bottom { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; height: 300px; }
+      .wm-mon-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 860px) {
       .wm-clock { display: none; }
@@ -352,6 +455,7 @@
       .wm-title { font-size: 0.62rem; letter-spacing: 0.2em; }
       .wm-defcon span { display: none; }
       .wm-search { max-width: 26vw; }
+      .wm-mon-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -470,7 +574,15 @@
     </div>
   </section>
 
+  <div class="wm-scrollhint" id="scroll-hint">▼ Extended Global Monitor — News · Markets · Macro · Air Traffic ▼</div>
+
 </div>
+
+<!-- ═══ EXTENDED MONITOR GRID ═══ -->
+<section class="wm-mon" id="wm-mon">
+  <div class="wm-mon-head">⌬ Extended Global Monitor</div>
+  <div class="wm-mon-grid" id="mon-grid"></div>
+</section>
 
 <script src="world-geo.js"></script>
 <script>
@@ -1368,10 +1480,10 @@ function renderInfrastructure() {
 async function fetchQuakes() {
   const foot = document.getElementById('foot-feed');
   try {
-    const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
+    const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
-    quakes = (j.features || []).slice(0, 40).map(f => {
+    quakes = (j.features || []).slice(0, 80).map(f => {
       const mag = typeof f.properties.mag === 'number' ? f.properties.mag : 4.5;
       return {
         cat: 'quake',
@@ -1408,7 +1520,392 @@ async function fetchQuakes() {
     foot.style.color = 'var(--red)';
   }
   renderLayers();
+  renderTimeline();
+  updateDefcon();
 }
+
+/* ══════════════════════════════════════════════════════════════
+   EXTENDED MONITOR GRID
+   Live news (RSS via allorigins CORS proxy — free, keyless),
+   markets (/api/markets serverless proxy — free, keyless),
+   OpenSky air traffic, Polymarket predictions, threat timeline,
+   synthesized world brief, dynamic DEFCON.
+   ══════════════════════════════════════════════════════════════ */
+
+const PROXY = 'https://api.allorigins.win/get?url=';
+
+const NEWS_PANELS = [
+  { id: 'world',   title: '◍ World News',        feeds: [['https://feeds.bbci.co.uk/news/world/rss.xml','BBC World'],['https://www.theguardian.com/world/rss','Guardian']] },
+  { id: 'us',      title: '▤ United States',     feeds: [['https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml','BBC US']] },
+  { id: 'europe',  title: '▤ Europe',            feeds: [['https://feeds.bbci.co.uk/news/world/europe/rss.xml','BBC Europe']] },
+  { id: 'mideast', title: '▤ Middle East',       feeds: [['https://feeds.bbci.co.uk/news/world/middle_east/rss.xml','BBC MidEast'],['https://www.aljazeera.com/xml/rss/all.xml','Al Jazeera']] },
+  { id: 'asia',    title: '▤ Asia-Pacific',      feeds: [['https://feeds.bbci.co.uk/news/world/asia/rss.xml','BBC Asia']] },
+  { id: 'africa',  title: '▤ Africa',            feeds: [['https://feeds.bbci.co.uk/news/world/africa/rss.xml','BBC Africa']] },
+  { id: 'latam',   title: '▤ Latin America',     feeds: [['https://feeds.bbci.co.uk/news/world/latin_america/rss.xml','BBC LatAm']] },
+  { id: 'intel',   title: '✕ Military & Intel',  feeds: [['https://news.google.com/rss/search?q=military+OR+defense+OR+airstrike+OR+troops+when:2d&hl=en-US&gl=US&ceid=US:en','Google News']] },
+  { id: 'cyber',   title: '⚡ Cyber Threats',     feeds: [['https://feeds.arstechnica.com/arstechnica/security','Ars Technica'],['https://krebsonsecurity.com/feed/','Krebs']] },
+  { id: 'energyN', title: '▮ Energy & Resources', feeds: [['https://oilprice.com/rss/main','OilPrice'],['https://www.theguardian.com/environment/energy/rss','Guardian Energy']] },
+];
+
+/* Headline keyword classifier → tag chip + alert weight for the aggregator/DEFCON */
+const CLASSIFIER = [
+  [/nuclear|enrichment|warhead|icbm/i,                                        'NUCLEAR',    3],
+  [/missile|air ?strike|invasion|offensive|shelling|artillery|drone strike/i, 'CONFLICT',   3],
+  [/\bwar\b|troops|military|clashes|killed|attack|explosion|coup|hostage/i,   'CONFLICT',   2],
+  [/cyber ?attack|ransomware|hack(ed|ers)?|data breach|malware|ddos/i,        'CYBER',      2],
+  [/earthquake|typhoon|hurricane|wildfire|flood|volcano|tsunami|landslide/i,  'DISASTER',   2],
+  [/sanction|ceasefire|treaty|diplomat|summit|talks|election|parliament/i,    'DIPLOMATIC', 1],
+  [/oil|gas|pipeline|opec|energy|refinery|lng|barrel/i,                       'ENERGY',     1],
+  [/inflation|rates|fed\b|market|stocks|economy|gdp|tariff/i,                 'ECONOMIC',   0],
+];
+function classify(title) {
+  for (const [re, tag, w] of CLASSIFIER) if (re.test(title)) return { tag, w };
+  return { tag: null, w: 0 };
+}
+
+/* All classified live headlines, newest first — feeds the aggregator, brief, DEFCON */
+let liveHeadlines = [];
+
+async function fetchRSS(url, srcName) {
+  const r = await fetch(PROXY + encodeURIComponent(url));
+  if (!r.ok) throw new Error('proxy ' + r.status);
+  const j = await r.json();
+  const xml = new DOMParser().parseFromString(j.contents, 'text/xml');
+  return [...xml.querySelectorAll('item, entry')].slice(0, 12).map(item => {
+    const linkEl = item.querySelector('link');
+    const link = (linkEl?.textContent?.trim() || linkEl?.getAttribute('href') || '').trim();
+    const pub = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
+    const t = new Date(pub).getTime();
+    return {
+      title: (item.querySelector('title')?.textContent || '').trim(),
+      url: link,
+      src: srcName,
+      time: isNaN(t) ? Date.now() : t,
+    };
+  }).filter(a => a.title && a.url);
+}
+
+function newsRow(a) {
+  const { tag } = classify(a.title);
+  const dot = tag ? ({ CONFLICT:'#ef4444', ALERT:'#f97316', CYBER:'#22c55e', ECONOMIC:'#fbbf24', DISASTER:'#f97316', DIPLOMATIC:'#8b5cf6', ENERGY:'#f59e0b', NUCLEAR:'#22d3ee' })[tag] : 'rgba(120,120,150,0.6)';
+  return `
+  <a class="nw-row" href="${a.url}" target="_blank" rel="noopener">
+    <span class="nw-dot" style="background:${dot}"></span>
+    <span class="nw-main">
+      <span class="nw-title">${a.title.replace(/</g,'&lt;')}</span>
+      <span class="nw-meta">
+        <span class="nw-src">${a.src}</span>
+        <span class="nw-time">${timeAgo(Date.now() - a.time)}</span>
+        ${tag ? `<span class="nw-tag tag-${tag}">${tag}</span>` : ''}
+      </span>
+    </span>
+  </a>`;
+}
+
+async function loadNewsPanel(p) {
+  const body = document.getElementById('mon-' + p.id);
+  try {
+    const lists = await Promise.allSettled(p.feeds.map(([u, s]) => fetchRSS(u, s)));
+    let items = lists.flatMap(l => l.status === 'fulfilled' ? l.value : []);
+    if (!items.length) throw new Error('no items');
+    items.sort((a, b) => b.time - a.time);
+    items = items.slice(0, 10);
+    body.innerHTML = items.map(newsRow).join('');
+    const badge = document.getElementById('mon-' + p.id + '-badge');
+    if (badge) { badge.textContent = 'LIVE'; badge.className = 'wm-panel-badge live'; }
+    const seen = new Set(liveHeadlines.map(h => h.title.toLowerCase()));
+    for (const a of items) {
+      if (seen.has(a.title.toLowerCase())) continue;
+      seen.add(a.title.toLowerCase());
+      const c = classify(a.title);
+      liveHeadlines.push({ ...a, ...c });
+    }
+    liveHeadlines.sort((a, b) => b.time - a.time);
+    renderSignalsLive();
+    renderBrief();
+    updateDefcon();
+  } catch (e) {
+    body.innerHTML = '<div class="wm-feed-empty">Feed offline — retrying next cycle</div>';
+  }
+}
+
+function loadAllNews() {
+  // Stagger requests so the CORS proxy isn't hammered all at once
+  NEWS_PANELS.forEach((p, i) => setTimeout(() => loadNewsPanel(p), i * 350));
+}
+
+/* ── Cross-source aggregator: curated signals merged with live ALERT headlines ── */
+function renderSignalsLive() {
+  const now = Date.now();
+  const curated = SIGNALS.map(s => ({
+    sev: s.sev, tag: s.tag, time: now - s.min * 60000, text: s.text,
+  }));
+  const live = liveHeadlines
+    .filter(h => h.w >= 2 && now - h.time < 36 * 3600 * 1000)
+    .slice(0, 8)
+    .map(h => ({ sev: h.w >= 3 ? 'CRITICAL' : 'HIGH', tag: h.tag, time: h.time, text: h.title, url: h.url }));
+  const all = curated.concat(live).sort((a, b) => b.time - a.time).slice(0, 14);
+  document.getElementById('sig-count').textContent = all.length;
+  document.getElementById('sig-body').innerHTML = all.map(s => `
+    <${s.url ? `a href="${s.url}" target="_blank" rel="noopener"` : 'div'} class="sig-row" style="text-decoration:none">
+      <div class="sig-bar" style="background:${SEV_COLOR[s.sev]}"></div>
+      <div class="sig-main">
+        <div class="sig-meta">
+          <span class="sig-tag" style="color:${SEV_COLOR[s.sev]}">${s.sev}</span>
+          <span class="sig-tag" style="color:var(--text-muted)">${s.tag || 'SIGNAL'}</span>
+          <span class="sig-time">${timeAgo(now - s.time)}</span>
+        </div>
+        <div class="sig-text">${s.text.replace(/</g,'&lt;')}</div>
+      </div>
+    </${s.url ? 'a' : 'div'}>`).join('');
+}
+
+/* ── Synthesized world brief (rule-based digest of live headlines, no AI key) ── */
+function renderBrief() {
+  const el = document.getElementById('brief-text');
+  if (!el) return;
+  const top = liveHeadlines.filter(h => h.w >= 2).slice(0, 3);
+  if (!top.length) return;
+  const lead = top[0], rest = top.slice(1);
+  let txt = `Top signal: ${lead.title} (${lead.src}).`;
+  if (rest.length) txt += ` Also tracking: ${rest.map(h => h.title).join(' · ')}.`;
+  const quakeN = quakes.filter(q => q.mag >= 5.5).length;
+  if (quakeN) txt += ` ${quakeN} significant seismic event${quakeN > 1 ? 's' : ''} in the last 7 days.`;
+  el.textContent = txt;
+  document.getElementById('brief-meta').textContent =
+    `SYNTHESIZED FROM ${liveHeadlines.length} LIVE HEADLINES · ${new Date().toUTCString().slice(17, 25)} UTC · NO AI KEY REQUIRED`;
+}
+
+/* ── Dynamic DEFCON estimate from live inputs ── */
+function updateDefcon() {
+  const crit = liveHeadlines.filter(h => h.w >= 3 && Date.now() - h.time < 24 * 3600 * 1000).length;
+  const avgInstab = INSTABILITY.reduce((n, c) => n + c.score, 0) / INSTABILITY.length;
+  const bigQuakes = quakes.filter(q => q.mag >= 6.5).length;
+  let score = 0;
+  score += Math.min(3, crit * 0.5);
+  score += avgInstab > 70 ? 1.5 : avgInstab > 60 ? 1 : 0;
+  score += Math.min(1, bigQuakes * 0.5);
+  const level = score >= 4 ? 2 : score >= 2.5 ? 3 : score >= 1 ? 4 : 5;
+  const el = document.querySelector('.wm-defcon b');
+  if (el) el.textContent = level;
+}
+
+/* ── Markets via /api/markets (Netlify/Vercel serverless proxy, free, keyless) ── */
+const MK_GROUPS = {
+  markets: [
+    ['INDICES'],
+    ['SPX', 'S&P 500'], ['NDQ', 'Nasdaq'], ['DOW', 'Dow Jones'], ['FTSE', 'FTSE 100'],
+    ['CRYPTO'],
+    ['BTC', 'Bitcoin'], ['ETH', 'Ethereum'], ['SOL', 'Solana'],
+  ],
+  commod: [
+    ['ENERGY'],
+    ['WTI', 'WTI Crude'], ['BRENT', 'Brent'], ['NATGAS', 'Nat Gas'],
+    ['METALS'],
+    ['XAU', 'Gold'], ['XAG', 'Silver'], ['COPPER', 'Copper'],
+    ['FX'],
+    ['EURUSD', 'EUR / USD'], ['GBPUSD', 'GBP / USD'], ['USDJPY', 'USD / JPY'],
+  ],
+};
+function fmtPrice(v) {
+  if (v == null) return '—';
+  if (v >= 1000) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (v >= 10) return v.toFixed(2);
+  return v.toFixed(4);
+}
+function mkRows(rows, data) {
+  return rows.map(r => {
+    if (r.length === 1) return `<div class="mk-sub">${r[0]}</div>`;
+    const q = data[r[0]];
+    const chg = q && q.change != null ? q.change : null;
+    const cls = chg == null ? 'flat' : chg >= 0.05 ? 'up' : chg <= -0.05 ? 'down' : 'flat';
+    const sign = chg == null ? '' : chg > 0 ? '+' : '';
+    return `
+    <div class="mk-row">
+      <span class="mk-sym">${r[0]}</span>
+      <span class="mk-name">${r[1]}</span>
+      <span class="mk-price">${q ? fmtPrice(q.price) : '—'}</span>
+      <span class="mk-chg ${cls}">${chg == null ? '' : sign + chg.toFixed(2) + '%'}</span>
+    </div>`;
+  }).join('');
+}
+async function fetchMarkets() {
+  try {
+    const r = await fetch('/api/markets', { cache: 'no-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const d = j.data || {};
+    document.getElementById('mon-markets').innerHTML = mkRows(MK_GROUPS.markets, d);
+    document.getElementById('mon-commod').innerHTML  = mkRows(MK_GROUPS.commod, d);
+    renderMacro(d);
+    for (const id of ['markets', 'commod', 'macro']) {
+      const b = document.getElementById('mon-' + id + '-badge');
+      if (b) { b.textContent = 'LIVE'; b.className = 'wm-panel-badge live'; }
+    }
+  } catch (e) {
+    const msg = '<div class="wm-feed-empty">Market proxy offline — data resumes on deployed site (/api/markets)</div>';
+    document.getElementById('mon-markets').innerHTML = msg;
+    document.getElementById('mon-commod').innerHTML = msg;
+    document.getElementById('mon-macro').innerHTML = msg;
+  }
+}
+function renderMacro(d) {
+  const vix = d.VIX?.price, us10 = d.US10Y?.price, dxy = d.DXY?.price, gold = d.XAU?.price;
+  const tiles = [
+    ['VIX · FEAR', vix, d.VIX?.change], ['US 10Y YIELD', us10 != null ? (us10 / 10).toFixed(2) + '%' : null, d.US10Y?.change],
+    ['DOLLAR INDEX', dxy, d.DXY?.change], ['GOLD', gold, d.XAU?.change],
+  ];
+  const pressure = vix == null ? ['Unknown', 'VIX unavailable — cannot gauge stress.', 'var(--text-muted)'] :
+    vix >= 28 ? ['High', 'Volatility elevated — markets pricing acute geopolitical/macro risk.', 'var(--red)'] :
+    vix >= 20 ? ['Elevated', 'Above-average volatility — hedging demand rising.', '#f97316'] :
+                ['Steady', 'Macro conditions are stable for now.', 'var(--green)'];
+  document.getElementById('mon-macro').innerHTML = `
+    <div class="stat-grid">
+      ${tiles.map(([l, v, c]) => {
+        const cls = c == null ? 'flat' : c >= 0 ? 'up' : 'down';
+        return `<div class="stat-tile"><div class="stat-label">${l}</div><div class="stat-val">${typeof v === 'string' ? v : fmtPrice(v)}</div>
+          <div class="stat-sub ${cls}">${c == null ? '—' : (c > 0 ? '+' : '') + c.toFixed(2) + '%'}</div></div>`;
+      }).join('')}
+    </div>
+    <div class="macro-verdict" style="border-color:${pressure[2]}40">
+      <div class="mv-word" style="color:${pressure[2]}">${pressure[0]}</div>
+      <div class="mv-note">${pressure[1]}</div>
+    </div>`;
+}
+
+/* ── Live air traffic via OpenSky (anonymous, keyless, CSP-allowed) ── */
+async function fetchAirTraffic() {
+  const body = document.getElementById('mon-air');
+  try {
+    const r = await fetch('https://opensky-network.org/api/states/all?lamin=-60&lamax=75&lomin=-180&lomax=180');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const states = j.states || [];
+    const byCountry = {};
+    let airborne = 0;
+    for (const s of states) {
+      if (!s[8]) airborne++; // on_ground === false
+      byCountry[s[2]] = (byCountry[s[2]] || 0) + 1;
+    }
+    const top = Object.entries(byCountry).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    body.innerHTML = `
+      <div class="tl-stats">
+        <div class="tl-stat"><div class="tl-num">${states.length.toLocaleString()}</div><div class="tl-lab">Tracked aircraft</div></div>
+        <div class="tl-stat"><div class="tl-num">${airborne.toLocaleString()}</div><div class="tl-lab">Airborne now</div></div>
+      </div>
+      <div class="mk-sub">By registration country</div>
+      ${top.map(([c, n]) => `
+        <div class="mk-row"><span class="mk-name" style="width:auto;flex:1">${c || 'Unknown'}</span>
+        <span class="mk-price">${n.toLocaleString()}</span></div>`).join('')}`;
+    const b = document.getElementById('mon-air-badge');
+    if (b) { b.textContent = 'LIVE'; b.className = 'wm-panel-badge live'; }
+  } catch (e) {
+    body.innerHTML = '<div class="wm-feed-empty">OpenSky rate-limited — retrying in 15 min</div>';
+  }
+}
+
+/* ── Threat timeline: 7-day severity buckets from live quakes + headlines ── */
+function renderTimeline() {
+  const body = document.getElementById('mon-timeline');
+  if (!body) return;
+  const days = [...Array(7)].map((_, i) => {
+    const d = new Date(Date.now() - (6 - i) * 86400000);
+    return { key: d.toISOString().slice(0, 10), label: d.toUTCString().slice(5, 11), crit: 0, high: 0, med: 0 };
+  });
+  const byKey = Object.fromEntries(days.map(d => [d.key, d]));
+  for (const q of quakes) {
+    const k = new Date(q.time).toISOString().slice(0, 10);
+    if (byKey[k]) { q.mag >= 6.5 ? byKey[k].crit++ : q.mag >= 5.5 ? byKey[k].high++ : byKey[k].med++; }
+  }
+  for (const h of liveHeadlines) {
+    const k = new Date(h.time).toISOString().slice(0, 10);
+    if (byKey[k] && h.w >= 2) { h.w >= 3 ? byKey[k].crit++ : byKey[k].high++; }
+  }
+  const max = Math.max(4, ...days.map(d => d.crit + d.high + d.med));
+  const critTotal = days.reduce((n, d) => n + d.crit, 0);
+  const trend = (days[6].crit + days[6].high) - (days[0].crit + days[0].high);
+  body.innerHTML = `
+    <div class="tl-stats">
+      <div class="tl-stat"><div class="tl-num">${critTotal}</div><div class="tl-lab">Critical · 7d</div></div>
+      <div class="tl-stat"><div class="tl-num">${days.reduce((n, d) => n + d.high, 0)}</div><div class="tl-lab">High · 7d</div></div>
+      <div class="tl-stat"><div class="tl-num" style="color:${trend > 0 ? 'var(--red)' : 'var(--green)'}">${trend > 0 ? 'Worsening' : trend < 0 ? 'Easing' : 'Stable'}</div><div class="tl-lab">Trend</div></div>
+    </div>
+    <div class="tl-chart">
+      ${days.map(d => `
+        <div class="tl-col" title="${d.label}: ${d.crit} critical / ${d.high} high / ${d.med} medium">
+          <div class="tl-bar" style="height:${d.crit / max * 100}%;background:#ef4444"></div>
+          <div class="tl-bar" style="height:${d.high / max * 100}%;background:#f97316"></div>
+          <div class="tl-bar" style="height:${d.med / max * 100}%;background:#fbbf24"></div>
+        </div>`).join('')}
+    </div>
+    <div class="tl-days">${days.map(d => `<div class="tl-day">${d.label.slice(0, 6)}</div>`).join('')}</div>`;
+}
+
+/* ── Polymarket predictions (public gamma API via CORS proxy) ── */
+async function fetchPredictions() {
+  const body = document.getElementById('mon-pred');
+  try {
+    const url = 'https://gamma-api.polymarket.com/markets?closed=false&order=volumeNum&ascending=false&limit=6';
+    const r = await fetch(PROXY + encodeURIComponent(url));
+    if (!r.ok) throw new Error('proxy ' + r.status);
+    const j = await r.json();
+    const mkts = JSON.parse(j.contents);
+    if (!Array.isArray(mkts) || !mkts.length) throw new Error('no markets');
+    body.innerHTML = mkts.slice(0, 5).map(m => {
+      let yes = null;
+      try { yes = Math.round(parseFloat(JSON.parse(m.outcomePrices)[0]) * 100); } catch (_) {}
+      const vol = m.volumeNum ? '$' + (m.volumeNum >= 1e6 ? (m.volumeNum / 1e6).toFixed(1) + 'M' : Math.round(m.volumeNum / 1e3) + 'K') : '';
+      return `
+      <div class="pm-row">
+        <div class="pm-q">${(m.question || '').replace(/</g,'&lt;')}</div>
+        ${yes != null ? `<div class="pm-bar"><div class="pm-yes" style="width:${Math.max(8, yes)}%">Yes ${yes}%</div><div class="pm-no">No ${100 - yes}%</div></div>` : ''}
+        <div class="pm-meta">Polymarket ${vol ? '· Vol ' + vol : ''}</div>
+      </div>`;
+    }).join('');
+    const b = document.getElementById('mon-pred-badge');
+    if (b) { b.textContent = 'LIVE'; b.className = 'wm-panel-badge live'; }
+  } catch (e) {
+    body.innerHTML = '<div class="wm-feed-empty">Prediction feed offline — retrying next cycle</div>';
+  }
+}
+
+/* ── Build the monitor grid ── */
+function buildMonitorGrid() {
+  const grid = document.getElementById('mon-grid');
+  const panel = (id, title, live) => `
+    <div class="wm-gpanel">
+      <div class="wm-panel-head">
+        <div class="wm-panel-title">${title}</div>
+        <div class="wm-panel-badge count" id="mon-${id}-badge">${live ? '…' : ''}</div>
+      </div>
+      <div class="wm-panel-body" id="mon-${id}"><div class="wm-feed-empty">Loading…</div></div>
+    </div>`;
+  grid.innerHTML =
+    NEWS_PANELS.map(p => panel(p.id, p.title, true)).join('') +
+    panel('markets',  '◫ Markets', true) +
+    panel('commod',   '⬡ Commodities & FX', true) +
+    panel('macro',    '◔ Macro Stress', true) +
+    panel('air',      '✈ Airspace Activity', true) +
+    panel('timeline', '▁▃▅ Threat Timeline', false) +
+    panel('pred',     '◇ Predictions', true);
+  // World brief panel with its own layout
+  grid.innerHTML += `
+    <div class="wm-gpanel">
+      <div class="wm-panel-head">
+        <div class="wm-panel-title">⌘ World Brief</div>
+        <div class="wm-panel-badge count">AUTO</div>
+      </div>
+      <div class="wm-panel-body">
+        <div class="brief-box">
+          <div class="brief-text" id="brief-text">Aggregating live signals…</div>
+          <div class="brief-meta" id="brief-meta">SYNTHESIZED · RULE-BASED · NO AI KEY REQUIRED</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+document.getElementById('scroll-hint').addEventListener('click', () =>
+  document.getElementById('wm-mon').scrollIntoView({ behavior: 'smooth' }));
 
 /* ─── Live NASA EONET natural events (wildfires, storms, volcanoes) ─── */
 async function fetchEvents() {
@@ -1459,12 +1956,22 @@ renderLayers();
 renderSignals();
 renderInstability();
 renderInfrastructure();
+buildMonitorGrid();
+renderTimeline();
 fetchQuakes();
 fetchEvents();
 fetchFearGreed();
+fetchMarkets();
+fetchPredictions();
+fetchAirTraffic();
+loadAllNews();
 setInterval(fetchQuakes, 5 * 60 * 1000);
 setInterval(fetchEvents, 10 * 60 * 1000);
 setInterval(fetchFearGreed, 5 * 60 * 1000);
+setInterval(fetchMarkets, 2 * 60 * 1000);
+setInterval(fetchPredictions, 10 * 60 * 1000);
+setInterval(fetchAirTraffic, 15 * 60 * 1000);
+setInterval(() => { liveHeadlines = []; loadAllNews(); }, 10 * 60 * 1000);
 requestAnimationFrame(frame);
 </script>
 </body>
