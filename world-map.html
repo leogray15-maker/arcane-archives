@@ -609,6 +609,7 @@ const LAYERS = [
   { id: 'pipeline',   label: 'Pipelines',        color: '#f59e0b', icon: '▮', on: true  },
   { id: 'arc',        label: 'Signal Routes',    color: '#8b5cf6', icon: '⌒', on: true  },
   { id: 'zone',       label: 'Unstable States',  color: '#ef4444', icon: '▨', on: true  },
+  { id: 'night',      label: 'Day / Night',      color: '#64748b', icon: '◐', on: true  },
 ];
 const layerById = Object.fromEntries(LAYERS.map(l => [l.id, l]));
 
@@ -779,32 +780,112 @@ const canvas  = document.getElementById('map-canvas');
 const ctx     = canvas.getContext('2d');
 let W = 0, H = 0, DPR = 1;
 
+let QUALITY = 1; // adaptive render scale (drops on slow machines, recovers when idle)
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  // DPR capped at 1.5: full retina doubles the raster cost for little visual gain
+  DPR = Math.min(window.devicePixelRatio || 1, 1.5) * QUALITY;
   W = wrap.clientWidth; H = wrap.clientHeight;
-  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.width = Math.max(1, Math.round(W * DPR));
+  canvas.height = Math.max(1, Math.round(H * DPR));
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   buildStars();
+  oceanCache = null;
 }
 window.addEventListener('resize', resize);
 
-/* Starfield (pre-generated points, drawn each frame) */
-let stars = [];
+/* Adaptive quality: watch the real frame time and trade resolution for fluidity */
+let _ft = [], _lastFrameAt = 0;
+function adaptQuality(ts) {
+  if (_lastFrameAt) {
+    _ft.push(ts - _lastFrameAt);
+    if (_ft.length >= 40) {
+      const avg = _ft.reduce((a, b) => a + b, 0) / _ft.length;
+      _ft = [];
+      if (avg > 45 && QUALITY > 0.55) { QUALITY = Math.max(0.55, QUALITY * 0.8); resize(); }
+      else if (avg < 22 && QUALITY < 1) { QUALITY = Math.min(1, QUALITY * 1.15); resize(); }
+    }
+  }
+  _lastFrameAt = ts;
+}
+
+/* Starfield — rendered once to an offscreen canvas, blitted per frame */
+let starCanvas = null;
 function buildStars() {
-  stars = [];
+  starCanvas = document.createElement('canvas');
+  starCanvas.width = Math.max(1, W); starCanvas.height = Math.max(1, H);
+  const g = starCanvas.getContext('2d');
+  g.fillStyle = '#04040a';
+  g.fillRect(0, 0, W, H);
   const n = Math.floor(W * H / 4200);
   for (let i = 0; i < n; i++) {
-    stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.1 + 0.2, a: Math.random() * 0.5 + 0.12, tw: Math.random() * Math.PI * 2 });
+    g.globalAlpha = Math.random() * 0.5 + 0.12;
+    g.fillStyle = '#c8c8ff';
+    g.fillRect(Math.random() * W, Math.random() * H, Math.random() * 1.1 + 0.3, Math.random() * 1.1 + 0.3);
   }
+}
+
+/* Glow sprites — replaces per-marker shadowBlur (the old frame-rate killer) */
+const glowCache = {};
+function glowSprite(color) {
+  let s = glowCache[color];
+  if (!s) {
+    s = document.createElement('canvas');
+    s.width = s.height = 64;
+    const g = s.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 2, 32, 32, 30);
+    gr.addColorStop(0, color + 'aa');
+    gr.addColorStop(0.35, color + '44');
+    gr.addColorStop(1, color + '00');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 64, 64);
+    glowCache[color] = s;
+  }
+  return s;
 }
 
 /* ─── View state ──────────────────────────────────────────────── */
 let mode = '3d';
 const rot   = { lon: -20, lat: 22 };   // 3D rotation center
-let zoom3   = 1;                        // 3D zoom
+let zoom3   = 1;                        // 3D zoom (rendered)
+let zoom3T  = 1;                        // 3D zoom (target, eased toward)
 const view2 = { x: 0, y: 0, scale: 1.0 }; // 2D pan/zoom (scale 1 = fit width)
 let lastInteract = 0;
-let anim = null; // fly-to animation
+let anim = null;                        // fly-to animation
+const spin = { lon: 0, lat: 0 };        // drag inertia (deg/frame)
+let hoverCountry = null;
+
+/* Subsolar point for the day/night terminator */
+function sunPos() {
+  const now = new Date();
+  const doy = (now - Date.UTC(now.getUTCFullYear(), 0, 0)) / 86400000;
+  const decl = -23.44 * Math.cos(2 * Math.PI * (doy + 10) / 365.24);
+  const utcH = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+  return [180 - utcH * 15, decl];
+}
+let SUN = sunPos();
+setInterval(() => { SUN = sunPos(); }, 60000);
+
+/* Restore view from URL (?view=2d|3d&lat&lon&zoom) — shareable like worldmonitor */
+(function initFromURL() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('view') === '2d') mode = '2d';
+  const lat = parseFloat(q.get('lat')), lon = parseFloat(q.get('lon')), z = parseFloat(q.get('zoom'));
+  if (!isNaN(lat)) rot.lat = Math.max(-85, Math.min(85, lat));
+  if (!isNaN(lon)) rot.lon = ((lon + 540) % 360) - 180;
+  if (!isNaN(z)) { zoom3 = zoom3T = Math.max(0.7, Math.min(4.5, z)); }
+})();
+let _urlTimer = null;
+function syncURL() {
+  clearTimeout(_urlTimer);
+  _urlTimer = setTimeout(() => {
+    const p = new URLSearchParams();
+    p.set('view', mode);
+    p.set('lat', rot.lat.toFixed(1));
+    p.set('lon', rot.lon.toFixed(1));
+    p.set('zoom', zoom3T.toFixed(2));
+    history.replaceState(null, '', location.pathname + '?' + p.toString());
+  }, 400);
+}
 
 /* ─── Spherical helpers ───────────────────────────────────────── */
 function toVec(lon, lat) {
@@ -862,28 +943,83 @@ function proj2(lon, lat) {
   return { x: x0 + (lon + 180) / 360 * w, y: y0 + (90 - lat) / 180 * h };
 }
 
-/* ─── Drawing: 3D globe ───────────────────────────────────────── */
-function drawGlobe(ts) {
-  const R = globeRadius(), cx = W / 2, cy = H / 2;
+/* Inverse projections: screen px → lon/lat (for hover + coords HUD) */
+function unproject(px, py) {
+  if (mode === '2d') {
+    const w = W * view2.scale, h = w / 2;
+    const x0 = (W - w) / 2 + view2.x, y0 = (H - h) / 2 + view2.y;
+    const lon = (px - x0) / w * 360 - 180, lat = 90 - (py - y0) / h * 180;
+    return (lon < -180 || lon > 180 || lat < -90 || lat > 90) ? null : [lon, lat];
+  }
+  const R = globeRadius();
+  const x = (px - W / 2) / R, y = -(py - H / 2) / R;
+  const rho = Math.hypot(x, y);
+  if (rho > 1) return null;
+  const c = Math.asin(Math.min(1, rho));
+  const sinc = Math.sin(c), cosc = Math.cos(c), p0 = rot.lat * RAD;
+  const lat = Math.asin(cosc * Math.sin(p0) + (rho ? y * sinc * Math.cos(p0) / rho : 0)) / RAD;
+  const lon = rot.lon + Math.atan2(x * sinc, rho * cosc * Math.cos(p0) - y * sinc * Math.sin(p0)) / RAD;
+  return [((lon + 540) % 360) - 180, lat];
+}
 
-  // Atmosphere glow
-  let g = ctx.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.22);
+/* Country hit-test index (bbox precheck + ray casting) */
+const geoIndex = WORLD_GEO.map(c => {
+  let x0 = 180, y0 = 90, x1 = -180, y1 = -90;
+  for (const ring of c.p) for (const [x, y] of ring) {
+    if (x < x0) x0 = x; if (x > x1) x1 = x;
+    if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  return { c, b: [x0, y0, x1, y1] };
+});
+function countryAt(lon, lat) {
+  for (const g of geoIndex) {
+    if (lon < g.b[0] || lon > g.b[2] || lat < g.b[1] || lat > g.b[3]) continue;
+    let inside = false;
+    for (const ring of g.c.p) {
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+        if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside;
+      }
+    }
+    if (inside) return g.c.n;
+  }
+  return null;
+}
+
+/* ─── Drawing: 3D globe ───────────────────────────────────────── */
+/* Atmosphere + ocean gradients cached to an offscreen canvas: rebuilding two
+   full-size radial gradients every frame is expensive without a GPU. */
+let oceanCache = null, oceanCacheR = 0;
+function oceanSprite(R) {
+  if (oceanCache && Math.abs(oceanCacheR - R) < 0.5) return oceanCache;
+  const size = Math.ceil(R * 2.44 * DPR);
+  const c = document.createElement('canvas');
+  c.width = c.height = Math.max(2, size);
+  const g2 = c.getContext('2d');
+  g2.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const cc = R * 1.22;
+  let g = g2.createRadialGradient(cc, cc, R * 0.92, cc, cc, R * 1.22);
   g.addColorStop(0, 'rgba(139,92,246,0.16)');
   g.addColorStop(0.55, 'rgba(139,92,246,0.05)');
   g.addColorStop(1, 'rgba(139,92,246,0)');
-  ctx.fillStyle = g;
-  ctx.beginPath(); ctx.arc(cx, cy, R * 1.22, 0, Math.PI * 2); ctx.fill();
-
-  // Ocean sphere
-  g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R);
+  g2.fillStyle = g;
+  g2.beginPath(); g2.arc(cc, cc, R * 1.22, 0, Math.PI * 2); g2.fill();
+  g = g2.createRadialGradient(cc - R * 0.35, cc - R * 0.4, R * 0.1, cc, cc, R);
   g.addColorStop(0, '#131332');
   g.addColorStop(0.65, '#0b0b22');
   g.addColorStop(1, '#060614');
-  ctx.fillStyle = g;
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = 'rgba(139,92,246,0.35)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  g2.fillStyle = g;
+  g2.beginPath(); g2.arc(cc, cc, R, 0, Math.PI * 2); g2.fill();
+  g2.strokeStyle = 'rgba(139,92,246,0.35)';
+  g2.lineWidth = 1;
+  g2.stroke();
+  oceanCache = c; oceanCacheR = R;
+  return c;
+}
+function drawGlobe(ts) {
+  const R = globeRadius(), cx = W / 2, cy = H / 2;
+  const sp = oceanSprite(R);
+  ctx.drawImage(sp, cx - R * 1.22, cy - R * 1.22, R * 2.44, R * 2.44);
 
   // Graticule
   ctx.strokeStyle = 'rgba(139,92,246,0.10)';
@@ -891,13 +1027,14 @@ function drawGlobe(ts) {
   for (let lon = -180; lon < 180; lon += 30) drawArc3(sampleMeridian(lon), 1);
   for (let lat = -60; lat <= 60; lat += 30) drawArc3(sampleParallel(lat), 1);
 
-  // Countries
+  // Countries — batched into two Path2D fills (base + unstable) instead of
+  // 177 separate fill/stroke calls; hovered country drawn on top.
+  const base = new Path2D(), hot = new Path2D();
+  let hoverPath = null;
   for (const c of WORLD_GEO) {
-    const hot = layerById.zone.on && UNSTABLE.has(c.n);
-    ctx.fillStyle   = hot ? 'rgba(190,40,50,0.42)' : 'rgba(32,32,54,0.92)';
-    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(139,92,246,0.28)';
-    ctx.lineWidth = hot ? 0.9 : 0.55;
-    ctx.beginPath();
+    const isHot = layerById.zone.on && UNSTABLE.has(c.n);
+    const path = isHot ? hot : base;
+    const hp = hoverCountry === c.n ? (hoverPath = new Path2D()) : null;
     for (const ring of c.p) {
       let anyVisible = false;
       for (let i = 0; i < ring.length; i++) {
@@ -907,13 +1044,41 @@ function drawGlobe(ts) {
       for (let i = 0; i < ring.length; i++) {
         let p = proj3(ring[i][0], ring[i][1]);
         if (p.c <= 0) p = rimClamp(p);
-        const s = screen3(p);
-        if (i === 0) ctx.moveTo(s.x, s.y); else ctx.lineTo(s.x, s.y);
+        const sx = cx + p.x * R, sy = cy - p.y * R;
+        if (i === 0) { path.moveTo(sx, sy); if (hp) hp.moveTo(sx, sy); }
+        else { path.lineTo(sx, sy); if (hp) hp.lineTo(sx, sy); }
       }
-      ctx.closePath();
+      path.closePath();
+      if (hp) hp.closePath();
     }
-    ctx.fill();
-    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(32,32,54,0.92)';   ctx.fill(base);
+  ctx.strokeStyle = 'rgba(139,92,246,0.28)'; ctx.lineWidth = 0.55; ctx.stroke(base);
+  ctx.fillStyle = 'rgba(190,40,50,0.42)';  ctx.fill(hot);
+  ctx.strokeStyle = 'rgba(239,68,68,0.75)'; ctx.lineWidth = 0.9; ctx.stroke(hot);
+  if (hoverPath) {
+    ctx.fillStyle = 'rgba(139,92,246,0.16)'; ctx.fill(hoverPath);
+    ctx.strokeStyle = 'rgba(139,92,246,0.9)'; ctx.lineWidth = 1.2; ctx.stroke(hoverPath);
+  }
+
+  // Day/night terminator (approximated with a screen-space gradient)
+  if (layerById.night.on) {
+    const s = proj3(SUN[0], SUN[1]);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+    const m = Math.hypot(s.x, s.y);
+    if (m < 0.05) {
+      if (s.c < 0) { ctx.fillStyle = 'rgba(2,2,14,0.5)'; ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R); }
+    } else {
+      const dx = s.x / m, dy = -s.y / m;
+      const t = Math.max(0, Math.min(1, 0.5 + s.c * 0.5));
+      const grd = ctx.createLinearGradient(cx + dx * R, cy + dy * R, cx - dx * R, cy - dy * R);
+      grd.addColorStop(Math.max(0, t - 0.12), 'rgba(2,2,14,0)');
+      grd.addColorStop(Math.min(1, t + 0.12), 'rgba(2,2,14,0.5)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R);
+    }
+    ctx.restore();
   }
 }
 function sampleMeridian(lon) {
@@ -968,22 +1133,51 @@ function drawFlat() {
   }
   ctx.stroke();
 
-  // Countries
+  // Countries — batched Path2D (see drawGlobe)
+  const base = new Path2D(), hot = new Path2D();
+  let hoverPath = null;
   for (const c of WORLD_GEO) {
-    const hot = layerById.zone.on && UNSTABLE.has(c.n);
-    ctx.fillStyle   = hot ? 'rgba(190,40,50,0.42)' : 'rgba(32,32,54,0.92)';
-    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(139,92,246,0.28)';
-    ctx.lineWidth = hot ? 0.9 : 0.55;
-    ctx.beginPath();
+    const isHot = layerById.zone.on && UNSTABLE.has(c.n);
+    const path = isHot ? hot : base;
+    const hp = hoverCountry === c.n ? (hoverPath = new Path2D()) : null;
     for (const ring of c.p) {
       for (let i = 0; i < ring.length; i++) {
         const s = proj2(ring[i][0], ring[i][1]);
-        if (i === 0) ctx.moveTo(s.x, s.y); else ctx.lineTo(s.x, s.y);
+        if (i === 0) { path.moveTo(s.x, s.y); if (hp) hp.moveTo(s.x, s.y); }
+        else { path.lineTo(s.x, s.y); if (hp) hp.lineTo(s.x, s.y); }
       }
-      ctx.closePath();
+      path.closePath();
+      if (hp) hp.closePath();
     }
+  }
+  ctx.fillStyle = 'rgba(32,32,54,0.92)';   ctx.fill(base);
+  ctx.strokeStyle = 'rgba(139,92,246,0.28)'; ctx.lineWidth = 0.55; ctx.stroke(base);
+  ctx.fillStyle = 'rgba(190,40,50,0.42)';  ctx.fill(hot);
+  ctx.strokeStyle = 'rgba(239,68,68,0.75)'; ctx.lineWidth = 0.9; ctx.stroke(hot);
+  if (hoverPath) {
+    ctx.fillStyle = 'rgba(139,92,246,0.16)'; ctx.fill(hoverPath);
+    ctx.strokeStyle = 'rgba(139,92,246,0.9)'; ctx.lineWidth = 1.2; ctx.stroke(hoverPath);
+  }
+
+  // Day/night terminator polygon
+  if (layerById.night.on) {
+    const decl = Math.abs(SUN[1]) < 0.5 ? (SUN[1] < 0 ? -0.5 : 0.5) : SUN[1];
+    const tanD = Math.tan(decl * RAD);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+    ctx.beginPath();
+    for (let lon = -180; lon <= 180; lon += 4) {
+      const lat = Math.atan(-Math.cos((lon - SUN[0]) * RAD) / tanD) / RAD;
+      const s = proj2(lon, lat);
+      lon === -180 ? ctx.moveTo(s.x, s.y) : ctx.lineTo(s.x, s.y);
+    }
+    const poleLat = decl < 0 ? 90 : -90; // dark pole is opposite the sun's hemisphere
+    const pr = proj2(180, poleLat), pl = proj2(-180, poleLat);
+    ctx.lineTo(pr.x, pr.y); ctx.lineTo(pl.x, pl.y);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(2,2,14,0.42)';
     ctx.fill();
-    ctx.stroke();
+    ctx.restore();
   }
 }
 /* Stroke a sampled path in 2D, breaking at the antimeridian */
@@ -1046,14 +1240,13 @@ function drawLines(ts) {
   }
 }
 
-/* Marker shapes */
+/* Marker shapes — soft glow comes from a cached sprite, not shadowBlur */
 function drawShape(x, y, cat, r, color, alpha) {
   ctx.globalAlpha = alpha;
+  ctx.drawImage(glowSprite(color), x - r * 1.9, y - r * 1.9, r * 3.8, r * 3.8);
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   ctx.lineWidth = 1.4;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 7;
   ctx.beginPath();
   switch (cat) {
     case 'military':
@@ -1083,7 +1276,6 @@ function drawShape(x, y, cat, r, color, alpha) {
     default: // quake + fallback
       ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
   }
-  ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
 }
 
@@ -1122,8 +1314,19 @@ function drawMarkers(ts) {
 
 /* ─── Main render loop ────────────────────────────────────────── */
 let lastTs = 0;
+let mapOnScreen = true;
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(es => { mapOnScreen = es[0].isIntersecting; }, { threshold: 0.02 }).observe(wrap);
+}
 function frame(ts) {
   lastTs = ts;
+  // Skip all drawing while the tab is hidden or the map is scrolled away
+  if (document.hidden || !mapOnScreen) { _lastFrameAt = 0; requestAnimationFrame(frame); return; }
+  adaptQuality(ts);
+
+  // Smooth zoom easing (3D)
+  if (Math.abs(zoom3T - zoom3) > 0.001) zoom3 += (zoom3T - zoom3) * 0.18;
+
   // fly-to animation
   if (anim) {
     const t = Math.min(1, (ts - anim.t0) / anim.dur);
@@ -1136,20 +1339,17 @@ function frame(ts) {
       view2.y = anim.from[1] + (anim.to[1] - anim.from[1]) * e;
     }
     if (t >= 1) anim = null;
+  } else if (mode === '3d' && pointers.size === 0 && (Math.abs(spin.lon) > 0.004 || Math.abs(spin.lat) > 0.004)) {
+    // drag inertia
+    rot.lon = ((rot.lon + spin.lon + 180) % 360) - 180;
+    rot.lat = Math.max(-85, Math.min(85, rot.lat + spin.lat));
+    spin.lon *= 0.94; spin.lat *= 0.94;
   } else if (mode === '3d' && ts - lastInteract > 4000) {
     rot.lon = ((rot.lon + 0.018 + 180) % 360) - 180; // idle auto-rotate
   }
 
   ctx.clearRect(0, 0, W, H);
-  // Space backdrop
-  ctx.fillStyle = '#04040a';
-  ctx.fillRect(0, 0, W, H);
-  for (const s of stars) {
-    ctx.globalAlpha = s.a * (0.7 + 0.3 * Math.sin(ts / 900 + s.tw));
-    ctx.fillStyle = '#c8c8ff';
-    ctx.fillRect(s.x, s.y, s.r, s.r);
-  }
-  ctx.globalAlpha = 1;
+  if (starCanvas) ctx.drawImage(starCanvas, 0, 0);
 
   if (mode === '3d') drawGlobe(ts); else drawFlat();
   drawLines(ts);
@@ -1163,14 +1363,16 @@ const pointers = new Map();
 let dragging = false, lastPinch = 0;
 
 canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
   canvas.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   dragging = false;
+  spin.lon = 0; spin.lat = 0;
 });
 canvas.addEventListener('pointermove', e => {
-  lastInteract = lastTs;
   const prev = pointers.get(e.pointerId);
   if (!prev) { hover(e); return; }
+  lastInteract = lastTs;
   anim = null;
   const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -1188,6 +1390,7 @@ canvas.addEventListener('pointermove', e => {
     const k = 0.22 / zoom3;
     rot.lon = ((rot.lon - dx * k + 180) % 360) - 180;
     rot.lat = Math.max(-85, Math.min(85, rot.lat + dy * k));
+    spin.lon = -dx * k; spin.lat = dy * k; // feeds release inertia
   } else {
     view2.x += dx; view2.y += dy;
     clamp2d();
@@ -1197,8 +1400,10 @@ function endPointer(e) {
   pointers.delete(e.pointerId);
   lastPinch = 0;
   canvas.classList.remove('dragging');
-  if (!dragging) clickAt(e);
+  if (!dragging) { spin.lon = 0; spin.lat = 0; clickAt(e); }
   dragging = false;
+  lastInteract = lastTs;
+  syncURL();
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', e => { pointers.delete(e.pointerId); lastPinch = 0; });
@@ -1207,12 +1412,17 @@ canvas.addEventListener('wheel', e => {
   e.preventDefault();
   lastInteract = lastTs;
   const rect = canvas.getBoundingClientRect();
-  zoomBy(e.deltaY < 0 ? 1.13 : 1 / 1.13, e.clientX - rect.left, e.clientY - rect.top);
+  zoomBy(e.deltaY < 0 ? 1.16 : 1 / 1.16, e.clientX - rect.left, e.clientY - rect.top);
+  syncURL();
 }, { passive: false });
+canvas.addEventListener('dblclick', e => {
+  const rect = canvas.getBoundingClientRect();
+  zoomBy(1.6, e.clientX - rect.left, e.clientY - rect.top);
+});
 
 function zoomBy(f, px, py) {
   if (mode === '3d') {
-    zoom3 = Math.max(0.7, Math.min(4.5, zoom3 * f));
+    zoom3T = Math.max(0.7, Math.min(4.5, zoom3T * f)); // eased toward in frame()
   } else {
     // Keep the world point under the cursor fixed while scaling.
     const w0 = W * view2.scale, h0 = w0 / 2;
@@ -1244,6 +1454,8 @@ function pick(e) {
   }
   return best;
 }
+let _hoverThrottle = 0;
+const hudCoords = document.getElementById('hud-coords');
 function hover(e) {
   const h = pick(e);
   canvas.classList.toggle('pointing', !!h);
@@ -1254,7 +1466,24 @@ function hover(e) {
     tooltip.textContent = h.m.name;
     tooltip.style.borderColor = layerById[h.m.cat].color;
   } else tooltip.style.display = 'none';
+
+  // Country hover + live coordinates (throttled — ray casting 177 polygons)
+  const now = performance.now();
+  if (now - _hoverThrottle < 70) return;
+  _hoverThrottle = now;
+  const rect = canvas.getBoundingClientRect();
+  const ll = unproject(e.clientX - rect.left, e.clientY - rect.top);
+  hoverCountry = ll ? countryAt(ll[0], ll[1]) : null;
+  if (hudCoords) {
+    hudCoords.textContent = ll
+      ? `${Math.abs(ll[1]).toFixed(1)}°${ll[1] >= 0 ? 'N' : 'S'} · ${Math.abs(ll[0]).toFixed(1)}°${ll[0] >= 0 ? 'E' : 'W'}${hoverCountry ? ' · ' + hoverCountry.toUpperCase() : ''}`
+      : (mode === '3d' ? 'DRAG TO ROTATE · SCROLL TO ZOOM' : 'DRAG TO PAN · SCROLL TO ZOOM');
+  }
 }
+canvas.addEventListener('pointerleave', () => {
+  hoverCountry = null;
+  tooltip.style.display = 'none';
+});
 function clickAt(e) {
   const h = pick(e);
   if (h) openPopup(h.m); else closePopup();
@@ -1304,6 +1533,7 @@ function setMode(m) {
   document.getElementById('hud-mode').textContent = m === '3d' ? 'Orbital View' : 'Flat Projection';
   document.getElementById('hud-coords').textContent = m === '3d' ? 'DRAG TO ROTATE · SCROLL TO ZOOM' : 'DRAG TO PAN · SCROLL TO ZOOM';
   closePopup();
+  syncURL();
 }
 btn2d.addEventListener('click', () => setMode('2d'));
 btn3d.addEventListener('click', () => setMode('3d'));
@@ -1311,9 +1541,11 @@ document.getElementById('zoom-in').addEventListener('click', () => zoomBy(1.25, 
 document.getElementById('zoom-out').addEventListener('click', () => zoomBy(1 / 1.25, W / 2, H / 2));
 document.getElementById('zoom-home').addEventListener('click', () => {
   anim = null;
-  zoom3 = 1; rot.lon = -20; rot.lat = 22;
+  zoom3 = zoom3T = 1; rot.lon = -20; rot.lat = 22;
   view2.x = 0; view2.y = 0; view2.scale = 1;
+  spin.lon = 0; spin.lat = 0;
   lastInteract = 0;
+  syncURL();
 });
 
 /* Mobile layers drawer */
@@ -1342,7 +1574,7 @@ function renderLayers() {
         <span class="wm-layer-icon">${l.icon}</span>
         <span class="wm-layer-label">${l.label}</span>
         ${l.live ? '<span class="wm-layer-live">LIVE</span>' : ''}
-        <span class="wm-layer-count">${layerCount(l.id)}</span>
+        ${l.id === 'night' ? '' : `<span class="wm-layer-count">${layerCount(l.id)}</span>`}
       </div>`).join('');
   list.querySelectorAll('.wm-layer-row').forEach(row => {
     row.addEventListener('click', () => {
@@ -1952,6 +2184,7 @@ async function fetchFearGreed() {
 
 /* ─── Init ────────────────────────────────────────────────────── */
 resize();
+if (mode === '2d') setMode('2d'); // restored from URL
 renderLayers();
 renderSignals();
 renderInstability();
