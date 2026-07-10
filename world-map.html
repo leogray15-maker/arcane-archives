@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Watchtower — Global Situation | The Arcane Archives</title>
+  <link rel="icon" href="ArcaneA.png"/>
+  <link rel="stylesheet" href="arcane-globals.css"/>
+
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    body { background: #050508; }
+
+    /* ═══════════ LAYOUT ═══════════ */
+    .wm-app {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100dvh;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ═══════════ TOP COMMAND BAR ═══════════ */
+    .wm-topbar {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.45rem 0.85rem;
+      padding-top: calc(0.45rem + env(safe-area-inset-top, 0px));
+      background: rgba(8,8,13,0.97);
+      border-bottom: 1px solid var(--border-hi);
+      backdrop-filter: blur(20px);
+      flex-wrap: nowrap; min-width: 0;
+    }
+    .wm-back {
+      display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
+      padding: 0.35rem 0.7rem; border: 1px solid var(--border); border-radius: 5px;
+      font-family: var(--font-head); font-size: 0.55rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--text-dim); text-transform: uppercase;
+      transition: all 0.18s; background: var(--bg-3);
+    }
+    .wm-back:hover { color: var(--teal); border-color: var(--teal); background: var(--teal-glow2); }
+    .wm-brand { display: flex; align-items: center; gap: 0.55rem; flex-shrink: 0; }
+    .wm-brand img { width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border-gold); }
+    .wm-title-block { line-height: 1.15; }
+    .wm-title {
+      font-family: var(--font-head); font-size: 0.72rem; font-weight: 900;
+      letter-spacing: 0.3em; color: var(--text); text-transform: uppercase;
+    }
+    .wm-subtitle {
+      font-family: var(--font-head); font-size: 0.44rem; font-weight: 600;
+      letter-spacing: 0.24em; color: var(--teal); text-transform: uppercase;
+    }
+    .wm-clock {
+      font-family: var(--font-head); font-size: 0.56rem; font-weight: 600;
+      letter-spacing: 0.14em; color: var(--text-dim); white-space: nowrap;
+      margin-left: 0.5rem;
+    }
+    .wm-badges { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex-shrink: 0; }
+    .wm-defcon {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.28rem 0.65rem; border-radius: 4px;
+      background: var(--gold-glow2); border: 1px solid var(--border-gold);
+      font-family: var(--font-head); font-size: 0.52rem; font-weight: 800;
+      letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase;
+    }
+    .wm-defcon b { font-size: 0.78rem; line-height: 1; }
+    .wm-live {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.28rem 0.6rem; border-radius: 4px;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.35);
+      font-family: var(--font-head); font-size: 0.5rem; font-weight: 700;
+      letter-spacing: 0.2em; color: var(--green); text-transform: uppercase;
+    }
+    .wm-live::before { content: '●'; animation: blink 1.5s ease-in-out infinite; }
+    .wm-search-wrap { position: relative; flex-shrink: 1; min-width: 0; }
+    .wm-search {
+      width: 190px; max-width: 30vw;
+      padding: 0.34rem 0.65rem 0.34rem 1.7rem;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: 5px;
+      color: var(--text); font-family: var(--font-head); font-size: 0.55rem;
+      letter-spacing: 0.08em; outline: none; transition: border-color 0.18s;
+    }
+    .wm-search:focus { border-color: var(--teal); }
+    .wm-search::placeholder { color: var(--text-muted); }
+    .wm-search-icon {
+      position: absolute; left: 0.55rem; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 0.6rem; pointer-events: none;
+    }
+    .wm-search-results {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: rgba(10,10,16,0.98); border: 1px solid var(--border-hi);
+      border-radius: 6px; overflow: hidden; z-index: 500;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+    }
+    .wm-search-results.open { display: block; }
+    .wm-sr-item {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.45rem 0.6rem; cursor: pointer;
+      font-family: var(--font-head); font-size: 0.54rem; color: var(--text-dim);
+      letter-spacing: 0.06em; border-bottom: 1px solid var(--border);
+    }
+    .wm-sr-item:last-child { border-bottom: none; }
+    .wm-sr-item:hover { background: var(--teal-glow2); color: var(--text); }
+    .wm-sr-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ═══════════ MIDDLE: LAYERS + MAP ═══════════ */
+    .wm-body { display: flex; min-height: 0; position: relative; }
+
+    .wm-layers {
+      width: 218px; flex-shrink: 0; display: flex; flex-direction: column;
+      background: rgba(8,8,13,0.96); border-right: 1px solid var(--border);
+      z-index: 20;
+    }
+    .wm-layers-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 0.85rem 0.5rem;
+      font-family: var(--font-head); font-size: 0.55rem; font-weight: 800;
+      letter-spacing: 0.28em; color: var(--text-dim); text-transform: uppercase;
+    }
+    .wm-layers-search {
+      margin: 0 0.7rem 0.55rem;
+      padding: 0.34rem 0.6rem;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: 5px;
+      color: var(--text); font-family: var(--font-head); font-size: 0.52rem;
+      letter-spacing: 0.06em; outline: none;
+    }
+    .wm-layers-search:focus { border-color: var(--teal); }
+    .wm-layers-search::placeholder { color: var(--text-muted); }
+    .wm-layers-list { flex: 1; overflow-y: auto; padding: 0.15rem 0.45rem 0.75rem; }
+    .wm-layer-row {
+      display: flex; align-items: center; gap: 0.55rem;
+      padding: 0.42rem 0.45rem; border-radius: 5px; cursor: pointer;
+      transition: background 0.15s; user-select: none;
+    }
+    .wm-layer-row:hover { background: rgba(255,255,255,0.03); }
+    .wm-layer-check {
+      width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0;
+      border: 1px solid var(--border); background: var(--bg-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.55rem; color: #000; transition: all 0.15s;
+    }
+    .wm-layer-row.on .wm-layer-check { background: var(--layer-c); border-color: var(--layer-c); }
+    .wm-layer-icon { width: 14px; text-align: center; font-size: 0.62rem; flex-shrink: 0; color: var(--layer-c); }
+    .wm-layer-row:not(.on) .wm-layer-icon { color: var(--text-muted); }
+    .wm-layer-label {
+      flex: 1; font-family: var(--font-head); font-size: 0.54rem; font-weight: 600;
+      letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wm-layer-row.on .wm-layer-label { color: var(--text); }
+    .wm-layer-count {
+      font-family: var(--font-head); font-size: 0.46rem; color: var(--text-muted);
+      padding: 0.08rem 0.35rem; border: 1px solid var(--border); border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .wm-layer-live {
+      font-family: var(--font-head); font-size: 0.4rem; font-weight: 800; color: var(--green);
+      letter-spacing: 0.14em; flex-shrink: 0;
+    }
+    .wm-layers-foot {
+      padding: 0.6rem 0.85rem; border-top: 1px solid var(--border);
+      font-family: var(--font-head); font-size: 0.46rem; color: var(--text-muted);
+      letter-spacing: 0.1em; line-height: 1.8; text-transform: uppercase;
+    }
+    .wm-layers-foot b { color: var(--teal); font-weight: 700; }
+
+    /* ═══════════ MAP ═══════════ */
+    .wm-map-wrap { flex: 1; position: relative; min-width: 0; overflow: hidden; background: #04040a; }
+    #map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+    #map-canvas.dragging { cursor: grabbing; }
+    #map-canvas.pointing { cursor: pointer; }
+
+    .wm-map-hud-tl {
+      position: absolute; top: 0.7rem; left: 0.85rem; z-index: 10; pointer-events: none;
+      font-family: var(--font-head); letter-spacing: 0.22em; text-transform: uppercase;
+    }
+    .wm-hud-title { font-size: 0.62rem; font-weight: 800; color: var(--text); }
+    .wm-hud-sub { font-size: 0.44rem; color: var(--text-muted); margin-top: 0.25rem; letter-spacing: 0.18em; }
+
+    .wm-map-controls {
+      position: absolute; top: 0.7rem; right: 0.75rem; z-index: 10;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;
+    }
+    .wm-mode-toggle {
+      display: flex; border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
+      background: rgba(10,10,16,0.92);
+    }
+    .wm-mode-btn {
+      padding: 0.32rem 0.7rem; font-family: var(--font-head); font-size: 0.55rem;
+      font-weight: 800; letter-spacing: 0.1em; color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .wm-mode-btn.active { background: var(--teal); color: #000; }
+    .wm-mode-btn:not(.active):hover { color: var(--text); }
+    .wm-zoom-stack { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; background: rgba(10,10,16,0.92); }
+    .wm-zoom-btn {
+      width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 0.9rem; font-family: var(--font-head);
+      border-bottom: 1px solid var(--border); transition: all 0.15s;
+    }
+    .wm-zoom-btn:last-child { border-bottom: none; }
+    .wm-zoom-btn:hover { color: var(--teal); background: var(--teal-glow2); }
+
+    .wm-attribution {
+      position: absolute; bottom: 0.4rem; right: 0.75rem; z-index: 5; pointer-events: none;
+      font-family: var(--font-head); font-size: 0.4rem; color: rgba(120,120,140,0.55);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    /* Marker tooltip + popup */
+    #map-tooltip {
+      display: none; position: absolute; z-index: 40; pointer-events: none;
+      padding: 0.3rem 0.55rem; background: rgba(8,8,14,0.96);
+      border: 1px solid var(--border-hi); border-radius: 4px;
+      font-family: var(--font-head); font-size: 0.52rem; font-weight: 700;
+      letter-spacing: 0.08em; color: var(--text); white-space: nowrap;
+      transform: translate(-50%, -140%);
+    }
+    #marker-popup {
+      display: none; position: absolute; left: 0.85rem; bottom: 0.85rem; z-index: 30;
+      width: 250px; max-width: calc(100% - 1.7rem);
+      background: rgba(9,9,15,0.97); border: 1px solid var(--border-hi);
+      border-radius: 8px; padding: 0.8rem 0.9rem;
+      box-shadow: 0 0 24px var(--teal-glow), 0 10px 40px rgba(0,0,0,0.75);
+    }
+    #marker-popup.open { display: block; }
+    .mp-close {
+      position: absolute; top: 0.4rem; right: 0.55rem; color: var(--text-muted);
+      font-size: 0.8rem; line-height: 1; transition: color 0.15s;
+    }
+    .mp-close:hover { color: var(--teal); }
+    .mp-cat {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-family: var(--font-head); font-size: 0.44rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.35rem;
+    }
+    .mp-cat-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .mp-name { font-family: var(--font-head); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.06em; color: var(--text); margin-bottom: 0.15rem; }
+    .mp-region { font-family: var(--font-head); font-size: 0.46rem; letter-spacing: 0.16em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.45rem; }
+    .mp-desc { font-family: var(--font-body); font-size: 0.68rem; color: var(--text-dim); line-height: 1.55; margin-bottom: 0.5rem; }
+    .mp-sev {
+      display: inline-block; padding: 0.14rem 0.5rem; border-radius: 3px;
+      font-family: var(--font-head); font-size: 0.44rem; font-weight: 800; letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .sev-CRITICAL { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.45); color: #ef4444; }
+    .sev-HIGH     { background: rgba(249,115,22,0.14); border: 1px solid rgba(249,115,22,0.4); color: #f97316; }
+    .sev-ELEVATED { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); color: var(--gold); }
+    .sev-STABLE   { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.35); color: var(--green); }
+    .sev-LIVE     { background: rgba(167,139,250,0.14); border: 1px solid rgba(167,139,250,0.4); color: #a78bfa; }
+
+    /* Mobile layers toggle */
+    .wm-layers-toggle {
+      display: none; position: absolute; top: 0.7rem; left: 0.85rem; z-index: 25;
+      padding: 0.4rem 0.7rem; border: 1px solid var(--border); border-radius: 5px;
+      background: rgba(10,10,16,0.92); color: var(--text-dim);
+      font-family: var(--font-head); font-size: 0.52rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    /* ═══════════ BOTTOM INTEL STRIP ═══════════ */
+    .wm-bottom {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border); border-top: 1px solid var(--border-hi);
+      height: 198px; flex-shrink: 0;
+    }
+    .wm-panel { background: rgba(8,8,13,0.98); display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+    .wm-panel-head {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 0.75rem 0.45rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .wm-panel-title {
+      font-family: var(--font-head); font-size: 0.5rem; font-weight: 800;
+      letter-spacing: 0.2em; color: var(--text-dim); text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wm-panel-badge {
+      margin-left: auto; flex-shrink: 0;
+      font-family: var(--font-head); font-size: 0.42rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.1rem 0.4rem; border-radius: 3px;
+    }
+    .wm-panel-badge.live { color: var(--green); border: 1px solid rgba(34,197,94,0.35); background: rgba(34,197,94,0.08); }
+    .wm-panel-badge.count { color: var(--text-muted); border: 1px solid var(--border); }
+    .wm-panel-body { flex: 1; overflow-y: auto; padding: 0.35rem 0.4rem; }
+
+    /* Signal aggregator rows */
+    .sig-row { display: flex; gap: 0.5rem; padding: 0.4rem 0.4rem; border-radius: 5px; align-items: flex-start; }
+    .sig-row:hover { background: rgba(255,255,255,0.025); }
+    .sig-bar { width: 3px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+    .sig-main { min-width: 0; flex: 1; }
+    .sig-meta { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.18rem; flex-wrap: wrap; }
+    .sig-tag { font-family: var(--font-head); font-size: 0.42rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+    .sig-time { font-family: var(--font-head); font-size: 0.42rem; color: var(--text-muted); letter-spacing: 0.08em; }
+    .sig-text { font-family: var(--font-body); font-size: 0.66rem; color: var(--text-dim); line-height: 1.45; }
+
+    /* Seismic feed rows */
+    .qk-row { display: flex; align-items: center; gap: 0.55rem; padding: 0.38rem 0.45rem; border-radius: 5px; cursor: pointer; }
+    .qk-row:hover { background: var(--teal-glow2); }
+    .qk-mag {
+      flex-shrink: 0; width: 30px; text-align: center;
+      font-family: var(--font-head); font-size: 0.62rem; font-weight: 800;
+      padding: 0.12rem 0; border-radius: 4px;
+    }
+    .qk-place { flex: 1; min-width: 0; font-family: var(--font-body); font-size: 0.64rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .qk-time { flex-shrink: 0; font-family: var(--font-head); font-size: 0.42rem; color: var(--text-muted); letter-spacing: 0.06em; }
+    .wm-feed-empty { padding: 1rem 0.75rem; font-family: var(--font-head); font-size: 0.5rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; text-align: center; }
+
+    /* Instability rows */
+    .ci-row { display: flex; align-items: center; gap: 0.55rem; padding: 0.36rem 0.45rem; border-radius: 5px; cursor: pointer; }
+    .ci-row:hover { background: var(--teal-glow2); }
+    .ci-flagdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .ci-name { font-family: var(--font-head); font-size: 0.56rem; font-weight: 600; letter-spacing: 0.06em; color: var(--text-dim); width: 88px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ci-bar-track { flex: 1; height: 4px; border-radius: 2px; background: var(--bg-4); overflow: hidden; }
+    .ci-bar-fill { height: 100%; border-radius: 2px; }
+    .ci-score { font-family: var(--font-head); font-size: 0.6rem; font-weight: 800; color: var(--text); width: 22px; text-align: right; flex-shrink: 0; }
+    .ci-trend { font-family: var(--font-head); font-size: 0.5rem; width: 26px; flex-shrink: 0; }
+    .ci-trend.up { color: var(--red); } .ci-trend.down { color: var(--green); } .ci-trend.flat { color: var(--text-muted); }
+
+    /* Infrastructure grid */
+    .inf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; padding: 0.2rem 0.3rem; }
+    .inf-cell {
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.55rem;
+      border: 1px solid var(--border); border-radius: 6px; background: var(--bg-2);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .inf-cell:hover { border-color: var(--border-hi); }
+    .inf-cell.off { opacity: 0.4; }
+    .inf-icon { font-size: 0.8rem; width: 18px; text-align: center; flex-shrink: 0; }
+    .inf-num { font-family: var(--font-head); font-size: 0.78rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .inf-label { font-family: var(--font-head); font-size: 0.4rem; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase; margin-top: 0.15rem; }
+
+    /* ═══════════ RESPONSIVE ═══════════ */
+    @media (max-width: 1100px) {
+      .wm-bottom { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; height: 300px; }
+    }
+    @media (max-width: 860px) {
+      .wm-clock { display: none; }
+      .wm-search { width: 130px; }
+      .wm-layers {
+        position: absolute; top: 0; bottom: 0; left: 0; transform: translateX(-100%);
+        transition: transform 0.25s var(--ease); box-shadow: 8px 0 30px rgba(0,0,0,0.6);
+      }
+      .wm-layers.open { transform: translateX(0); }
+      .wm-layers-toggle { display: block; }
+      .wm-map-hud-tl { display: none; }
+      .wm-bottom { display: flex; overflow-x: auto; height: 190px; }
+      .wm-panel { min-width: 265px; flex-shrink: 0; border-right: 1px solid var(--border); }
+    }
+    @media (max-width: 640px) {
+      .wm-title { font-size: 0.62rem; letter-spacing: 0.2em; }
+      .wm-defcon span { display: none; }
+      .wm-search { max-width: 26vw; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wm-app">
+
+  <!-- ═══ TOP COMMAND BAR ═══ -->
+  <header class="wm-topbar">
+    <a class="wm-back" href="dashboard.html">‹ <span>Dashboard</span></a>
+    <div class="wm-brand">
+      <img src="ArcaneA.png" alt="AA"/>
+      <div class="wm-title-block">
+        <div class="wm-title">Watchtower</div>
+        <div class="wm-subtitle">Global Situation</div>
+      </div>
+    </div>
+    <div class="wm-clock" id="wm-clock">—</div>
+    <div class="wm-badges">
+      <div class="wm-search-wrap">
+        <span class="wm-search-icon">⌕</span>
+        <input class="wm-search" id="wm-search" type="text" placeholder="SEARCH MAP..." autocomplete="off"/>
+        <div class="wm-search-results" id="wm-search-results"></div>
+      </div>
+      <div class="wm-defcon" title="Strategic readiness estimate"><span>DEFCON</span> <b>4</b></div>
+      <div class="wm-defcon" id="wm-fng" title="Fear & Greed Index (live)"><span>SENTIMENT</span> <b>—</b></div>
+      <div class="wm-live">Live</div>
+    </div>
+  </header>
+
+  <!-- ═══ LAYERS + MAP ═══ -->
+  <div class="wm-body">
+    <aside class="wm-layers" id="layers-panel">
+      <div class="wm-layers-head">Layers <span style="color:var(--text-muted)">▾</span></div>
+      <input class="wm-layers-search" id="layers-search" type="text" placeholder="Search layers..." autocomplete="off"/>
+      <div class="wm-layers-list" id="layers-list"></div>
+      <div class="wm-layers-foot">
+        Tracked objects: <b id="foot-objects">0</b><br/>
+        Feed status: <b id="foot-feed">CONNECTING…</b>
+      </div>
+    </aside>
+
+    <main class="wm-map-wrap" id="map-wrap">
+      <canvas id="map-canvas"></canvas>
+
+      <button class="wm-layers-toggle" id="layers-toggle">☰ Layers</button>
+
+      <div class="wm-map-hud-tl">
+        <div class="wm-hud-title" id="hud-mode">Orbital View</div>
+        <div class="wm-hud-sub" id="hud-coords">DRAG TO ROTATE · SCROLL TO ZOOM</div>
+      </div>
+
+      <div class="wm-map-controls">
+        <div class="wm-mode-toggle">
+          <button class="wm-mode-btn" id="btn-2d">2D</button>
+          <button class="wm-mode-btn active" id="btn-3d">3D</button>
+        </div>
+        <div class="wm-zoom-stack">
+          <button class="wm-zoom-btn" id="zoom-in" title="Zoom in">+</button>
+          <button class="wm-zoom-btn" id="zoom-out" title="Zoom out">−</button>
+          <button class="wm-zoom-btn" id="zoom-home" title="Reset view" style="font-size:0.7rem">⌂</button>
+        </div>
+      </div>
+
+      <div id="map-tooltip"></div>
+
+      <div id="marker-popup">
+        <button class="mp-close" id="mp-close">✕</button>
+        <div class="mp-cat"><span class="mp-cat-dot" id="mp-dot"></span><span id="mp-cat-label">—</span></div>
+        <div class="mp-name" id="mp-name">—</div>
+        <div class="mp-region" id="mp-region">—</div>
+        <div class="mp-desc" id="mp-desc">—</div>
+        <span class="mp-sev" id="mp-sev">—</span>
+      </div>
+
+      <div class="wm-attribution">Natural Earth · Arcane Watchtower Engine</div>
+    </main>
+  </div>
+
+  <!-- ═══ BOTTOM INTEL STRIP ═══ -->
+  <section class="wm-bottom">
+    <div class="wm-panel">
+      <div class="wm-panel-head">
+        <div class="wm-panel-title">⨂ Cross-Source Signal Aggregator</div>
+        <div class="wm-panel-badge count" id="sig-count">0</div>
+      </div>
+      <div class="wm-panel-body" id="sig-body"></div>
+    </div>
+
+    <div class="wm-panel">
+      <div class="wm-panel-head">
+        <div class="wm-panel-title">◎ Seismic Watch · USGS</div>
+        <div class="wm-panel-badge live">Live</div>
+      </div>
+      <div class="wm-panel-body" id="quake-body">
+        <div class="wm-feed-empty">Connecting to feed…</div>
+      </div>
+    </div>
+
+    <div class="wm-panel">
+      <div class="wm-panel-head">
+        <div class="wm-panel-title">▤ Country Instability</div>
+        <div class="wm-panel-badge count" id="ci-count">0</div>
+      </div>
+      <div class="wm-panel-body" id="ci-body"></div>
+    </div>
+
+    <div class="wm-panel">
+      <div class="wm-panel-head">
+        <div class="wm-panel-title">⬢ Infrastructure Overview</div>
+        <div class="wm-panel-badge count" id="inf-total">0</div>
+      </div>
+      <div class="wm-panel-body">
+        <div class="inf-grid" id="inf-grid"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="world-geo.js"></script>
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════
+   ARCANE WATCHTOWER — WORLD MAP ENGINE
+   Canvas-rendered 3D orthographic globe + 2D equirectangular map.
+   No external map libraries — geometry from world-geo.js.
+   ══════════════════════════════════════════════════════════════ */
+
+const RAD = Math.PI / 180;
+
+/* ─── Layer + marker data ─────────────────────────────────────── */
+const LAYERS = [
+  { id: 'hotspot',    label: 'Intel Hotspots',   color: '#f97316', icon: '◉', on: true  },
+  { id: 'conflict',   label: 'Conflict Zones',   color: '#ef4444', icon: '✕', on: true  },
+  { id: 'military',   label: 'Military Bases',   color: '#8b5cf6', icon: '▲', on: true  },
+  { id: 'nuclear',    label: 'Nuclear Sites',    color: '#22d3ee', icon: '☢', on: true  },
+  { id: 'spaceport',  label: 'Spaceports',       color: '#fbbf24', icon: '◆', on: true  },
+  { id: 'datacenter', label: 'AI Data Centers',  color: '#22c55e', icon: '▣', on: false },
+  { id: 'quake',      label: 'Seismic Activity', color: '#a78bfa', icon: '●', on: true, live: true },
+  { id: 'eonet',      label: 'Natural Events',   color: '#f472b6', icon: '❋', on: true, live: true },
+  { id: 'cable',      label: 'Undersea Cables',  color: '#38bdf8', icon: '∿', on: true  },
+  { id: 'pipeline',   label: 'Pipelines',        color: '#f59e0b', icon: '▮', on: true  },
+  { id: 'arc',        label: 'Signal Routes',    color: '#8b5cf6', icon: '⌒', on: true  },
+  { id: 'zone',       label: 'Unstable States',  color: '#ef4444', icon: '▨', on: true  },
+];
+const layerById = Object.fromEntries(LAYERS.map(l => [l.id, l]));
+
+/* [cat, name, region, lon, lat, severity, description] */
+const MARKERS = [
+  // ── Intel hotspots ──
+  ['hotspot','Taiwan Strait','East Asia',119.5,24.5,'HIGH','Naval and air activity monitored across the median line. Primary flashpoint for great-power escalation.'],
+  ['hotspot','South China Sea','Spratly Islands',114.0,10.5,'HIGH','Contested reef installations and freedom-of-navigation patrols in overlapping claim zones.'],
+  ['hotspot','Korean DMZ','Korean Peninsula',126.9,38.3,'ELEVATED','Most fortified border on Earth. Artillery and missile test activity tracked continuously.'],
+  ['hotspot','Kashmir Line of Control','South Asia',74.8,34.1,'ELEVATED','Standing friction line between two nuclear states. Periodic cross-border exchanges.'],
+  ['hotspot','Strait of Hormuz','Persian Gulf',56.5,26.6,'HIGH','A fifth of global oil transits this chokepoint. Tanker seizures and escort operations ongoing.'],
+  ['hotspot','Bab el-Mandeb','Red Sea Gate',43.4,12.6,'CRITICAL','Shipping attacks have rerouted global trade around the Cape. Naval coalition active.'],
+  ['hotspot','Suez Canal','Egypt',32.35,30.5,'ELEVATED','Critical artery for Europe-Asia trade. Throughput sensitive to Red Sea security.'],
+  ['hotspot','Panama Canal','Central America',-79.7,9.1,'STABLE','Drought-constrained transit slots ripple through container rates.'],
+  ['hotspot','Strait of Malacca','Southeast Asia',100.3,4.2,'STABLE','Busiest shipping lane on Earth. Piracy suppressed but chokepoint risk endures.'],
+  ['hotspot','Sahel Corridor','West Africa',1.5,15.5,'HIGH','Coup belt. Insurgencies, mercenary deployments and shifting alliances.'],
+  ['hotspot','Suwałki Gap','Baltic Corridor',22.9,54.1,'ELEVATED','NATO’s narrowest land link to the Baltics, between Kaliningrad and Belarus.'],
+  ['hotspot','Svalbard / High Arctic','Arctic Circle',15.6,78.2,'STABLE','Melting ice opens new sea lanes and resource claims. Militarization accelerating.'],
+  ['hotspot','Nagorno-Karabakh','South Caucasus',46.75,39.8,'ELEVATED','Post-war demarcation friction along the Armenia–Azerbaijan corridor.'],
+  ['hotspot','Strait of Gibraltar','Western Med',-5.35,36.1,'STABLE','Atlantic–Mediterranean gate. Subsea cable and smuggling surveillance zone.'],
+  // ── Conflict zones ──
+  ['conflict','Donbas Front','Eastern Ukraine',37.8,48.0,'CRITICAL','Attritional line of contact. Drone, artillery and electronic warfare at industrial scale.'],
+  ['conflict','Gaza','Levant',34.45,31.4,'CRITICAL','Dense urban conflict with severe humanitarian collapse and regional spillover risk.'],
+  ['conflict','Khartoum','Sudan',32.55,15.6,'CRITICAL','SAF–RSF civil war. Capital contested; famine conditions spreading.'],
+  ['conflict','South Lebanon','Levant',35.4,33.3,'HIGH','Cross-border exchanges along the Blue Line. Escalation ladder actively monitored.'],
+  ['conflict','Sana’a','Yemen',44.2,15.35,'HIGH','Houthi-controlled capital. Launch origin for Red Sea maritime strikes.'],
+  ['conflict','Mogadishu','Somalia',45.3,2.05,'HIGH','Al-Shabaab insurgency against federal government and AU forces.'],
+  ['conflict','Tripoli','Libya',13.2,32.9,'ELEVATED','Rival governments and militia blocs in fragile balance.'],
+  ['conflict','Bamako','Mali',-8.0,12.65,'HIGH','Junta rule with contractor support; insurgency in the north and center.'],
+  ['conflict','Mandalay Front','Myanmar',96.1,21.98,'HIGH','Civil war between junta and resistance coalition. Border regions contested.'],
+  ['conflict','Goma / North Kivu','DR Congo',29.2,-1.68,'HIGH','M23 offensive and mineral-belt militia conflict. Mass displacement.'],
+  ['conflict','Port-au-Prince','Haiti',-72.34,18.54,'HIGH','Gang control of the capital. Multinational security mission deployed.'],
+  ['conflict','Kabul','Afghanistan',69.2,34.5,'ELEVATED','Taliban administration under sanctions; ISKP attacks persist.'],
+  // ── Military bases ──
+  ['military','Ramstein Air Base','Germany · US/NATO',7.6,49.44,'STABLE','Hub for US air operations in Europe and logistics coordination.'],
+  ['military','Naval Station Norfolk','USA · Atlantic Fleet',-76.3,36.95,'STABLE','Largest naval station in the world. Carrier strike group home port.'],
+  ['military','Pearl Harbor–Hickam','Hawaii · INDOPACOM',-157.95,21.35,'STABLE','Pacific Fleet headquarters and forward staging.'],
+  ['military','Andersen AFB','Guam · USAF',144.92,13.58,'ELEVATED','Bomber rotation hub. Within range envelope of regional missile forces.'],
+  ['military','Diego Garcia','Indian Ocean · UK/US',72.4,-7.31,'STABLE','Strategic bomber and prepositioning atoll for two oceans.'],
+  ['military','Kadena Air Base','Okinawa · USAF',127.77,26.35,'ELEVATED','Keystone of the first island chain. Fighter and ISR operations.'],
+  ['military','Incirlik Air Base','Türkiye · NATO',35.43,37.0,'STABLE','Forward NATO airpower and dual-key infrastructure.'],
+  ['military','Camp Lemonnier','Djibouti · US',43.15,11.55,'ELEVATED','Counter-terror and maritime security hub at the Red Sea gate.'],
+  ['military','Al Udeid Air Base','Qatar · CENTCOM',51.3,25.12,'STABLE','Forward headquarters for US air operations across the Gulf.'],
+  ['military','Fleet Activities Yokosuka','Japan · 7th Fleet',139.67,35.29,'STABLE','Forward-deployed carrier strike group home port.'],
+  ['military','Naval Station Rota','Spain · US/NATO',-6.35,36.62,'STABLE','Aegis destroyer forward basing at the Atlantic–Med gate.'],
+  ['military','Pituffik Space Base','Greenland · USSF',-68.7,76.53,'STABLE','Missile warning and space surveillance at the top of the world.'],
+  ['military','Kaliningrad Garrison','Russia · Baltic',20.5,54.71,'HIGH','Iskander and naval bastion inside NATO’s perimeter.'],
+  ['military','Sevastopol','Crimea · Black Sea Fleet',33.53,44.62,'HIGH','Contested fleet headquarters under persistent drone attack.'],
+  ['military','Yulin Naval Base','Hainan · PLAN',109.55,18.2,'ELEVATED','Underground submarine pens facing the South China Sea.'],
+  ['military','Tartus Naval Facility','Syria · Russia',35.9,34.9,'ELEVATED','Russia’s Mediterranean resupply and basing point.'],
+  // ── Nuclear sites ──
+  ['nuclear','Zaporizhzhia NPP','Ukraine',34.58,47.51,'CRITICAL','Europe’s largest nuclear plant, occupied and on the front line. IAEA monitors on site.'],
+  ['nuclear','Chernobyl Exclusion Zone','Ukraine',30.1,51.39,'ELEVATED','Decommissioned sarcophagus site within an active war’s airspace.'],
+  ['nuclear','Natanz Enrichment Complex','Iran',51.73,33.72,'HIGH','Centrifuge halls at the center of the nuclear standoff. Repeated sabotage history.'],
+  ['nuclear','Bushehr NPP','Iran',50.89,28.83,'ELEVATED','Russia-built civilian reactor on the Gulf coast.'],
+  ['nuclear','Yongbyon Complex','North Korea',125.75,39.8,'HIGH','Plutonium and enrichment heart of the DPRK weapons program.'],
+  ['nuclear','Dimona / Negev NRC','Israel',35.15,31.0,'STABLE','Undeclared weapons-program research reactor.'],
+  ['nuclear','Sellafield','United Kingdom',-3.5,54.42,'STABLE','Reprocessing legacy site; largest plutonium stockpile in civil hands.'],
+  ['nuclear','Fukushima Daiichi','Japan',141.03,37.42,'STABLE','Decommissioning and treated-water release under IAEA review.'],
+  ['nuclear','Hanford Site','USA · Washington',-119.6,46.55,'STABLE','Cold War plutonium legacy; largest US environmental cleanup.'],
+  ['nuclear','Los Alamos NL','USA · New Mexico',-106.3,35.88,'STABLE','Weapons design lab; plutonium pit production restart.'],
+  ['nuclear','Sarov (Arzamas-16)','Russia',43.32,54.93,'STABLE','Closed city; principal Russian warhead design center.'],
+  ['nuclear','Kahuta / KRL','Pakistan',73.38,33.59,'ELEVATED','Enrichment complex anchoring the Pakistani arsenal.'],
+  ['nuclear','La Hague','France',-1.88,49.68,'STABLE','Commercial reprocessing hub for European spent fuel.'],
+  ['nuclear','Taishan NPP','China',112.98,21.9,'STABLE','EPR flagship units powering the Pearl River Delta.'],
+  // ── Spaceports ──
+  ['spaceport','Cape Canaveral / KSC','USA · Florida',-80.6,28.5,'STABLE','Highest-cadence orbital launch complex on Earth.'],
+  ['spaceport','Vandenberg SFB','USA · California',-120.6,34.74,'STABLE','Polar-orbit launches and missile-defense test range.'],
+  ['spaceport','Starbase','USA · Texas',-97.15,25.99,'STABLE','Super-heavy launch development site on the Gulf coast.'],
+  ['spaceport','Wallops Flight Facility','USA · Virginia',-75.47,37.94,'STABLE','Cargo resupply and suborbital research launches.'],
+  ['spaceport','Baikonur Cosmodrome','Kazakhstan',63.34,45.96,'STABLE','Historic pad of the space age; crewed Soyuz operations.'],
+  ['spaceport','Plesetsk Cosmodrome','Russia',40.57,62.93,'ELEVATED','Military launch site for reconnaissance and early-warning payloads.'],
+  ['spaceport','Vostochny Cosmodrome','Russia · Far East',128.33,51.88,'STABLE','New-generation federal launch complex.'],
+  ['spaceport','Guiana Space Centre','Kourou · ESA',-52.77,5.24,'STABLE','European equatorial launch site for Ariane and Vega.'],
+  ['spaceport','Jiuquan SLC','China · Gobi',100.29,40.96,'ELEVATED','Crewed launches and military payloads from the desert.'],
+  ['spaceport','Wenchang SLC','China · Hainan',110.95,19.61,'STABLE','Heavy-lift coastal site for station and lunar missions.'],
+  ['spaceport','Xichang SLC','China · Sichuan',102.03,28.25,'STABLE','GEO communications and navigation constellation launches.'],
+  ['spaceport','Tanegashima Space Center','Japan',130.97,30.4,'STABLE','JAXA’s primary orbital launch complex.'],
+  ['spaceport','Satish Dhawan SC','India · Sriharikota',80.23,13.72,'STABLE','ISRO’s launch island for PSLV/GSLV and lunar missions.'],
+  ['spaceport','Rocket Lab LC-1','New Zealand · Mahia',177.86,-39.26,'STABLE','High-cadence small-lift launches from the South Pacific.'],
+  ['spaceport','Esrange Space Center','Sweden · Kiruna',21.1,67.89,'STABLE','Mainland Europe’s emerging orbital launch site.'],
+  // ── AI data centers ──
+  ['datacenter','Ashburn Cluster','USA · N. Virginia',-77.49,39.04,'STABLE','Densest data-center corridor on Earth — “Data Center Alley.”'],
+  ['datacenter','The Dalles','USA · Oregon',-121.18,45.6,'STABLE','Hydro-powered hyperscale campus on the Columbia River.'],
+  ['datacenter','Council Bluffs','USA · Iowa',-95.86,41.26,'STABLE','Multi-gigawatt Midwest AI training footprint.'],
+  ['datacenter','Abilene Stargate','USA · Texas',-99.73,32.45,'STABLE','Frontier-scale AI supercomputing campus under buildout.'],
+  ['datacenter','Memphis Colossus','USA · Tennessee',-90.05,35.15,'STABLE','One of the largest single AI training clusters deployed.'],
+  ['datacenter','Dublin Zone','Ireland',-6.44,53.43,'ELEVATED','European cloud hub; grid-capacity constraints cap growth.'],
+  ['datacenter','Slough / London','United Kingdom',-0.63,51.52,'STABLE','Financial-latency and AI inference hub for the UK.'],
+  ['datacenter','Frankfurt Zone','Germany',8.68,50.11,'STABLE','DE-CIX interconnection point — highest traffic exchange globally.'],
+  ['datacenter','Amsterdam Zone','Netherlands',4.9,52.37,'STABLE','North-sea landing hub tying cables to the European cloud.'],
+  ['datacenter','Luleå','Sweden · Arctic',22.15,65.58,'STABLE','Subarctic free-cooled compute campus.'],
+  ['datacenter','Singapore Zone','Singapore',103.8,1.35,'STABLE','Southeast Asia’s interconnection stronghold under power moratorium.'],
+  ['datacenter','Tokyo Zone','Japan',139.7,35.68,'STABLE','APAC financial and AI inference anchor.'],
+  ['datacenter','Sydney Zone','Australia',151.2,-33.87,'STABLE','Oceania cloud region and cable terminus.'],
+  ['datacenter','Mumbai Zone','India',72.88,19.08,'STABLE','Subcontinent gateway where subsea capacity lands.'],
+  ['datacenter','São Paulo Zone','Brazil',-46.63,-23.55,'STABLE','South America’s primary cloud and exchange hub.'],
+  ['datacenter','Johannesburg Zone','South Africa',28.05,-26.2,'STABLE','Continental hub fed by both-coast subsea systems.'],
+];
+
+/* Polyline overlays: { name, pts: [[lon,lat],...] } */
+const CABLES = [
+  { name: 'MAREA Transatlantic',   pts: [[-75.98,36.85],[-40,38.5],[-3.0,43.4]] },
+  { name: 'Grace Hopper / TAT',    pts: [[-73.9,40.5],[-45,46],[-4.5,50.8]] },
+  { name: 'Trans-Pacific Express', pts: [[-118.4,33.9],[-157.9,21.3],[141,35]] },
+  { name: 'Southern Cross',        pts: [[151.3,-33.9],[174.8,-36.9],[178.4,-18.1],[-157.9,21.3],[-118.4,33.9]] },
+  { name: 'SEA-ME-WE Corridor',    pts: [[5.35,43.25],[32.3,29.9],[39,21.5],[43.3,11.8],[72.8,18.9],[79.85,6.9],[103.8,1.3]] },
+  { name: 'EllaLink',              pts: [[-9.3,38.7],[-38.5,-3.7]] },
+  { name: 'Equiano',               pts: [[-9.3,38.7],[3.4,6.3],[18.4,-33.9]] },
+  { name: 'Asia Gateway',          pts: [[103.8,1.3],[114.2,22.2],[121.5,25],[139.8,34.9]] },
+  { name: 'Australia–Singapore',   pts: [[115.7,-32],[106.8,-6.1],[103.8,1.3]] },
+];
+const PIPELINES = [
+  { name: 'Nord Stream',        pts: [[28.75,60.7],[19,55.5],[13.65,54.1]] },
+  { name: 'Druzhba',            pts: [[52.3,54.9],[29.2,52.05],[14.3,53.06]] },
+  { name: 'TurkStream',         pts: [[37.35,44.9],[28.1,41.63]] },
+  { name: 'Power of Siberia',   pts: [[111.5,63.4],[127.5,50.3],[121.5,31.2]] },
+  { name: 'ESPO',               pts: [[98,55.9],[123.9,53.98],[133.05,42.75]] },
+  { name: 'Keystone',           pts: [[-111.3,52.67],[-97.02,40.05],[-96.77,35.98],[-95.3,29.7]] },
+  { name: 'Trans-Alaska',       pts: [[-148.4,70.25],[-146.35,61.13]] },
+  { name: 'CPC',                pts: [[53.4,46.15],[37.78,44.72]] },
+  { name: 'Baku–Tbilisi–Ceyhan',pts: [[49.85,40.4],[44.8,41.7],[35.8,37.02]] },
+];
+/* Animated signal arcs between intelligence hubs */
+const ARCS = [
+  [[-77,38.9],[-0.1,51.5]], [[-0.1,51.5],[8.68,50.11]], [[-77,38.9],[139.7,35.68]],
+  [[-122.4,37.8],[103.8,1.35]], [[37.6,55.75],[116.4,39.9]], [[-77,38.9],[34.8,32.1]],
+  [[-0.1,51.5],[55.3,25.2]], [[116.4,39.9],[43.15,11.55]], [[37.6,55.75],[51.4,35.7]],
+  [[-122.4,37.8],[151.2,-33.87]],
+];
+
+/* Red-tinted unstable states (must match world-geo names) */
+const UNSTABLE = new Set(['Ukraine','Sudan','Myanmar','Syria','Yemen','Somalia','Libya','Mali','Dem. Rep. Congo','Haiti','Afghanistan']);
+
+const INSTABILITY = [
+  { name: 'Myanmar',   score: 78, trend: 10, ll: [96, 21] },
+  { name: 'Syria',     score: 75, trend: 4,  ll: [38.5, 35] },
+  { name: 'Ukraine',   score: 74, trend: 0,  ll: [31.2, 49] },
+  { name: 'Sudan',     score: 72, trend: 6,  ll: [30.2, 15.6] },
+  { name: 'Yemen',     score: 70, trend: 0,  ll: [47.5, 15.5] },
+  { name: 'Haiti',     score: 68, trend: 3,  ll: [-72.7, 18.9] },
+  { name: 'Somalia',   score: 66, trend: -2, ll: [45.9, 5.1] },
+  { name: 'Libya',     score: 61, trend: 0,  ll: [17.2, 26.9] },
+  { name: 'Mali',      score: 59, trend: 1,  ll: [-3.5, 17.3] },
+  { name: 'DR Congo',  score: 57, trend: 2,  ll: [23.6, -2.9] },
+];
+
+const SIGNALS = [
+  { sev: 'CRITICAL', tag: 'MIL FLUX', min: 8,   text: 'Military flight surge: elevated sortie activity tracked over Eastern Europe.' },
+  { sev: 'HIGH',     tag: 'MARITIME', min: 22,  text: 'Tanker AIS gaps detected near Strait of Hormuz — three vessels running dark.' },
+  { sev: 'HIGH',     tag: 'CYBER',    min: 41,  text: 'Coordinated DDoS wave targeting Baltic financial infrastructure.' },
+  { sev: 'ELEVATED', tag: 'ENERGY',   min: 64,  text: 'Gas flow variance registered at TurkStream metering station.' },
+  { sev: 'HIGH',     tag: 'NUCLEAR',  min: 118, text: 'IAEA inspector rotation delayed at Zaporizhzhia NPP.' },
+  { sev: 'ELEVATED', tag: 'SPACE',    min: 176, text: 'Launch window NOTAM issued for Jiuquan — payload undisclosed.' },
+  { sev: 'ELEVATED', tag: 'MARKETS',  min: 244, text: 'Gold volatility spike coincides with Red Sea shipping reroutes.' },
+  { sev: 'HIGH',     tag: 'SIGINT',   min: 302, text: 'Increased encrypted traffic between Moscow and Tehran nodes.' },
+];
+const SEV_COLOR = { CRITICAL: '#ef4444', HIGH: '#f97316', ELEVATED: '#fbbf24', STABLE: '#22c55e', LIVE: '#a78bfa' };
+
+/* ─── Marker objects ──────────────────────────────────────────── */
+let markers = MARKERS.map(m => ({ cat: m[0], name: m[1], region: m[2], lon: m[3], lat: m[4], sev: m[5], desc: m[6] }));
+let quakes = []; // live USGS markers, refreshed every 5 min
+let events = []; // live NASA EONET natural events, refreshed every 10 min
+
+/* ─── Canvas setup ────────────────────────────────────────────── */
+const wrap    = document.getElementById('map-wrap');
+const canvas  = document.getElementById('map-canvas');
+const ctx     = canvas.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  buildStars();
+}
+window.addEventListener('resize', resize);
+
+/* Starfield (pre-generated points, drawn each frame) */
+let stars = [];
+function buildStars() {
+  stars = [];
+  const n = Math.floor(W * H / 4200);
+  for (let i = 0; i < n; i++) {
+    stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.1 + 0.2, a: Math.random() * 0.5 + 0.12, tw: Math.random() * Math.PI * 2 });
+  }
+}
+
+/* ─── View state ──────────────────────────────────────────────── */
+let mode = '3d';
+const rot   = { lon: -20, lat: 22 };   // 3D rotation center
+let zoom3   = 1;                        // 3D zoom
+const view2 = { x: 0, y: 0, scale: 1.0 }; // 2D pan/zoom (scale 1 = fit width)
+let lastInteract = 0;
+let anim = null; // fly-to animation
+
+/* ─── Spherical helpers ───────────────────────────────────────── */
+function toVec(lon, lat) {
+  const p = lat * RAD, l = lon * RAD;
+  return [Math.cos(p) * Math.cos(l), Math.cos(p) * Math.sin(l), Math.sin(p)];
+}
+function toLonLat(v) {
+  return [Math.atan2(v[1], v[0]) / RAD, Math.asin(Math.max(-1, Math.min(1, v[2]))) / RAD];
+}
+function slerp(a, b, n) {
+  const va = toVec(a[0], a[1]), vb = toVec(b[0], b[1]);
+  let d = va[0]*vb[0] + va[1]*vb[1] + va[2]*vb[2];
+  d = Math.max(-1, Math.min(1, d));
+  const w = Math.acos(d), sw = Math.sin(w) || 1e-9;
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, A = Math.sin((1 - t) * w) / sw, B = Math.sin(t * w) / sw;
+    out.push(toLonLat([A*va[0]+B*vb[0], A*va[1]+B*vb[1], A*va[2]+B*vb[2]]));
+  }
+  return out;
+}
+/* Sample a polyline along great circles */
+function samplePolyline(pts, per = 14) {
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const seg = slerp(pts[i], pts[i + 1], per);
+    for (let j = i === 0 ? 0 : 1; j < seg.length; j++) out.push(seg[j]);
+  }
+  return out;
+}
+
+/* ─── Projections ─────────────────────────────────────────────── */
+function globeRadius() { return Math.min(W, H) * 0.42 * zoom3; }
+
+/* Orthographic. Returns unit-sphere planar coords + visibility. */
+function proj3(lon, lat) {
+  const l = (lon - rot.lon) * RAD, p = lat * RAD, p0 = rot.lat * RAD;
+  const cp = Math.cos(p), sp = Math.sin(p);
+  const cosc = Math.sin(p0) * sp + Math.cos(p0) * cp * Math.cos(l);
+  return { x: cp * Math.sin(l), y: Math.cos(p0) * sp - Math.sin(p0) * cp * Math.cos(l), c: cosc };
+}
+function screen3(p, altK = 1) {
+  const R = globeRadius();
+  return { x: W / 2 + p.x * R * altK, y: H / 2 - p.y * R * altK };
+}
+/* Clamp a back-hemisphere point to the horizon rim (for polygon fills) */
+function rimClamp(p) {
+  const r = Math.hypot(p.x, p.y) || 1e-9;
+  return { x: p.x / r, y: p.y / r, c: 0 };
+}
+
+function proj2(lon, lat) {
+  const w = W * view2.scale, h = w / 2;
+  const x0 = (W - w) / 2 + view2.x, y0 = (H - h) / 2 + view2.y;
+  return { x: x0 + (lon + 180) / 360 * w, y: y0 + (90 - lat) / 180 * h };
+}
+
+/* ─── Drawing: 3D globe ───────────────────────────────────────── */
+function drawGlobe(ts) {
+  const R = globeRadius(), cx = W / 2, cy = H / 2;
+
+  // Atmosphere glow
+  let g = ctx.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.22);
+  g.addColorStop(0, 'rgba(139,92,246,0.16)');
+  g.addColorStop(0.55, 'rgba(139,92,246,0.05)');
+  g.addColorStop(1, 'rgba(139,92,246,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx, cy, R * 1.22, 0, Math.PI * 2); ctx.fill();
+
+  // Ocean sphere
+  g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R);
+  g.addColorStop(0, '#131332');
+  g.addColorStop(0.65, '#0b0b22');
+  g.addColorStop(1, '#060614');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(139,92,246,0.35)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Graticule
+  ctx.strokeStyle = 'rgba(139,92,246,0.10)';
+  ctx.lineWidth = 0.6;
+  for (let lon = -180; lon < 180; lon += 30) drawArc3(sampleMeridian(lon), 1);
+  for (let lat = -60; lat <= 60; lat += 30) drawArc3(sampleParallel(lat), 1);
+
+  // Countries
+  for (const c of WORLD_GEO) {
+    const hot = layerById.zone.on && UNSTABLE.has(c.n);
+    ctx.fillStyle   = hot ? 'rgba(190,40,50,0.42)' : 'rgba(32,32,54,0.92)';
+    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(139,92,246,0.28)';
+    ctx.lineWidth = hot ? 0.9 : 0.55;
+    ctx.beginPath();
+    for (const ring of c.p) {
+      let anyVisible = false;
+      for (let i = 0; i < ring.length; i++) {
+        if (proj3(ring[i][0], ring[i][1]).c > 0) { anyVisible = true; break; }
+      }
+      if (!anyVisible) continue;
+      for (let i = 0; i < ring.length; i++) {
+        let p = proj3(ring[i][0], ring[i][1]);
+        if (p.c <= 0) p = rimClamp(p);
+        const s = screen3(p);
+        if (i === 0) ctx.moveTo(s.x, s.y); else ctx.lineTo(s.x, s.y);
+      }
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+function sampleMeridian(lon) {
+  const pts = [];
+  for (let lat = -90; lat <= 90; lat += 4) pts.push([lon, lat]);
+  return pts;
+}
+function sampleParallel(lat) {
+  const pts = [];
+  for (let lon = -180; lon <= 180; lon += 4) pts.push([lon, lat]);
+  return pts;
+}
+/* Stroke a sampled lon/lat path on the globe, skipping hidden portions */
+function drawArc3(pts, altK) {
+  ctx.beginPath();
+  let pen = false;
+  for (const [lon, lat] of pts) {
+    const p = proj3(lon, lat);
+    if (p.c > 0) {
+      const s = screen3(p, altK);
+      if (pen) ctx.lineTo(s.x, s.y); else { ctx.moveTo(s.x, s.y); pen = true; }
+    } else pen = false;
+  }
+  ctx.stroke();
+}
+
+/* ─── Drawing: 2D map ─────────────────────────────────────────── */
+function drawFlat() {
+  const w = W * view2.scale, h = w / 2;
+  const x0 = (W - w) / 2 + view2.x, y0 = (H - h) / 2 + view2.y;
+
+  // Ocean rect
+  const g = ctx.createLinearGradient(0, y0, 0, y0 + h);
+  g.addColorStop(0, '#0b0b22'); g.addColorStop(0.5, '#10102a'); g.addColorStop(1, '#0b0b22');
+  ctx.fillStyle = g;
+  ctx.fillRect(x0, y0, w, h);
+  ctx.strokeStyle = 'rgba(139,92,246,0.3)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x0, y0, w, h);
+
+  // Graticule
+  ctx.strokeStyle = 'rgba(139,92,246,0.09)';
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  for (let lon = -150; lon < 180; lon += 30) {
+    const p = proj2(lon, 0);
+    ctx.moveTo(p.x, y0); ctx.lineTo(p.x, y0 + h);
+  }
+  for (let lat = -60; lat <= 60; lat += 30) {
+    const p = proj2(0, lat);
+    ctx.moveTo(x0, p.y); ctx.lineTo(x0 + w, p.y);
+  }
+  ctx.stroke();
+
+  // Countries
+  for (const c of WORLD_GEO) {
+    const hot = layerById.zone.on && UNSTABLE.has(c.n);
+    ctx.fillStyle   = hot ? 'rgba(190,40,50,0.42)' : 'rgba(32,32,54,0.92)';
+    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(139,92,246,0.28)';
+    ctx.lineWidth = hot ? 0.9 : 0.55;
+    ctx.beginPath();
+    for (const ring of c.p) {
+      for (let i = 0; i < ring.length; i++) {
+        const s = proj2(ring[i][0], ring[i][1]);
+        if (i === 0) ctx.moveTo(s.x, s.y); else ctx.lineTo(s.x, s.y);
+      }
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+/* Stroke a sampled path in 2D, breaking at the antimeridian */
+function drawPath2(pts) {
+  ctx.beginPath();
+  let prev = null;
+  for (const [lon, lat] of pts) {
+    const s = proj2(lon, lat);
+    if (prev !== null && Math.abs(lon - prev) > 180) ctx.moveTo(s.x, s.y);
+    else if (prev === null) ctx.moveTo(s.x, s.y);
+    else ctx.lineTo(s.x, s.y);
+    prev = lon;
+  }
+  ctx.stroke();
+}
+
+/* ─── Overlays (both modes) ───────────────────────────────────── */
+const cablePaths    = CABLES.map(c => samplePolyline(c.pts));
+const pipelinePaths = PIPELINES.map(p => samplePolyline(p.pts));
+const arcPaths      = ARCS.map(a => slerp(a[0], a[1], 40));
+
+function drawLines(ts) {
+  const flat = mode === '2d';
+  if (layerById.cable.on) {
+    ctx.strokeStyle = 'rgba(56,189,248,0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]);
+    ctx.lineDashOffset = -(ts / 60) % 9;
+    for (const path of cablePaths) flat ? drawPath2(path) : drawArc3(path, 1.0);
+    ctx.setLineDash([]);
+  }
+  if (layerById.pipeline.on) {
+    ctx.strokeStyle = 'rgba(245,158,11,0.5)';
+    ctx.lineWidth = 1.4;
+    for (const path of pipelinePaths) flat ? drawPath2(path) : drawArc3(path, 1.0);
+  }
+  if (layerById.arc.on) {
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 7]);
+    ctx.lineDashOffset = -(ts / 30) % 10;
+    ctx.strokeStyle = 'rgba(139,92,246,0.55)';
+    if (flat) { for (const path of arcPaths) drawPath2(path); }
+    else {
+      // arcs get altitude in 3D — draw manually with lift
+      for (const path of arcPaths) {
+        ctx.beginPath();
+        let pen = false;
+        for (let i = 0; i < path.length; i++) {
+          const t = i / (path.length - 1);
+          const p = proj3(path[i][0], path[i][1]);
+          if (p.c > -0.08) {
+            const s = screen3(p, 1 + 0.16 * Math.sin(Math.PI * t));
+            if (pen) ctx.lineTo(s.x, s.y); else { ctx.moveTo(s.x, s.y); pen = true; }
+          } else pen = false;
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.setLineDash([]);
+  }
+}
+
+/* Marker shapes */
+function drawShape(x, y, cat, r, color, alpha) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.4;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 7;
+  ctx.beginPath();
+  switch (cat) {
+    case 'military':
+      ctx.moveTo(x, y - r); ctx.lineTo(x + r, y + r * 0.85); ctx.lineTo(x - r, y + r * 0.85);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'spaceport':
+      ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y);
+      ctx.closePath(); ctx.fill();
+      break;
+    case 'datacenter':
+      ctx.fillRect(x - r * 0.85, y - r * 0.85, r * 1.7, r * 1.7);
+      break;
+    case 'conflict':
+      ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r);
+      ctx.moveTo(x + r, y - r); ctx.lineTo(x - r, y + r);
+      ctx.stroke();
+      break;
+    case 'nuclear':
+      ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, r * 0.38, 0, Math.PI * 2); ctx.fill();
+      break;
+    case 'hotspot':
+      ctx.arc(x, y, r * 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+      break;
+    default: // quake + fallback
+      ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+}
+
+let hitPoints = []; // { x, y, m } screen-space, refreshed every frame
+function drawMarkers(ts) {
+  hitPoints = [];
+  const flat = mode === '2d';
+  const all = markers.concat(quakes, events); // per-marker layer.on check below filters
+  for (const m of all) {
+    const layer = layerById[m.cat];
+    if (!layer || !layer.on) continue;
+    let sx, sy, alpha = 1;
+    if (flat) {
+      const s = proj2(m.lon, m.lat); sx = s.x; sy = s.y;
+      if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
+    } else {
+      const p = proj3(m.lon, m.lat);
+      if (p.c < 0.02) continue;
+      alpha = Math.min(1, 0.25 + p.c);
+      const s = screen3(p); sx = s.x; sy = s.y;
+    }
+    const base = m.cat === 'quake' ? (3 + Math.max(0, (m.mag || 4.5) - 4) * 2.2) : 4.6;
+    drawShape(sx, sy, m.cat, base, layer.color, alpha);
+    // pulse ring on critical markers
+    if (m.sev === 'CRITICAL' || m.cat === 'quake') {
+      const t = ((ts / 1400) + (m.lon * 0.01)) % 1;
+      ctx.globalAlpha = (1 - t) * 0.55 * alpha;
+      ctx.strokeStyle = layer.color;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(sx, sy, base + t * 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    hitPoints.push({ x: sx, y: sy, m });
+  }
+}
+
+/* ─── Main render loop ────────────────────────────────────────── */
+let lastTs = 0;
+function frame(ts) {
+  lastTs = ts;
+  // fly-to animation
+  if (anim) {
+    const t = Math.min(1, (ts - anim.t0) / anim.dur);
+    const e = 1 - Math.pow(1 - t, 3);
+    if (mode === '3d') {
+      rot.lon = anim.from[0] + anim.dLon * e;
+      rot.lat = anim.from[1] + (anim.to[1] - anim.from[1]) * e;
+    } else {
+      view2.x = anim.from[0] + (anim.to[0] - anim.from[0]) * e;
+      view2.y = anim.from[1] + (anim.to[1] - anim.from[1]) * e;
+    }
+    if (t >= 1) anim = null;
+  } else if (mode === '3d' && ts - lastInteract > 4000) {
+    rot.lon = ((rot.lon + 0.018 + 180) % 360) - 180; // idle auto-rotate
+  }
+
+  ctx.clearRect(0, 0, W, H);
+  // Space backdrop
+  ctx.fillStyle = '#04040a';
+  ctx.fillRect(0, 0, W, H);
+  for (const s of stars) {
+    ctx.globalAlpha = s.a * (0.7 + 0.3 * Math.sin(ts / 900 + s.tw));
+    ctx.fillStyle = '#c8c8ff';
+    ctx.fillRect(s.x, s.y, s.r, s.r);
+  }
+  ctx.globalAlpha = 1;
+
+  if (mode === '3d') drawGlobe(ts); else drawFlat();
+  drawLines(ts);
+  drawMarkers(ts);
+
+  requestAnimationFrame(frame);
+}
+
+/* ─── Interaction ─────────────────────────────────────────────── */
+const pointers = new Map();
+let dragging = false, lastPinch = 0;
+
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  dragging = false;
+});
+canvas.addEventListener('pointermove', e => {
+  lastInteract = lastTs;
+  const prev = pointers.get(e.pointerId);
+  if (!prev) { hover(e); return; }
+  anim = null;
+  const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (Math.abs(dx) + Math.abs(dy) > 1) dragging = true;
+  canvas.classList.toggle('dragging', dragging);
+
+  if (pointers.size === 2) { // pinch zoom
+    const pts = [...pointers.values()];
+    const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (lastPinch) zoomBy(d / lastPinch, (pts[0].x + pts[1].x) / 2 - canvas.getBoundingClientRect().left, (pts[0].y + pts[1].y) / 2 - canvas.getBoundingClientRect().top);
+    lastPinch = d;
+    return;
+  }
+  if (mode === '3d') {
+    const k = 0.22 / zoom3;
+    rot.lon = ((rot.lon - dx * k + 180) % 360) - 180;
+    rot.lat = Math.max(-85, Math.min(85, rot.lat + dy * k));
+  } else {
+    view2.x += dx; view2.y += dy;
+    clamp2d();
+  }
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  lastPinch = 0;
+  canvas.classList.remove('dragging');
+  if (!dragging) clickAt(e);
+  dragging = false;
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', e => { pointers.delete(e.pointerId); lastPinch = 0; });
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  lastInteract = lastTs;
+  const rect = canvas.getBoundingClientRect();
+  zoomBy(e.deltaY < 0 ? 1.13 : 1 / 1.13, e.clientX - rect.left, e.clientY - rect.top);
+}, { passive: false });
+
+function zoomBy(f, px, py) {
+  if (mode === '3d') {
+    zoom3 = Math.max(0.7, Math.min(4.5, zoom3 * f));
+  } else {
+    // Keep the world point under the cursor fixed while scaling.
+    const w0 = W * view2.scale, h0 = w0 / 2;
+    const x0 = (W - w0) / 2 + view2.x, y0 = (H - h0) / 2 + view2.y;
+    const u = (px - x0) / w0, v = (py - y0) / h0;
+    view2.scale = Math.max(1, Math.min(8, view2.scale * f));
+    const w1 = W * view2.scale, h1 = w1 / 2;
+    view2.x = px - u * w1 - (W - w1) / 2;
+    view2.y = py - v * h1 - (H - h1) / 2;
+    clamp2d();
+  }
+}
+function clamp2d() {
+  const w = W * view2.scale, h = w / 2;
+  const maxX = w / 2 + W / 2 - 40, maxY = h / 2 + H / 2 - 40;
+  view2.x = Math.max(-maxX, Math.min(maxX, view2.x));
+  view2.y = Math.max(-maxY, Math.min(maxY, view2.y));
+}
+
+/* Hover tooltip + click popup */
+const tooltip = document.getElementById('map-tooltip');
+function pick(e) {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  let best = null, bd = 14 * 14;
+  for (const h of hitPoints) {
+    const d = (h.x - x) ** 2 + (h.y - y) ** 2;
+    if (d < bd) { bd = d; best = h; }
+  }
+  return best;
+}
+function hover(e) {
+  const h = pick(e);
+  canvas.classList.toggle('pointing', !!h);
+  if (h) {
+    tooltip.style.display = 'block';
+    tooltip.style.left = h.x + 'px';
+    tooltip.style.top = h.y + 'px';
+    tooltip.textContent = h.m.name;
+    tooltip.style.borderColor = layerById[h.m.cat].color;
+  } else tooltip.style.display = 'none';
+}
+function clickAt(e) {
+  const h = pick(e);
+  if (h) openPopup(h.m); else closePopup();
+}
+
+const popup = document.getElementById('marker-popup');
+function openPopup(m) {
+  const layer = layerById[m.cat];
+  document.getElementById('mp-dot').style.background = layer.color;
+  document.getElementById('mp-cat-label').textContent = layer.label;
+  document.getElementById('mp-cat-label').style.color = layer.color;
+  document.getElementById('mp-name').textContent = m.name;
+  document.getElementById('mp-region').textContent = m.region || '';
+  document.getElementById('mp-desc').textContent = m.desc || '';
+  const sev = document.getElementById('mp-sev');
+  sev.textContent = m.sev;
+  sev.className = 'mp-sev sev-' + m.sev;
+  popup.classList.add('open');
+}
+function closePopup() { popup.classList.remove('open'); }
+document.getElementById('mp-close').addEventListener('click', closePopup);
+
+/* Fly-to a lon/lat */
+function flyTo(lon, lat) {
+  lastInteract = lastTs;
+  if (mode === '3d') {
+    let dLon = lon - rot.lon;
+    while (dLon > 180) dLon -= 360;
+    while (dLon < -180) dLon += 360;
+    anim = { t0: lastTs, dur: 900, from: [rot.lon, rot.lat], to: [lon, lat], dLon };
+  } else {
+    if (view2.scale < 2) view2.scale = 2.2;
+    const w = W * view2.scale, h = w / 2;
+    const tx = -((lon + 180) / 360 - 0.5) * w;
+    const ty = -((90 - lat) / 180 - 0.5) * h;
+    anim = { t0: lastTs, dur: 700, from: [view2.x, view2.y], to: [tx, ty] };
+  }
+}
+
+/* ─── UI: mode toggle / zoom / fullscreen ─────────────────────── */
+const btn2d = document.getElementById('btn-2d'), btn3d = document.getElementById('btn-3d');
+function setMode(m) {
+  mode = m;
+  anim = null; // a fly-to in one projection is meaningless in the other
+  btn2d.classList.toggle('active', m === '2d');
+  btn3d.classList.toggle('active', m === '3d');
+  document.getElementById('hud-mode').textContent = m === '3d' ? 'Orbital View' : 'Flat Projection';
+  document.getElementById('hud-coords').textContent = m === '3d' ? 'DRAG TO ROTATE · SCROLL TO ZOOM' : 'DRAG TO PAN · SCROLL TO ZOOM';
+  closePopup();
+}
+btn2d.addEventListener('click', () => setMode('2d'));
+btn3d.addEventListener('click', () => setMode('3d'));
+document.getElementById('zoom-in').addEventListener('click', () => zoomBy(1.25, W / 2, H / 2));
+document.getElementById('zoom-out').addEventListener('click', () => zoomBy(1 / 1.25, W / 2, H / 2));
+document.getElementById('zoom-home').addEventListener('click', () => {
+  anim = null;
+  zoom3 = 1; rot.lon = -20; rot.lat = 22;
+  view2.x = 0; view2.y = 0; view2.scale = 1;
+  lastInteract = 0;
+});
+
+/* Mobile layers drawer */
+const layersPanel = document.getElementById('layers-panel');
+document.getElementById('layers-toggle').addEventListener('click', () => layersPanel.classList.toggle('open'));
+canvas.addEventListener('pointerdown', () => layersPanel.classList.remove('open'));
+
+/* ─── Layers panel ────────────────────────────────────────────── */
+function layerCount(id) {
+  if (id === 'cable') return CABLES.length;
+  if (id === 'pipeline') return PIPELINES.length;
+  if (id === 'arc') return ARCS.length;
+  if (id === 'zone') return UNSTABLE.size;
+  if (id === 'quake') return quakes.length;
+  if (id === 'eonet') return events.length;
+  return markers.filter(m => m.cat === id).length;
+}
+function renderLayers() {
+  const q = (document.getElementById('layers-search').value || '').toLowerCase();
+  const list = document.getElementById('layers-list');
+  list.innerHTML = LAYERS
+    .filter(l => l.label.toLowerCase().includes(q))
+    .map(l => `
+      <div class="wm-layer-row ${l.on ? 'on' : ''}" data-layer="${l.id}" style="--layer-c:${l.color}">
+        <span class="wm-layer-check">${l.on ? '✓' : ''}</span>
+        <span class="wm-layer-icon">${l.icon}</span>
+        <span class="wm-layer-label">${l.label}</span>
+        ${l.live ? '<span class="wm-layer-live">LIVE</span>' : ''}
+        <span class="wm-layer-count">${layerCount(l.id)}</span>
+      </div>`).join('');
+  list.querySelectorAll('.wm-layer-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const l = layerById[row.dataset.layer];
+      l.on = !l.on;
+      renderLayers();
+      renderInfrastructure();
+    });
+  });
+  document.getElementById('foot-objects').textContent =
+    markers.length + quakes.length + events.length + CABLES.length + PIPELINES.length + ARCS.length;
+}
+document.getElementById('layers-search').addEventListener('input', renderLayers);
+
+/* ─── Header: clock + search ──────────────────────────────────── */
+function tickClock() {
+  const d = new Date();
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const p = n => String(n).padStart(2, '0');
+  document.getElementById('wm-clock').textContent =
+    `${days[d.getUTCDay()]}, ${p(d.getUTCDate())} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()} · ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`;
+}
+setInterval(tickClock, 1000); tickClock();
+
+const searchInput = document.getElementById('wm-search');
+const searchResults = document.getElementById('wm-search-results');
+function runSearch() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (q.length < 2) { searchResults.classList.remove('open'); return []; }
+  const hits = markers.concat(quakes, events)
+    .filter(m => m.name.toLowerCase().includes(q) || (m.region || '').toLowerCase().includes(q))
+    .slice(0, 6);
+  searchResults.innerHTML = hits.map((m, i) => `
+    <div class="wm-sr-item" data-i="${i}">
+      <span class="wm-sr-dot" style="background:${layerById[m.cat].color}"></span>${m.name}
+    </div>`).join('');
+  searchResults.classList.toggle('open', hits.length > 0);
+  searchResults.querySelectorAll('.wm-sr-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const m = hits[+el.dataset.i];
+      flyTo(m.lon, m.lat); openPopup(m);
+      searchResults.classList.remove('open');
+      searchInput.value = m.name;
+    });
+  });
+  return hits;
+}
+searchInput.addEventListener('input', runSearch);
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const hits = runSearch();
+    if (hits.length) {
+      flyTo(hits[0].lon, hits[0].lat); openPopup(hits[0]);
+      searchResults.classList.remove('open');
+    }
+  }
+  if (e.key === 'Escape') searchResults.classList.remove('open');
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.wm-search-wrap')) searchResults.classList.remove('open');
+});
+
+/* ─── Bottom panels ───────────────────────────────────────────── */
+function timeAgo(ms) {
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return 'now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+
+function renderSignals() {
+  document.getElementById('sig-count').textContent = SIGNALS.length;
+  document.getElementById('sig-body').innerHTML = SIGNALS.map(s => `
+    <div class="sig-row">
+      <div class="sig-bar" style="background:${SEV_COLOR[s.sev]}"></div>
+      <div class="sig-main">
+        <div class="sig-meta">
+          <span class="sig-tag" style="color:${SEV_COLOR[s.sev]}">${s.sev}</span>
+          <span class="sig-tag" style="color:var(--text-muted)">${s.tag}</span>
+          <span class="sig-time">${timeAgo(s.min * 60000)}</span>
+        </div>
+        <div class="sig-text">${s.text}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderInstability() {
+  document.getElementById('ci-count').textContent = INSTABILITY.length;
+  document.getElementById('ci-body').innerHTML = INSTABILITY.map((c, i) => {
+    const col = c.score >= 72 ? '#ef4444' : c.score >= 62 ? '#f97316' : '#fbbf24';
+    const tr = c.trend > 0 ? `<span class="ci-trend up">↑${c.trend}</span>` :
+               c.trend < 0 ? `<span class="ci-trend down">↓${-c.trend}</span>` :
+                             `<span class="ci-trend flat">→</span>`;
+    return `
+    <div class="ci-row" data-i="${i}">
+      <span class="ci-flagdot" style="background:${col};box-shadow:0 0 6px ${col}"></span>
+      <span class="ci-name">${c.name}</span>
+      <div class="ci-bar-track"><div class="ci-bar-fill" style="width:${c.score}%;background:${col}"></div></div>
+      <span class="ci-score">${c.score}</span>${tr}
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.ci-row').forEach(el => {
+    el.addEventListener('click', () => {
+      const c = INSTABILITY[+el.dataset.i];
+      flyTo(c.ll[0], c.ll[1]);
+    });
+  });
+}
+
+function renderInfrastructure() {
+  const cats = ['military', 'nuclear', 'spaceport', 'datacenter', 'cable', 'pipeline'];
+  const icons = { military: '▲', nuclear: '☢', spaceport: '◆', datacenter: '▣', cable: '∿', pipeline: '▮' };
+  document.getElementById('inf-total').textContent = cats.reduce((n, c) => n + layerCount(c), 0);
+  document.getElementById('inf-grid').innerHTML = cats.map(c => {
+    const l = layerById[c];
+    return `
+    <div class="inf-cell ${l.on ? '' : 'off'}" data-layer="${c}" title="Toggle layer">
+      <span class="inf-icon" style="color:${l.color}">${icons[c]}</span>
+      <div><div class="inf-num">${layerCount(c)}</div><div class="inf-label">${l.label}</div></div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.inf-cell').forEach(el => {
+    el.addEventListener('click', () => {
+      const l = layerById[el.dataset.layer];
+      l.on = !l.on;
+      renderLayers(); renderInfrastructure();
+    });
+  });
+}
+
+/* ─── Live USGS earthquake feed ───────────────────────────────── */
+async function fetchQuakes() {
+  const foot = document.getElementById('foot-feed');
+  try {
+    const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    quakes = (j.features || []).slice(0, 40).map(f => {
+      const mag = typeof f.properties.mag === 'number' ? f.properties.mag : 4.5;
+      return {
+        cat: 'quake',
+        name: 'M' + mag.toFixed(1) + ' Earthquake',
+        region: f.properties.place || 'Unknown',
+        lon: f.geometry.coordinates[0],
+        lat: f.geometry.coordinates[1],
+        mag,
+        time: f.properties.time,
+        sev: 'LIVE',
+        desc: `Magnitude ${mag.toFixed(1)} — ${f.properties.place || 'unknown location'}. Depth ${Math.round(f.geometry.coordinates[2])} km. Source: USGS live feed.`,
+      };
+    });
+    document.getElementById('quake-body').innerHTML = quakes.slice(0, 15).map((q, i) => {
+      const col = q.mag >= 6 ? '#ef4444' : q.mag >= 5.2 ? '#f97316' : '#a78bfa';
+      return `
+      <div class="qk-row" data-i="${i}">
+        <span class="qk-mag" style="color:${col};border:1px solid ${col}44;background:${col}14">${q.mag.toFixed(1)}</span>
+        <span class="qk-place">${q.region}</span>
+        <span class="qk-time">${timeAgo(Date.now() - q.time)}</span>
+      </div>`;
+    }).join('') || '<div class="wm-feed-empty">No M4.5+ events in the last 24h</div>';
+    document.querySelectorAll('.qk-row').forEach(el => {
+      el.addEventListener('click', () => {
+        const q = quakes[+el.dataset.i];
+        flyTo(q.lon, q.lat); openPopup(q);
+      });
+    });
+    foot.textContent = 'ONLINE';
+    foot.style.color = 'var(--green)';
+  } catch (err) {
+    document.getElementById('quake-body').innerHTML = '<div class="wm-feed-empty">Feed offline — retrying…</div>';
+    foot.textContent = 'OFFLINE';
+    foot.style.color = 'var(--red)';
+  }
+  renderLayers();
+}
+
+/* ─── Live NASA EONET natural events (wildfires, storms, volcanoes) ─── */
+async function fetchEvents() {
+  try {
+    const r = await fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=60');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    events = (j.events || []).flatMap(ev => {
+      const geo = ev.geometry && ev.geometry[ev.geometry.length - 1];
+      if (!geo || geo.type !== 'Point') return [];
+      const catTitle = (ev.categories && ev.categories[0] && ev.categories[0].title) || 'Natural Event';
+      return [{
+        cat: 'eonet',
+        name: ev.title,
+        region: catTitle,
+        lon: geo.coordinates[0],
+        lat: geo.coordinates[1],
+        sev: 'LIVE',
+        desc: `${catTitle} — tracked open event. Source: NASA EONET live feed.`,
+      }];
+    }).slice(0, 60);
+  } catch (err) {
+    events = [];
+  }
+  renderLayers();
+}
+
+/* ─── Live Fear & Greed index (alternative.me, keyless) ───────── */
+async function fetchFearGreed() {
+  try {
+    const r = await fetch('https://api.alternative.me/fng/');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const d = j.data && j.data[0];
+    if (!d) return;
+    const v = +d.value;
+    const el = document.getElementById('wm-fng');
+    const col = v <= 25 ? '#ef4444' : v <= 45 ? '#f97316' : v <= 55 ? '#fbbf24' : '#22c55e';
+    el.innerHTML = `<span>SENTIMENT</span> <b style="color:${col}">${v}</b>`;
+    el.title = `Fear & Greed Index: ${v} — ${d.value_classification}`;
+    el.style.borderColor = col + '55';
+  } catch (err) { /* keep placeholder */ }
+}
+
+/* ─── Init ────────────────────────────────────────────────────── */
+resize();
+renderLayers();
+renderSignals();
+renderInstability();
+renderInfrastructure();
+fetchQuakes();
+fetchEvents();
+fetchFearGreed();
+setInterval(fetchQuakes, 5 * 60 * 1000);
+setInterval(fetchEvents, 10 * 60 * 1000);
+setInterval(fetchFearGreed, 5 * 60 * 1000);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
