@@ -35,7 +35,7 @@ const ICON = {
 const NAV = {
   modules: [
     { key: 'dashboard',     label: 'Dashboard',     href: 'dashboard.html',                       icon: 'dashboard' },
-    { key: 'watchtower',    label: 'Watchtower',    href: 'https://arcane-watchtower.vercel.app', icon: 'watchtower', ext: true },
+    { key: 'watchtower',    label: 'Watchtower',    href: 'world-map.html',                       icon: 'watchtower' },
     { key: 'trading-floor', label: 'Trading Floor', href: 'trading-floor.html',                   icon: 'floor' },
     { key: 'war-room',      label: 'War Room',      href: 'war-room.html',                        icon: 'war' },
     { key: 'stock-picks',   label: 'Stock Picks',   href: 'stock-picks.html',                     icon: 'stocks' },
