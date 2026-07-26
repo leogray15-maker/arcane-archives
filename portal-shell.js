@@ -54,6 +54,14 @@ const NAV = {
   ],
 };
 
+// Admin tool pages — the sidebar Admin button stays highlighted on any of them.
+// The button itself opens the unified admin dashboard (admin-hub.html).
+const ADMIN_PAGES = [
+  'admin-hub', 'admin-panel', 'arcane-crm', 'arcane-consulting-crm',
+  'affiliate-admin', 'stock-picks-admin', 'arcane-insight-admin',
+  'store-admin', 'bullion-admin',
+];
+
 function svg(name) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</svg>`;
 }
@@ -81,7 +89,7 @@ function buildShell(active) {
     ${NAV.intel.map(it => navItem(it, active)).join('')}
     <div class="sidebar-divider"></div>
     ${NAV.footer.map(it => navItem(it, active)).join('')}
-    <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
+    <a class="sidebar-nav-item admin-item${ADMIN_PAGES.includes(active) ? ' active' : ''}" href="admin-hub.html" id="sidebar-admin-link" style="display:none">
       <span class="sidebar-nav-icon">${svg('shield')}</span>
       <span class="sidebar-nav-label">Admin</span>
     </a>
