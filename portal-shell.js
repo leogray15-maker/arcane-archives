@@ -71,7 +71,7 @@ function buildShell(active) {
   const sidebar = `
   <aside class="arcane-sidebar" id="arcane-sidebar">
     <a class="sidebar-brand" href="dashboard.html">
-      <img src="ArcaneA.png" alt="AA"/>
+      <img src="arcane-logo.png" alt="AA"/>
       <span class="brand-text">The Arcane<br>Archives</span>
     </a>
     <div class="sidebar-section-label">Modules</div>
@@ -93,7 +93,7 @@ function buildShell(active) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <a class="nav-left" href="dashboard.html">
-        <img src="ArcaneA.png" class="nav-logo" alt="AA"/>
+        <img src="arcane-logo.png" class="nav-logo" alt="AA"/>
         <span class="nav-brand">The Arcane Archives</span>
       </a>
       <div class="nav-center">
@@ -104,7 +104,7 @@ function buildShell(active) {
         <div class="nav-balance" id="nav-balance">£0.00</div>
         <div class="nav-online offline" id="nav-online"></div>
         <a class="nav-btn" href="settings.html" title="Settings">⚙️</a>
-        <img class="nav-avatar" id="nav-avatar" src="ArcaneA.png" alt="Avatar"/>
+        <img class="nav-avatar" id="nav-avatar" src="arcane-logo.png" alt="Avatar"/>
       </div>
     </div>
   </nav>`;
