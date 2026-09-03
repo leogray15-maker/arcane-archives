@@ -1269,8 +1269,8 @@
       <div class="upgrade-modal-price-left"><strong>£128</strong><span>/ month</span></div>
       <div class="upgrade-modal-price-badge">Cancel anytime</div>
     </div>
-    <button class="upgrade-modal-cta" id="upgrade-modal-cta">Unlock Full Access →</button>
-    <p class="upgrade-modal-footer">Secure payment via Stripe · Cancel anytime · Instant access</p>
+    <button class="upgrade-modal-cta" id="upgrade-modal-cta">Take The Assessment →</button>
+    <p class="upgrade-modal-footer">Membership is by assessment · 12 questions, ~3 minutes · Instant access if cleared</p>
   </div>
 </div>
 
@@ -1459,8 +1459,23 @@ document.getElementById('upgrade-modal-backdrop').addEventListener('click', e =>
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpgradeModal(); });
 
+/* Membership is gated on the psychological assessment — only a stored
+   "cleared" verdict opens Stripe straight from here. */
+function assessmentCleared() {
+  try {
+    const v = JSON.parse(localStorage.getItem('arcane_assessment') || 'null');
+    return !!(v && v.passed);
+  } catch (e) {
+    return false;
+  }
+}
+
 document.getElementById('upgrade-modal-cta').addEventListener('click', async () => {
   const btn = document.getElementById('upgrade-modal-cta');
+  if (!assessmentCleared()) {
+    window.location.href = 'membership-assessment.html';
+    return;
+  }
   btn.textContent = 'Loading…';
   btn.disabled = true;
   try {

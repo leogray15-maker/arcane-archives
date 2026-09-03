@@ -507,6 +507,14 @@
             togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
         });
 
+        // Where to send them once they're in. Only a fixed set of internal
+        // destinations is honoured — never an arbitrary URL.
+        function postLoginDestination() {
+            const next = new URLSearchParams(location.search).get('next');
+            if (next === 'checkout') return 'membership-assessment.html?checkout=1';
+            return 'dashboard.html';
+        }
+
         // Email/Password login
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
@@ -524,7 +532,7 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = 'dashboard.html';
+                window.location.href = postLoginDestination();
             } catch (error) {
                 console.error('Login error:', error);
                 let message = 'Failed to log in. Please check your credentials.';
@@ -555,7 +563,7 @@
 
             try {
                 await signInWithPopup(auth, googleProvider);
-                window.location.href = 'dashboard.html';
+                window.location.href = postLoginDestination();
             } catch (error) {
                 console.error('Google login error:', error);
                 errorMessage.textContent = 'Failed to sign in with Google. Please try again.';
@@ -577,7 +585,7 @@
         // Check if already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = 'dashboard.html';
+                window.location.href = postLoginDestination();
             }
         });
 
