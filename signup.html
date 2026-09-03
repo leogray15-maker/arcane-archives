@@ -486,7 +486,7 @@
             </button>
 
             <div class="login-prompt">
-                <p>Already have an account? <a href="login.html">Log in</a></p>
+                <p>Already have an account? <a href="login.html" id="loginLink">Log in</a></p>
             </div>
         </div>
     </div>
@@ -691,6 +691,22 @@
             return strength;
         }
 
+        // Where to send them once the account exists. Only a fixed set of
+        // internal destinations is honoured — never an arbitrary URL.
+        // Carry ?next through to the login page so a returning member who
+        // already cleared the assessment still lands in checkout.
+        (function carryNextToLogin() {
+            const next = new URLSearchParams(location.search).get('next');
+            const link = document.getElementById('loginLink');
+            if (next === 'checkout' && link) link.href = 'login.html?next=checkout';
+        })();
+
+        function postSignupDestination() {
+            const next = new URLSearchParams(location.search).get('next');
+            if (next === 'checkout') return 'membership-assessment.html?checkout=1';
+            return 'dashboard.html';
+        }
+
         // Email/Password signup
         const signupForm = document.getElementById('signupForm');
         const signupBtn = document.getElementById('signupBtn');
@@ -719,7 +735,7 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(userCredential.user, { displayName });
                 await createUserProfile(userCredential.user, displayName);
-                window.location.href = 'dashboard.html';
+                window.location.href = postSignupDestination();
             } catch (error) {
                 isSigningUp = false;
                 console.error('Signup error:', error);
@@ -753,7 +769,7 @@
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 await createUserProfile(result.user, result.user.displayName);
-                window.location.href = 'dashboard.html';
+                window.location.href = postSignupDestination();
             } catch (error) {
                 isSigningUp = false;
                 console.error('Google signup error:', error);
@@ -776,7 +792,7 @@
         // Check if already logged in (skip redirect if signup is in progress)
         auth.onAuthStateChanged((user) => {
             if (user && !isSigningUp) {
-                window.location.href = 'dashboard.html';
+                window.location.href = postSignupDestination();
             }
         });
     </script>

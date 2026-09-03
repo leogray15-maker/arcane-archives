@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<title>Membership Assessment | The Arcane Archives</title>
+<meta name="description" content="The Arcane Archives is not open to everyone. Complete the membership assessment to see whether the Archives are a fit for you.">
+<link rel="icon" href="arcane-icon-192.png" />
+<link rel="apple-touch-icon" href="arcane-icon-180.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#030303;
+  --bg-secondary:#0a0a0a;
+  --bg-card:#0f0f0f;
+  --bg-elevated:#161616;
+  --purple:#8b5cf6;
+  --purple-light:#a78bfa;
+  --purple-dark:#7c3aed;
+  --purple-glow:rgba(139,92,246,.4);
+  --gold:#fbbf24;
+  --gold-light:#fcd34d;
+  --green:#22c55e;
+  --red:#ef4444;
+  --text:#fff;
+  --text-secondary:#a1a1aa;
+  --text-muted:#71717a;
+  --border:rgba(255,255,255,.06);
+  --border-hover:rgba(255,255,255,.12);
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg-primary);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(139,92,246,.14),transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%,rgba(251,191,36,.05),transparent 70%);
+}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:1.75rem 1.25rem 5rem;}
+
+/* ── Top bar ─────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2.5rem;}
+.back-link{
+  display:inline-flex;align-items:center;gap:.45rem;color:var(--text-muted);
+  text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s;
+}
+.back-link:hover{color:var(--purple-light);}
+.seal{
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text-muted);border:1px solid var(--border);border-radius:999px;padding:.35rem .8rem;
+  white-space:nowrap;
+}
+
+/* ── Intro ───────────────────────────────────── */
+.intro{text-align:center;}
+.badge{
+  display:inline-block;font-family:var(--mono);font-size:.65rem;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
+  background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.28);
+  padding:.45rem 1rem;border-radius:999px;margin-bottom:1.5rem;
+}
+h1{
+  font-size:clamp(2rem,6vw,3rem);font-weight:900;letter-spacing:-.03em;
+  line-height:1.1;margin-bottom:1.1rem;
+}
+h1 .grad{
+  background:linear-gradient(135deg,var(--gold-light),var(--purple-light));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.lede{color:var(--text-secondary);font-size:1.02rem;max-width:52ch;margin:0 auto 2.25rem;}
+.facts{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:2.25rem;
+}
+.fact{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1rem .75rem;
+}
+.fact-v{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--purple-light);}
+.fact-l{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.3rem;}
+.terms{
+  text-align:left;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:16px;padding:1.5rem;margin-bottom:1.75rem;
+}
+.terms h3{font-size:.72rem;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem;}
+.terms ul{list-style:none;display:grid;gap:.8rem;}
+.terms li{display:flex;gap:.7rem;font-size:.92rem;color:var(--text-secondary);}
+.terms li b{color:var(--text);font-weight:600;}
+.terms .tick{color:var(--purple-light);flex-shrink:0;font-weight:700;}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  font-family:inherit;font-size:.95rem;font-weight:700;border-radius:12px;
+  padding:1rem 1.75rem;border:1px solid transparent;cursor:pointer;
+  transition:transform .18s,box-shadow .18s,background .18s,border-color .18s;
+  text-decoration:none;line-height:1;
+}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--purple),var(--purple-dark));
+  color:#fff;box-shadow:0 8px 30px rgba(139,92,246,.28);
+}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 40px rgba(139,92,246,.42);}
+.btn-gold{
+  background:linear-gradient(135deg,var(--gold),#f59e0b);color:#0a0a0a;
+  box-shadow:0 8px 30px rgba(251,191,36,.24);
+}
+.btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 40px rgba(251,191,36,.36);}
+.btn-ghost{background:transparent;border-color:var(--border-hover);color:var(--text-secondary);}
+.btn-ghost:hover:not(:disabled){color:var(--text);border-color:var(--purple);}
+.btn-block{width:100%;}
+
+/* ── Quiz shell ──────────────────────────────── */
+.stage{display:none;}
+.stage.active{display:block;animation:rise .45s cubic-bezier(.22,1,.36,1);}
+@keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+
+.progress-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.7rem;}
+.progress-step{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);}
+.progress-dim{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--purple-light);}
+.progress-track{height:3px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;margin-bottom:2.25rem;}
+.progress-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--gold));transition:width .5s cubic-bezier(.22,1,.36,1);}
+
+.q-text{font-size:clamp(1.35rem,4.2vw,1.75rem);font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-bottom:.6rem;}
+.q-note{color:var(--text-muted);font-size:.86rem;margin-bottom:1.75rem;}
+.options{display:grid;gap:.7rem;}
+.option{
+  display:flex;align-items:flex-start;gap:.9rem;width:100%;text-align:left;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  padding:1.05rem 1.15rem;color:var(--text-secondary);font-family:inherit;font-size:.95rem;
+  cursor:pointer;transition:border-color .18s,background .18s,transform .12s,color .18s;
+}
+.option:hover{border-color:var(--border-hover);background:var(--bg-elevated);color:var(--text);}
+.option:active{transform:scale(.99);}
+.option.picked{border-color:var(--purple);background:rgba(139,92,246,.09);color:var(--text);}
+.option-key{
+  font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--text-muted);
+  border:1px solid var(--border-hover);border-radius:7px;width:1.6rem;height:1.6rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem;
+}
+.option.picked .option-key{color:var(--purple-light);border-color:var(--purple);}
+.q-foot{display:flex;justify-content:space-between;align-items:center;margin-top:1.75rem;gap:1rem;}
+.link-btn{
+  background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:.85rem;
+  cursor:pointer;padding:.5rem 0;transition:color .2s;
+}
+.link-btn:hover{color:var(--text);}
+.link-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── Free-text step ──────────────────────────── */
+textarea{
+  width:100%;min-height:130px;resize:vertical;background:var(--bg-card);
+  border:1px solid var(--border);border-radius:14px;padding:1.05rem 1.15rem;
+  color:var(--text);font-family:inherit;font-size:.95rem;line-height:1.6;
+}
+textarea:focus{outline:none;border-color:var(--purple);}
+textarea::placeholder{color:var(--text-muted);}
+.counter{font-family:var(--mono);font-size:.72rem;color:var(--text-muted);margin-top:.6rem;text-align:right;}
+
+/* ── Evaluating ──────────────────────────────── */
+.evaluating{text-align:center;padding:4rem 0;}
+.spinner{
+  width:52px;height:52px;margin:0 auto 2rem;border-radius:50%;
+  border:2px solid rgba(139,92,246,.15);border-top-color:var(--purple);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.eval-lines{font-family:var(--mono);font-size:.8rem;color:var(--text-muted);display:grid;gap:.6rem;}
+.eval-lines div{opacity:0;transition:opacity .4s;}
+.eval-lines div.on{opacity:1;color:var(--text-secondary);}
+.eval-lines div.on span{color:var(--green);}
+
+/* ── Result ──────────────────────────────────── */
+.result-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;
+  padding:2rem 1.6rem;text-align:center;
+}
+.result-card.pass{border-color:rgba(139,92,246,.35);background:radial-gradient(circle at top,rgba(139,92,246,.13),var(--bg-card) 65%);}
+.result-card.hold{border-color:rgba(251,191,36,.3);background:radial-gradient(circle at top,rgba(251,191,36,.08),var(--bg-card) 65%);}
+.verdict{
+  font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;padding:.45rem 1rem;border-radius:999px;display:inline-block;margin-bottom:1.25rem;
+}
+.verdict.pass{color:var(--green);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);}
+.verdict.hold{color:var(--gold);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);}
+.archetype{font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;letter-spacing:-.02em;margin-bottom:.75rem;}
+.archetype .grad{
+  background:linear-gradient(135deg,var(--gold-light),var(--purple-light));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.read{color:var(--text-secondary);font-size:.98rem;max-width:50ch;margin:0 auto 1.75rem;}
+.bars{display:grid;gap:.85rem;text-align:left;margin-bottom:1.75rem;}
+.bar-row{display:grid;grid-template-columns:1fr auto;gap:.4rem .8rem;align-items:baseline;}
+.bar-name{font-size:.82rem;color:var(--text-secondary);font-weight:600;}
+.bar-val{font-family:var(--mono);font-size:.75rem;color:var(--text-muted);}
+.bar-track{display:block;grid-column:1/-1;height:5px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;}
+.bar-fill{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--purple-light));transition:width .9s cubic-bezier(.22,1,.36,1);}
+.bar-fill.low{background:linear-gradient(90deg,#a16207,var(--gold));}
+.price-line{
+  display:flex;align-items:baseline;justify-content:center;gap:.4rem;margin-bottom:1.25rem;
+  padding-top:1.5rem;border-top:1px solid var(--border);
+}
+.price-line b{font-size:2rem;font-weight:900;letter-spacing:-.03em;}
+.price-line span{color:var(--text-muted);font-size:.9rem;}
+.cta-note{display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-top:1rem;font-size:.76rem;color:var(--text-muted);}
+.hold-actions{display:grid;gap:.7rem;}
+.err{
+  display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
+  color:#fca5a5;border-radius:12px;padding:.9rem 1.1rem;font-size:.88rem;margin-top:1rem;text-align:left;
+}
+.err.show{display:block;}
+.fineprint{color:var(--text-muted);font-size:.76rem;text-align:center;margin-top:1.75rem;line-height:1.6;}
+.fineprint a{color:var(--text-secondary);}
+
+@media(max-width:520px){
+  .wrap{padding:1.25rem 1rem 4rem;}
+  .facts{grid-template-columns:1fr;}
+  .seal{display:none;}
+  .option{padding:.95rem 1rem;font-size:.92rem;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="index.html" class="back-link">&larr; Back to The Archives</a>
+    <span class="seal">Screening · Ref AA-128</span>
+  </div>
+
+  <!-- ═══ STAGE 0 — INTRO ═══ -->
+  <section class="stage active" id="stage-intro">
+    <div class="intro">
+      <span class="badge">By Assessment Only</span>
+      <h1>The Archives don't<br><span class="grad">open for everyone.</span></h1>
+      <p class="lede">
+        3,330+ modules will not fix a person who won't do the work. So before we take
+        £128 a month from you, we find out which one you are.
+      </p>
+
+      <div class="facts">
+        <div class="fact"><div class="fact-v">12</div><div class="fact-l">Questions</div></div>
+        <div class="fact"><div class="fact-v">~3 min</div><div class="fact-l">To complete</div></div>
+        <div class="fact"><div class="fact-v">£128</div><div class="fact-l">Per month, if cleared</div></div>
+      </div>
+
+      <div class="terms">
+        <h3>Read this before you start</h3>
+        <ul>
+          <li><span class="tick">01</span><span><b>There are no right answers — only honest ones.</b> The assessment cross-checks your answers against each other. Telling us what you think we want to hear scores worse than the truth.</span></li>
+          <li><span class="tick">02</span><span><b>You can be turned down.</b> Some answers close the door outright. That is the point of the door.</span></li>
+          <li><span class="tick">03</span><span><b>One attempt per 30 days.</b> If the answer is no, it stays no until something in your situation actually changes.</span></li>
+          <li><span class="tick">04</span><span><b>Clear it and checkout opens immediately.</b> No call, no waiting list, no chasing.</span></li>
+        </ul>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="begin-btn">Begin Assessment &rarr;</button>
+      <p class="fineprint">
+        Your answers are stored against your account so we know who we let in.
+        See our <a href="Privacy-policy.html">Privacy Policy</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══ STAGE 1 — QUESTIONS ═══ -->
+  <section class="stage" id="stage-quiz">
+    <div class="progress-head">
+      <span class="progress-step" id="p-step">Question 01 / 12</span>
+      <span class="progress-dim" id="p-dim">Locus</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
+
+    <div id="q-body"></div>
+
+    <div class="q-foot">
+      <button class="link-btn" id="back-btn">&larr; Previous</button>
+      <button class="btn btn-primary" id="next-btn" style="display:none;">Continue &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ═══ STAGE 2 — EVALUATING ═══ -->
+  <section class="stage" id="stage-eval">
+    <div class="evaluating">
+      <div class="spinner"></div>
+      <div class="eval-lines" id="eval-lines">
+        <div data-line>Scoring response consistency<span> ✓</span></div>
+        <div data-line>Weighting agency &amp; time horizon<span> ✓</span></div>
+        <div data-line>Checking against disqualifiers<span> ✓</span></div>
+        <div data-line>Comparing to current member profile<span> ✓</span></div>
+        <div data-line>Producing verdict<span> ✓</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ STAGE 3 — RESULT ═══ -->
+  <section class="stage" id="stage-result">
+    <div class="result-card" id="result-card">
+      <span class="verdict" id="verdict"></span>
+      <div class="archetype" id="archetype"></div>
+      <p class="read" id="read"></p>
+      <div class="bars" id="bars"></div>
+      <div id="result-actions"></div>
+      <div class="err" id="err"></div>
+    </div>
+    <p class="fineprint" id="result-fine"></p>
+  </section>
+
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script type="module">
+/* Firebase is loaded dynamically and allowed to fail. If the SDK never
+   arrives, the assessment still runs, still scores, and still reaches
+   checkout — we just lose the CRM record and have to bounce an
+   unidentified buyer through signup. A blocked CDN must never leave a
+   dead page in front of the only paid product. */
+const firebaseConfig = {
+  apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
+  authDomain: "arcane-archives-3b0f5.firebaseapp.com",
+  projectId: "arcane-archives-3b0f5",
+  storageBucket: "arcane-archives-3b0f5.firebasestorage.app",
+  messagingSenderId: "264237235055",
+  appId: "1:264237235055:web:4a2e5605b0ffb5307f069a"
+};
+
+let db = null;                 // Firestore handle, once (and if) it loads
+let fs = null;                 // { collection, addDoc, serverTimestamp }
+
+async function initFirebase(){
+  const V = 'https://www.gstatic.com/firebasejs/10.8.0/';
+  const [{ initializeApp }, authMod, storeMod] = await Promise.all([
+    import(V + 'firebase-app.js'),
+    import(V + 'firebase-auth.js'),
+    import(V + 'firebase-firestore.js')
+  ]);
+  const app = initializeApp(firebaseConfig);
+  db = storeMod.getFirestore(app);
+  fs = storeMod;
+  authMod.onAuthStateChanged(authMod.getAuth(app), u => onUser(u || null));
+}
+
+const PRICE_ID  = 'price_1SkbkNCXghparoQFd6flbwip';
+const STRIPE_PK = 'pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW';
+const PASS_KEY     = 'arcane_assessment';
+const COOLDOWN_KEY = 'arcane_assessment_lock';
+const COOLDOWN_MS  = 30 * 24 * 60 * 60 * 1000;   // 30 days
+const PASS_MARK    = 62;                          // out of 100
+
+let currentUser = null;
+let autoCheckout = new URLSearchParams(location.search).get('checkout') === '1';
+
+function onUser(u){
+  currentUser = u;
+  // Coming back from signup/login with a clearance already on file —
+  // don't make them click through the result again.
+  if (autoCheckout && currentUser){
+    const prev = loadLastResult();
+    if (prev && prev.passed){
+      autoCheckout = false;
+      startCheckout();
+    }
+  }
+}
+
+initFirebase().catch(e => console.warn('Firebase unavailable — running unauthenticated:', e));
+
+/* ══════════════════════════════════════════════════════════════
+   THE INSTRUMENT
+
+   Eleven items across five traits that actually predict whether
+   somebody gets value out of a self-directed library:
+
+     locus     — do outcomes belong to them, or to the market/luck/others
+     horizon   — how far ahead they are willing to be paid
+     coach     — what they do when they're told they're wrong
+     execute   — how they behave between buying and using
+     composure — what a drawdown does to their decision-making
+
+   Two items are integrity probes (kind:'probe'). They read as
+   ordinary questions but the flattering answer is the wrong one:
+   claiming total consistency or zero doubt is a social-desirability
+   response, not a strength. Answers there feed `honesty`, which
+   scales the whole score — so performing for the quiz costs you.
+
+   Options carry `dq:true` when the answer is a hard stop no total
+   can override (wanting to be told what to buy, expecting the
+   money back inside a month, or having to borrow the £128).
+   ══════════════════════════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    dim:'locus', label:'Locus',
+    q:'Your last serious attempt at something — a trade, a business, a fitness push — did not work. What is the truest sentence about why?',
+    note:'Pick the one closest to what you actually said at the time.',
+    opts:[
+      { t:'The timing was wrong. The market / economy / circumstances moved against me.', s:0 },
+      { t:'I was let down by someone else — a partner, a mentor, bad information I paid for.', s:1 },
+      { t:'I did the work but I was missing something I had no way of knowing yet.', s:3 },
+      { t:'I know exactly which decision did it, and I made that decision.', s:5 }
+    ]
+  },
+  {
+    dim:'horizon', label:'Horizon',
+    q:'You start today. When do you honestly expect this to have changed your income?',
+    opts:[
+      { t:'Inside 30 days — otherwise it did not work.', s:0, dq:true },
+      { t:'Two to three months.', s:1 },
+      { t:'Six to twelve months of consistent work.', s:5 },
+      { t:'Two years plus. I am building something that compounds.', s:4 }
+    ]
+  },
+  {
+    dim:'execute', label:'Execution',
+    q:'Count them honestly: how many courses, programmes or memberships have you bought and never finished?',
+    note:'The number matters less than the next question.',
+    opts:[
+      { t:'None. This would be my first.', s:3 },
+      { t:'One or two.', s:4 },
+      { t:'Three to six.', s:3 },
+      { t:'More than I want to write down.', s:2 }
+    ]
+  },
+  {
+    dim:'execute', label:'Execution',
+    q:'And what changed since the last one you abandoned?',
+    note:'This is the question the last one was setting up.',
+    opts:[
+      { t:'Nothing yet. I am hoping this one is different.', s:0 },
+      { t:'I have more money now, so I can afford to take it seriously.', s:1 },
+      { t:'I cut something out of my life to make room for this.', s:5 },
+      { t:'I finished the last thing I started, whatever it was.', s:5 }
+    ]
+  },
+  {
+    dim:'coach', label:'Coachability',
+    q:'Someone you respect reviews your plan and tells you the core of it is wrong. First reaction?',
+    opts:[
+      { t:'I defend it. I have reasons and they have not heard them yet.', s:1 },
+      { t:'I go quiet, feel it for a day, then look again.', s:4 },
+      { t:'I ask what they would do instead — then decide for myself.', s:5 },
+      { t:'I drop my plan and take theirs. They know better than me.', s:1 }
+    ]
+  },
+  {
+    dim:'coach', kind:'probe', label:'Integrity',
+    q:'How often do you follow through on a private commitment nobody else knows about?',
+    note:'Private — no accountability, no witnesses.',
+    opts:[
+      { t:'Always. If I say it, it happens.', s:1, flag:'inflated' },
+      { t:'Most of the time. I miss some.', s:5 },
+      { t:'About half. I am better with deadlines other people set.', s:4 },
+      { t:'Rarely, and I am here because I want that to stop.', s:3 }
+    ]
+  },
+  {
+    dim:'composure', label:'Composure',
+    q:'You are down 30% on a position you researched properly. It is 11pm. What do you do?',
+    opts:[
+      { t:'Close it. I cannot sleep holding that.', s:2 },
+      { t:'Double down. The thesis has not changed and it is cheaper now.', s:1 },
+      { t:'Re-read my original thesis and check whether it broke.', s:5 },
+      { t:'Nothing tonight. I do not make decisions at 11pm.', s:5 }
+    ]
+  },
+  {
+    dim:'execute', label:'Execution',
+    q:'What do you actually want the Archives to be for you?',
+    opts:[
+      { t:'A signal service. Tell me what to buy and when.', s:0, dq:true },
+      { t:'A library I work through on my own schedule.', s:5 },
+      { t:'A room of people ahead of me, so I stop being the smartest in mine.', s:5 },
+      { t:'An edge nobody else has access to.', s:2 }
+    ]
+  },
+  {
+    dim:'horizon', label:'Horizon',
+    q:'Realistically, how many hours a week go into this?',
+    note:'Hours you already have — not hours you intend to find.',
+    opts:[
+      { t:'Under two. I am busy but I want access.', s:1 },
+      { t:'Three to five, mostly evenings and weekends.', s:4 },
+      { t:'Six to ten. This is my main project outside work.', s:5 },
+      { t:'Twenty plus. This is what I do.', s:5 }
+    ]
+  },
+  {
+    dim:'locus', kind:'probe', label:'Integrity',
+    q:'Which is closer to true right now?',
+    opts:[
+      { t:'I know exactly what I need to do — I just need the material.', s:2, flag:'inflated' },
+      { t:'I know the direction but not the next three steps.', s:5 },
+      { t:'I am not sure I am even pointed the right way yet.', s:4 },
+      { t:'I have no idea. That is why I am here.', s:2 }
+    ]
+  },
+  {
+    dim:'composure', label:'Standing',
+    q:'£128 a month, taken every month. Where does it come from?',
+    note:'We would rather lose the sale than take rent money.',
+    opts:[
+      { t:'Money I already have spare. I would not notice it.', s:5 },
+      { t:'It is affordable but I would cut something else to cover it.', s:4 },
+      { t:'It would be tight. I would feel it every month.', s:2 },
+      { t:'Credit, an overdraft, or borrowing from someone.', s:0, dq:true }
+    ]
+  }
+];
+
+const OPEN_Q = {
+  q:'Last one. What is the thing you have been avoiding?',
+  note:'Two sentences is enough. Nobody reads this but us, and we do read it.',
+  placeholder:'The thing you already know you should have done by now…'
+};
+
+const DIMS = {
+  locus:     { name:'Ownership',     blurb:'outcomes land with you' },
+  horizon:   { name:'Time Horizon',  blurb:'how far ahead you are paid' },
+  coach:     { name:'Coachability',  blurb:'what being wrong costs you' },
+  execute:   { name:'Execution',     blurb:'the gap between buying and doing' },
+  composure: { name:'Composure',     blurb:'decisions made under drawdown' }
+};
+
+/* ══ State ══ */
+const answers = new Array(QUESTIONS.length).fill(null);
+let openText = '';
+let idx = 0;
+const TOTAL_STEPS = QUESTIONS.length + 1;      // questions + the open one
+
+/* ══ Helpers ══ */
+const $  = id => document.getElementById(id);
+const show = id => {
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+};
+
+function lockedUntil(){
+  const raw = localStorage.getItem(COOLDOWN_KEY);
+  if (!raw) return 0;
+  const until = parseInt(raw, 10) || 0;
+  return until > Date.now() ? until : 0;
+}
+
+/* ══ Intro ══ */
+$('begin-btn').addEventListener('click', () => {
+  const until = lockedUntil();
+  if (until) {
+    const days = Math.ceil((until - Date.now()) / 86400000);
+    const prev = loadLastResult() || { passed:false, score:0, archetype:'Assessment Closed',
+      read:'You have already been assessed and the answer was no.', dims:{}, reason:'cooldown' };
+    renderResult({ ...prev, lockedDays: days });
+    show('stage-result');
+    return;
+  }
+  show('stage-quiz');
+  renderStep();
+});
+
+/* ══ Question rendering ══ */
+function renderStep(){
+  const isOpen = idx === QUESTIONS.length;
+  $('p-step').textContent = `Question ${String(idx+1).padStart(2,'0')} / ${TOTAL_STEPS}`;
+  $('p-dim').textContent  = isOpen ? 'Self-report' : QUESTIONS[idx].label;
+  $('p-fill').style.width = `${(idx / TOTAL_STEPS) * 100}%`;
+  $('back-btn').disabled  = idx === 0;
+
+  isOpen ? renderOpen() : renderChoice();
+}
+
+function renderChoice(){
+  const q = QUESTIONS[idx];
+  const body = $('q-body');
+  body.innerHTML = '';
+
+  const h = document.createElement('h2');
+  h.className = 'q-text';
+  h.textContent = q.q;
+  body.appendChild(h);
+
+  if (q.note){
+    const n = document.createElement('p');
+    n.className = 'q-note';
+    n.textContent = q.note;
+    body.appendChild(n);
+  }
+
+  const list = document.createElement('div');
+  list.className = 'options';
+  q.opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'option' + (answers[idx] === i ? ' picked' : '');
+    const key = document.createElement('span');
+    key.className = 'option-key';
+    key.textContent = String.fromCharCode(65 + i);
+    const txt = document.createElement('span');
+    txt.textContent = opt.t;
+    b.append(key, txt);
+    b.addEventListener('click', () => {
+      answers[idx] = i;
+      list.querySelectorAll('.option').forEach(o => o.classList.remove('picked'));
+      b.classList.add('picked');
+      setTimeout(advance, 260);          // auto-advance keeps the momentum
+    });
+    list.appendChild(b);
+  });
+  body.appendChild(list);
+
+  $('next-btn').style.display = 'none';
+}
+
+function renderOpen(){
+  const body = $('q-body');
+  body.innerHTML = '';
+
+  const h = document.createElement('h2');
+  h.className = 'q-text';
+  h.textContent = OPEN_Q.q;
+  const n = document.createElement('p');
+  n.className = 'q-note';
+  n.textContent = OPEN_Q.note;
+  const ta = document.createElement('textarea');
+  ta.id = 'open-text';
+  ta.maxLength = 600;
+  ta.placeholder = OPEN_Q.placeholder;
+  ta.value = openText;
+  const c = document.createElement('div');
+  c.className = 'counter';
+
+  const sync = () => {
+    openText = ta.value;
+    const n2 = openText.trim().length;
+    c.textContent = `${n2} / 600 — minimum 20`;
+    $('next-btn').disabled = n2 < 20;
+  };
+  ta.addEventListener('input', sync);
+
+  body.append(h, n, ta, c);
+  const btn = $('next-btn');
+  btn.style.display = 'inline-flex';
+  btn.textContent = 'Submit for review →';
+  sync();
+  ta.focus();
+}
+
+function advance(){
+  if (idx < QUESTIONS.length){ idx++; renderStep(); }
+  else submit();
+}
+
+$('next-btn').addEventListener('click', () => {
+  if (idx === QUESTIONS.length) submit();
+  else advance();
+});
+$('back-btn').addEventListener('click', () => {
+  if (idx > 0){ idx--; renderStep(); }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   SCORING
+
+   Per-trait percentages, a weighted total, then two modifiers:
+
+     • honesty  — every 'inflated' probe answer scales the total
+                  down. Two of them and nobody clears the mark.
+     • dq       — a single disqualifying answer ends it outright,
+                  whatever the total says.
+
+   Execution is weighted heaviest because it is the trait that
+   decides whether a library gets used at all.
+   ══════════════════════════════════════════════════════════════ */
+const WEIGHTS = { locus:1.1, horizon:1.0, coach:1.0, execute:1.35, composure:1.0 };
+
+function scoreAll(){
+  const raw = {}, max = {};
+  let dq = null, inflated = 0;
+
+  QUESTIONS.forEach((q, i) => {
+    const pick = q.opts[answers[i]];
+    raw[q.dim] = (raw[q.dim] || 0) + pick.s;
+    max[q.dim] = (max[q.dim] || 0) + Math.max(...q.opts.map(o => o.s));
+    if (pick.dq && !dq) dq = q.q;
+    if (pick.flag === 'inflated') inflated++;
+  });
+
+  const dims = {};
+  Object.keys(raw).forEach(k => { dims[k] = Math.round((raw[k] / max[k]) * 100); });
+
+  let num = 0, den = 0;
+  Object.keys(dims).forEach(k => { num += dims[k] * WEIGHTS[k]; den += 100 * WEIGHTS[k]; });
+
+  const honesty = inflated === 0 ? 1 : inflated === 1 ? 0.88 : 0.72;
+  const score   = Math.round((num / den) * 100 * honesty);
+
+  return { dims, score, dq, inflated, passed: !dq && score >= PASS_MARK };
+}
+
+/* ══ Archetypes — the read they get back ══ */
+function archetypeFor(r){
+  if (r.dq) return {
+    name:'Not Yet',
+    read:'One of your answers closes the door on its own — not because of who you are, but because of where you are standing right now. That changes. Come back when it has.'
+  };
+  const d = r.dims;
+  if (!r.passed){
+    if (d.execute < 55) return {
+      name:'The Collector',
+      read:'You buy the material and you mean it every time. The pattern is not the buying — it is what happens in week three. Another £128 a month does not break that pattern; finishing one thing you already own does.'
+    };
+    if (d.locus < 55) return {
+      name:'The Bystander',
+      read:'Your answers keep putting the cause of things just outside your own hands — timing, people, information. Everything in the Archives assumes the opposite. Until that flips, the material will read as interesting rather than useful.'
+    };
+    if (d.horizon < 55) return {
+      name:'The Sprinter',
+      read:'You are pointed at a finish line that is far closer than the one this actually has. That mismatch does not end in a refund, it ends in resentment — so we would rather say no now.'
+    };
+    if (r.inflated >= 2) return {
+      name:'Unreadable',
+      read:'Your answers were consistently the flattering ones, which tells us less than an honest mess would have. We cannot place you, so we are not going to take your money. Sit with it and come back straight.'
+    };
+    return {
+      name:'Close',
+      read:'You are near the line without being over it. Nothing here is broken — the pieces are just not stacked yet. Thirty days of doing what you already know how to do would very likely change this result.'
+    };
+  }
+  if (d.execute >= 85 && d.composure >= 80) return {
+    name:'The Operator',
+    read:'You already run on your own instruction. What has been missing is not discipline, it is inventory — better material, in more domains, than you currently have access to. That is the whole of what we sell, and you are exactly who it is built for.'
+  };
+  if (d.horizon >= 85) return {
+    name:'The Compounder',
+    read:'You are playing on a timeline most people cannot hold in their head, which is why most people never get paid on it. The Archives are worth more to you at month eighteen than at month one, and you are one of the few who will still be there.'
+  };
+  if (d.coach >= 85) return {
+    name:'The Student',
+    read:'You can be told you are wrong without it costing you anything, and that is rarer than any technical skill in here. You will move faster through this material than people who arrive knowing more than you.'
+  };
+  return {
+    name:'Cleared',
+    read:'You came through honestly and the numbers hold up across every trait we measure. Nothing about your profile suggests you will be one of the ones who disappears in week three.'
+  };
+}
+
+/* ══ Submit ══ */
+async function submit(){
+  show('stage-eval');
+
+  const lines = [...document.querySelectorAll('#eval-lines [data-line]')];
+  lines.forEach(l => l.classList.remove('on'));
+  lines.forEach((l, i) => setTimeout(() => l.classList.add('on'), 380 + i * 420));
+
+  const r = scoreAll();
+  const arch = archetypeFor(r);
+  const result = {
+    passed:r.passed, score:r.score, dims:r.dims,
+    archetype:arch.name, read:arch.read,
+    reason: r.dq ? 'disqualified' : (r.passed ? 'cleared' : 'below-mark')
+  };
+
+  // Persist the verdict locally so checkout can verify it and so a
+  // decline actually holds for 30 days.
+  try {
+    localStorage.setItem(PASS_KEY, JSON.stringify({ ...result, at:Date.now() }));
+    if (!r.passed) localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
+    else localStorage.removeItem(COOLDOWN_KEY);
+  } catch(e){ /* private browsing — verdict just won't persist */ }
+
+  // Record it for the CRM. Never block the verdict on this.
+  try {
+    if (!db) throw new Error('Firestore unavailable');
+    await fs.addDoc(fs.collection(db, 'MembershipAssessments'), {
+      name: (currentUser && currentUser.displayName) || '',
+      email: (currentUser && currentUser.email) || '',
+      userId: (currentUser && currentUser.uid) || '',
+      answers: QUESTIONS.map((q, i) => ({
+        dim:q.dim, question:q.q, answer:q.opts[answers[i]].t, points:q.opts[answers[i]].s
+      })),
+      avoiding: openText.trim().slice(0, 600),
+      dims: r.dims,
+      score: r.score,
+      inflatedAnswers: r.inflated,
+      disqualifier: r.dq || '',
+      outcome: result.reason,
+      passed: r.passed,
+      submittedAt: fs.serverTimestamp(),
+      status: 'new'
+    });
+  } catch(e){ console.warn('Assessment not recorded:', e); }
+
+  setTimeout(() => { renderResult(result); show('stage-result'); }, 380 + lines.length * 420 + 500);
+}
+
+function loadLastResult(){
+  try { return JSON.parse(localStorage.getItem(PASS_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+
+/* ══ Result rendering ══ */
+function renderResult(r){
+  const card = $('result-card');
+  card.className = 'result-card ' + (r.passed ? 'pass' : 'hold');
+
+  const v = $('verdict');
+  v.className = 'verdict ' + (r.passed ? 'pass' : 'hold');
+  v.textContent = r.passed ? `Cleared · ${r.score}/100` : (r.reason === 'cooldown' ? 'Assessment Closed' : `Not Cleared · ${r.score}/100`);
+
+  $('archetype').innerHTML = `<span class="grad">${r.archetype}</span>`;
+  $('read').textContent = r.read;
+
+  const bars = $('bars');
+  bars.innerHTML = '';
+  Object.keys(r.dims || {}).forEach(k => {
+    const val = r.dims[k];
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML =
+      `<span class="bar-name">${DIMS[k].name} <span style="color:var(--text-muted);font-weight:400">— ${DIMS[k].blurb}</span></span>` +
+      `<span class="bar-val">${val}</span>` +
+      `<span class="bar-track"><span class="bar-fill${val < 60 ? ' low' : ''}"></span></span>`;
+    bars.appendChild(row);
+    requestAnimationFrame(() => { row.querySelector('.bar-fill').style.width = val + '%'; });
+  });
+
+  const actions = $('result-actions');
+  actions.innerHTML = '';
+
+  if (r.passed){
+    const price = document.createElement('div');
+    price.className = 'price-line';
+    price.innerHTML = '<b>£128</b><span>/ month · cancel anytime</span>';
+    const go = document.createElement('button');
+    go.className = 'btn btn-gold btn-block';
+    go.id = 'checkout-btn';
+    go.textContent = 'Claim your place →';
+    go.addEventListener('click', startCheckout);
+    const note = document.createElement('div');
+    note.className = 'cta-note';
+    note.innerHTML = '<span>⚡ Instant access</span><span>🔒 Secure checkout</span><span>✓ Cancel anytime</span>';
+    actions.append(price, go, note);
+    $('result-fine').textContent = 'This clearance is tied to this device and does not expire. Payment is handled by Stripe.';
+  } else {
+    const wrap = document.createElement('div');
+    wrap.className = 'hold-actions';
+    wrap.style.marginTop = '.5rem';
+    wrap.innerHTML =
+      '<a class="btn btn-primary btn-block" href="free-signals.html">Take the free signals instead →</a>' +
+      '<a class="btn btn-ghost btn-block" href="journey.html">Read how this was built</a>' +
+      '<a class="btn btn-ghost btn-block" href="index.html">Back to The Archives</a>';
+    actions.appendChild(wrap);
+    $('result-fine').textContent = r.lockedDays
+      ? `You have already been assessed. The Archives reopen to you in ${r.lockedDays} day${r.lockedDays === 1 ? '' : 's'}.`
+      : 'You can be reassessed in 30 days. Bring a different answer, not a better-worded one.';
+  }
+}
+
+/* ══ Checkout — only reachable from a cleared result ══ */
+async function startCheckout(){
+  // The button may not be on the page yet when this fires from the
+  // auth callback, so every touch of it is guarded.
+  const btn = $('checkout-btn');
+  const err = $('err');
+  if (err) err.classList.remove('show');
+
+  if (!currentUser){
+    // Send them to create the account, then straight back into checkout.
+    const ref = localStorage.getItem('arcane_ref');
+    let url = 'signup.html?next=' + encodeURIComponent('checkout');
+    if (ref) url += '&ref=' + encodeURIComponent(ref);
+    window.location.href = url;
+    return;
+  }
+
+  if (btn){ btn.disabled = true; btn.textContent = 'Opening checkout…'; }
+
+  try {
+    const res = await fetch('/api/create-checkout-session', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ priceId:PRICE_ID, uid:currentUser.uid, email:currentUser.email })
+    });
+    const text = await res.text();
+    let session;
+    try { session = JSON.parse(text); }
+    catch(e){ throw new Error('Checkout is temporarily unavailable. Please try again in a moment.'); }
+    if (!res.ok || session.error) throw new Error(session.error || 'Checkout failed.');
+
+    if (session.url) window.location.href = session.url;
+    else if (session.id) await Stripe(STRIPE_PK).redirectToCheckout({ sessionId: session.id });
+    else throw new Error('No checkout URL returned.');
+  } catch(e){
+    console.error('Checkout error:', e);
+    if (err){
+      err.textContent = e.message || 'Something went wrong. Please try again.';
+      err.classList.add('show');
+    }
+    if (btn){ btn.disabled = false; btn.textContent = 'Claim your place →'; }
+  }
+}
+
+/* If they already cleared, don't make them sit it again — drop them
+   straight on their result with checkout open. */
+(function resume(){
+  const prev = loadLastResult();
+  if (prev && prev.passed){
+    renderResult(prev);
+    show('stage-result');
+  }
+})();
+</script>
+</body>
+</html>

@@ -1477,9 +1477,9 @@
     <section class="section fade-in-section" id="pricing">
         <div class="container">
             <div class="section-header">
-                <span class="section-badge">Simple Pricing</span>
+                <span class="section-badge">By Assessment Only</span>
                 <h2 class="section-title">Join The Archives</h2>
-                <p class="section-subtitle">One subscription. Complete access. Lifetime value.</p>
+                <p class="section-subtitle">One subscription. Complete access. But not everyone gets in — answer twelve questions first.</p>
             </div>
 
             <div class="pricing-container">
@@ -1510,13 +1510,13 @@
                     </ul>
 
                     <button class="btn btn-primary btn-xl" onclick="checkout()" style="width: 100%;">
-                        Get Instant Access Now
+                        Take The Assessment
                     </button>
 
                     <div class="cta-note">
-                        <span>⚡ Instant access</span>
-                        <span>🔒 Secure checkout</span>
-                        <span>✓ Cancel anytime</span>
+                        <span>🔐 Assessment required</span>
+                        <span>⚡ 3 minutes</span>
+                        <span>✓ Instant access if cleared</span>
                     </div>
                 </div>
             </div>
@@ -1791,12 +1791,32 @@
         "pk_live_51Qw9acCXghparoQFE8ECasr4Mz8m1SAt9wBF2Rh7Ic4HrW1V5qgeOYTbUYd2GUQMDbJu0b1dqNaDpflAjo3n3PeC00MaKsJYpW"
     );
 
+    // Membership is gated on the psychological assessment. Anyone who has
+    // not cleared it goes there first; only a stored "cleared" verdict
+    // opens Stripe directly.
+    function assessmentCleared() {
+        try {
+            const v = JSON.parse(localStorage.getItem('arcane_assessment') || 'null');
+            return !!(v && v.passed);
+        } catch (e) {
+            return false;
+        }
+    }
+
     window.checkout = async function checkout() {
+        if (!assessmentCleared()) {
+            window.location.href = 'membership-assessment.html';
+            return;
+        }
+
         const user = auth.currentUser;
 
         if (!user) {
+            // They've cleared the assessment — bring them back into checkout
+            // once the account exists rather than dropping them on the dashboard.
             const ref = localStorage.getItem('arcane_ref');
-            const signupUrl = ref ? `signup.html?ref=${encodeURIComponent(ref)}` : 'signup.html';
+            let signupUrl = 'signup.html?next=checkout';
+            if (ref) signupUrl += `&ref=${encodeURIComponent(ref)}`;
             window.location.href = signupUrl;
             return;
         }

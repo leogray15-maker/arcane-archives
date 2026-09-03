@@ -350,6 +350,24 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Membership assessments — the psychological screen in front of the
+    // £128/mo checkout. Anyone (signed in or not) can submit one; only
+    // admins read them. Scoring is client-side and advisory — Stripe is
+    // still the source of truth for who actually paid.
+    match /MembershipAssessments/{docId} {
+      allow read: if isAdmin();
+      allow create: if
+        request.resource.data.keys().hasAll(['score', 'passed', 'outcome']) &&
+        request.resource.data.score is int &&
+        request.resource.data.score >= 0 &&
+        request.resource.data.score <= 100 &&
+        request.resource.data.passed is bool &&
+        isValidString(request.resource.data.outcome, 1, 40) &&
+        request.resource.data.answers.size() <= 30 &&
+        request.resource.data.keys().size() <= 20;
+      allow update, delete: if isAdmin();
+    }
+
     // Consulting applications — public submit from landing page, admin reviews in CRM
     match /consulting_applications/{docId} {
       allow read: if isAdmin();
