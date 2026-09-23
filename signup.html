@@ -376,6 +376,9 @@
             }
         }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="auth-theme.css">
 </head>
 <body>
 <script>
@@ -408,9 +411,15 @@
         <div class="signup-content">
             <div class="logo-section">
                 <img src="arcane-mark.svg" alt="Arcane Archives Logo">
-                <h1>Join The Archives</h1>
-                <p>Start your journey to mastery</p>
+                <h1>Create your <span>account.</span></h1>
+                <p id="authLede">Your key to the Archives. It takes thirty seconds.</p>
             </div>
+
+            <ol class="auth-steps" id="authSteps" hidden aria-label="Joining steps">
+                <li class="done">Assessment</li>
+                <li class="now" aria-current="step">Account</li>
+                <li>Your place</li>
+            </ol>
 
             <div class="error-message" id="errorMessage"></div>
 
@@ -447,9 +456,7 @@
                             required
                             autocomplete="new-password"
                         >
-                        <button type="button" class="toggle-password" id="togglePassword">
-                            👁️
-                        </button>
+                        <button type="button" class="toggle-password" id="togglePassword"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     </div>
                     <div class="password-strength">
                         <div class="strength-bar">
@@ -648,7 +655,8 @@
         togglePassword.addEventListener('click', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
-            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+            togglePassword.innerHTML = type === 'password' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg>';
+            togglePassword.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
         });
 
         // Password strength checker
@@ -695,15 +703,33 @@
         // internal destinations is honoured — never an arbitrary URL.
         // Carry ?next through to the login page so a returning member who
         // already cleared the assessment still lands in checkout.
+        (function showJoinContext() {
+            const next = new URLSearchParams(location.search).get('next');
+            const lede = document.getElementById('authLede');
+            if (next === 'checkout') {
+                document.getElementById('authSteps').hidden = false;
+                if (lede) lede.textContent = 'You cleared the assessment. Create your account, then claim your place.';
+            } else if (next === 'success' && lede) {
+                lede.textContent = 'Use the email you paid with and we\'ll switch your membership on.';
+            }
+        })();
+
         (function carryNextToLogin() {
             const next = new URLSearchParams(location.search).get('next');
             const link = document.getElementById('loginLink');
-            if (next === 'checkout' && link) link.href = 'login.html?next=checkout';
+            if ((next === 'checkout' || next === 'success') && link) link.href = 'login.html?next=' + next;
         })();
 
         function postSignupDestination() {
             const next = new URLSearchParams(location.search).get('next');
             if (next === 'checkout') return 'membership-assessment.html?checkout=1';
+            if (next === 'success') {
+                // Back to the payment page with the saved Stripe session so the
+                // membership activates. Only a Stripe checkout id is accepted.
+                let sid = null;
+                try { sid = localStorage.getItem('aa_last_session_id'); } catch (e) {}
+                if (sid && /^cs_[A-Za-z0-9_]+$/.test(sid)) return 'success.html?session_id=' + encodeURIComponent(sid);
+            }
             return 'dashboard.html';
         }
 

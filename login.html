@@ -359,6 +359,9 @@
             }
         }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="auth-theme.css">
 </head>
 <body>
 <script>
@@ -391,8 +394,8 @@
         <div class="login-content">
             <div class="logo-section">
                 <img src="arcane-mark.svg" alt="Arcane Archives Logo">
-                <h1>Welcome Back</h1>
-                <p>Login to access The Archives</p>
+                <h1>Welcome <span>back.</span></h1>
+                <p id="authLede">Log in to The Archives.</p>
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -419,9 +422,7 @@
                             required
                             autocomplete="current-password"
                         >
-                        <button type="button" class="toggle-password" id="togglePassword">
-                            👁️
-                        </button>
+                        <button type="button" class="toggle-password" id="togglePassword"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     </div>
                 </div>
 
@@ -504,14 +505,30 @@
         togglePassword.addEventListener('click', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
-            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+            togglePassword.innerHTML = type === 'password' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg>';
+            togglePassword.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
         });
 
         // Where to send them once they're in. Only a fixed set of internal
         // destinations is honoured — never an arbitrary URL.
+        (function showJoinContext() {
+            const next = new URLSearchParams(location.search).get('next');
+            const lede = document.getElementById('authLede');
+            if (!lede) return;
+            if (next === 'success') lede.textContent = 'Log in with the email you paid with to finish activating.';
+            else if (next === 'checkout') lede.textContent = 'Log in, then claim your place.';
+        })();
+
         function postLoginDestination() {
             const next = new URLSearchParams(location.search).get('next');
             if (next === 'checkout') return 'membership-assessment.html?checkout=1';
+            if (next === 'success') {
+                // Back to the payment page with the saved Stripe session so the
+                // membership activates. Only a Stripe checkout id is accepted.
+                let sid = null;
+                try { sid = localStorage.getItem('aa_last_session_id'); } catch (e) {}
+                if (sid && /^cs_[A-Za-z0-9_]+$/.test(sid)) return 'success.html?session_id=' + encodeURIComponent(sid);
+            }
             return 'dashboard.html';
         }
 
@@ -593,7 +610,11 @@
         const signupLink = document.querySelector('a[href="signup.html"]');
         if (signupLink) {
             const ref = localStorage.getItem('arcane_ref');
-            if (ref) signupLink.href = `signup.html?ref=${encodeURIComponent(ref)}`;
+            const next = new URLSearchParams(location.search).get('next');
+            const q = new URLSearchParams();
+            if (ref) q.set('ref', ref);
+            if (next === 'checkout' || next === 'success') q.set('next', next);
+            if ([...q].length) signupLink.href = 'signup.html?' + q.toString();
         }
     </script>
 </body>
