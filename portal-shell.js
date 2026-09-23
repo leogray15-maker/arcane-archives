@@ -92,18 +92,18 @@ function buildShell(active) {
     </div>`).join('');
 
   const sidebar = `
-  <aside class="arcane-sidebar" id="arcane-sidebar" aria-label="Portal">
+  <div class="arcane-sidebar" id="arcane-sidebar" role="complementary" aria-label="Portal">
     <a class="sidebar-brand" href="dashboard.html">
       <img src="arcane-mark.svg" alt=""/>
       <span class="brand-text">The Arcane Archives</span>
     </a>
-    <nav class="sidebar-scroll">
+    <div class="sidebar-scroll" role="navigation" aria-label="Portal sections">
       ${groups}
       <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
         <span class="sidebar-nav-icon">${svg('shield')}</span>
         <span class="sidebar-nav-label">Admin</span>
       </a>
-    </nav>
+    </div>
     <div class="sidebar-user">
       <img class="sidebar-user-avatar" id="sidebar-user-avatar" src="arcane-icon-192.png" alt=""/>
       <div class="sidebar-user-meta">
@@ -112,9 +112,9 @@ function buildShell(active) {
       </div>
       <button class="sidebar-logout" data-logout title="Log out" aria-label="Log out">${svg('logout')}</button>
     </div>
-  </aside>
+  </div>
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
-  <header class="arcane-nav">
+  <div class="arcane-nav" role="banner">
     <div class="nav-inner">
       <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">${svg('menu')}</button>
       <a class="nav-left" href="dashboard.html">
@@ -135,7 +135,7 @@ function buildShell(active) {
         </a>
       </div>
     </div>
-  </header>`;
+  </div>`;
 
   const host = document.createElement('div');
   host.id = 'arcane-shell';

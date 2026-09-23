@@ -259,7 +259,7 @@
     .sev-HIGH     { background: rgba(249,115,22,0.14); border: 1px solid rgba(249,115,22,0.4); color: #f97316; }
     .sev-ELEVATED { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); color: var(--gold); }
     .sev-STABLE   { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.35); color: var(--green); }
-    .sev-LIVE     { background: rgba(167,139,250,0.14); border: 1px solid rgba(167,139,250,0.4); color: #a78bfa; }
+    .sev-LIVE     { background: rgba(167,139,250,0.14); border: 1px solid rgba(167,139,250,0.4); color: #C9B8FF; }
 
     /* Mobile layers toggle */
     .wm-layers-toggle {
@@ -377,7 +377,7 @@
     .tag-CYBER      { color: #22c55e; border-color: rgba(34,197,94,0.4);   background: rgba(34,197,94,0.08); }
     .tag-ECONOMIC   { color: #fbbf24; border-color: rgba(251,191,36,0.35); background: rgba(251,191,36,0.07); }
     .tag-DISASTER   { color: #f97316; border-color: rgba(249,115,22,0.4);  background: rgba(249,115,22,0.08); }
-    .tag-DIPLOMATIC { color: #8b5cf6; border-color: rgba(139,92,246,0.4);  background: rgba(139,92,246,0.08); }
+    .tag-DIPLOMATIC { color: #9B7BF7; border-color: rgba(155, 123, 247,0.4);  background: rgba(155, 123, 247,0.08); }
     .tag-ENERGY     { color: #f59e0b; border-color: rgba(245,158,11,0.4);  background: rgba(245,158,11,0.08); }
     .tag-NUCLEAR    { color: #22d3ee; border-color: rgba(34,211,238,0.4);  background: rgba(34,211,238,0.08); }
 
@@ -599,15 +599,15 @@ const RAD = Math.PI / 180;
 const LAYERS = [
   { id: 'hotspot',    label: 'Intel Hotspots',   color: '#f97316', icon: '◉', on: true  },
   { id: 'conflict',   label: 'Conflict Zones',   color: '#ef4444', icon: '✕', on: true  },
-  { id: 'military',   label: 'Military Bases',   color: '#8b5cf6', icon: '▲', on: true  },
+  { id: 'military',   label: 'Military Bases',   color: '#9B7BF7', icon: '▲', on: true  },
   { id: 'nuclear',    label: 'Nuclear Sites',    color: '#22d3ee', icon: '☢', on: true  },
   { id: 'spaceport',  label: 'Spaceports',       color: '#fbbf24', icon: '◆', on: true  },
   { id: 'datacenter', label: 'AI Data Centers',  color: '#22c55e', icon: '▣', on: false },
-  { id: 'quake',      label: 'Seismic Activity', color: '#a78bfa', icon: '●', on: true, live: true },
+  { id: 'quake',      label: 'Seismic Activity', color: '#C9B8FF', icon: '●', on: true, live: true },
   { id: 'eonet',      label: 'Natural Events',   color: '#f472b6', icon: '❋', on: true, live: true },
   { id: 'cable',      label: 'Undersea Cables',  color: '#38bdf8', icon: '∿', on: true  },
   { id: 'pipeline',   label: 'Pipelines',        color: '#f59e0b', icon: '▮', on: true  },
-  { id: 'arc',        label: 'Signal Routes',    color: '#8b5cf6', icon: '⌒', on: true  },
+  { id: 'arc',        label: 'Signal Routes',    color: '#9B7BF7', icon: '⌒', on: true  },
   { id: 'zone',       label: 'Unstable States',  color: '#ef4444', icon: '▨', on: true  },
 ];
 const layerById = Object.fromEntries(LAYERS.map(l => [l.id, l]));
@@ -766,7 +766,7 @@ const SIGNALS = [
   { sev: 'ELEVATED', tag: 'MARKETS',  min: 244, text: 'Gold volatility spike coincides with Red Sea shipping reroutes.' },
   { sev: 'HIGH',     tag: 'SIGINT',   min: 302, text: 'Increased encrypted traffic between Moscow and Tehran nodes.' },
 ];
-const SEV_COLOR = { CRITICAL: '#ef4444', HIGH: '#f97316', ELEVATED: '#fbbf24', STABLE: '#22c55e', LIVE: '#a78bfa' };
+const SEV_COLOR = { CRITICAL: '#ef4444', HIGH: '#f97316', ELEVATED: '#fbbf24', STABLE: '#22c55e', LIVE: '#C9B8FF' };
 
 /* ─── Marker objects ──────────────────────────────────────────── */
 let markers = MARKERS.map(m => ({ cat: m[0], name: m[1], region: m[2], lon: m[3], lat: m[4], sev: m[5], desc: m[6] }));
@@ -868,9 +868,9 @@ function drawGlobe(ts) {
 
   // Atmosphere glow
   let g = ctx.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.22);
-  g.addColorStop(0, 'rgba(139,92,246,0.16)');
-  g.addColorStop(0.55, 'rgba(139,92,246,0.05)');
-  g.addColorStop(1, 'rgba(139,92,246,0)');
+  g.addColorStop(0, 'rgba(155, 123, 247,0.16)');
+  g.addColorStop(0.55, 'rgba(155, 123, 247,0.05)');
+  g.addColorStop(1, 'rgba(155, 123, 247,0)');
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(cx, cy, R * 1.22, 0, Math.PI * 2); ctx.fill();
 
@@ -881,12 +881,12 @@ function drawGlobe(ts) {
   g.addColorStop(1, '#060614');
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = 'rgba(139,92,246,0.35)';
+  ctx.strokeStyle = 'rgba(155, 123, 247,0.35)';
   ctx.lineWidth = 1;
   ctx.stroke();
 
   // Graticule
-  ctx.strokeStyle = 'rgba(139,92,246,0.10)';
+  ctx.strokeStyle = 'rgba(155, 123, 247,0.10)';
   ctx.lineWidth = 0.6;
   for (let lon = -180; lon < 180; lon += 30) drawArc3(sampleMeridian(lon), 1);
   for (let lat = -60; lat <= 60; lat += 30) drawArc3(sampleParallel(lat), 1);
@@ -895,7 +895,7 @@ function drawGlobe(ts) {
   for (const c of WORLD_GEO) {
     const hot = layerById.zone.on && UNSTABLE.has(c.n);
     ctx.fillStyle   = hot ? 'rgba(190,40,50,0.42)' : 'rgba(32,32,54,0.92)';
-    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(139,92,246,0.28)';
+    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(155, 123, 247,0.28)';
     ctx.lineWidth = hot ? 0.9 : 0.55;
     ctx.beginPath();
     for (const ring of c.p) {
@@ -950,12 +950,12 @@ function drawFlat() {
   g.addColorStop(0, '#0b0b22'); g.addColorStop(0.5, '#10102a'); g.addColorStop(1, '#0b0b22');
   ctx.fillStyle = g;
   ctx.fillRect(x0, y0, w, h);
-  ctx.strokeStyle = 'rgba(139,92,246,0.3)';
+  ctx.strokeStyle = 'rgba(155, 123, 247,0.3)';
   ctx.lineWidth = 1;
   ctx.strokeRect(x0, y0, w, h);
 
   // Graticule
-  ctx.strokeStyle = 'rgba(139,92,246,0.09)';
+  ctx.strokeStyle = 'rgba(155, 123, 247,0.09)';
   ctx.lineWidth = 0.6;
   ctx.beginPath();
   for (let lon = -150; lon < 180; lon += 30) {
@@ -972,7 +972,7 @@ function drawFlat() {
   for (const c of WORLD_GEO) {
     const hot = layerById.zone.on && UNSTABLE.has(c.n);
     ctx.fillStyle   = hot ? 'rgba(190,40,50,0.42)' : 'rgba(32,32,54,0.92)';
-    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(139,92,246,0.28)';
+    ctx.strokeStyle = hot ? 'rgba(239,68,68,0.75)' : 'rgba(155, 123, 247,0.28)';
     ctx.lineWidth = hot ? 0.9 : 0.55;
     ctx.beginPath();
     for (const ring of c.p) {
@@ -1024,7 +1024,7 @@ function drawLines(ts) {
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 7]);
     ctx.lineDashOffset = -(ts / 30) % 10;
-    ctx.strokeStyle = 'rgba(139,92,246,0.55)';
+    ctx.strokeStyle = 'rgba(155, 123, 247,0.55)';
     if (flat) { for (const path of arcPaths) drawPath2(path); }
     else {
       // arcs get altitude in 3D — draw manually with lift
@@ -1498,7 +1498,7 @@ async function fetchQuakes() {
       };
     });
     document.getElementById('quake-body').innerHTML = quakes.slice(0, 15).map((q, i) => {
-      const col = q.mag >= 6 ? '#ef4444' : q.mag >= 5.2 ? '#f97316' : '#a78bfa';
+      const col = q.mag >= 6 ? '#ef4444' : q.mag >= 5.2 ? '#f97316' : '#C9B8FF';
       return `
       <div class="qk-row" data-i="${i}">
         <span class="qk-mag" style="color:${col};border:1px solid ${col}44;background:${col}14">${q.mag.toFixed(1)}</span>
@@ -1587,7 +1587,7 @@ async function fetchRSS(url, srcName) {
 
 function newsRow(a) {
   const { tag } = classify(a.title);
-  const dot = tag ? ({ CONFLICT:'#ef4444', ALERT:'#f97316', CYBER:'#22c55e', ECONOMIC:'#fbbf24', DISASTER:'#f97316', DIPLOMATIC:'#8b5cf6', ENERGY:'#f59e0b', NUCLEAR:'#22d3ee' })[tag] : 'rgba(120,120,150,0.6)';
+  const dot = tag ? ({ CONFLICT:'#ef4444', ALERT:'#f97316', CYBER:'#22c55e', ECONOMIC:'#fbbf24', DISASTER:'#f97316', DIPLOMATIC:'#9B7BF7', ENERGY:'#f59e0b', NUCLEAR:'#22d3ee' })[tag] : 'rgba(120,120,150,0.6)';
   return `
   <a class="nw-row" href="${a.url}" target="_blank" rel="noopener">
     <span class="nw-dot" style="background:${dot}"></span>
