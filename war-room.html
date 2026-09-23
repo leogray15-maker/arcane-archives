@@ -670,6 +670,23 @@
       .wr-left { width: 100%; flex-direction: row; flex-wrap: wrap; height: auto; }
       .wr-chat { width: 100%; height: 300px; }
     }
+
+    /* ── Inside the shared portal shell ── */
+    body.has-portal-shell .wr-layout { margin-top: 0; height: calc(100vh - 64px - env(safe-area-inset-top, 0px)); }
+    body.has-portal-shell .scanlines { display: none; }
+    @media (max-width: 900px) {
+      body.has-portal-shell .wr-layout { height: auto; min-height: calc(100vh - 64px); }
+      body.has-portal-shell .wr-left { flex-direction: column; flex-wrap: nowrap; border-right: none; border-bottom: 1px solid var(--border); }
+      body.has-portal-shell .wr-nav { flex-direction: row; overflow-x: auto; padding: 0.5rem; gap: 0.25rem; }
+      body.has-portal-shell .wr-nav-item { flex-shrink: 0; border-left: none; border-radius: 10px; }
+      body.has-portal-shell .wr-operators { display: flex; flex-direction: row; gap: 0.5rem; overflow-x: auto; overflow-y: hidden; padding: 0.6rem 0.75rem; }
+      body.has-portal-shell .wr-operators > * { flex-shrink: 0; }
+      body.has-portal-shell #operators-list { display: flex; gap: 0.25rem; }
+      body.has-portal-shell #operators-list > * { flex-shrink: 0; }
+      body.has-portal-shell .wr-ops-label { align-self: center; }
+      body.has-portal-shell .wr-main { min-height: 480px; }
+      body.has-portal-shell .wr-chat { height: 360px; border-left: none; border-top: 1px solid var(--border); }
+    }
   </style>
 </head>
 <body>
@@ -720,8 +737,8 @@
     <!-- Nav items -->
     <div class="wr-nav">
       <div class="wr-nav-item active" onclick="showSection('live-call',this)">
-        <span class="wr-nav-icon">📡</span> Live Call
-        <span class="badge-live" style="margin-left:auto;font-size:0.42rem" id="live-indicator">Live</span>
+        <span class="wr-nav-icon">📡</span> The call
+        <span class="badge-live" style="margin-left:auto;font-size:0.42rem;display:none" id="live-indicator">Live</span>
       </div>
       <div class="wr-nav-item" onclick="showSection('recordings',this)">
         <span class="wr-nav-icon">🎬</span> Recordings
@@ -733,7 +750,7 @@
 
     <!-- Operators online -->
     <div class="wr-operators">
-      <div class="wr-ops-label">Operators Online</div>
+      <div class="wr-ops-label">Host</div>
       <div id="operators-list">
         <!-- Populated by JS -->
       </div>
@@ -748,25 +765,25 @@
       <div class="live-call-area" id="call-content">
         <!-- Join prompt (shown when not in call) -->
         <div class="join-call-prompt" id="join-prompt">
-          <div class="join-call-icon">🎖️</div>
-          <div class="join-call-title">Briefing Room</div>
+          <div class="join-call-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div class="join-call-title">The War Room</div>
           <div class="join-call-sub">
-            Join the live strategy session with fellow operators.
-            All calls are end-to-end encrypted and recorded for premium members.
+            A live call with Leo every week. Bring whatever you're stuck on.
+            Every call is recorded, so nothing is missed if you can't make it.
           </div>
           <div class="join-call-btns">
-            <button class="btn-join" onclick="joinCall()">📡 Join Live Call</button>
-            <button class="btn-ghost" onclick="startPrivate()">🔒 Private Briefing</button>
+            <button class="btn-join" onclick="joinCall()" id="join-btn">Join the call</button>
+            <a class="btn-ghost" href="https://t.me/+JuTWVrAx5okwNzk0" target="_blank" rel="noopener">Open the member chat</a>
           </div>
+          <div class="join-call-note" id="join-note" style="margin-top:0.9rem;font-size:0.72rem;color:var(--text-dim);max-width:400px"></div>
 
           <!-- Upcoming session teaser -->
           <div style="margin-top:1.5rem;padding:1rem 1.25rem;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;text-align:left;max-width:400px;width:100%">
             <div style="font-family:var(--font-head);font-size:0.52rem;color:var(--text-dim);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.5rem">Next Session</div>
-            <div style="font-family:var(--font-head);font-size:0.75rem;font-weight:700;color:var(--text)">Daily Market Briefing</div>
-            <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.25rem">Gold, FX &amp; Index Review · With Leo G</div>
+            <div style="font-family:var(--font-head);font-size:0.75rem;font-weight:700;color:var(--text)" id="next-session-title">War Room call</div>
+            <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.25rem">Live with Leo · recorded for members</div>
             <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.75rem">
-              <span style="font-family:var(--font-head);font-size:0.65rem;color:var(--teal);font-weight:700" id="next-session-time">08:00 GMT</span>
-              <span class="badge-tag teal">TOMORROW</span>
+              <span style="font-family:var(--font-head);font-size:0.65rem;color:var(--teal);font-weight:700" id="next-session-time">Time posted in the member chat</span>
             </div>
           </div>
         </div>
@@ -868,17 +885,12 @@
   <!-- ────────────── CHAT ────────────── -->
   <aside class="wr-chat">
     <div class="chat-header">
-      <div class="chat-header-title">War Room Chat</div>
-      <div class="badge-live" style="font-size:0.42rem">Live</div>
+      <div class="chat-header-title">Member chat</div>
     </div>
     <div class="chat-messages" id="chat-messages">
-      <!-- Populated by JS -->
-    </div>
-    <div class="chat-input-wrap">
-      <div class="chat-input-row">
-        <input class="chat-input" id="chat-input" type="text" placeholder="Send message…"
-               onkeydown="if(event.key==='Enter') sendChatMsg()"/>
-        <button class="chat-send-btn" onclick="sendChatMsg()">➤</button>
+      <div style="padding:1.25rem 1rem;display:flex;flex-direction:column;gap:0.75rem;font-size:0.8rem;line-height:1.55;color:var(--text-dim)">
+        <p>The member chat lives on Telegram. It's where the Daily Quest is pinned every morning, and where the call link goes up before we go live.</p>
+        <a class="btn-join" href="https://t.me/+JuTWVrAx5okwNzk0" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Open the member chat</a>
       </div>
     </div>
   </aside>
@@ -953,15 +965,21 @@ function showSection(id, el) {
 }
 window.showSection = showSection;
 
+/* ══ War Room settings — edit these ══
+   CALL_LINK:  the Zoom/Meet/etc. link for the live call ('' = not set yet;
+               members are pointed to the Telegram chat instead).
+   NEXT_CALL:  shown on the join screen, e.g. 'Thursday 8pm UK'.
+   SCHEDULE:   upcoming calls, e.g. { day:'Thu 2 Oct', time:'20:00', ampm:'UK', title:'War Room', desc:'Open Q&A', host:'Leo G', tags:['live'] }
+   RECORDINGS: past calls, e.g. { title:'War Room · 25 Sep', date:'25 Sep 2026', duration:'58:10', url:'https://…' } */
+const WAR_ROOM = {
+  CALL_LINK: '',
+  NEXT_CALL: '',
+  CHAT_LINK: 'https://t.me/+JuTWVrAx5okwNzk0',
+};
+
 /* ══ Operators ══ */
 const OPERATORS = [
-  { initials:'LG', name:'Leo G',     role:'Host · Analyst',   status:'online' },
-  { initials:'JK', name:'J. Keane',  role:'Senior Trader',    status:'online' },
-  { initials:'SR', name:'S. Rahman', role:'FX Specialist',    status:'online' },
-  { initials:'TW', name:'T. Walsh',  role:'Crypto Analyst',   status:'busy'   },
-  { initials:'EM', name:'E. Morris', role:'Commodities',      status:'online' },
-  { initials:'CM', name:'C. Marsh',  role:'Member',           status:'away'   },
-  { initials:'AB', name:'A. Brooks', role:'Member',           status:'online' },
+  { initials:'LG', name:'Leo G', role:'Host', status:'online' },
 ];
 
 function renderOperators() {
@@ -980,16 +998,10 @@ function renderOperators() {
 }
 
 /* ══ Chat ══ */
-const CHAT_MESSAGES = [
-  { initials:'LG', name:'Leo G',     text:'Morning all — Gold is holding above 2,640. Watching for a break.',   time:'08:04', gold:true },
-  { initials:'JK', name:'J. Keane',  text:'4H chart looks very bullish. MACD about to cross.',                  time:'08:06' },
-  { initials:'SR', name:'S. Rahman', text:'EUR/USD struggling at 1.0850 resistance. Short bias for me.',         time:'08:09' },
-  { initials:'LG', name:'Leo G',     text:'Good catch on EURUSD — fundamentals also supporting dollar strength.',time:'08:11', gold:true },
-  { initials:'EM', name:'E. Morris', text:'BTC consolidating nicely. If it holds 95K I\'m looking for longs.',   time:'08:14' },
-  { initials:'TW', name:'T. Walsh',  text:'Oil looking weak — OPEC news didn\'t help. Watching 77.50 support.', time:'08:18' },
-];
+const CHAT_MESSAGES = []; // the live member chat is on Telegram (WAR_ROOM.CHAT_LINK)
 
 function renderChat() {
+  if (!CHAT_MESSAGES.length) return; // keep the Telegram pointer in the markup
   const container = document.getElementById('chat-messages');
   container.innerHTML = CHAT_MESSAGES.map(m => `
     <div class="chat-msg">
@@ -1029,22 +1041,20 @@ function sendChatMsg() {
 window.sendChatMsg = sendChatMsg;
 
 /* ══ Recordings ══ */
-const RECORDINGS = [
-  { title:'Gold Weekly Analysis', date:'02 Mar 2026', duration:'38:12', theme:'t1', emoji:'📈', views:'142' },
-  { title:'BTC Breakout Strategy', date:'28 Feb 2026', duration:'51:44', theme:'t2', emoji:'₿', views:'218' },
-  { title:'FX Market Deep Dive', date:'25 Feb 2026', duration:'44:20', theme:'t1', emoji:'💱', views:'97'  },
-  { title:'War Room Live Trade',  date:'21 Feb 2026', duration:'1:12:08',theme:'t3', emoji:'🎯', views:'331' },
-  { title:'OPEC Impact on Oil',   date:'17 Feb 2026', duration:'29:55', theme:'t3', emoji:'🛢️', views:'84'  },
-  { title:'Risk Management Masterclass', date:'14 Feb 2026', duration:'58:30', theme:'t2', emoji:'🛡️', views:'266' },
-];
+const RECORDINGS = []; // add past calls here (see WAR_ROOM settings above)
 
 function renderRecordings() {
   const grid = document.getElementById('recordings-grid');
+  if (!RECORDINGS.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:2.5rem 1rem;text-align:center;color:var(--text-dim);font-size:0.85rem;line-height:1.6">Recordings of each War Room call appear here after it airs.<br>Missed one? The replay link is also posted in the member chat.</div>';
+    document.getElementById('rec-count').textContent = 'After each call';
+    return;
+  }
   grid.innerHTML = RECORDINGS.map(r => `
-    <div class="rec-card" onclick="playRecording('${r.title}')">
+    <div class="rec-card" onclick="playRecording(${RECORDINGS.indexOf(r)})">
       <div class="rec-thumb">
         <div class="rec-thumb-bg ${r.theme}"></div>
-        <div class="rec-thumb-icon">${r.emoji}</div>
+        <div class="rec-thumb-icon">${r.emoji || ''}</div>
         <div class="rec-play-overlay"><div class="rec-play-btn">▶</div></div>
         <div class="rec-duration">${r.duration}</div>
       </div>
@@ -1052,8 +1062,7 @@ function renderRecordings() {
         <div class="rec-title">${r.title}</div>
         <div class="rec-meta">
           <span>${r.date}</span>
-          <span>·</span>
-          <span>${r.views} views</span>
+
         </div>
       </div>
     </div>
@@ -1061,22 +1070,21 @@ function renderRecordings() {
   document.getElementById('rec-count').textContent = `${RECORDINGS.length} sessions`;
 }
 
-function playRecording(title) {
-  alert(`▶ Playing: "${title}"\n\nFull playback with chapter markers and transcript coming soon.`);
+function playRecording(i) {
+  const r = RECORDINGS[i];
+  if (r && r.url) window.open(r.url, '_blank', 'noopener');
 }
 window.playRecording = playRecording;
 
 /* ══ Schedule ══ */
-const SCHEDULE = [
-  { time:'08:00', ampm:'GMT', title:'Daily Market Briefing', desc:'Gold, FX & Index overview — market open analysis', tags:['gold','fx'], host:'Leo G', day:'Tomorrow' },
-  { time:'12:30', ampm:'GMT', title:'Lunchtime Live Signals', desc:'Real-time trade setups across major pairs and metals', tags:['signals','live'], host:'Leo G', day:'Tomorrow' },
-  { time:'19:00', ampm:'GMT', title:'US Close Debrief',      desc:'Review of key moves, overnight setups for Asia session', tags:['debrief'], host:'J. Keane', day:'Tomorrow' },
-  { time:'10:00', ampm:'GMT', title:'BTC & Crypto Weekly',   desc:'Crypto market structure review, altcoin opportunities', tags:['crypto'], host:'T. Walsh', day:'Tue 10 Mar' },
-  { time:'14:00', ampm:'GMT', title:'Risk & Psychology Workshop', desc:'Advanced risk management, trade psychology deep dive', tags:['education'], host:'Leo G', day:'Wed 11 Mar' },
-];
+const SCHEDULE = []; // add upcoming calls here (see WAR_ROOM settings above)
 
 function renderSchedule() {
   const tagColors = { gold:'--gold', fx:'--teal', signals:'--green', live:'--red', debrief:'--text-dim', crypto:'--gold', education:'--teal' };
+  if (!SCHEDULE.length) {
+    document.getElementById('schedule-list').innerHTML = `<div style="padding:2.5rem 1rem;text-align:center;color:var(--text-dim);font-size:0.85rem;line-height:1.6">The War Room runs every week with Leo.<br>This week's time is posted in the <a href="${WAR_ROOM.CHAT_LINK}" target="_blank" rel="noopener" style="color:var(--teal)">member chat</a>.</div>`;
+    return;
+  }
   document.getElementById('schedule-list').innerHTML = SCHEDULE.map(s => `
     <div class="sched-item">
       <div class="sched-time">
@@ -1087,7 +1095,7 @@ function renderSchedule() {
         <div class="sched-title">${s.title}</div>
         <div class="sched-desc">${s.desc}</div>
         <div class="sched-tags">
-          ${s.tags.map(t=>`<span class="badge-tag teal" style="font-size:0.42rem">${t.toUpperCase()}</span>`).join('')}
+          ${(s.tags || []).map(t=>`<span class="badge-tag teal" style="font-size:0.42rem">${t.toUpperCase()}</span>`).join('')}
         </div>
       </div>
       <div class="sched-host">
@@ -1104,6 +1112,10 @@ let callSeconds = 0;
 let micOn = true, camOn = false;
 
 function joinCall() {
+  // Real call link when set; otherwise the link lives in the member chat.
+  if (WAR_ROOM.CALL_LINK) { window.open(WAR_ROOM.CALL_LINK, '_blank', 'noopener'); return; }
+  window.open(WAR_ROOM.CHAT_LINK, '_blank', 'noopener');
+  return;
   document.getElementById('join-prompt').style.display = 'none';
   document.getElementById('active-call').style.display = 'flex';
   callSeconds = 0;
@@ -1159,6 +1171,10 @@ window.startPrivate = startPrivate;
 
 /* ══ Init ══ */
 document.addEventListener('DOMContentLoaded', () => {
+  if (WAR_ROOM.NEXT_CALL) document.getElementById('next-session-time').textContent = WAR_ROOM.NEXT_CALL;
+  document.getElementById('join-note').textContent = WAR_ROOM.CALL_LINK
+    ? 'Opens the call in a new tab.'
+    : 'The call link is posted in the member chat before we go live.';
   renderOperators();
   renderChat();
   renderRecordings();

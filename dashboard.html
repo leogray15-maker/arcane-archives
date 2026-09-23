@@ -31,8 +31,43 @@
     .dot-violet { background: var(--purple); }
     .dash-title { font-family: var(--display); font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.04; }
     .dash-title span { color: var(--purple-light); }
-    .dash-title #dash-greeting { color: var(--text); }
+    .dash-title #dash-greeting { color: var(--text) !important; }
     .dash-sub { color: var(--text-secondary); font-size: 1rem; margin-top: 0.6rem; max-width: 560px; }
+
+    /* First days: start here */
+    .onboard { margin: 0 0 1.5rem; padding: 1.5rem 1.6rem 0.4rem; border-radius: 20px; background: var(--bg-card); border: 1px solid rgba(155,123,247,0.35); }
+    .onboard[hidden] { display: none; }
+    .ob-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; padding-bottom: 1.1rem; border-bottom: 1px solid var(--border); }
+    .ob-eyebrow { font-family: var(--mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+    .ob-title-main { font-family: var(--display); font-size: 1.9rem; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
+    .ob-lede { color: var(--text-muted); font-size: 0.94rem; margin-top: 0.35rem; }
+    .ob-meta { display: flex; align-items: center; gap: 1rem; }
+    .ob-count { font-family: var(--mono); font-size: 0.74rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+    .ob-bar { width: 140px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .ob-bar span { display: block; height: 100%; width: 0; background: var(--purple); border-radius: 3px; transition: width 0.4s ease; }
+    .ob-hide { font: 600 0.82rem var(--font); color: var(--text-muted); padding: 0.45rem 0.8rem; border-radius: 9px; border: 1px solid var(--border); background: none; cursor: pointer; }
+    .ob-hide:hover { color: var(--text); border-color: var(--border-hover); }
+    .ob-list { list-style: none; }
+    .ob-step + .ob-step { border-top: 1px solid var(--border); }
+    .ob-step a { display: flex; align-items: center; gap: 1rem; padding: 1rem 0.25rem; }
+    .ob-tick { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border-hover); color: transparent; transition: all 0.2s; }
+    .ob-tick svg { width: 14px; height: 14px; }
+    .ob-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+    .ob-title { font-family: var(--display); font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+    .ob-sub { font-size: 0.86rem; color: var(--text-muted); }
+    .ob-state { flex-shrink: 0; font-size: 0.82rem; font-weight: 700; color: #fff; padding: 0.45rem 0.9rem; border-radius: 9px; background: var(--purple-dark); }
+    .ob-step a:hover .ob-state { background: #7A5CF0; }
+    .ob-step.next .ob-tick { border-color: var(--purple); }
+    .ob-step:not(.next):not(.done) .ob-state { background: none; color: var(--text-muted); border: 1px solid var(--border); }
+    .ob-step.done .ob-tick { background: var(--green); border-color: var(--green); color: #0B0A10; }
+    .ob-step.done .ob-title { color: var(--text-secondary); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.25); }
+    .ob-step.done .ob-state { background: none; color: var(--green); padding-right: 0; }
+    @media (max-width: 640px) {
+      .onboard { padding: 1.2rem 1.1rem 0.2rem; }
+      .ob-meta { width: 100%; }
+      .ob-bar { flex: 1; }
+      .ob-sub { display: none; }
+    }
 
     /* Top row: today + member card */
     .dash-top { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 1.25rem; align-items: stretch; }
@@ -270,6 +305,59 @@
       <p class="dash-sub">Here’s what’s waiting for you today.</p>
     </div>
   </header>
+
+  <!-- ── First days: start here (new members only) ── -->
+  <section class="onboard" id="onboard" hidden aria-labelledby="onboard-title">
+    <div class="ob-head">
+      <div>
+        <div class="ob-eyebrow">Welcome to The Arcane Archives</div>
+        <h2 class="ob-title-main" id="onboard-title">Start here.</h2>
+        <p class="ob-lede">Five things for your first week. Do them in order.</p>
+      </div>
+      <div class="ob-meta">
+        <div class="ob-count"><span id="ob-done">0</span> of 5 done</div>
+        <div class="ob-bar" aria-hidden="true"><span id="ob-fill"></span></div>
+        <button type="button" class="ob-hide" id="ob-hide">Hide</button>
+      </div>
+    </div>
+    <ol class="ob-list">
+        <li class="ob-step" data-step="hell">
+          <a href="read.html?course=2657f6a404fe80a39377f818f69088e8">
+            <span class="ob-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="ob-copy"><span class="ob-title">Start Escaping Hell</span><span class="ob-sub">Your first mission. It breaks the old habits and hands you the roadmap.</span></span>
+            <span class="ob-state">Start</span>
+          </a>
+        </li>
+        <li class="ob-step" data-step="chat">
+          <a href="https://t.me/+JuTWVrAx5okwNzk0" target="_blank" rel="noopener">
+            <span class="ob-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="ob-copy"><span class="ob-title">Join the member chat</span><span class="ob-sub">Say hello. The Daily Quest is pinned there every morning.</span></span>
+            <span class="ob-state">Start</span>
+          </a>
+        </li>
+        <li class="ob-step" data-step="insight">
+          <a href="arcane-insights.html">
+            <span class="ob-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="ob-copy"><span class="ob-title">Claim your first Daily Insight</span><span class="ob-sub">Start your streak today.</span></span>
+            <span class="ob-state">Start</span>
+          </a>
+        </li>
+        <li class="ob-step" data-step="profile">
+          <a href="settings.html">
+            <span class="ob-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="ob-copy"><span class="ob-title">Add your details</span><span class="ob-sub">Your name on your card, and your referral code.</span></span>
+            <span class="ob-state">Start</span>
+          </a>
+        </li>
+        <li class="ob-step" data-step="war">
+          <a href="war-room.html">
+            <span class="ob-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="ob-copy"><span class="ob-title">See the War Room schedule</span><span class="ob-sub">A live call every week. Bring what you’re stuck on.</span></span>
+            <span class="ob-state">Start</span>
+          </a>
+        </li>
+    </ol>
+  </section>
 
   <!-- ── Today + member card ── -->
   <div class="dash-top">
@@ -879,6 +967,49 @@
     });
   }
 
+  /* ══ First days: start-here checklist ══
+     Shown after payment (?welcome=1) and for a member's first 14 days,
+     until they finish it or hide it. Progress lives in localStorage per
+     member, plus what the profile already tells us. */
+  function showOnboarding(user, data, isPaid, isAdmin) {
+    const box = document.getElementById('onboard');
+    if (!box || !(isPaid || isAdmin)) return;
+    const key = 'aa_onboard_' + user.uid;
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
+    const welcome = new URLSearchParams(location.search).get('welcome') === '1';
+    const paidAt = data.paidAt?.toDate?.() || data.createdAt?.toDate?.() || null;
+    const recent = paidAt && (Date.now() - paidAt.getTime()) < 14 * 24 * 60 * 60 * 1000;
+    if (state.hidden && !welcome) return;
+    if (!welcome && !recent) return;
+
+    const save = () => { try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {} };
+    // What the profile already proves
+    if ((data.coursesCompleted || {})['2657f6a404fe80a39377f818f69088e8']) state.hell = true;
+    if (Number(data.streak) > 0 || Number(data.totalCheckIns) > 0) state.insight = true;
+    if (data.firstName || data.Username || data.username) state.profile = true;
+
+    const steps = [...box.querySelectorAll('.ob-step')];
+    function paint() {
+      let done = 0, nextSet = false;
+      steps.forEach(li => {
+        const k = li.dataset.step, isDone = !!state[k];
+        li.classList.toggle('done', isDone);
+        li.classList.remove('next');
+        if (isDone) done++;
+        else if (!nextSet) { li.classList.add('next'); nextSet = true; }
+        li.querySelector('.ob-state').textContent = isDone ? 'Done' : 'Start';
+      });
+      document.getElementById('ob-done').textContent = done;
+      document.getElementById('ob-fill').style.width = (done / steps.length * 100) + '%';
+      if (done === steps.length && !welcome) box.hidden = true;
+    }
+    steps.forEach(li => li.querySelector('a').addEventListener('click', () => { state[li.dataset.step] = true; save(); paint(); }));
+    document.getElementById('ob-hide').addEventListener('click', () => { state.hidden = true; save(); box.hidden = true; });
+    box.hidden = false;
+    paint();
+  }
+
   onAuthStateChanged(auth, async user => {
     if (!user) { location.href = 'login.html'; return; }
     window._upgradeModalUserEmail = user.email || '';
@@ -911,6 +1042,8 @@
 
       document.getElementById('member-plan').textContent = isAdmin ? 'ADMIN' : (isPaid ? 'MEMBER' : 'FREE ACCESS');
       document.getElementById('card-plan').textContent = isAdmin ? 'ADMIN' : (isPaid ? 'MEMBER' : 'FREE ACCESS');
+
+      showOnboarding(user, data, isPaid, isAdmin);
 
     } catch(e) {
       console.error('Auth guard error:', e);
