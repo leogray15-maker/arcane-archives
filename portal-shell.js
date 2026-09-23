@@ -28,86 +28,114 @@ const ICON = {
   users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   store: '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  spark: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  menu: '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
 };
 
-// page key -> {label, href, icon}
-const NAV = {
-  modules: [
-    { key: 'dashboard',     label: 'Dashboard',     href: 'dashboard.html',                       icon: 'dashboard' },
-    { key: 'watchtower',    label: 'Watchtower',    href: 'world-map.html',                       icon: 'watchtower' },
-    { key: 'trading-floor', label: 'Trading Floor', href: 'trading-floor.html',                   icon: 'floor' },
-    { key: 'war-room',      label: 'War Room',      href: 'war-room.html',                        icon: 'war' },
-    { key: 'stock-picks',   label: 'Stock Picks',   href: 'stock-picks.html',                     icon: 'stocks' },
-    { key: 'courses',       label: 'Courses',       href: 'courses.html',                         icon: 'book' },
-    { key: 'live-calls',    label: 'Communication', href: 'live-calls.html',                      icon: 'chat' },
-  ],
-  intel: [
-    { key: 'free-signals',  label: 'Signals',       href: 'free-signals.html',                    icon: 'signal' },
-    { key: 'live-streams',  label: 'Live Streams',  href: 'live-streams.html',                    icon: 'video' },
-    { key: 'bullion',       label: 'Bullion',       href: 'bullion.html',                         icon: 'bullion' },
-    { key: 'referrals',     label: 'Referrals',     href: 'referrals.html',                        icon: 'users' },
-  ],
-  footer: [
-    { key: 'arcane-store',  label: 'Store',         href: 'arcane-store.html',                    icon: 'store' },
-    { key: 'settings',      label: 'Settings',      href: 'settings.html',                        icon: 'settings' },
-  ],
+// Sidebar groups: page key -> {label, href, icon}
+const NAV = [
+  { label: null, items: [
+    { key: 'dashboard',       label: 'Dashboard',     href: 'dashboard.html',       icon: 'dashboard' },
+  ]},
+  { label: 'The Archives', items: [
+    { key: 'courses',         label: 'The Vault',     href: 'courses.html',         icon: 'book' },
+    { key: 'arcane-insights', label: 'Daily Insight', href: 'arcane-insights.html', icon: 'spark' },
+    { key: 'war-room',        label: 'War Room',      href: 'war-room.html',        icon: 'war' },
+    { key: 'live-calls',      label: 'Live Calls',    href: 'live-calls.html',      icon: 'chat' },
+    { key: 'live-streams',    label: 'Live Streams',  href: 'live-streams.html',    icon: 'video' },
+  ]},
+  { label: 'Markets', items: [
+    { key: 'trading-floor',   label: 'Trading Floor', href: 'trading-floor.html',   icon: 'floor' },
+    { key: 'watchtower',      label: 'Watchtower',    href: 'world-map.html',       icon: 'watchtower' },
+    { key: 'stock-picks',     label: 'Stock Picks',   href: 'stock-picks.html',     icon: 'stocks' },
+    { key: 'free-signals',    label: 'Signals',       href: 'free-signals.html',    icon: 'signal' },
+    { key: 'bullion',         label: 'Bullion',       href: 'bullion.html',         icon: 'bullion' },
+  ]},
+  { label: 'Members', items: [
+    { key: 'referrals',       label: 'Referrals',     href: 'referrals.html',       icon: 'users' },
+    { key: 'arcane-store',    label: 'Store',         href: 'arcane-store.html',    icon: 'store' },
+    { key: 'settings',        label: 'Settings',      href: 'settings.html',        icon: 'settings' },
+  ]},
+];
+
+// Pages that live under another nav item
+const ALIAS = {
+  'read': 'courses', 'notion-invite': 'courses',
+  'world-map': 'watchtower', 'global-intelligence': 'watchtower', 'market-data': 'trading-floor',
+  'store-orders': 'arcane-store', 'store-success': 'arcane-store',
 };
 
 function svg(name) {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</svg>`;
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
 }
 
 function navItem(it, active) {
-  const cls = 'sidebar-nav-item' + (it.key === active ? ' active' : '');
-  const ext = it.ext ? ' target="_blank" rel="noopener"' : '';
-  return `<a class="${cls}" href="${it.href}"${ext}>
+  const on = it.key === active;
+  return `<a class="sidebar-nav-item${on ? ' active' : ''}" href="${it.href}"${on ? ' aria-current="page"' : ''}>
     <span class="sidebar-nav-icon">${svg(it.icon)}</span>
     <span class="sidebar-nav-label">${it.label}</span>
   </a>`;
 }
 
+function activeLabel(active) {
+  for (const g of NAV) for (const it of g.items) if (it.key === active) return it.label;
+  return document.body.dataset.title || '';
+}
+
 function buildShell(active) {
+  const groups = NAV.map(g => `
+    <div class="sidebar-group">
+      ${g.label ? `<div class="sidebar-section-label">${g.label}</div>` : ''}
+      ${g.items.map(it => navItem(it, active)).join('')}
+    </div>`).join('');
+
   const sidebar = `
-  <aside class="arcane-sidebar" id="arcane-sidebar">
+  <aside class="arcane-sidebar" id="arcane-sidebar" aria-label="Portal">
     <a class="sidebar-brand" href="dashboard.html">
-      <img src="arcane-mark.svg" alt="AA"/>
-      <span class="brand-text">The Arcane<br>Archives</span>
+      <img src="arcane-mark.svg" alt=""/>
+      <span class="brand-text">The Arcane Archives</span>
     </a>
-    <div class="sidebar-section-label">Modules</div>
-    ${NAV.modules.map(it => navItem(it, active)).join('')}
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section-label">Open Intel</div>
-    ${NAV.intel.map(it => navItem(it, active)).join('')}
-    <div class="sidebar-divider"></div>
-    ${NAV.footer.map(it => navItem(it, active)).join('')}
-    <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
-      <span class="sidebar-nav-icon">${svg('shield')}</span>
-      <span class="sidebar-nav-label">Admin</span>
-    </a>
+    <nav class="sidebar-scroll">
+      ${groups}
+      <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
+        <span class="sidebar-nav-icon">${svg('shield')}</span>
+        <span class="sidebar-nav-label">Admin</span>
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <img class="sidebar-user-avatar" id="sidebar-user-avatar" src="arcane-icon-192.png" alt=""/>
+      <div class="sidebar-user-meta">
+        <span class="sidebar-user-name" id="sidebar-user-name">Member</span>
+        <span class="sidebar-user-plan" id="sidebar-user-plan">The Arcane Archives</span>
+      </div>
+      <button class="sidebar-logout" data-logout title="Log out" aria-label="Log out">${svg('logout')}</button>
+    </div>
   </aside>
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
-  <nav class="arcane-nav">
+  <header class="arcane-nav">
     <div class="nav-inner">
-      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">${svg('menu')}</button>
       <a class="nav-left" href="dashboard.html">
-        <img src="arcane-mark.svg" class="nav-logo" alt="AA"/>
+        <img src="arcane-mark.svg" class="nav-logo" alt=""/>
         <span class="nav-brand">The Arcane Archives</span>
       </a>
+      <div class="nav-title">${activeLabel(active)}</div>
       <div class="nav-center">
-        <a href="arcane-store.html" class="nav-store-btn">Store</a>
         <div class="nav-ticker-wrap"><div class="nav-ticker-track" id="nav-ticker-track"></div></div>
       </div>
       <div class="nav-right">
-        <div class="nav-balance" id="nav-balance">£0.00</div>
-        <div class="nav-online offline" id="nav-online"></div>
-        <a class="nav-btn" href="settings.html" title="Settings">⚙️</a>
-        <img class="nav-avatar" id="nav-avatar" src="arcane-icon-192.png" alt="Avatar"/>
+        <a class="nav-balance" href="referrals.html" title="Referral balance"><span class="nav-balance-label">Balance</span><span id="nav-balance">£0.00</span></a>
+        <a href="arcane-store.html" class="nav-store-btn">${svg('store')}<span>Store</span></a>
+        <a class="nav-btn" href="settings.html" title="Settings" aria-label="Settings">${svg('settings')}</a>
+        <a class="nav-avatar-wrap" href="settings.html" aria-label="Your account">
+          <img class="nav-avatar" id="nav-avatar" src="arcane-icon-192.png" alt=""/>
+          <span class="nav-online offline" id="nav-online"></span>
+        </a>
       </div>
     </div>
-  </nav>`;
+  </header>`;
 
   const host = document.createElement('div');
   host.id = 'arcane-shell';
@@ -123,6 +151,7 @@ function wireShell() {
   const open  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
   const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; };
   toggle?.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
+  sidebar?.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
   overlay?.addEventListener('click', close);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 }
@@ -136,7 +165,15 @@ function populateNav() {
       const balance = Number(data.balance) || 0;
       const balEl = document.getElementById('nav-balance');
       if (balEl) balEl.textContent = `£${balance.toFixed(2)}`;
-      if (user.photoURL) { const a = document.getElementById('nav-avatar'); if (a) a.src = user.photoURL; }
+      if (user.photoURL) {
+        ['nav-avatar', 'sidebar-user-avatar'].forEach(id => { const a = document.getElementById(id); if (a) a.src = user.photoURL; });
+      }
+      const name = data.displayName || user.displayName || (user.email || '').split('@')[0];
+      const nameEl = document.getElementById('sidebar-user-name');
+      if (nameEl && name) nameEl.textContent = name;
+      const isPaid = data.isPaid === true || data.subscriptionStatus === 'active';
+      const planEl = document.getElementById('sidebar-user-plan');
+      if (planEl) planEl.textContent = ADMIN_UIDS.includes(user.uid) ? 'Admin' : (isPaid ? 'Member' : 'Free access');
       document.getElementById('nav-online')?.classList.remove('offline');
       if (ADMIN_UIDS.includes(user.uid)) { const l = document.getElementById('sidebar-admin-link'); if (l) l.style.display = ''; }
     } catch (e) { console.warn('portal-shell nav populate failed:', e.message); }
@@ -164,9 +201,16 @@ function loadTicker() {
 }
 
 function ensureChromeCss() {
+  // The chrome always comes from portal-shell.css (scoped to #arcane-shell), loaded
+  // last so it wins over any page's legacy sidebar/nav rules.
   const links = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.getAttribute('href') || '');
-  const hasChrome = links.some(h => h.includes('arcane-portal.css') || h.includes('portal-shell.css'));
-  if (!hasChrome) {
+  if (!links.some(h => h.includes('Inter+Tight'))) {
+    const f = document.createElement('link');
+    f.rel = 'stylesheet';
+    f.href = 'https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap';
+    document.head.appendChild(f);
+  }
+  if (!links.some(h => h.includes('portal-shell.css'))) {
     const l = document.createElement('link');
     l.rel = 'stylesheet';
     l.href = 'portal-shell.css';
@@ -176,7 +220,8 @@ function ensureChromeCss() {
 
 function init() {
   ensureChromeCss();
-  const active = document.body.dataset.page || (location.pathname.split('/').pop() || '').replace('.html', '');
+  const page = document.body.dataset.page || (location.pathname.split('/').pop() || '').replace('.html', '');
+  const active = ALIAS[page] || page;
   buildShell(active);
   wireShell();
   bindLogout();

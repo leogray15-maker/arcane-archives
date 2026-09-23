@@ -9,464 +9,141 @@
   <link rel="icon" href="arcane-icon-192.png">
   <link rel="apple-touch-icon" href="arcane-icon-180.png">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#030303">
+  <meta name="theme-color" content="#0B0A10">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="arcane-portal.css">
 
   <style>
-    /* ═══════════════════════════════════════════════════════════
-       THE ARCANE ARCHIVES — MEMBER PORTAL
-       Design system mirrored from the landing page (index.html)
-       ═══════════════════════════════════════════════════════════ */
-    :root {
-      --bg-primary:   #030303;
-      --bg-secondary: #0a0a0a;
-      --bg-card:      #0f0f0f;
-      --bg-elevated:  #161616;
-      --bg-hover:     #1a1a1a;
+    /* ═══ Dashboard — page-specific (tokens come from arcane-portal.css) ═══ */
+    .dash { max-width: 1240px; }
 
-      --purple:       #8b5cf6;
-      --purple-light: #a78bfa;
-      --purple-dark:  #7c3aed;
-      --purple-glow:  rgba(139, 92, 246, 0.4);
-
-      --gold:         #fbbf24;
-      --gold-light:   #fcd34d;
-
-      --blue:         #38bdf8;
-      --green:        #22c55e;
-      --red:          #ef4444;
-
-      --text:         #ffffff;
-      --text-secondary: #a1a1aa;
-      --text-muted:   #71717a;
-
-      --border:       rgba(255, 255, 255, 0.06);
-      --border-hover: rgba(255, 255, 255, 0.12);
-
-      --sidebar-w: 248px;
-      --nav-h: 64px;
-
-      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --mono: 'JetBrains Mono', monospace;
-    }
-
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: var(--font);
-      background: var(--bg-primary);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    a { text-decoration: none; color: inherit; }
-    button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; }
-    svg { display: block; }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
-
-    /* ── Ambient background ── */
-    .bg-gradient {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(139,92,246,0.14), transparent),
-        radial-gradient(ellipse 50% 40% at 100% 0%, rgba(139,92,246,0.06), transparent),
-        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(251,191,36,0.04), transparent),
-        var(--bg-primary);
-    }
-    .grid-overlay {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 40%, transparent 100%);
-    }
-
-    /* ════════ SIDEBAR ════════ */
-    .arcane-sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: var(--sidebar-w);
-      z-index: 1100;
-      background: rgba(8,8,10,0.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-right: 1px solid var(--border);
-      padding: 1.25rem 0.85rem 1.5rem;
-      display: flex; flex-direction: column;
-      gap: 0.15rem;
-      overflow-y: auto;
-    }
-    .sidebar-brand {
-      display: flex; align-items: center; gap: 0.7rem;
-      padding: 0.4rem 0.6rem 1.1rem;
-      margin-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-brand img {
-      width: 34px; height: 34px; object-fit: contain;
-    }
-    .sidebar-brand .brand-text {
-      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em;
-      line-height: 1.25; text-transform: uppercase;
-      background: linear-gradient(135deg, #fff, var(--purple-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .sidebar-section-label {
-      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--text-muted);
-      padding: 0.9rem 0.7rem 0.45rem;
-    }
-    .sidebar-nav-item {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.6rem 0.7rem; border-radius: 10px;
-      color: var(--text-secondary);
-      font-size: 0.86rem; font-weight: 600;
-      transition: all 0.18s ease;
-      position: relative;
-    }
-    .sidebar-nav-item .sidebar-nav-icon { width: 18px; height: 18px; flex-shrink: 0; color: currentColor; }
-    .sidebar-nav-item .sidebar-nav-icon svg { width: 18px; height: 18px; }
-    .sidebar-nav-item:hover { color: var(--text); background: var(--bg-elevated); }
-    .sidebar-nav-item.active {
-      color: var(--text);
-      background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.05));
-      border: 1px solid rgba(139,92,246,0.28);
-    }
-    .sidebar-nav-item.active::before {
-      content: ''; position: absolute; left: -0.85rem; top: 50%; transform: translateY(-50%);
-      width: 3px; height: 20px; border-radius: 4px; background: var(--purple);
-    }
-    .sidebar-nav-item.admin-item { color: var(--gold); }
-    .sidebar-divider { height: 1px; background: var(--border); margin: 0.6rem 0.3rem; }
-    .sidebar-overlay {
-      position: fixed; inset: 0; z-index: 1050;
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);
-      opacity: 0; visibility: hidden; transition: opacity 0.25s;
-    }
-    .sidebar-overlay.open { opacity: 1; visibility: visible; }
-
-    /* ════════ TOP NAV ════════ */
-    .arcane-nav {
-      position: fixed; top: 0; right: 0;
-      left: var(--sidebar-w);
-      z-index: 1000;
-      height: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
-      padding-top: env(safe-area-inset-top, 0px);
-      background: rgba(3,3,3,0.78);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-inner { display: flex; align-items: center; height: var(--nav-h); padding: 0 1.5rem; gap: 1rem; }
-    .sidebar-toggle { display: none; width: 40px; height: 40px; border-radius: 10px; color: var(--text-secondary); align-items: center; justify-content: center; }
-    .sidebar-toggle svg { width: 22px; height: 22px; }
-    .sidebar-toggle:hover { background: var(--bg-elevated); color: var(--text); }
-
-    .nav-left { display: none; align-items: center; gap: 0.6rem; }
-    .nav-logo { width: 30px; height: 30px; object-fit: contain; }
-    .nav-brand { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); }
-
-    .nav-center { flex: 1; display: flex; align-items: center; gap: 1rem; min-width: 0; }
-    .nav-store-btn {
-      flex-shrink: 0;
-      padding: 0.5rem 1.1rem; border-radius: 9px;
-      background: linear-gradient(135deg, var(--gold), #d99e1f);
-      color: #1a1206; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.03em;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 14px rgba(251,191,36,0.22);
-    }
-    .nav-store-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(251,191,36,0.3); }
-
-    .nav-ticker-wrap {
-      flex: 1; overflow: hidden; min-width: 0; position: relative;
-      mask-image: linear-gradient(90deg, transparent, black 5%, black 95%, transparent);
-    }
-    .nav-ticker-track { display: flex; width: max-content; animation: ticker-scroll 48s linear infinite; }
-    .nav-ticker-track:hover { animation-play-state: paused; }
-    .nav-ticker-item {
-      display: inline-flex; align-items: center; gap: 0.45rem;
-      padding: 0 1.15rem; white-space: nowrap; cursor: default;
-      font-family: var(--mono); font-size: 0.7rem;
-      border-right: 1px solid var(--border);
-    }
-    .t-sym   { color: var(--text-muted); font-weight: 500; }
-    .t-price { color: var(--text-secondary); font-weight: 700; }
-    .t-chg   { font-weight: 700; }
-    .t-chg.up { color: var(--green); }
-    .t-chg.down { color: var(--red); }
-    .t-chg.flat { color: var(--text-muted); }
-    @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-    .nav-right { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
-    .nav-balance {
-      font-family: var(--mono); font-size: 0.78rem; font-weight: 700; color: var(--gold);
-      padding: 0.4rem 0.7rem; border-radius: 9px;
-      border: 1px solid rgba(251,191,36,0.22); background: rgba(251,191,36,0.06);
-      white-space: nowrap;
-    }
-    .nav-online {
-      width: 9px; height: 9px; border-radius: 50%; background: var(--green);
-      box-shadow: 0 0 8px var(--green); flex-shrink: 0;
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-    .nav-online.offline { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
-    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
-    .nav-btn {
-      width: 38px; height: 38px; border-radius: 10px; font-size: 1rem;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary);
-      transition: all 0.18s;
-    }
-    .nav-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-hover); }
-    .nav-avatar {
-      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
-      border: 2px solid var(--purple); cursor: pointer; flex-shrink: 0;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .nav-avatar:hover { border-color: var(--purple-light); box-shadow: 0 0 0 4px rgba(139,92,246,0.18); }
-
-    /* ════════ PAGE LAYOUT ════════ */
-    .page-wrap {
-      position: relative; z-index: 2;
-      margin-left: var(--sidebar-w);
-      padding: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 2rem) 2rem 4rem;
-      max-width: 1320px;
-    }
-
-    /* Section heading */
-    .section-header { display: flex; align-items: center; gap: 0.85rem; margin: 2.75rem 0 1.4rem; }
-    .section-title { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
-    .section-header .section-sub { color: var(--text-muted); font-size: 0.84rem; margin-left: auto; }
-
-    .badge-pill {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.3rem 0.7rem; border-radius: 999px;
-      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    }
-    .badge-pill.purple { background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.3); color: var(--purple-light); }
-    .badge-pill.gold   { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: var(--gold); }
-    .badge-pill.red    { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
-    .badge-pill.green  { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
-    .badge-pill.live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.5s ease-in-out infinite; }
-    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
-
-    /* ════════ HERO ════════ */
-    .dash-hero {
-      position: relative;
-      background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(15,15,15,0.4) 55%), var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 2rem 2.25rem;
-      overflow: hidden;
-    }
-    .dash-hero::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--purple), var(--gold));
-      opacity: 0.7;
-    }
-    .dash-status-bar { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem; }
-    .dash-meta-item {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
-      letter-spacing: 0.04em; color: var(--text-secondary);
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .dot-market-open   { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse-dot 2s ease-in-out infinite; }
-    .dot-market-closed { background: var(--red); box-shadow: 0 0 8px var(--red); }
-    .dot-gold { background: var(--gold); box-shadow: 0 0 8px rgba(251,191,36,0.6); }
-    .dot-teal { background: var(--purple); box-shadow: 0 0 8px var(--purple-glow); }
-
-    .dash-pill {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.32rem 0.8rem; border-radius: 999px; margin-bottom: 1rem;
-      background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3);
-      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-light);
-    }
-    .dash-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--purple-light); animation: pulse-dot 2s ease-in-out infinite; }
-    .dash-title {
-      font-size: clamp(1.7rem, 4vw, 2.6rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1;
-    }
-    .dash-title span {
-      background: linear-gradient(135deg, var(--purple-light), var(--gold));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
+    /* Header */
+    .dash-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; padding: 0.5rem 0 1.75rem; }
+    .dash-status-bar { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 0.9rem; }
+    .dash-meta-item { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--mono); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; color: var(--text-muted); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-market-open   { background: var(--green); }
+    .dot-market-closed { background: var(--text-muted); }
+    .dot-gold { background: var(--gold); }
+    .dot-violet { background: var(--purple); }
+    .dash-title { font-family: var(--display); font-size: clamp(2rem, 4.4vw, 3.1rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.04; }
+    .dash-title span { color: var(--purple-light); }
+    .dash-title #dash-greeting { color: var(--text); }
     .dash-sub { color: var(--text-secondary); font-size: 1rem; margin-top: 0.6rem; max-width: 560px; }
 
-    .stat-pills-row { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 1.5rem; }
-    .stat-pill {
-      display: flex; flex-direction: column; gap: 0.15rem;
-      padding: 0.7rem 1.1rem; border-radius: 12px;
-      background: var(--bg-elevated); border: 1px solid var(--border); min-width: 120px;
+    /* Top row: today + member card */
+    .dash-top { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 1.25rem; align-items: stretch; }
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.35rem; border-bottom: 1px solid var(--border); }
+    .panel-label { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+    .today-list { display: flex; flex-direction: column; }
+    .today-row { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.35rem; transition: background 0.15s; }
+    .today-row + .today-row { border-top: 1px solid var(--border); }
+    .today-row:hover { background: var(--bg-elevated); }
+    .today-icon { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--purple-light); background: rgba(155,123,247,0.1); border: 1px solid rgba(155,123,247,0.22); }
+    .today-icon svg { width: 20px; height: 20px; }
+    .today-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+    .today-kicker { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--purple); }
+    .today-title { font-family: var(--display); font-size: 1.08rem; font-weight: 700; letter-spacing: -0.015em; color: var(--text); }
+    .today-sub { font-size: 0.86rem; color: var(--text-muted); }
+    .today-go { width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border: 1px solid var(--border); transition: all 0.15s; }
+    .today-go svg { width: 15px; height: 15px; }
+    .today-row:hover .today-go { color: #fff; background: var(--purple-dark); border-color: var(--purple-dark); }
+
+    .member-col { display: flex; flex-direction: column; gap: 1.25rem; }
+    .mcard {
+      position: relative; overflow: hidden; aspect-ratio: 1.62; border-radius: 20px; padding: 1.5rem 1.6rem;
+      display: flex; flex-direction: column; justify-content: space-between;
+      background: #1D1A24; border: 1px solid rgba(242,201,76,0.32);
     }
-    .stat-pill-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
-    .stat-pill-value { font-family: var(--mono); font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .mcard::after { content: ''; position: absolute; inset: 8px; border-radius: 14px; border: 1px solid rgba(242,201,76,0.12); pointer-events: none; }
+    .mcard-sigil { position: absolute; right: -8%; top: -10%; width: 62%; height: auto; color: rgba(255,255,255,0.06); }
+    .mcard-top, .mcard-bottom { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .mcard-brand { font-family: var(--display); font-size: 0.9rem; font-weight: 800; letter-spacing: 0.2em; color: var(--gold); }
+    .mcard-plan { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; color: var(--text-muted); }
+    .mcard-chip { position: relative; width: 46px; height: 34px; border-radius: 7px; background: #D9B64A; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 2px; padding: 2px; }
+    .mcard-chip i { border-radius: 2px; background: #C7A23A; }
+    .mcard-k { font-family: var(--mono); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2em; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .mcard-name { font-family: var(--display); font-size: 1.3rem; font-weight: 800; letter-spacing: 0.02em; color: #fff; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .mcard-bottom > div:first-child { min-width: 0; }
+    .mcard-since { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+
+    .stat-pills-row { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .stat-pill { display: flex; flex-direction: column; gap: 0.2rem; padding: 1rem 1.2rem; transition: background 0.15s; }
+    .stat-pill + .stat-pill { border-left: 1px solid var(--border); }
+    a.stat-pill:hover { background: var(--bg-elevated); }
+    .stat-pill-label { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
+    .stat-pill-value { font-family: var(--display); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
     .credits-pill .stat-pill-value { color: var(--gold); }
-    .streak-pill .stat-pill-value { color: var(--purple-light); }
 
-    .today-brief {
-      margin-top: 1.6rem; padding: 1.1rem 1.3rem;
-      border-left: 3px solid var(--purple); border-radius: 0 12px 12px 0;
-      background: rgba(139,92,246,0.05);
-    }
-    .brief-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--purple-light); margin-bottom: 0.4rem; }
-    .brief-quote { color: var(--text-secondary); font-style: italic; font-size: 0.95rem; transition: opacity 0.4s ease; }
-    .brief-quote.fading { opacity: 0; }
+    /* Section headings */
+    .section-header { display: flex; align-items: baseline; gap: 0.85rem; margin: 3rem 0 1.25rem; }
+    .section-header .section-sub { color: var(--text-muted); font-size: 0.86rem; margin-left: auto; }
 
-    /* ════════ UPGRADE BANNER ════════ */
-    .upgrade-banner {
-      display: none; align-items: center; gap: 1.25rem; flex-wrap: wrap;
-      padding: 1.1rem 1.4rem; border-radius: 16px; margin-bottom: 1.4rem;
-      background: linear-gradient(135deg, rgba(139,92,246,0.16), rgba(124,58,237,0.08));
-      border: 1px solid rgba(139,92,246,0.35);
-    }
+    /* Upgrade banner */
+    .upgrade-banner { display: none; align-items: center; gap: 1.25rem; flex-wrap: wrap; padding: 1.1rem 1.4rem; border-radius: 16px; margin-bottom: 1.4rem; background: rgba(155,123,247,0.08); border: 1px solid rgba(155,123,247,0.3); }
     .upgrade-banner.visible { display: flex; }
     .upgrade-banner-copy { flex: 1; min-width: 220px; }
-    .upgrade-banner-title { font-weight: 700; font-size: 0.98rem; }
-    .upgrade-banner-sub { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.2rem; }
-    .upgrade-banner-btn {
-      padding: 0.7rem 1.4rem; border-radius: 10px;
-      background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff;
-      font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 18px var(--purple-glow);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .upgrade-banner-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px var(--purple-glow); }
+    .upgrade-banner-title { font-family: var(--display); font-weight: 700; font-size: 1.05rem; }
+    .upgrade-banner-sub { color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.2rem; }
+    .upgrade-banner-btn { padding: 0.75rem 1.4rem; border-radius: 11px; background: var(--purple-dark); color: #fff; font-weight: 700; font-size: 0.88rem; transition: background 0.2s; }
+    .upgrade-banner-btn:hover { background: #7A5CF0; }
 
-    /* ════════ MODULE GRID ════════ */
-    .module-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.4rem;
-    }
-    .module-card {
-      --accent: var(--purple);
-      position: relative; display: flex; flex-direction: column;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
-      overflow: hidden; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), border-color 0.3s, box-shadow 0.35s;
-    }
-    .module-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 3;
-      background: linear-gradient(90deg, var(--accent), var(--gold)); opacity: 0; transition: opacity 0.3s;
-    }
-    .module-card:hover { transform: translateY(-8px); border-color: var(--border-hover); box-shadow: 0 28px 56px rgba(0,0,0,0.5); }
-    .module-card:hover::before { opacity: 1; }
-    .teal-card  { --accent: var(--blue); }
+    /* Module grid (animated illustrations kept) */
+    .module-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; }
+    .module-card { --accent: var(--purple); position: relative; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s; }
+    .module-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+    .teal-card  { --accent: #2DD4BF; }
     .gold-card  { --accent: var(--gold); }
     .red-card   { --accent: var(--red); }
     .green-card { --accent: var(--green); }
-
-    .card-visual {
-      position: relative; height: 158px; overflow: hidden;
-      background:
-        radial-gradient(ellipse 80% 90% at 50% 100%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-        var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-    }
-    .card-grid-fine {
-      position: absolute; inset: 0; opacity: 0.4;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 26px 26px;
-    }
+    .card-visual { position: relative; height: 164px; overflow: hidden; background: var(--bg-primary); border-bottom: 1px solid var(--border); }
+    .card-grid-fine { position: absolute; inset: 0; opacity: 0.35; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 26px 26px; }
     .card-svg-wrap { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .card-live-tag {
-      position: absolute; top: 0.7rem; right: 0.7rem; z-index: 2;
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      padding: 0.22rem 0.55rem; border-radius: 6px;
-      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-      background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
-      border: 1px solid var(--border-hover);
-    }
-    .card-live-tag.teal  { color: var(--blue); }
+    .card-live-tag { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.55rem; border-radius: 7px; font-family: var(--mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: rgba(11,10,16,0.85); border: 1px solid var(--border-hover); }
+    .card-live-tag.teal  { color: #5EEAD4; }
     .card-live-tag.gold  { color: var(--gold); }
-    .card-live-tag.red   { color: #fca5a5; }
-    .card-live-tag.green { color: #86efac; }
+    .card-live-tag.red   { color: #FCA5A5; }
+    .card-live-tag.green { color: #86EFAC; }
     .card-live-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.5s ease-in-out infinite; }
-
-    .card-footer { padding: 1.2rem 1.3rem 1.3rem; position: relative; }
-    .card-tag { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
-    .card-name { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem; }
-    .card-desc { color: var(--text-secondary); font-size: 0.86rem; line-height: 1.55; padding-right: 1.5rem; }
-    .card-arrow {
-      position: absolute; right: 1.3rem; bottom: 1.3rem;
-      width: 30px; height: 30px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--bg-elevated); border: 1px solid var(--border); color: var(--accent);
-      font-size: 1rem; transition: all 0.25s;
-    }
-    .module-card:hover .card-arrow { background: var(--accent); color: #0a0a0a; transform: translateX(3px); }
+    .card-footer { padding: 1.15rem 1.3rem 1.3rem; position: relative; flex: 1; }
+    .card-tag { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+    .card-name { font-family: var(--display); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 0.3rem; }
+    .card-desc { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; padding-right: 2.5rem; }
+    .card-arrow { position: absolute; right: 1.2rem; bottom: 1.25rem; width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); color: var(--text-muted); transition: all 0.2s; }
+    .card-arrow svg { width: 15px; height: 15px; }
+    .module-card:hover .card-arrow { background: var(--accent); border-color: var(--accent); color: #0B0A10; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 
     /* Locked state (added by JS) */
     .module-card.locked { cursor: pointer; }
-    .module-card.locked .card-visual { filter: grayscale(0.6) brightness(0.5); }
-    .lock-overlay {
-      position: absolute; inset: 0; z-index: 5;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
-      background: rgba(3,3,3,0.72); backdrop-filter: blur(3px); text-align: center; padding: 1rem;
-    }
-    .classified-stamp {
-      position: absolute; top: 0.8rem; left: 0.8rem;
-      font-family: var(--mono); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-      color: #fca5a5; padding: 0.2rem 0.5rem; border: 1px solid rgba(239,68,68,0.4); border-radius: 5px;
-    }
-    .lock-icon-ring {
-      width: 52px; height: 52px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.4);
-    }
-    .lock-glyph { font-size: 1.3rem; }
-    .lock-label { font-weight: 700; font-size: 0.95rem; }
-    .lock-sub { color: var(--text-muted); font-size: 0.78rem; }
+    .module-card.locked .card-visual { filter: grayscale(0.7) brightness(0.45); }
+    .lock-overlay { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.45rem; background: rgba(11,10,16,0.78); text-align: center; padding: 1rem; }
+    .classified-stamp { position: absolute; top: 0.8rem; left: 0.8rem; font-family: var(--mono); font-size: 0.58rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); padding: 0.2rem 0.5rem; border: 1px solid rgba(242,201,76,0.4); border-radius: 5px; }
+    .lock-icon-ring { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--purple-light); background: rgba(155,123,247,0.12); border: 1px solid rgba(155,123,247,0.35); }
+    .lock-icon-ring svg { width: 20px; height: 20px; }
+    .lock-label { font-family: var(--display); font-weight: 700; font-size: 1.02rem; }
+    .lock-sub { color: var(--text-muted); font-size: 0.8rem; }
 
-    /* ════════ CARD GRID (admin + free access) ════════ */
-    .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .free-card {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 1.1rem 1.2rem; border-radius: 14px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-      opacity: 0; transform: translateY(16px);
-    }
-    .free-card.visible { opacity: 1; transform: translateY(0); }
-    .free-card:hover { transform: translateY(-4px); border-color: var(--border-hover); background: var(--bg-elevated); box-shadow: 0 18px 40px rgba(0,0,0,0.4); }
-    .free-icon {
-      width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; font-size: 1.25rem;
-      display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.04));
-      border: 1px solid rgba(139,92,246,0.2);
-    }
-    .free-info { flex: 1; min-width: 0; }
-    .free-title { font-weight: 700; font-size: 0.95rem; }
-    .free-desc { color: var(--text-muted); font-size: 0.8rem; }
-    .free-arrow, .free-badge { color: var(--text-muted); font-size: 1.05rem; transition: transform 0.25s, color 0.25s; }
-    .free-card:hover .free-arrow { color: var(--purple-light); transform: translateX(3px); }
-    .free-card.admin-card .free-icon { background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.04)); border-color: rgba(251,191,36,0.25); }
-    .free-card.retreat { background: linear-gradient(135deg, rgba(251,191,36,0.08), var(--bg-card)); border-color: rgba(251,191,36,0.22); }
+    /* Quick links + admin tiles */
+    .tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
+    .free-card { padding: 1rem 1.1rem; }
+    .free-arrow svg { width: 16px; height: 16px; }
+    .free-card.retreat .free-icon { color: var(--gold); background: rgba(242,201,76,0.08); border-color: rgba(242,201,76,0.25); }
+    .admin-section-header { display: flex; align-items: center; gap: 0.85rem; margin: 3rem 0 1.25rem; }
+    .admin-section-title { font-family: var(--display); font-size: 1.2rem; font-weight: 700; letter-spacing: -0.015em; }
+    .admin-card .free-icon { color: var(--gold); background: rgba(242,201,76,0.08); border-color: rgba(242,201,76,0.25); }
 
-    .admin-section-header { display: flex; align-items: center; gap: 0.85rem; margin: 2.75rem 0 1.4rem; }
-    .admin-section-title { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; color: var(--gold-light); }
+    /* Thought for today */
+    .today-brief { display: flex; align-items: baseline; gap: 1.25rem; margin-top: 3rem; padding: 1.25rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .brief-label { flex-shrink: 0; font-family: var(--mono); font-size: 0.64rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--purple); }
+    .brief-quote { color: var(--text-secondary); font-size: 0.98rem; transition: opacity 0.4s ease; }
+    .brief-quote.fading { opacity: 0; }
 
-    /* ════════ FOOTER ════════ */
-    .dash-footer {
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
-      margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
-    }
-    .version-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.04em; }
-    .logout-btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.6rem 1.2rem; border-radius: 10px;
-      border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.06); color: #fca5a5;
-      font-weight: 700; font-size: 0.82rem; transition: all 0.2s;
-    }
-    .logout-btn:hover { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.4); color: #fff; }
-
-    /* ════════ UPGRADE MODAL ════════ */
+    /* ═══ Upgrade modal ═══ */
     .upgrade-modal-backdrop {
       position: fixed; inset: 0; z-index: 3000;
       display: none; align-items: center; justify-content: center; padding: 1.5rem;
@@ -526,8 +203,17 @@
     .upgrade-modal-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 32px var(--purple-glow); }
     .upgrade-modal-cta:disabled { opacity: 0.7; cursor: default; transform: none; }
     .upgrade-modal-footer { text-align: center; color: var(--text-muted); font-size: 0.74rem; margin-top: 0.9rem; }
+    .upgrade-modal { background: var(--bg-card) !important; border-color: var(--border-hover) !important; box-shadow: 0 30px 80px rgba(0,0,0,0.6) !important; }
+    .upgrade-modal::before { background: var(--purple) !important; }
+    .upgrade-modal-title { font-family: var(--display); font-weight: 800; letter-spacing: -0.035em; }
+    .upgrade-modal-title span { background: none; -webkit-text-fill-color: currentColor; color: var(--purple-light); }
+    .upgrade-modal-close svg { width: 16px; height: 16px; }
+    .upgrade-modal-featured-icon { width: 34px; height: 34px; flex-shrink: 0; }
+    .upgrade-modal-feature-icon { width: 8px; height: 8px; margin-top: 0.4rem; border-radius: 2px; background: var(--purple); }
+    .upgrade-modal-cta { background: var(--purple-dark) !important; box-shadow: none !important; }
+    .upgrade-modal-cta:hover { background: #7A5CF0 !important; transform: none !important; }
 
-    /* ════════ MODULE SVG ANIMATIONS (preserved) ════════ */
+    /* Illustration keyframes */
     @keyframes node-pulse { 0%,100%{r:3;opacity:.9} 50%{r:5;opacity:1} }
     @keyframes node-pulse-sm { 0%,100%{r:2;opacity:.5} 50%{r:3.5;opacity:.9} }
     @keyframes link-flow { 0%{stroke-dashoffset:120} 100%{stroke-dashoffset:0} }
@@ -546,23 +232,20 @@
     @keyframes star-glow-lg { 0%,100%{opacity:.6;r:5} 50%{opacity:1;r:7} }
     @keyframes edge-shimmer { 0%{opacity:.15} 50%{opacity:.5} 100%{opacity:.15} }
 
-    /* ════════ RESPONSIVE ════════ */
-    @media (max-width: 1024px) {
-      .arcane-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
-      .arcane-sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(0,0,0,0.7); }
-      .arcane-nav { left: 0; }
-      .page-wrap { margin-left: 0; }
-      .sidebar-toggle { display: flex; }
-      .nav-left { display: flex; }
+    @media (max-width: 1180px) {
+      .module-grid, .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 900px) {
+      .dash-top { grid-template-columns: 1fr; }
+      .member-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
     }
     @media (max-width: 640px) {
-      :root { --nav-h: 58px; }
-      .nav-inner { padding: 0 1rem; gap: 0.6rem; }
-      .nav-brand { display: none; }
-      .nav-balance { display: none; }
-      .nav-ticker-wrap { display: none; }
-      .page-wrap { padding: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 1.25rem) 1.1rem 3rem; }
-      .dash-hero { padding: 1.5rem 1.4rem; border-radius: 18px; }
+      .dash-head { padding-top: 0; }
+      .section-header .section-sub { display: none; }
+      .member-col { grid-template-columns: 1fr; }
+      .module-grid, .tile-grid { grid-template-columns: 1fr; }
+      .today-row, .panel-head { padding-left: 1.1rem; padding-right: 1.1rem; }
+      .today-brief { flex-direction: column; gap: 0.5rem; }
       .upgrade-modal { padding: 1.5rem; }
       .upgrade-modal-features { grid-template-columns: 1fr; }
     }
@@ -571,235 +254,202 @@
     }
   </style>
 </head>
-<body>
+<body data-page="dashboard">
 
-<div class="bg-gradient"></div>
-<div class="grid-overlay"></div>
+<main class="portal-page dash">
 
-<!-- ════════ SIDEBAR ════════ -->
-<aside class="arcane-sidebar" id="arcane-sidebar">
-
-  <a class="sidebar-brand" href="dashboard.html">
-    <img src="arcane-mark.svg" alt="AA"/>
-    <span class="brand-text">The Arcane<br>Archives</span>
-  </a>
-
-  <div class="sidebar-section-label">Modules</div>
-
-  <a class="sidebar-nav-item active" href="dashboard.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-    <span class="sidebar-nav-label">Dashboard</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="world-map.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg></span>
-    <span class="sidebar-nav-label">Watchtower</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="trading-floor.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-    <span class="sidebar-nav-label">Trading Floor</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="war-room.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
-    <span class="sidebar-nav-label">War Room</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="stock-picks.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 1 18"/><polyline points="16 7 22 7 22 13"/></svg></span>
-    <span class="sidebar-nav-label">Stock Picks</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="courses.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-    <span class="sidebar-nav-label">Courses</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="live-calls.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-    <span class="sidebar-nav-label">Communication</span>
-  </a>
-
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section-label">Open Intel</div>
-
-  <a class="sidebar-nav-item" href="free-signals.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></span>
-    <span class="sidebar-nav-label">Signals</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="live-streams.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
-    <span class="sidebar-nav-label">Live Streams</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="bullion.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-    <span class="sidebar-nav-label">Bullion</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="referrals.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-    <span class="sidebar-nav-label">Referrals</span>
-  </a>
-
-  <div class="sidebar-divider"></div>
-
-  <a class="sidebar-nav-item" href="arcane-store.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
-    <span class="sidebar-nav-label">Store</span>
-  </a>
-
-  <a class="sidebar-nav-item" href="settings.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-    <span class="sidebar-nav-label">Settings</span>
-  </a>
-
-  <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-    <span class="sidebar-nav-label">Admin</span>
-  </a>
-
-</aside>
-<div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-<!-- ════════ NAVBAR ════════ -->
-<nav class="arcane-nav">
-  <div class="nav-inner">
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6"  x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-
-    <a class="nav-left" href="dashboard.html">
-      <img src="arcane-mark.svg" class="nav-logo" alt="AA"/>
-      <span class="nav-brand">The Arcane Archives</span>
-    </a>
-
-    <div class="nav-center">
-      <a href="arcane-store.html" class="nav-store-btn">Store</a>
-      <div class="nav-ticker-wrap">
-        <div class="nav-ticker-track" id="nav-ticker-track"></div>
+  <!-- ── Header ── -->
+  <header class="dash-head">
+    <div>
+      <div class="dash-status-bar">
+        <div class="dash-meta-item"><div class="dot dot-gold"></div><span id="dash-date"></span></div>
+        <div class="dash-meta-item"><div class="dot dot-market-closed" id="market-dot"></div><span id="market-status">LONDON CLOSED</span></div>
+        <div class="dash-meta-item"><div class="dot dot-violet"></div><span id="member-plan">MEMBER</span></div>
       </div>
+      <h1 class="dash-title"><span id="dash-greeting">Welcome back</span>, <span id="user-name">Operator</span>.</h1>
+      <p class="dash-sub">Here’s what’s waiting for you today.</p>
     </div>
+  </header>
 
-    <div class="nav-right">
-      <div class="nav-balance" id="nav-balance">£0.00</div>
-      <div class="nav-online" id="nav-online"></div>
-      <a class="nav-btn" href="settings.html" title="Settings">⚙️</a>
-      <img class="nav-avatar" id="nav-avatar" src="arcane-icon-192.png" alt="Avatar"/>
+  <!-- ── Today + member card ── -->
+  <div class="dash-top">
+    <section class="panel" aria-labelledby="today-label">
+      <div class="panel-head"><span class="panel-label" id="today-label">Today</span></div>
+      <div class="today-list">
+        <a class="today-row" href="arcane-insights.html">
+          <span class="today-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg></span>
+          <span class="today-copy"><span class="today-kicker">Every morning</span><span class="today-title">Claim today’s Daily Insight</span><span class="today-sub">Whatever Leo’s learning today. Keep the streak alive.</span></span>
+          <span class="today-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </a>
+        <a class="today-row" href="courses.html">
+          <span class="today-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="today-copy"><span class="today-kicker">Your path</span><span class="today-title">Continue in the Vault</span><span class="today-sub">New here? Start with Escaping Hell. Don’t skip around.</span></span>
+          <span class="today-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </a>
+        <a class="today-row" href="war-room.html">
+          <span class="today-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+          <span class="today-copy"><span class="today-kicker">Every week</span><span class="today-title">Get on the War Room call</span><span class="today-sub">Bring what you’re stuck on. Recorded if you miss it.</span></span>
+          <span class="today-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </a>
+      </div>
+    </section>
+
+    <div class="member-col">
+      <div class="mcard" aria-label="Your member card">
+        <svg class="mcard-sigil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.6" aria-hidden="true"><path d="M12 2 3 20l9-5 9 5z"/><path d="M12 8l-4 8 4-2 4 2z"/></svg>
+        <div class="mcard-top"><span class="mcard-brand">THE ARCANE ARCHIVES</span><span class="mcard-plan" id="card-plan">MEMBER</span></div>
+        <div class="mcard-chip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="mcard-bottom">
+          <div><div class="mcard-k">CARD HOLDER</div><div class="mcard-name" id="card-name">Member</div></div>
+          <div><div class="mcard-k">SINCE</div><div class="mcard-since" id="card-since">—</div></div>
+        </div>
+      </div>
+      <div class="stat-pills-row">
+        <a class="stat-pill credits-pill" href="referrals.html">
+          <span class="stat-pill-label">Balance</span>
+          <span class="stat-pill-value" id="pill-credits">—</span>
+        </a>
+        <a class="stat-pill streak-pill" href="arcane-insights.html">
+          <span class="stat-pill-label">Insight streak</span>
+          <span class="stat-pill-value" id="pill-streak">—</span>
+        </a>
+      </div>
     </div>
   </div>
-</nav>
 
-<!-- ════════ PAGE CONTENT ════════ -->
-<main class="page-wrap">
-
-  <!-- ── Hero ── -->
-  <div class="dash-hero">
-    <div class="dash-status-bar">
-      <div class="dash-meta-item">
-        <div class="dot dot-market-closed" id="market-dot"></div>
-        <span id="market-status">MARKETS CLOSED</span>
-      </div>
-      <div class="dash-meta-item">
-        <div class="dot dot-gold"></div>
-        <span id="dash-date"></span>
-      </div>
-      <div class="dash-meta-item">
-        <div class="dot dot-teal"></div>
-        <span id="member-plan">FREE TIER</span>
-      </div>
-    </div>
-
-    <div class="dash-pill">Member Briefing</div>
-    <h1 class="dash-title">Welcome back, <span id="user-name">Operator</span></h1>
-    <p class="dash-sub">Your complete knowledge ecosystem — 3,330+ modules across every realm, all in one place.</p>
-
-    <div class="stat-pills-row">
-      <div class="stat-pill credits-pill">
-        <span class="stat-pill-label">Credits</span>
-        <span class="stat-pill-value" id="pill-credits">—</span>
-      </div>
-      <div class="stat-pill streak-pill" id="pill-streak-wrap" style="display:none">
-        <span class="stat-pill-label">Streak</span>
-        <span class="stat-pill-value" id="pill-streak">—</span>
-      </div>
-    </div>
-
-    <div class="today-brief">
-      <div class="brief-label">Intel Brief</div>
-      <div class="brief-quote" id="brief-quote">Initialising intelligence feed…</div>
-    </div>
-  </div><!-- /dash-hero -->
-
-  <!-- ── Platform Modules ── -->
+  <!-- ── Platform ── -->
   <section>
     <div class="section-header">
-      <div class="section-title">Platform Modules</div>
-      <span class="badge-pill purple live">Live</span>
+      <h2 class="section-title">Your platform</h2>
+      <span class="section-sub">Everything included in your membership</span>
     </div>
 
     <div class="upgrade-banner" id="upgrade-banner">
       <div class="upgrade-banner-copy">
-        <div class="upgrade-banner-title">Modules locked — upgrade to access</div>
-        <div class="upgrade-banner-sub">Get full access to Watchtower, Trading Floor, War Room &amp; more</div>
+        <div class="upgrade-banner-title">The platform is for members</div>
+        <div class="upgrade-banner-sub">Take the assessment to unlock the Vault, the War Room, the Trading Floor and the Watchtower.</div>
       </div>
-      <button onclick="openUpgradeModal()" class="upgrade-banner-btn">Upgrade Now</button>
+      <button onclick="openUpgradeModal()" class="upgrade-banner-btn">See what’s inside</button>
     </div>
 
     <div class="module-grid" id="carousel-track">
-
-      <!-- 1. COMMUNICATION -->
-      <a class="module-card teal-card" href="live-calls.html">
-        <div class="card-visual comm-bg">
+      <a class="module-card gold-card" href="courses.html">
+        <div class="card-visual courses-bg">
           <div class="card-grid-fine"></div>
-          <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
+          <div class="card-live-tag gold"><div class="card-live-dot"></div>3,330+ modules</div>
           <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <radialGradient id="comm-glow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.18"/>
-                <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+              <radialGradient id="courses-glow" cx="50%" cy="50%" r="55%">
+                <stop offset="0%" stop-color="#f5a623" stop-opacity="0.12"/>
+                <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
               </radialGradient>
-              <filter id="comm-blur"><feGaussianBlur stdDeviation="2.5"/></filter>
+              <filter id="node-bloom"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="node-bloom-sm"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             </defs>
-            <ellipse cx="135" cy="115" rx="90" ry="75" fill="url(#comm-glow)"/>
-            <g stroke="#00d4ff" fill="none" opacity="0.35">
-              <line x1="135" y1="115" x2="68"  y2="62"  stroke-dasharray="8 4" style="animation:link-flow 2.2s linear infinite"/>
-              <line x1="135" y1="115" x2="202" y2="62"  stroke-dasharray="8 4" style="animation:link-flow 2.2s linear infinite .4s"/>
-              <line x1="135" y1="115" x2="48"  y2="148" stroke-dasharray="8 4" style="animation:link-flow 2.8s linear infinite .8s"/>
-              <line x1="135" y1="115" x2="222" y2="148" stroke-dasharray="8 4" style="animation:link-flow 2.8s linear infinite 1.2s"/>
-              <line x1="135" y1="115" x2="135" y2="40"  stroke-dasharray="8 4" style="animation:link-flow 2.5s linear infinite .2s"/>
-              <line x1="135" y1="115" x2="88"  y2="185" stroke-dasharray="8 4" style="animation:link-flow 3.1s linear infinite .6s"/>
-              <line x1="135" y1="115" x2="182" y2="185" stroke-dasharray="8 4" style="animation:link-flow 3.1s linear infinite 1s"/>
-              <line x1="68"  y1="62"  x2="135" y2="40"  stroke-opacity="0.5"/>
-              <line x1="202" y1="62"  x2="135" y2="40"  stroke-opacity="0.5"/>
-              <line x1="48"  y1="148" x2="88"  y2="185" stroke-opacity="0.5"/>
-              <line x1="222" y1="148" x2="182" y2="185" stroke-opacity="0.5"/>
+            <ellipse cx="135" cy="115" rx="100" ry="88" fill="url(#courses-glow)"/>
+            <g stroke="#f5a623" fill="none">
+              <line x1="135" y1="55"  x2="80"  y2="90"  stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 0s"/>
+              <line x1="135" y1="55"  x2="195" y2="85"  stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .4s"/>
+              <line x1="135" y1="55"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .8s"/>
+              <line x1="80"  y1="90"  x2="55"  y2="145" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .2s"/>
+              <line x1="80"  y1="90"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .6s"/>
+              <line x1="195" y1="85"  x2="220" y2="140" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 1s"/>
+              <line x1="195" y1="85"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 1.4s"/>
+              <line x1="135" y1="115" x2="55"  y2="145" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite .3s"/>
+              <line x1="135" y1="115" x2="220" y2="140" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite .7s"/>
+              <line x1="135" y1="115" x2="100" y2="175" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite 1.1s"/>
+              <line x1="135" y1="115" x2="175" y2="178" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite 1.5s"/>
+              <line x1="55"  y1="145" x2="100" y2="175" stroke-width="0.6" opacity="0.2" style="animation:edge-shimmer 5s ease-in-out infinite .5s"/>
+              <line x1="220" y1="140" x2="175" y2="178" stroke-width="0.6" opacity="0.2" style="animation:edge-shimmer 5s ease-in-out infinite .9s"/>
+              <line x1="80"  y1="90"  x2="195" y2="85"  stroke-width="0.5" opacity="0.15" stroke-dasharray="3 4"/>
+              <line x1="55"  y1="145" x2="220" y2="140" stroke-width="0.5" opacity="0.12" stroke-dasharray="3 4"/>
+              <line x1="100" y1="175" x2="175" y2="178" stroke-width="0.5" opacity="0.15" stroke-dasharray="3 4"/>
             </g>
-            <circle cx="135" cy="115" r="6" fill="none" stroke="#00d4ff" stroke-width="1.5" style="animation:ripple-out 2.4s ease-out infinite"/>
-            <circle cx="135" cy="115" r="6" fill="none" stroke="#00d4ff" stroke-width="1.5" style="animation:ripple-out 2.4s ease-out infinite 1.2s"/>
-            <circle cx="68"  cy="62"  r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 0s"/>
-            <circle cx="202" cy="62"  r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite .5s"/>
-            <circle cx="48"  cy="148" r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 1s"/>
-            <circle cx="222" cy="148" r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 1.5s"/>
-            <circle cx="135" cy="40"  r="3" fill="#00d4ff" opacity="0.6" style="animation:node-pulse-sm 3.5s ease-in-out infinite .3s"/>
-            <circle cx="88"  cy="185" r="3" fill="#00d4ff" opacity="0.5" style="animation:node-pulse-sm 3.5s ease-in-out infinite .9s"/>
-            <circle cx="182" cy="185" r="3" fill="#00d4ff" opacity="0.5" style="animation:node-pulse-sm 3.5s ease-in-out infinite 1.4s"/>
-            <circle cx="135" cy="115" r="8" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1.2"/>
-            <circle cx="135" cy="115" r="4" fill="#00d4ff" style="animation:node-pulse 2s ease-in-out infinite"/>
-            <circle cx="135" cy="115" r="4" fill="#00d4ff" filter="url(#comm-blur)" opacity="0.6"/>
+            <g fill="#f5a623" filter="url(#node-bloom-sm)">
+              <circle cx="55"  cy="145" r="3"   opacity="0.55" style="animation:star-glow 4s ease-in-out infinite 0s"/>
+              <circle cx="220" cy="140" r="3"   opacity="0.55" style="animation:star-glow 4s ease-in-out infinite .7s"/>
+              <circle cx="100" cy="175" r="2.5" opacity="0.45" style="animation:star-glow 4.5s ease-in-out infinite 1.4s"/>
+              <circle cx="175" cy="178" r="2.5" opacity="0.45" style="animation:star-glow 4.5s ease-in-out infinite 2.1s"/>
+            </g>
+            <g fill="#f5a623" filter="url(#node-bloom-sm)">
+              <circle cx="80"  cy="90"  r="4.5" opacity="0.65" style="animation:star-glow 3s ease-in-out infinite .3s"/>
+              <circle cx="195" cy="85"  r="4.5" opacity="0.65" style="animation:star-glow 3s ease-in-out infinite 1s"/>
+            </g>
+            <circle cx="135" cy="55" r="7" fill="rgba(245,166,35,0.15)" stroke="#f5a623" stroke-width="1" opacity="0.8"/>
+            <circle cx="135" cy="55" r="5" fill="#f5a623" filter="url(#node-bloom)" style="animation:star-glow-lg 2.5s ease-in-out infinite 0s"/>
+            <circle cx="135" cy="115" r="9" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.2"/>
+            <circle cx="135" cy="115" r="6" fill="#f5a623" filter="url(#node-bloom)" style="animation:star-glow-lg 3s ease-in-out infinite .8s"/>
+            <rect x="14" y="14" width="70" height="15" rx="2" fill="rgba(245,166,35,0.07)" stroke="rgba(245,166,35,0.2)" stroke-width="0.7"/>
+            <text x="49" y="24.5" fill="#f5a623" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.75">KNOWLEDGE · MAP</text>
           </svg>
         </div>
         <div class="card-footer">
-          <div class="card-tag">Module 01</div>
-          <div class="card-name">Communication</div>
-          <div class="card-desc">Group channels, leaderboard, trading tips &amp; cues</div>
-          <div class="card-arrow">→</div>
+          <div class="card-tag">The Archives</div>
+          <div class="card-name">The Vault</div>
+          <div class="card-desc">46+ protocols across four realms. Start with Escaping Hell.</div>
+          <div class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </a>
-
-      <!-- 2. TRADING FLOOR -->
+      <a class="module-card red-card" href="war-room.html">
+        <div class="card-visual war-bg">
+          <div class="card-grid-fine"></div>
+          <div class="card-live-tag red"><div class="card-live-dot"></div>Active</div>
+          <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="war-core" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ff2d2d" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#ff2d2d" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="war-glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="war-glow-sm"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <circle cx="135" cy="115" r="80" fill="url(#war-core)"/>
+            <g style="transform-origin:135px 115px;animation:ring-rotate 18s linear infinite">
+              <circle cx="135" cy="115" r="95" fill="none" stroke="rgba(255,45,45,0.15)" stroke-width="1"/>
+              <g stroke="#ff2d2d" stroke-width="0.8" opacity="0.4">
+                <line x1="135" y1="20"  x2="135" y2="32"/>
+                <line x1="135" y1="198" x2="135" y2="210"/>
+                <line x1="40"  y1="115" x2="52"  y2="115"/>
+                <line x1="218" y1="115" x2="230" y2="115"/>
+                <line x1="68"  y1="48"  x2="76"  y2="56"/>
+                <line x1="194" y1="174" x2="202" y2="182"/>
+                <line x1="194" y1="48"  x2="202" y2="56"/>
+                <line x1="68"  y1="174" x2="76"  y2="182"/>
+              </g>
+            </g>
+            <g style="transform-origin:135px 115px;animation:ring-rotate-rev 10s linear infinite">
+              <circle cx="135" cy="115" r="72" fill="none" stroke="rgba(255,45,45,0.25)" stroke-width="0.8"/>
+              <path d="M135,43 A72,72 0 0,1 207,115" fill="none" stroke="#ff2d2d" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+              <path d="M135,187 A72,72 0 0,1 63,115" fill="none" stroke="#ff2d2d" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
+            </g>
+            <g style="transform-origin:135px 115px;animation:ring-rotate 6s linear infinite">
+              <circle cx="135" cy="115" r="48" fill="none" stroke="rgba(255,45,45,0.3)" stroke-width="0.8"/>
+              <path d="M135,67 A48,48 0 0,1 183,115" fill="none" stroke="#ff2d2d" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+            </g>
+            <circle cx="135" cy="115" r="28" fill="rgba(255,45,45,0.06)" stroke="rgba(255,45,45,0.4)" stroke-width="0.8"/>
+            <g stroke="#ff2d2d" stroke-width="0.8" opacity="0.6">
+              <line x1="135" y1="92"  x2="135" y2="104"/>
+              <line x1="135" y1="126" x2="135" y2="138"/>
+              <line x1="112" y1="115" x2="124" y2="115"/>
+              <line x1="146" y1="115" x2="158" y2="115"/>
+            </g>
+            <circle cx="135" cy="20"  r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite 0s"/>
+            <circle cx="135" cy="210" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite .45s"/>
+            <circle cx="40"  cy="115" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite .9s"/>
+            <circle cx="230" cy="115" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite 1.35s"/>
+            <circle cx="135" cy="115" r="5" fill="rgba(255,45,45,0.2)" stroke="#ff2d2d" stroke-width="1"/>
+            <circle cx="135" cy="115" r="2.5" fill="#ff2d2d" filter="url(#war-glow)"/>
+            <rect x="14" y="14" width="68" height="16" rx="2" fill="rgba(255,45,45,0.08)" stroke="rgba(255,45,45,0.25)" stroke-width="0.7"/>
+            <text x="48" y="25" fill="#ff2d2d" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.85">CMD · ONLINE</text>
+          </svg>
+        </div>
+        <div class="card-footer">
+          <div class="card-tag">Every week</div>
+          <div class="card-name">War Room</div>
+          <div class="card-desc">The live call with Leo, recordings and briefings.</div>
+          <div class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </a>
       <a class="module-card gold-card" href="trading-floor.html">
         <div class="card-visual floor-bg">
           <div class="card-grid-fine"></div>
@@ -895,14 +545,12 @@
           </svg>
         </div>
         <div class="card-footer">
-          <div class="card-tag">Module 02</div>
+          <div class="card-tag">Markets</div>
           <div class="card-name">Trading Floor</div>
-          <div class="card-desc">Live charts, indicators, watchlist &amp; signals</div>
-          <div class="card-arrow">→</div>
+          <div class="card-desc">Live charts, your watchlist and the lessons side by side.</div>
+          <div class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </a>
-
-      <!-- 3. WATCHTOWER -->
       <a class="module-card teal-card" href="world-map.html">
         <div class="card-visual watch-bg">
           <div class="card-grid-fine"></div>
@@ -957,76 +605,12 @@
           </svg>
         </div>
         <div class="card-footer">
-          <div class="card-tag">Module 03</div>
+          <div class="card-tag">Intelligence</div>
           <div class="card-name">Watchtower</div>
-          <div class="card-desc">Global intelligence map, crypto &amp; forex intel</div>
-          <div class="card-arrow">→</div>
+          <div class="card-desc">The whole world on one screen: flashpoints, briefs, forecasts.</div>
+          <div class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </a>
-
-      <!-- 4. WAR ROOM -->
-      <a class="module-card red-card" href="war-room.html">
-        <div class="card-visual war-bg">
-          <div class="card-grid-fine"></div>
-          <div class="card-live-tag red"><div class="card-live-dot"></div>Active</div>
-          <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="war-core" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#ff2d2d" stop-opacity="0.2"/>
-                <stop offset="100%" stop-color="#ff2d2d" stop-opacity="0"/>
-              </radialGradient>
-              <filter id="war-glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              <filter id="war-glow-sm"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            </defs>
-            <circle cx="135" cy="115" r="80" fill="url(#war-core)"/>
-            <g style="transform-origin:135px 115px;animation:ring-rotate 18s linear infinite">
-              <circle cx="135" cy="115" r="95" fill="none" stroke="rgba(255,45,45,0.15)" stroke-width="1"/>
-              <g stroke="#ff2d2d" stroke-width="0.8" opacity="0.4">
-                <line x1="135" y1="20"  x2="135" y2="32"/>
-                <line x1="135" y1="198" x2="135" y2="210"/>
-                <line x1="40"  y1="115" x2="52"  y2="115"/>
-                <line x1="218" y1="115" x2="230" y2="115"/>
-                <line x1="68"  y1="48"  x2="76"  y2="56"/>
-                <line x1="194" y1="174" x2="202" y2="182"/>
-                <line x1="194" y1="48"  x2="202" y2="56"/>
-                <line x1="68"  y1="174" x2="76"  y2="182"/>
-              </g>
-            </g>
-            <g style="transform-origin:135px 115px;animation:ring-rotate-rev 10s linear infinite">
-              <circle cx="135" cy="115" r="72" fill="none" stroke="rgba(255,45,45,0.25)" stroke-width="0.8"/>
-              <path d="M135,43 A72,72 0 0,1 207,115" fill="none" stroke="#ff2d2d" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-              <path d="M135,187 A72,72 0 0,1 63,115" fill="none" stroke="#ff2d2d" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
-            </g>
-            <g style="transform-origin:135px 115px;animation:ring-rotate 6s linear infinite">
-              <circle cx="135" cy="115" r="48" fill="none" stroke="rgba(255,45,45,0.3)" stroke-width="0.8"/>
-              <path d="M135,67 A48,48 0 0,1 183,115" fill="none" stroke="#ff2d2d" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
-            </g>
-            <circle cx="135" cy="115" r="28" fill="rgba(255,45,45,0.06)" stroke="rgba(255,45,45,0.4)" stroke-width="0.8"/>
-            <g stroke="#ff2d2d" stroke-width="0.8" opacity="0.6">
-              <line x1="135" y1="92"  x2="135" y2="104"/>
-              <line x1="135" y1="126" x2="135" y2="138"/>
-              <line x1="112" y1="115" x2="124" y2="115"/>
-              <line x1="146" y1="115" x2="158" y2="115"/>
-            </g>
-            <circle cx="135" cy="20"  r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite 0s"/>
-            <circle cx="135" cy="210" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite .45s"/>
-            <circle cx="40"  cy="115" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite .9s"/>
-            <circle cx="230" cy="115" r="5" fill="#ff2d2d" filter="url(#war-glow-sm)" style="animation:alert-pulse 1.8s ease-in-out infinite 1.35s"/>
-            <circle cx="135" cy="115" r="5" fill="rgba(255,45,45,0.2)" stroke="#ff2d2d" stroke-width="1"/>
-            <circle cx="135" cy="115" r="2.5" fill="#ff2d2d" filter="url(#war-glow)"/>
-            <rect x="14" y="14" width="68" height="16" rx="2" fill="rgba(255,45,45,0.08)" stroke="rgba(255,45,45,0.25)" stroke-width="0.7"/>
-            <text x="48" y="25" fill="#ff2d2d" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.85">CMD · ONLINE</text>
-          </svg>
-        </div>
-        <div class="card-footer">
-          <div class="card-tag">Module 04</div>
-          <div class="card-name">War Room</div>
-          <div class="card-desc">Live calls, group sessions &amp; recorded briefings</div>
-          <div class="card-arrow">→</div>
-        </div>
-      </a>
-
-      <!-- 5. STOCK PICKS -->
       <a class="module-card green-card" href="stock-picks.html">
         <div class="card-visual stocks-bg">
           <div class="card-grid-fine"></div>
@@ -1073,168 +657,154 @@
           </svg>
         </div>
         <div class="card-footer">
-          <div class="card-tag" style="color:#86efac">Module 05</div>
+          <div class="card-tag">Markets</div>
           <div class="card-name">Stock Picks</div>
-          <div class="card-desc">Curated long-term equity positions &amp; thesis</div>
-          <div class="card-arrow">→</div>
+          <div class="card-desc">Curated long-term positions with the thesis behind each.</div>
+          <div class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </a>
-
-      <!-- 6. ARCANE COURSES -->
-      <a class="module-card gold-card" href="courses.html">
-        <div class="card-visual courses-bg">
+      <a class="module-card teal-card" href="live-calls.html">
+        <div class="card-visual comm-bg">
           <div class="card-grid-fine"></div>
-          <div class="card-live-tag gold"><div class="card-live-dot"></div>3,330+ Modules</div>
+          <div class="card-live-tag teal"><div class="card-live-dot"></div>Live</div>
           <svg class="card-svg-wrap" viewBox="0 0 270 230" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <radialGradient id="courses-glow" cx="50%" cy="50%" r="55%">
-                <stop offset="0%" stop-color="#f5a623" stop-opacity="0.12"/>
-                <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
+              <radialGradient id="comm-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
               </radialGradient>
-              <filter id="node-bloom"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-              <filter id="node-bloom-sm"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="comm-blur"><feGaussianBlur stdDeviation="2.5"/></filter>
             </defs>
-            <ellipse cx="135" cy="115" rx="100" ry="88" fill="url(#courses-glow)"/>
-            <g stroke="#f5a623" fill="none">
-              <line x1="135" y1="55"  x2="80"  y2="90"  stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 0s"/>
-              <line x1="135" y1="55"  x2="195" y2="85"  stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .4s"/>
-              <line x1="135" y1="55"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .8s"/>
-              <line x1="80"  y1="90"  x2="55"  y2="145" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .2s"/>
-              <line x1="80"  y1="90"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite .6s"/>
-              <line x1="195" y1="85"  x2="220" y2="140" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 1s"/>
-              <line x1="195" y1="85"  x2="135" y2="115" stroke-width="0.8" opacity="0.3" style="animation:edge-shimmer 3s ease-in-out infinite 1.4s"/>
-              <line x1="135" y1="115" x2="55"  y2="145" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite .3s"/>
-              <line x1="135" y1="115" x2="220" y2="140" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite .7s"/>
-              <line x1="135" y1="115" x2="100" y2="175" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite 1.1s"/>
-              <line x1="135" y1="115" x2="175" y2="178" stroke-width="0.8" opacity="0.25" style="animation:edge-shimmer 4s ease-in-out infinite 1.5s"/>
-              <line x1="55"  y1="145" x2="100" y2="175" stroke-width="0.6" opacity="0.2" style="animation:edge-shimmer 5s ease-in-out infinite .5s"/>
-              <line x1="220" y1="140" x2="175" y2="178" stroke-width="0.6" opacity="0.2" style="animation:edge-shimmer 5s ease-in-out infinite .9s"/>
-              <line x1="80"  y1="90"  x2="195" y2="85"  stroke-width="0.5" opacity="0.15" stroke-dasharray="3 4"/>
-              <line x1="55"  y1="145" x2="220" y2="140" stroke-width="0.5" opacity="0.12" stroke-dasharray="3 4"/>
-              <line x1="100" y1="175" x2="175" y2="178" stroke-width="0.5" opacity="0.15" stroke-dasharray="3 4"/>
+            <ellipse cx="135" cy="115" rx="90" ry="75" fill="url(#comm-glow)"/>
+            <g stroke="#00d4ff" fill="none" opacity="0.35">
+              <line x1="135" y1="115" x2="68"  y2="62"  stroke-dasharray="8 4" style="animation:link-flow 2.2s linear infinite"/>
+              <line x1="135" y1="115" x2="202" y2="62"  stroke-dasharray="8 4" style="animation:link-flow 2.2s linear infinite .4s"/>
+              <line x1="135" y1="115" x2="48"  y2="148" stroke-dasharray="8 4" style="animation:link-flow 2.8s linear infinite .8s"/>
+              <line x1="135" y1="115" x2="222" y2="148" stroke-dasharray="8 4" style="animation:link-flow 2.8s linear infinite 1.2s"/>
+              <line x1="135" y1="115" x2="135" y2="40"  stroke-dasharray="8 4" style="animation:link-flow 2.5s linear infinite .2s"/>
+              <line x1="135" y1="115" x2="88"  y2="185" stroke-dasharray="8 4" style="animation:link-flow 3.1s linear infinite .6s"/>
+              <line x1="135" y1="115" x2="182" y2="185" stroke-dasharray="8 4" style="animation:link-flow 3.1s linear infinite 1s"/>
+              <line x1="68"  y1="62"  x2="135" y2="40"  stroke-opacity="0.5"/>
+              <line x1="202" y1="62"  x2="135" y2="40"  stroke-opacity="0.5"/>
+              <line x1="48"  y1="148" x2="88"  y2="185" stroke-opacity="0.5"/>
+              <line x1="222" y1="148" x2="182" y2="185" stroke-opacity="0.5"/>
             </g>
-            <g fill="#f5a623" filter="url(#node-bloom-sm)">
-              <circle cx="55"  cy="145" r="3"   opacity="0.55" style="animation:star-glow 4s ease-in-out infinite 0s"/>
-              <circle cx="220" cy="140" r="3"   opacity="0.55" style="animation:star-glow 4s ease-in-out infinite .7s"/>
-              <circle cx="100" cy="175" r="2.5" opacity="0.45" style="animation:star-glow 4.5s ease-in-out infinite 1.4s"/>
-              <circle cx="175" cy="178" r="2.5" opacity="0.45" style="animation:star-glow 4.5s ease-in-out infinite 2.1s"/>
-            </g>
-            <g fill="#f5a623" filter="url(#node-bloom-sm)">
-              <circle cx="80"  cy="90"  r="4.5" opacity="0.65" style="animation:star-glow 3s ease-in-out infinite .3s"/>
-              <circle cx="195" cy="85"  r="4.5" opacity="0.65" style="animation:star-glow 3s ease-in-out infinite 1s"/>
-            </g>
-            <circle cx="135" cy="55" r="7" fill="rgba(245,166,35,0.15)" stroke="#f5a623" stroke-width="1" opacity="0.8"/>
-            <circle cx="135" cy="55" r="5" fill="#f5a623" filter="url(#node-bloom)" style="animation:star-glow-lg 2.5s ease-in-out infinite 0s"/>
-            <circle cx="135" cy="115" r="9" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.2"/>
-            <circle cx="135" cy="115" r="6" fill="#f5a623" filter="url(#node-bloom)" style="animation:star-glow-lg 3s ease-in-out infinite .8s"/>
-            <rect x="14" y="14" width="70" height="15" rx="2" fill="rgba(245,166,35,0.07)" stroke="rgba(245,166,35,0.2)" stroke-width="0.7"/>
-            <text x="49" y="24.5" fill="#f5a623" font-size="6.5" font-family="monospace" text-anchor="middle" opacity="0.75">KNOWLEDGE · MAP</text>
+            <circle cx="135" cy="115" r="6" fill="none" stroke="#00d4ff" stroke-width="1.5" style="animation:ripple-out 2.4s ease-out infinite"/>
+            <circle cx="135" cy="115" r="6" fill="none" stroke="#00d4ff" stroke-width="1.5" style="animation:ripple-out 2.4s ease-out infinite 1.2s"/>
+            <circle cx="68"  cy="62"  r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 0s"/>
+            <circle cx="202" cy="62"  r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite .5s"/>
+            <circle cx="48"  cy="148" r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 1s"/>
+            <circle cx="222" cy="148" r="4" fill="#00d4ff" opacity="0.7" style="animation:node-pulse-sm 3s ease-in-out infinite 1.5s"/>
+            <circle cx="135" cy="40"  r="3" fill="#00d4ff" opacity="0.6" style="animation:node-pulse-sm 3.5s ease-in-out infinite .3s"/>
+            <circle cx="88"  cy="185" r="3" fill="#00d4ff" opacity="0.5" style="animation:node-pulse-sm 3.5s ease-in-out infinite .9s"/>
+            <circle cx="182" cy="185" r="3" fill="#00d4ff" opacity="0.5" style="animation:node-pulse-sm 3.5s ease-in-out infinite 1.4s"/>
+            <circle cx="135" cy="115" r="8" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1.2"/>
+            <circle cx="135" cy="115" r="4" fill="#00d4ff" style="animation:node-pulse 2s ease-in-out infinite"/>
+            <circle cx="135" cy="115" r="4" fill="#00d4ff" filter="url(#comm-blur)" opacity="0.6"/>
           </svg>
         </div>
         <div class="card-footer">
-          <div class="card-tag">Module 06</div>
-          <div class="card-name">Arcane Courses</div>
-          <div class="card-desc">Full course library, modules &amp; Notion access</div>
-          <div class="card-arrow">→</div>
+          <div class="card-tag">Community</div>
+          <div class="card-name">Live Calls</div>
+          <div class="card-desc">Weekly group sessions, Q&amp;A and 1:1 time with Leo.</div>
+          <div class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
       </a>
-
-    </div><!-- /module-grid -->
+    </div>
   </section>
 
-  <!-- ── Admin Operations ── -->
+  <!-- ── Admin ── -->
   <section id="admin-section" style="display:none">
     <div class="admin-section-header">
-      <div class="admin-section-title">Admin Operations</div>
-      <span class="badge-pill red">Admin Only</span>
+      <h2 class="admin-section-title">Admin</h2>
+      <span class="badge-pill gold">Admin only</span>
     </div>
     <div class="tile-grid">
       <a class="free-card admin-card" href="admin-panel.html">
-        <div class="free-icon">🛡️</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div class="free-info"><div class="free-title">Admin Panel</div><div class="free-desc">Trades, alerts &amp; signals</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="arcane-crm.html">
-        <div class="free-icon">👥</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
         <div class="free-info"><div class="free-title">Member CRM</div><div class="free-desc">Members &amp; subscriptions</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="arcane-consulting-crm.html">
-        <div class="free-icon">💼</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
         <div class="free-info"><div class="free-title">Consulting CRM</div><div class="free-desc">Leads, pipeline &amp; payments</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="affiliate-admin.html">
-        <div class="free-icon">🔗</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <div class="free-info"><div class="free-title">Affiliates</div><div class="free-desc">Referrals &amp; commissions</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="stock-picks-admin.html">
-        <div class="free-icon">📊</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
         <div class="free-info"><div class="free-title">Stock Picks</div><div class="free-desc">Manage investment picks</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="arcane-insight-admin.html">
-        <div class="free-icon">🧠</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg></div>
         <div class="free-info"><div class="free-title">Arcane Insights</div><div class="free-desc">Posts &amp; intel updates</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="store-admin.html">
-        <div class="free-icon">🏪</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
         <div class="free-info"><div class="free-title">Store Admin</div><div class="free-desc">Products &amp; orders</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card admin-card" href="bullion-admin.html">
-        <div class="free-icon">🥇</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l3-8h12l3 8z"/><path d="M8 12l2-6h4l2 6"/></svg></div>
         <div class="free-info"><div class="free-title">Bullion Admin</div><div class="free-desc">Products &amp; enquiries</div></div>
-        <span class="free-arrow">→</span>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
     </div>
   </section>
 
-  <!-- ── Free Access Grid ── -->
+  <!-- ── Also inside ── -->
   <section>
     <div class="section-header">
-      <div class="section-title">Free Access</div>
-      <span class="badge-pill gold">Open Intel</span>
+      <h2 class="section-title">Also inside</h2>
     </div>
-
     <div class="tile-grid">
       <a class="free-card" href="referrals.html">
-        <div class="free-icon">💰</div>
-        <div class="free-info"><div class="free-title">Referrals</div><div class="free-desc">Earn monthly commission</div></div>
-        <span class="free-arrow">→</span>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="free-info"><div class="free-title">Referrals</div><div class="free-desc">Your link, referred members and rewards</div></div>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
-      <a class="free-card" href="bullion.html">
-        <div class="free-icon">🥇</div>
-        <div class="free-info"><div class="free-title">Bullion</div><div class="free-desc">Gold &amp; Silver products</div></div>
-        <span class="free-arrow">→</span>
+      <a class="free-card" href="arcane-store.html">
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+        <div class="free-info"><div class="free-title">The Store</div><div class="free-desc">Caps, keyrings, notebooks and more</div></div>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card" href="free-signals.html">
-        <div class="free-icon">📡</div>
-        <div class="free-info"><div class="free-title">Free Signals</div><div class="free-desc">Starter access signals</div></div>
-        <span class="free-arrow">→</span>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></div>
+        <div class="free-info"><div class="free-title">Signals</div><div class="free-desc">Starter access via Vantage</div></div>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card" href="live-streams.html">
-        <div class="free-icon">📺</div>
-        <div class="free-info"><div class="free-title">Live Streams</div><div class="free-desc">Public broadcasts</div></div>
-        <span class="free-arrow">→</span>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+        <div class="free-info"><div class="free-title">Live Streams</div><div class="free-desc">Friday 7pm UK, open to everyone</div></div>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a class="free-card" href="bullion.html">
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l3-8h12l3 8z"/><path d="M8 12l2-6h4l2 6"/></svg></div>
+        <div class="free-info"><div class="free-title">Bullion</div><div class="free-desc">Physical gold and silver</div></div>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
       <a class="free-card retreat" href="retreat.html">
-        <div class="free-icon">🏔️</div>
-        <div class="free-info">
-          <div class="free-title">2028 Retreat</div>
-          <div class="free-desc">Epic adventure awaits — limited places</div>
-        </div>
-        <div class="free-badge" style="color:var(--gold)">★</div>
+        <div class="free-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l6-10 4 6 3-4 5 8z"/><circle cx="17" cy="6" r="2"/></svg></div>
+        <div class="free-info"><div class="free-title">2028 Retreat</div><div class="free-desc">Coming soon · details to be announced</div></div>
+        <span class="free-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
       </a>
     </div>
   </section>
 
-  <!-- ── Footer ── -->
-  <div class="dash-footer">
-    <span class="version-tag">The Arcane Archives · v2.0</span>
-    <button class="logout-btn" id="logout-btn"><span>⏻</span> Log Out</button>
+  <div class="today-brief">
+    <div class="brief-label">Thought for today</div>
+    <div class="brief-quote" id="brief-quote">Loading…</div>
   </div>
 
 </main>
@@ -1242,28 +812,28 @@
 <!-- ════════ UPGRADE MODAL ════════ -->
 <div class="upgrade-modal-backdrop" id="upgrade-modal-backdrop">
   <div class="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-modal-heading">
-    <button class="upgrade-modal-close" onclick="closeUpgradeModal()" aria-label="Close">✕</button>
-    <div class="upgrade-modal-badge"><span class="upgrade-modal-badge-dot"></span>Premium Access</div>
+    <button class="upgrade-modal-close" onclick="closeUpgradeModal()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+    <div class="upgrade-modal-badge"><span class="upgrade-modal-badge-dot"></span>Members only</div>
     <h2 class="upgrade-modal-title" id="upgrade-modal-heading">Unlock the full<br><span>Arcane Archives</span></h2>
-    <p class="upgrade-modal-sub">Join traders who get real-time intelligence, live sessions, curated picks, and exclusive tools — all in one place.</p>
+    <p class="upgrade-modal-sub">A private community, a live call every week, the platform tools, and a vault of 3,330+ modules behind it.</p>
     <div class="upgrade-modal-divider"></div>
     <div class="upgrade-modal-unlock-label">What you'll unlock</div>
     <div class="upgrade-modal-featured">
-      <div class="upgrade-modal-featured-icon">🏛️</div>
+      <img class="upgrade-modal-featured-icon" src="arcane-mark.svg" alt="">
       <div>
-        <strong>The Arcane Archives — 3,330+ Knowledge Modules</strong>
+        <strong>The Vault · 3,330+ modules</strong>
         <p>Deep, structured knowledge across Trading, Business, Health, Psychology, Investing, Life Strategy, and more. Built to make you better in every area of life.</p>
       </div>
     </div>
     <div class="upgrade-modal-features">
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">🌐</div><div class="upgrade-modal-feature-text"><strong>Watchtower</strong><span>Global intel, fear/greed & FX heatmaps</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">📈</div><div class="upgrade-modal-feature-text"><strong>Trading Floor</strong><span>Live charts, watchlists & trade signals</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">🎯</div><div class="upgrade-modal-feature-text"><strong>Stock Picks</strong><span>Curated picks with entry, target & stops</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">🎙️</div><div class="upgrade-modal-feature-text"><strong>War Room</strong><span>Live video calls, recordings & schedule</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">📞</div><div class="upgrade-modal-feature-text"><strong>Live Calls</strong><span>Weekly calls with full playback archive</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">💬</div><div class="upgrade-modal-feature-text"><strong>Community</strong><span>Exclusive member chat & peer network</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">📰</div><div class="upgrade-modal-feature-text"><strong>Market Reports</strong><span>Daily briefings & macro analysis</span></div></div>
-      <div class="upgrade-modal-feature"><div class="upgrade-modal-feature-icon">⚡</div><div class="upgrade-modal-feature-text"><strong>Priority Support</strong><span>Direct access to the Arcane team</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Watchtower</strong><span>Global intel, fear/greed & FX heatmaps</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Trading Floor</strong><span>Live charts, watchlists & trade signals</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Stock Picks</strong><span>Curated picks with entry, target & stops</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>War Room</strong><span>Live video calls, recordings & schedule</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Live Calls</strong><span>Weekly calls with full playback archive</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Community</strong><span>Exclusive member chat & peer network</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Market Reports</strong><span>Daily briefings & macro analysis</span></div></div>
+      <div class="upgrade-modal-feature"><span class="upgrade-modal-feature-icon" aria-hidden="true"></span><div class="upgrade-modal-feature-text"><strong>Priority Support</strong><span>Direct access to the Arcane team</span></div></div>
     </div>
     <div class="upgrade-modal-pricing">
       <div class="upgrade-modal-price-left"><strong>£128</strong><span>/ month</span></div>
@@ -1277,7 +847,7 @@
 <!-- ════════ SCRIPTS ════════ -->
 <script type="module">
   import { initializeApp }                       from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getAuth, onAuthStateChanged }          from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
   import { getFirestore, doc, getDoc }            from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1300,9 +870,9 @@
         overlay.className = 'lock-overlay';
         overlay.innerHTML = `
           <div class="classified-stamp">Classified</div>
-          <div class="lock-icon-ring"><span class="lock-glyph">🔒</span></div>
+          <div class="lock-icon-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
           <div class="lock-label">Members Only</div>
-          <div class="lock-sub">Upgrade your plan to access</div>`;
+          <div class="lock-sub">Take the assessment to unlock</div>`;
         card.appendChild(overlay);
       }
       card.addEventListener('click', e => { e.preventDefault(); openUpgradeModal(); });
@@ -1322,27 +892,25 @@
       const isAdmin = ADMIN_UIDS.includes(user.uid);
       const isPaid  = data.isPaid === true || data.subscriptionStatus === 'active';
       if (!isAdmin && !isPaid) lockModuleCards();
-      if (isAdmin) {
-        document.getElementById('admin-section').style.display = 'block';
-        document.getElementById('sidebar-admin-link').style.display = '';
-      }
+      if (isAdmin) document.getElementById('admin-section').style.display = 'block';
 
       const name = data.displayName || user.displayName || user.email?.split('@')[0] || 'Operator';
       document.getElementById('user-name').textContent = name;
 
-      const balance = Number(data.balance) || 0;
-      document.getElementById('nav-balance').textContent = `£${balance.toFixed(2)}`;
-      document.getElementById('pill-credits').textContent = `£${balance.toFixed(2)}`;
-
-      if (data.streak) {
-        document.getElementById('pill-streak-wrap').style.display = '';
-        document.getElementById('pill-streak').textContent = data.streak + ' days 🔥';
+      document.getElementById('card-name').textContent = name;
+      const since = data.createdAt?.toDate?.() || (user.metadata?.creationTime ? new Date(user.metadata.creationTime) : null);
+      if (since && !isNaN(since)) {
+        document.getElementById('card-since').textContent = since.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toUpperCase();
       }
 
-      if (isPaid) document.getElementById('member-plan').textContent = 'PREMIUM MEMBER';
-      if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
+      const balance = Number(data.balance) || 0;
+      document.getElementById('pill-credits').textContent = `£${balance.toFixed(2)}`;
 
-      document.getElementById('nav-online').classList.remove('offline');
+      const streak = Number(data.streak) || 0;
+      document.getElementById('pill-streak').textContent = streak === 1 ? '1 day' : `${streak} days`;
+
+      document.getElementById('member-plan').textContent = isAdmin ? 'ADMIN' : (isPaid ? 'MEMBER' : 'FREE ACCESS');
+      document.getElementById('card-plan').textContent = isAdmin ? 'ADMIN' : (isPaid ? 'MEMBER' : 'FREE ACCESS');
 
     } catch(e) {
       console.error('Auth guard error:', e);
@@ -1350,14 +918,12 @@
     }
   });
 
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    await signOut(auth);
-    location.href = 'login.html';
-  });
 </script>
 
+<!-- Shared sidebar + top bar (loads after this page initialises Firebase) -->
+<script type="module" src="portal-shell.js"></script>
+
 <script src="https://js.stripe.com/v3/"></script>
-<script src="arcane-prices.js"></script>
 
 <script>
 /* ══ Date & Market Status ══ */
@@ -1372,15 +938,11 @@
   const isOpen = day >= 1 && day <= 5 && (h > 8 || (h === 8 && m >= 0)) && (h < 16 || (h === 16 && m <= 30));
   const statusEl = document.getElementById('market-status');
   const dotEl    = document.getElementById('market-dot');
-  if (isOpen) {
-    statusEl.textContent = 'MARKETS OPEN';
-    statusEl.style.color = 'var(--green)';
-    dotEl.className = 'dot dot-market-open';
-  } else {
-    statusEl.textContent = 'MARKETS CLOSED';
-    statusEl.style.color = 'var(--red)';
-    dotEl.className = 'dot dot-market-closed';
-  }
+  statusEl.textContent = isOpen ? 'LONDON OPEN' : 'LONDON CLOSED';
+  dotEl.className = isOpen ? 'dot dot-market-open' : 'dot dot-market-closed';
+
+  const greet = h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening');
+  document.getElementById('dash-greeting').textContent = greet;
 })();
 
 /* ══ Intel quote rotator ══ */
@@ -1411,38 +973,6 @@
 
   setQuote();
   setInterval(setQuote, 9000);
-})();
-
-/* ══ Sidebar toggle ══ */
-(function() {
-  const sidebar = document.getElementById('arcane-sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  const toggle  = document.getElementById('sidebar-toggle');
-
-  function openSidebar()  { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
-
-  toggle?.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
-  overlay?.addEventListener('click', closeSidebar);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
-})();
-
-/* ══ Card stagger entrance ══ */
-(function() {
-  const cards = document.querySelectorAll('.free-card');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08 });
-
-  cards.forEach((card, i) => {
-    card.style.transitionDelay = `${(i % 6) * 0.06}s`;
-    obs.observe(card);
-  });
 })();
 
 /* ══ Upgrade Modal ══ */
