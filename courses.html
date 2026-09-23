@@ -5,38 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Courses | The Arcane Archives</title>
+  <title>The Vault | The Arcane Archives</title>
   <link rel="icon" href="arcane-icon-192.png">
   <link rel="apple-touch-icon" href="arcane-icon-180.png">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#030303">
+  <meta name="theme-color" content="#0B0A10">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="arcane-portal.css">
 
   <style>
     /* ── Courses page-specific ── */
-    .courses-hero {
-      position: relative; overflow: hidden;
-      background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(15,15,15,0.4) 55%), var(--bg-card);
-      border: 1px solid var(--border); border-radius: 22px; padding: 2rem 2.25rem; margin-bottom: 1.6rem;
+    .vault-page { max-width: 1240px; }
+    .vault-hero { padding: 1.5rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 1.75rem; }
+    .vault-eyebrow { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--purple); margin-bottom: 1rem; }
+    .vault-hero h1 { font-family: var(--display); font-size: clamp(2.1rem, 4.6vw, 3.4rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; }
+    .vault-hero h1 span { color: var(--purple-light); }
+    .vault-hero p { color: var(--text-secondary); font-size: 1.02rem; line-height: 1.6; max-width: 620px; margin-top: 0.9rem; }
+    .vault-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 640px; margin-top: 1.75rem; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg-card); }
+    .vault-stat { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.95rem 1.1rem; }
+    .vault-stat + .vault-stat { border-left: 1px solid var(--border); }
+    .vault-stat .v { font-family: var(--display); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
+    .vault-stat .l { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+    @media (max-width: 560px) {
+      .vault-hero { padding-top: 0.25rem; }
+      .realm-title { font-size: 1.15rem; }
+      .vault-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .vault-stat:nth-child(3) { border-left: none; }
+      .vault-stat:nth-child(n+3) { border-top: 1px solid var(--border); }
     }
-    .courses-hero::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, var(--purple), var(--gold)); opacity:0.7; }
-    .courses-hero .dash-pill {
-      display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem;
-      padding: 0.32rem 0.8rem; border-radius: 999px;
-      background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3);
-      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-light);
-    }
-    .courses-hero .dash-pill::before { content:''; width:6px; height:6px; border-radius:50%; background: var(--purple-light); animation: pulse-dot 2s ease-in-out infinite; }
-    .courses-stats { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 1.5rem; }
-    .courses-stat { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.7rem 1.1rem; border-radius: 12px; background: var(--bg-elevated); border: 1px solid var(--border); min-width: 110px; }
-    .courses-stat .v { font-family: var(--mono); font-size: 1.2rem; font-weight: 700; }
-    .courses-stat .v.purple { color: var(--purple-light); }
-    .courses-stat .v.gold { color: var(--gold); }
-    .courses-stat .l { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
 
     /* Toolbar: search + workspace link */
     .courses-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.85rem; margin: 0 0 1.4rem; }
@@ -47,15 +46,15 @@
       font-family: var(--font); font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s;
     }
     .courses-search input::placeholder { color: var(--text-muted); }
-    .courses-search input:focus { outline: none; border-color: rgba(139,92,246,0.5); box-shadow: 0 0 0 3px rgba(139,92,246,0.14); }
+    .courses-search input:focus { outline: none; border-color: rgba(155,123,247,0.55); box-shadow: 0 0 0 3px rgba(155,123,247,0.14); }
     .courses-search svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); }
 
     /* Upgrade banner (non-members) */
     .upgrade-banner {
       display: none; align-items: center; gap: 1.25rem; flex-wrap: wrap;
       padding: 1.1rem 1.4rem; border-radius: 16px; margin-bottom: 1.6rem;
-      background: linear-gradient(135deg, rgba(139,92,246,0.16), rgba(124,58,237,0.08));
-      border: 1px solid rgba(139,92,246,0.35);
+      background: rgba(155,123,247,0.08);
+      border: 1px solid rgba(155,123,247,0.3);
     }
     .upgrade-banner.visible { display: flex; }
     .upgrade-banner-copy { flex: 1; min-width: 220px; }
@@ -64,14 +63,18 @@
 
     /* Realm sections */
     .realm { margin-bottom: 0.5rem; }
-    .realm-head { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1.2rem; }
+    .realm-head { --realm: var(--purple); display: flex; align-items: center; gap: 0.85rem; margin: 2.75rem 0 1.2rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--border); }
+    .realm-head[data-realm="II"] { --realm: var(--gold); }
+    .realm-head[data-realm="III"] { --realm: #2DD4BF; }
+    .realm-head[data-realm="IV"] { --realm: var(--green); }
     .realm-icon {
-      width: 38px; height: 38px; border-radius: 11px; font-size: 1.15rem; flex-shrink: 0;
+      min-width: 40px; height: 40px; padding: 0 0.5rem; border-radius: 11px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, rgba(139,92,246,0.16), rgba(139,92,246,0.04)); border: 1px solid rgba(139,92,246,0.25);
+      font-family: var(--display); font-size: 1rem; font-weight: 800; color: var(--realm);
+      background: color-mix(in srgb, var(--realm) 12%, transparent); border: 1px solid color-mix(in srgb, var(--realm) 35%, transparent);
     }
-    .realm-title { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.01em; }
-    .realm-count { font-family: var(--mono); font-size: 0.72rem; color: var(--text-muted); margin-left: auto; }
+    .realm-title { font-family: var(--display); font-size: 1.35rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; }
+    .realm-count { font-family: var(--mono); font-size: 0.72rem; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
 
     .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(252px, 1fr)); gap: 0.9rem; }
     .course-card {
@@ -80,174 +83,75 @@
       background: var(--bg-card); border: 1px solid var(--border);
       transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), border-color 0.25s, box-shadow 0.28s;
     }
-    .course-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:14px 14px 0 0; background: linear-gradient(90deg, var(--purple), var(--gold)); opacity:0; transition: opacity 0.25s; }
-    .course-card:hover { transform: translateY(-5px); border-color: var(--border-hover); box-shadow: 0 20px 44px rgba(0,0,0,0.45); }
+    .course-card::before { content:''; position:absolute; top:0; left:14px; right:14px; height:2px; border-radius: 0 0 2px 2px; background: var(--purple); opacity:0; transition: opacity 0.25s; }
+    .course-card:hover { transform: translateY(-3px); border-color: rgba(155,123,247,0.35); box-shadow: none; background: var(--bg-elevated); }
     .course-card:hover::before { opacity: 1; }
     .course-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.6rem; }
     .course-idx { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); }
     .course-open { font-size: 0.78rem; color: var(--text-muted); transition: color 0.2s, transform 0.2s; }
     .course-card:hover .course-open { color: var(--purple-light); transform: translate(2px,-2px); }
-    .course-name { font-size: 0.96rem; font-weight: 700; line-height: 1.35; }
+    .course-name { font-family: var(--display); font-size: 1.02rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
 
     /* Course line-art graphic — white linework on the near-black card */
     .course-art {
       height: 92px; display: flex; align-items: center; justify-content: center; margin: 0.45rem 0 0.3rem;
-      border-radius: 12px; background:
-        radial-gradient(120% 120% at 50% 0%, rgba(139,92,246,0.08), transparent 70%),
-        rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 12px; background: var(--bg-primary);
+      border: 1px solid rgba(255,255,255,0.05);
     }
     .course-art svg {
       width: 80px; height: 80px; color: #fff; opacity: 0.88;
       transition: opacity 0.28s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     .course-card:hover .course-art svg { opacity: 1; transform: scale(1.06); }
-    .course-card:hover .course-art { border-color: rgba(139,92,246,0.25); }
+    .course-card:hover .course-art { border-color: rgba(155,123,247,0.25); }
+    .course-card:hover .course-art svg { color: var(--purple-light); }
     .course-card.done .course-art svg { color: #86efac; }
     .course-card.locked .course-art svg { opacity: 0.5; }
 
     .course-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
     .course-tag {
       font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; padding: 0.18rem 0.5rem; border-radius: 6px;
-      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); color: var(--gold);
+      background: rgba(242,201,76,0.08); border: 1px solid rgba(242,201,76,0.25); color: var(--gold);
     }
     .course-tag.done { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #86efac; }
     .course-card.done { border-color: rgba(34,197,94,0.3); }
-    .course-card.done::before { background: linear-gradient(90deg, var(--green), #86efac); opacity: 1; }
+    .course-card.done::before { background: var(--green); opacity: 1; }
     .course-card.done .course-open { color: var(--green); }
     .course-card.locked { cursor: pointer; }
     .course-card.locked .course-name { color: var(--text-secondary); }
-    .course-lock { color: var(--text-muted); font-size: 0.78rem; }
+    .course-lock { color: var(--text-muted); }
+    .course-lock svg { width: 14px; height: 14px; }
 
     .courses-empty { display: none; text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
     .courses-empty.visible { display: block; }
   </style>
 </head>
-<body>
+<body data-page="courses">
 
 <div class="bg-gradient"></div>
 <div class="grid-overlay"></div>
 
-<!-- ════════ SIDEBAR ════════ -->
-<aside class="arcane-sidebar" id="arcane-sidebar">
-  <a class="sidebar-brand" href="dashboard.html">
-    <img src="arcane-mark.svg" alt="AA"/>
-    <span class="brand-text">The Arcane<br>Archives</span>
-  </a>
-
-  <div class="sidebar-section-label">Modules</div>
-  <a class="sidebar-nav-item" href="dashboard.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-    <span class="sidebar-nav-label">Dashboard</span>
-  </a>
-  <a class="sidebar-nav-item" href="world-map.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4" ry="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg></span>
-    <span class="sidebar-nav-label">Watchtower</span>
-  </a>
-  <a class="sidebar-nav-item" href="trading-floor.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-    <span class="sidebar-nav-label">Trading Floor</span>
-  </a>
-  <a class="sidebar-nav-item" href="war-room.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
-    <span class="sidebar-nav-label">War Room</span>
-  </a>
-  <a class="sidebar-nav-item" href="stock-picks.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 1 18"/><polyline points="16 7 22 7 22 13"/></svg></span>
-    <span class="sidebar-nav-label">Stock Picks</span>
-  </a>
-  <a class="sidebar-nav-item active" href="courses.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-    <span class="sidebar-nav-label">Courses</span>
-  </a>
-  <a class="sidebar-nav-item" href="live-calls.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-    <span class="sidebar-nav-label">Communication</span>
-  </a>
-
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section-label">Open Intel</div>
-  <a class="sidebar-nav-item" href="free-signals.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></span>
-    <span class="sidebar-nav-label">Signals</span>
-  </a>
-  <a class="sidebar-nav-item" href="live-streams.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
-    <span class="sidebar-nav-label">Live Streams</span>
-  </a>
-  <a class="sidebar-nav-item" href="bullion.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-    <span class="sidebar-nav-label">Bullion</span>
-  </a>
-  <a class="sidebar-nav-item" href="referrals.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-    <span class="sidebar-nav-label">Referrals</span>
-  </a>
-
-  <div class="sidebar-divider"></div>
-  <a class="sidebar-nav-item" href="arcane-store.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
-    <span class="sidebar-nav-label">Store</span>
-  </a>
-  <a class="sidebar-nav-item" href="settings.html">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-    <span class="sidebar-nav-label">Settings</span>
-  </a>
-  <a class="sidebar-nav-item admin-item" href="admin-panel.html" id="sidebar-admin-link" style="display:none">
-    <span class="sidebar-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-    <span class="sidebar-nav-label">Admin</span>
-  </a>
-</aside>
-<div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-<!-- ════════ NAVBAR ════════ -->
-<nav class="arcane-nav">
-  <div class="nav-inner">
-    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6"  x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <a class="nav-left" href="dashboard.html">
-      <img src="arcane-mark.svg" class="nav-logo" alt="AA"/>
-      <span class="nav-brand">The Arcane Archives</span>
-    </a>
-    <div class="nav-center">
-      <a href="arcane-store.html" class="nav-store-btn">Store</a>
-      <div class="nav-ticker-wrap">
-        <div class="nav-ticker-track" id="nav-ticker-track"></div>
-      </div>
-    </div>
-    <div class="nav-right">
-      <div class="nav-balance" id="nav-balance">£0.00</div>
-      <div class="nav-online" id="nav-online"></div>
-      <a class="nav-btn" href="settings.html" title="Settings">⚙️</a>
-      <img class="nav-avatar" id="nav-avatar" src="arcane-icon-192.png" alt="Avatar"/>
-    </div>
-  </div>
-</nav>
-
 <!-- ════════ PAGE CONTENT ════════ -->
-<main class="page-wrap">
+<main class="portal-page vault-page">
 
   <!-- Hero -->
-  <div class="courses-hero">
-    <div class="dash-pill">The Knowledge Vault</div>
-    <div class="page-head">
-      <h1>Arcane <span>Courses</span></h1>
-      <p>3,330+ modules across every realm — mindset, business, wealth, health and the markets. Your complete library, organised.</p>
+  <header class="vault-hero">
+    <div class="vault-eyebrow">The Arcane Archives · The Vault</div>
+    <h1>Four realms. <span>Every protocol.</span></h1>
+    <p>3,330+ modules across mindset, business, wealth, health and the markets. Start with Escaping Hell, then work through one protocol at a time.</p>
+    <div class="vault-stats">
+      <div class="vault-stat"><span class="v">3,330+</span><span class="l">Modules</span></div>
+      <div class="vault-stat"><span class="v" id="stat-courses">—</span><span class="l">Protocols</span></div>
+      <div class="vault-stat"><span class="v">4</span><span class="l">Realms</span></div>
+      <div class="vault-stat"><span class="v" id="stat-done">0</span><span class="l">Completed</span></div>
     </div>
-    <div class="courses-stats">
-      <div class="courses-stat"><span class="v gold">3,330+</span><span class="l">Modules</span></div>
-      <div class="courses-stat"><span class="v purple" id="stat-courses">—</span><span class="l">Courses</span></div>
-      <div class="courses-stat"><span class="v">4</span><span class="l">Realms</span></div>
-      <div class="courses-stat"><span class="v">∞</span><span class="l">Lifetime</span></div>
-    </div>
-  </div>
+  </header>
 
   <!-- Upgrade banner (non-members) -->
   <div class="upgrade-banner" id="upgrade-banner">
     <div class="upgrade-banner-copy">
       <div class="upgrade-banner-title">Full library access is for members</div>
-      <div class="upgrade-banner-sub">Unlock all 4 realms, every course &amp; the live platform — £128/mo, cancel anytime.</div>
+      <div class="upgrade-banner-sub">Unlock all 4 realms, every protocol &amp; the live platform — £128/mo, cancel anytime.</div>
     </div>
     <a href="dashboard.html" class="btn-primary">Become a Member →</a>
   </div>
@@ -256,20 +160,14 @@
   <div class="courses-toolbar">
     <div class="courses-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="course-search" placeholder="Search courses…" autocomplete="off">
+      <input type="text" id="course-search" placeholder="Search protocols…" aria-label="Search protocols" autocomplete="off">
     </div>
-    <a href="notion-invite.html" class="btn-ghost">Get Notion access ↗</a>
+    <a href="notion-invite.html" class="btn-ghost">Open in Notion <span aria-hidden="true">↗</span></a>
   </div>
 
   <!-- Realms render here -->
   <div id="realms-root"></div>
-  <div class="courses-empty" id="courses-empty">No courses match your search.</div>
-
-  <!-- Footer -->
-  <div class="dash-footer">
-    <span class="version-tag">The Arcane Archives · v3.0</span>
-    <button class="logout-btn" id="logout-btn"><span>⏻</span> Log Out</button>
-  </div>
+  <div class="courses-empty" id="courses-empty">No protocols match your search.</div>
 
 </main>
 
@@ -279,7 +177,7 @@
 
   const REALMS = [
     {
-      title: 'Mind & Psychology', icon: '🧠',
+      title: 'Mind & Psychology', icon: 'I',
       courses: [
         { t: 'Mind HiJacking', id: '2677f6a404fe804c8b53e10177638ec3' },
         { t: 'Mindset Mastery', id: '2677f6a404fe804a9fccc156423ff112' },
@@ -287,8 +185,8 @@
         { t: 'Productive Isolation', id: '2657f6a404fe802f8d8df4b24b9bd03b' },
         { t: 'Never Procrastinate Again', id: '2677f6a404fe80659c7ed148ab377d1c' },
         { t: '1st Principles / Mental Models', id: '2677f6a404fe8007aa3cc3f575c9d5f1' },
-        { t: 'Full Stoicism Course', id: '2677f6a404fe805ab4b5c4cd892a1028' },
-        { t: 'Full Thinking Course', id: '2677f6a404fe802384fcdf86577e375e' },
+        { t: 'Full Stoicism', id: '2677f6a404fe805ab4b5c4cd892a1028' },
+        { t: 'Full Thinking', id: '2677f6a404fe802384fcdf86577e375e' },
         { t: 'Leadership Protocol', id: '2677f6a404fe80f8abe5fa8862d6b59d' },
         { t: 'The Glitched Brain Protocol', id: '2677f6a404fe802b919fcbf0b041f583' },
         { t: 'Discipline Mastery Protocol', id: '2677f6a404fe806293f5d55f7afaf658' },
@@ -302,7 +200,7 @@
       ]
     },
     {
-      title: 'Wealth & Business', icon: '💰',
+      title: 'Wealth & Business', icon: 'II',
       courses: [
         { t: 'Entrepreneurship Mastery', id: '2677f6a404fe800d98d4f47dc636a634' },
         { t: 'The Journey To Getting Rich', id: '2677f6a404fe80f5a01dc15e5d3a2bb5' },
@@ -318,13 +216,13 @@
         { t: 'The Sales Mastery Protocol', v: '$14,447', id: '2677f6a404fe80aebc39fc995d17b4ca' },
         { t: 'Advanced Content Playbook', v: '$200', id: '2677f6a404fe80e1b484fb5a002d6be0' },
         { t: 'Personal Brand Mastery', v: '$300', id: '2677f6a404fe8001a04ddb7ac6510f10' },
-        { t: 'AI Human Behavioural / Emotion Vault', id: '2677f6a404fe808aa16dd9956de183e3' },
+        { t: 'Human Behaviour & Emotion Vault', id: '2677f6a404fe808aa16dd9956de183e3' },
         { t: 'Diving Into The Writing Psychology', id: '2677f6a404fe80889e57fd29dd27764c' },
         { t: 'Premium Archive', id: '2677f6a404fe808484cac7637b635c97' },
       ]
     },
     {
-      title: 'Health & Investing', icon: '⚡',
+      title: 'Health & Investing', icon: 'III',
       courses: [
         { t: 'Terminate Playlist', v: '$30', id: '2677f6a404fe8023bd9ffa086c0964cd' },
         { t: 'Bulking Protocol', id: '2677f6a404fe80f38c4efd11bdff48de' },
@@ -334,14 +232,14 @@
       ]
     },
     {
-      title: 'Courses & Systems', icon: '🎯',
+      title: 'Systems', icon: 'IV',
       courses: [
-        { t: 'Full Trading Course', id: '26d7f6a404fe80cd86c8cc94b01c2d8c' },
-        { t: 'Full AI Girl Course', id: '26d7f6a404fe8086a447d548edbcaaa8' },
+        { t: 'Full Trading Programme', id: '26d7f6a404fe80cd86c8cc94b01c2d8c' },
+        { t: 'Full AI Girl', id: '26d7f6a404fe8086a447d548edbcaaa8' },
         { t: 'The Deep Work System', id: '3027f6a404fe806291f9ffd34e31e573' },
         { t: 'Efficiency Blueprint', id: '3027f6a404fe80fe9bfdc1bf1952ed30' },
         { t: 'Daily Quests', id: '2677f6a404fe8085ada4c31614f46332' },
-        { t: 'More Courses', id: '27c7f6a404fe8061b8bed99d2bae344f' },
+        { t: 'More Inside', id: '27c7f6a404fe8061b8bed99d2bae344f' },
       ]
     },
   ];
@@ -363,9 +261,9 @@
     '2677f6a404fe80659c7ed148ab377d1c': '<circle cx="29" cy="35" r="14"/><path d="M29 27v8l5 3"/><path d="M20 23l-4-4M38 23l4-4M29 21v-3"/><path d="M48 28l-6 9h5l-4 8"/>',
     // 1st Principles / Mental Models — connected node lattice
     '2677f6a404fe8007aa3cc3f575c9d5f1': '<circle cx="32" cy="32" r="4"/><circle cx="15" cy="19" r="3"/><circle cx="49" cy="19" r="3"/><circle cx="18" cy="48" r="3"/><circle cx="46" cy="48" r="3"/><path d="M29 30 17 21M35 30l12-9M30 35l-10 11M34 35l10 11M18 22v23M46 22v23"/>',
-    // Full Stoicism Course — fluted Greek column
+    // Full Stoicism — fluted Greek column
     '2677f6a404fe805ab4b5c4cd892a1028': '<path d="M16 16h32M21 16l3-5h16l3 5"/><path d="M24 16v30M32 16v30M40 16v30"/><path d="M15 50h34M19 46h26"/>',
-    // Full Thinking Course — head silhouette with gear + idea bulb
+    // Full Thinking — head silhouette with gear + idea bulb
     '2677f6a404fe802384fcdf86577e375e': '<circle cx="29" cy="34" r="14"/><circle cx="29" cy="34" r="5"/><path d="M29 25v3M29 40v3M20 34h3M35 34h3M23 28l2 2M35 28l-2 2M23 40l2-2M35 40l-2-2"/><path d="M44 13a5 5 0 1 0-6 0c.6.7 1 1.4 1 2.2h4c0-.8.4-1.5 1-2.2z"/><path d="M39 18h4"/>',
     // Leadership Protocol — chess king
     '2677f6a404fe80f8abe5fa8862d6b59d': '<path d="M32 8v6M28 11h8"/><path d="M26 20h12l-2 14H28z"/><path d="M23 34h18l3 10H20z"/><path d="M23 44h18"/>',
@@ -436,10 +334,10 @@
     // Full Investing Guide — candlestick chart
     '2677f6a404fe800498ade17f513f47b0': '<path d="M13 49h38"/><rect x="17" y="28" width="7" height="9"/><path d="M20.5 21v7M20.5 37v6"/><rect x="28" y="22" width="7" height="13"/><path d="M31.5 15v7M31.5 35v6"/><rect x="39" y="31" width="7" height="9"/><path d="M42.5 25v6M42.5 40v5"/>',
 
-    // ───────── Courses & Systems ─────────
-    // Full Trading Course — candles + trend arrow
+    // ───────── Systems ─────────
+    // Full Trading Programme — candles + trend arrow
     '26d7f6a404fe80cd86c8cc94b01c2d8c': '<path d="M13 50h38"/><path d="M18 43l9-10 6 5 16-18"/><path d="M43 20h6v6"/><rect x="18" y="33" width="6" height="9"/><rect x="30" y="27" width="6" height="11"/>',
-    // Full AI Girl Course — android head + antenna
+    // Full AI Girl — android head + antenna
     '26d7f6a404fe8086a447d548edbcaaa8': '<rect x="18" y="16" width="28" height="26" rx="8"/><circle cx="26" cy="29" r="3"/><circle cx="38" cy="29" r="3"/><path d="M27 36h10"/><path d="M32 9v7M27 42v4M37 42v4M46 26h5M13 26h5"/><circle cx="32" cy="8" r="2"/>',
     // The Deep Work System — focus target + crosshair
     '3027f6a404fe806291f9ffd34e31e573': '<circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="11"/><circle cx="32" cy="32" r="4"/><path d="M32 6v6M32 52v6M6 32h6M52 32h6"/>',
@@ -447,7 +345,7 @@
     '3027f6a404fe80fe9bfdc1bf1952ed30': '<rect x="13" y="13" width="38" height="38" rx="2"/><path d="M13 26h38M13 38h38M26 13v38M38 13v38"/><circle cx="32" cy="32" r="5"/><path d="M32 25v-2M32 41v-2M25 32h-2M41 32h-2"/>',
     // Daily Quests — checklist scroll
     '2677f6a404fe8085ada4c31614f46332': '<rect x="16" y="11" width="32" height="42" rx="3"/><path d="M22 21l3 3 5-6M22 31l3 3 5-6M22 41l3 3 5-6"/><path d="M34 21h9M34 31h9M34 41h6"/>',
-    // More Courses — card grid + plus
+    // More Inside — card grid + plus
     '27c7f6a404fe8061b8bed99d2bae344f': '<rect x="13" y="13" width="15" height="15" rx="2"/><rect x="36" y="13" width="15" height="15" rx="2"/><rect x="13" y="36" width="15" height="15" rx="2"/><rect x="36" y="36" width="15" height="15" rx="2"/><path d="M43.5 40v7M40 43.5h7"/>',
 
     _default: '<circle cx="32" cy="32" r="16"/><path d="M32 22v20M22 32h20"/>'
@@ -476,7 +374,7 @@
         const tags = (c.v ? `<span class="course-tag">${c.v} Value</span>` : '') + doneTag;
         if (window.IS_LOCKED) {
           return `<a class="course-card locked" href="dashboard.html">
-            <div class="course-top"><span class="course-idx">${idx}</span><span class="course-lock">🔒</span></div>
+            <div class="course-top"><span class="course-idx">${idx}</span><span class="course-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Locked"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
             ${courseArt(c.id)}
             <div class="course-name">${c.t}</div>
             <div class="course-tags">${tags}</div>
@@ -490,16 +388,17 @@
         </a>`;
       }).join('');
       return `<section class="realm">
-        <div class="realm-head">
+        <div class="realm-head" data-realm="${realm.icon}">
           <div class="realm-icon">${realm.icon}</div>
           <div class="realm-title">${realm.title}</div>
-          <div class="realm-count">${cards.length} ${cards.length === 1 ? 'course' : 'courses'}</div>
+          <div class="realm-count">${cards.length} ${cards.length === 1 ? 'protocol' : 'protocols'}</div>
         </div>
         <div class="course-grid">${cardsHtml}</div>
       </section>`;
     }).join('');
     document.getElementById('courses-empty').classList.toggle('visible', shown === 0);
     document.getElementById('stat-courses').textContent = REALMS.reduce((n, r) => n + r.courses.length, 0);
+    document.getElementById('stat-done').textContent = Object.keys(window.COURSES_DONE).filter(k => window.COURSES_DONE[k]).length;
   }
 
   renderRealms();
@@ -509,7 +408,7 @@
 <!-- ════════ AUTH + NAV ════════ -->
 <script type="module">
   import { initializeApp }                       from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getAuth, onAuthStateChanged }          from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
   import { getFirestore, doc, getDoc }            from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -537,38 +436,17 @@
       // Completed-course badges (from the member's saved progress)
       window.COURSES_DONE = data.coursesCompleted || {};
       if (typeof renderRealms === 'function') renderRealms(document.getElementById('course-search').value || '');
-      if (isAdmin) document.getElementById('sidebar-admin-link').style.display = '';
-
-      const balance = data.balance ?? 0;
-      document.getElementById('nav-balance').textContent = `£${balance.toFixed(2)}`;
-      if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
-      document.getElementById('nav-online').classList.remove('offline');
     } catch (e) {
       console.error('Auth guard error:', e);
     }
   });
 
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    await signOut(auth);
-    location.href = 'login.html';
-  });
 </script>
 
 <script src="arcane-prices.js"></script>
 
-<script>
-/* ══ Sidebar toggle ══ */
-(function() {
-  const sidebar = document.getElementById('arcane-sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  const toggle  = document.getElementById('sidebar-toggle');
-  function openSidebar()  { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
-  toggle?.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
-  overlay?.addEventListener('click', closeSidebar);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
-})();
-</script>
+<!-- Shared sidebar + top bar (loads after the page initialises Firebase) -->
+<script type="module" src="portal-shell.js"></script>
 
 </body>
 </html>

@@ -2,103 +2,114 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Payment Successful | The Arcane Archives</title>
+  <title>Welcome in | The Arcane Archives</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.cloudfunctions.net https://*.netlify.app https://arcanearchives.shop https://api.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;">
+  <meta name="theme-color" content="#0B0A10">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.cloudfunctions.net https://*.netlify.app https://arcanearchives.shop https://api.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com;">
   <link rel="icon" href="arcane-icon-192.png">
   <link rel="apple-touch-icon" href="arcane-icon-180.png">
   <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: #05030b;
-      color: #f8f4ff;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
-      margin: 0;
+    :root {
+      --bg: #0B0A10; --surface: #141218;
+      --line: rgba(255,255,255,0.08); --line-strong: rgba(255,255,255,0.16);
+      --text: #FFFFFF; --body: #C9C4D6; --muted: #9D97AE;
+      --violet: #9B7BF7; --violet-deep: #6C4CE6; --lavender: #C9B8FF; --gold: #F2C94C; --green: #4ADE80;
+      --display: 'Inter Tight', 'Inter', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace;
     }
-    .card {
-      max-width: 480px;
-      width: 100%;
-      border-radius: 24px;
-      padding: 32px 28px;
-      background: radial-gradient(circle at top, #3b16ff22, #05030b 60%);
-      border: 1px solid #7b5cff44;
-      box-shadow: 0 18px 45px rgba(0,0,0,0.6);
-      text-align: center;
-    }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-    p {
-      margin: 6px 0;
-      line-height: 1.5;
-    }
-    #payment-status {
-      margin-top: 16px;
-      font-weight: 600;
-      color: #c2a3ff;
-      min-height: 1.4em;
-    }
-    .btn {
-      margin-top: 18px;
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 999px;
-      border: none;
-      background: #a67bff;
-      color: #05030b;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn-secondary {
-      background: transparent;
-      color: #a67bff;
-      border: 1px solid #a67bff99;
-      margin-top: 10px;
-    }
-    .error-details {
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 10px;
-      color: #ef4444;
-      font-size: 14px;
-      text-align: left;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+      background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--text); text-decoration: none; }
+    .brand img { width: 26px; height: 26px; }
+    .eyebrow { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--violet); margin-bottom: 16px; }
+    h1 { font-family: var(--display); font-size: clamp(34px, 7vw, 48px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; }
+    h1 span { color: var(--lavender); }
+    .lede { margin-top: 14px; color: var(--body); font-size: 16px; line-height: 1.6; max-width: 420px; }
+    .mcard { position: relative; width: 100%; max-width: 420px; aspect-ratio: 1.62; margin: 36px 0 8px; padding: 24px 26px; border-radius: 22px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between; text-align: left;
+      background: #1D1A24; border: 1px solid rgba(242,201,76,0.32); transition: opacity 0.5s, transform 0.5s; }
+    .mcard::after { content: ''; position: absolute; inset: 8px; border-radius: 15px; border: 1px solid rgba(242,201,76,0.12); pointer-events: none; }
+    .mcard.pending { opacity: 0.4; transform: scale(0.98); }
+    .mcard-sigil { position: absolute; right: -8%; top: -10%; width: 60%; color: rgba(255,255,255,0.06); }
+    .mcard-row { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .mcard-brand { font-family: var(--display); font-size: 14px; font-weight: 800; letter-spacing: 0.2em; color: var(--gold); }
+    .mcard-tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: var(--muted); }
+    .chip { position: relative; width: 46px; height: 34px; border-radius: 7px; background: #D9B64A; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 2px; padding: 2px; }
+    .chip i { border-radius: 2px; background: #C7A23A; }
+    .mcard-k { font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 4px; }
+    .mcard-name { font-family: var(--display); font-size: 21px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mcard-row > div:first-child { min-width: 0; }
+    .mcard-status { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--gold); white-space: nowrap; }
+    .status { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; min-height: 24px; font-size: 15px; font-weight: 600; color: var(--body); }
+    .status.ok { color: var(--green); }
+    .status.warn { color: var(--gold); }
+    .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(155,123,247,0.25); border-top-color: var(--violet); animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    .status.ok .spinner, .status.warn .spinner { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 24px; }
+    .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 22px; border-radius: 14px; border: 1px solid transparent; font: 700 16px 'Inter', system-ui, sans-serif; text-decoration: none; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+    .btn-primary { background: var(--violet-deep); color: #fff; }
+    .btn-primary:hover { background: #7A5CF0; }
+    .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--line); }
+    .btn-secondary:hover { border-color: var(--line-strong); }
+    .next { width: 100%; max-width: 420px; margin-top: 32px; text-align: left; border-top: 1px solid var(--line); }
+    .next li { list-style: none; display: flex; gap: 14px; align-items: baseline; padding: 14px 2px; border-bottom: 1px solid var(--line); color: var(--body); font-size: 14.5px; line-height: 1.5; }
+    .next b { font-family: var(--mono); font-size: 11px; color: var(--violet); flex-shrink: 0; }
+    .next strong { color: var(--text); font-weight: 600; }
+    .note { margin-top: 20px; font-size: 13.5px; line-height: 1.6; color: var(--muted); max-width: 420px; }
+    .note a { color: var(--lavender); }
+    .error-details { width: 100%; max-width: 420px; margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: 12px; line-height: 1.5; text-align: left; word-break: break-word; }
+    [hidden] { display: none !important; }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .mcard { transition: none; } }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🔥 Payment Successful</h1>
-    <p>Thank you for joining <strong>The Arcane Archives</strong>.</p>
-    <p>We're finishing your account activation…</p>
+  <main class="wrap">
+    <a class="brand" href="index.html"><img src="arcane-mark.svg" alt="">The Arcane Archives</a>
 
-    <p id="payment-status">Verifying your payment...</p>
+    <div class="eyebrow" id="eyebrow">Payment received</div>
+    <h1 id="headline">Your card is <span>being issued.</span></h1>
+    <p class="lede" id="lede">Thank you for joining. We're confirming your payment and switching on your membership. This takes a few seconds.</p>
 
-    <a href="dashboard.html" class="btn" id="dashboard-link" style="display:none;">
-      Go to your Dashboard
-    </a>
+    <div class="mcard pending" id="member-card" aria-label="Your member card">
+      <svg class="mcard-sigil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.6" aria-hidden="true"><path d="M12 2 3 20l9-5 9 5z"/><path d="M12 8l-4 8 4-2 4 2z"/></svg>
+      <div class="mcard-row"><span class="mcard-brand">THE ARCANE ARCHIVES</span><span class="mcard-tag">MEMBERS ONLY</span></div>
+      <div class="chip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="mcard-row">
+        <div><div class="mcard-k">CARD HOLDER</div><div class="mcard-name" id="card-name">New member</div></div>
+        <div class="mcard-status" id="card-status">ISSUING…</div>
+      </div>
+    </div>
 
-    <a href="login.html" class="btn btn-secondary" id="login-link" style="display:none;">
-      Click here to log in
-    </a>
+    <p class="status" id="payment-status" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span id="status-text">Confirming your payment with Stripe…</span></p>
 
-    <div id="error-details" class="error-details" style="display:none;"></div>
-  </div>
+    <div class="actions">
+      <a href="dashboard.html?welcome=1" class="btn btn-primary" id="dashboard-link" hidden>Enter the Archives →</a>
+      <a href="login.html?next=success" class="btn btn-primary" id="login-link" hidden>Log in to finish activating →</a>
+      <button type="button" class="btn btn-secondary" id="retry-btn" hidden>Try again</button>
+    </div>
 
-  <script type="module">
+    <ol class="next" id="next-steps" hidden>
+      <li><b>01</b><span><strong>Start with Escaping Hell.</strong> It's your first mission and it hands you the roadmap. Don't skip around.</span></li>
+      <li><b>02</b><span><strong>Join the member chat</strong> and say hello. The Daily Quest lands there every morning.</span></li>
+      <li><b>03</b><span><strong>Get on this week's War Room call.</strong> Bring whatever you're stuck on.</span></li>
+    </ol>
+
+    <p class="note" id="help-note" hidden>If you were charged, your place is safe. Please don't pay again. Memberships usually activate within a few minutes; if yours hasn't, email <a href="mailto:support@arcane-archives.com">support@arcane-archives.com</a> with the email you paid with.</p>
+    <div id="error-details" class="error-details" hidden></div>
+  </main>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w",
       authDomain: "arcane-archives-3b0f5.firebaseapp.com",
@@ -108,38 +119,50 @@
       appId: "1:264237235055:web:4a2e5605b0ffb5307f069a",
       measurementId: "G-YGPLQHDXMM"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-
     const statusEl = document.getElementById("payment-status");
+    const statusText = document.getElementById("status-text");
+    const retryBtn = document.getElementById("retry-btn");
+    const helpNote = document.getElementById("help-note");
+    const card = document.getElementById("member-card");
+    const show = el => el && (el.hidden = false);
+    retryBtn.addEventListener("click", () => location.reload());
     const dashLink = document.getElementById("dashboard-link");
     const loginLink = document.getElementById("login-link");
     const errorDetails = document.getElementById("error-details");
-
-    function setStatus(msg, isError = false) {
+    function setStatus(msg, tone = '') {
       console.log("[SUCCESS PAGE]", msg);
-      if (statusEl) {
-        statusEl.textContent = msg;
-        if (isError) statusEl.style.color = '#ef4444';
-      }
+      if (statusText) statusText.textContent = msg;
+      if (statusEl) statusEl.className = 'status' + (tone ? ' ' + tone : '');
     }
-
+    function setHeadline(eyebrow, lead, accent, lede) {
+      document.getElementById("eyebrow").textContent = eyebrow;
+      const h = document.getElementById("headline");
+      h.textContent = lead + ' ';
+      const span = document.createElement('span');
+      span.textContent = accent;
+      h.appendChild(span);
+      document.getElementById("lede").textContent = lede;
+    }
     function showError(msg, details = '') {
-      setStatus(msg, true);
+      setStatus(msg, 'warn');
+      setHeadline("Almost there", "We couldn't confirm it", "automatically.", "Nothing is lost. Try again in a moment, or head to your dashboard; the payment usually catches up within a few minutes.");
+      document.getElementById("card-status").textContent = "PENDING";
+      show(retryBtn); show(helpNote);
+      dashLink.textContent = "Go to my dashboard";
+      dashLink.classList.replace("btn-primary", "btn-secondary");
+      show(dashLink);
       if (details && errorDetails) {
-        errorDetails.innerHTML = `<strong>Technical Details:</strong><br>${details}`;
-        errorDetails.style.display = 'block';
+        errorDetails.textContent = details;
+        show(errorDetails);
       }
     }
-
     // Get session_id from URL
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
-
     if (!sessionId) {
-      showError("Missing session ID in URL.", "No session_id parameter found. If you were charged, please contact support with your email address.");
-      loginLink.style.display = "inline-block";
+      showError("We couldn't find your payment reference.", "No session_id in the link. If you were charged, email support with the address you paid with.");
     } else {
       // Store session ID in case auth hasn't loaded yet
       try {
@@ -148,7 +171,6 @@
         console.warn("Could not store session id in localStorage", e);
       }
     }
-
     // Wait for Firebase Auth user
     onAuthStateChanged(auth, async (user) => {
       // Get session ID (from URL or storage)
@@ -158,24 +180,21 @@
           sid = localStorage.getItem("aa_last_session_id");
         } catch (e) {}
       }
-
       if (!sid) {
-        showError("No payment session found.", "Session ID is missing. If you were charged, please contact support@arcane-archives.com with your email.");
-        loginLink.style.display = "inline-block";
+        showError("We couldn't find your payment reference.", "Session ID is missing. If you were charged, email support@arcane-archives.com with the address you paid with.");
         return;
       }
-
       if (!user) {
-        setStatus("To complete activation, please log in to your account.");
-        loginLink.style.display = "inline-block";
+        setStatus("Log in to the account you signed up with to finish.", 'warn');
+        setHeadline("Payment received", "One last", "step.", "Log in and we'll switch your membership on straight away. You'll come right back here.");
+        show(loginLink);
         return;
       }
-
+      const holder = user.displayName || (user.email || '').split('@')[0];
+      if (holder) document.getElementById("card-name").textContent = holder;
       console.log("✅ User authenticated:", user.uid);
-
       try {
-        setStatus("Verifying payment with Stripe...");
-
+        setStatus("Confirming your payment with Stripe…");
         // Call Netlify verify function — it handles Stripe verification AND Firestore update
         // via Firebase Admin SDK (bypasses Firestore security rules correctly)
         const res = await fetch("/.netlify/functions/verify", {
@@ -183,9 +202,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId: sid, uid: user.uid }),
         });
-
         console.log("Verify response status:", res.status);
-
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           console.error("Verify error:", errorData);
@@ -195,12 +212,9 @@
           );
           return;
         }
-
         const data = await res.json();
         console.log("Verify response:", data);
-
         const paid = data.payment_status === "paid" && data.status === "complete";
-
         if (!paid) {
           showError(
             "Payment not completed yet.",
@@ -208,25 +222,20 @@
           );
           return;
         }
-
         if (!data.activated) {
           // Payment confirmed but user lookup failed — still show success, webhook will fix it
           console.warn("⚠️ Payment verified but user not found for auto-activation. Webhook will handle it.");
         }
-
-        setStatus("✅ Your account has been activated! Welcome to The Arcane Archives 🔮");
-        dashLink.style.display = "inline-block";
-
+        setStatus("Membership active.", 'ok');
+        setHeadline("Welcome to The Arcane Archives", "Your card has", "been issued.", "You're in. Here's how to spend your first day.");
+        card.classList.remove("pending");
+        document.getElementById("card-status").textContent = "ACTIVE";
+        show(dashLink); show(document.getElementById("next-steps"));
         // Clear stored session
         try {
           localStorage.removeItem("aa_last_session_id");
         } catch (e) {}
-
-        // Auto-redirect after 3 seconds
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 3000);
-
+        // No auto-redirect: let them read the first steps, then enter.
       } catch (err) {
         console.error("❌ Error during activation:", err);
         showError(
