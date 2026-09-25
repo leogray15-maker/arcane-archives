@@ -1,12 +1,18 @@
 // Static reference datasets (data/watchtower/*.json), bundled into the function
 // and served through the gated bootstrap endpoint (never as public files).
 import type { FeedMeta, StaticDataset } from '../../shared/watchtower/types';
+import bases from '../../data/watchtower/bases.v1.json';
+import cables from '../../data/watchtower/cables.v1.json';
+import chokepoints from '../../data/watchtower/chokepoints.v1.json';
+import datacenters from '../../data/watchtower/datacenters.v1.json';
+import hotspots from '../../data/watchtower/hotspots.v1.json';
+import nuclear from '../../data/watchtower/nuclear.v1.json';
+import pipelines from '../../data/watchtower/pipelines.v1.json';
+import spaceports from '../../data/watchtower/spaceports.v1.json';
 
-const DATASETS: Record<string, StaticDataset<unknown>> = {};
-
-export function registerStatic(id: string, ds: StaticDataset<unknown>) {
-  DATASETS[id] = ds;
-}
+const DATASETS: Record<string, StaticDataset<unknown>> = Object.fromEntries(
+  Object.entries({ bases, nuclear, spaceports, datacenters, cables, pipelines, chokepoints, hotspots }).map(([k, v]) => [k, v as StaticDataset<unknown>]),
+);
 
 export function getStatic(id: string): { data: StaticDataset<unknown>; meta: FeedMeta } | null {
   const ds = DATASETS[id];

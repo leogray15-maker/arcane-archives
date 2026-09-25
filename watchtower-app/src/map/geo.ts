@@ -22,6 +22,7 @@ export function featureContains(f: CountryFeature, lng: number, lat: number) {
  *  Uses UN-recognised borders: the bundled Natural Earth build places Crimea
  *  inside Russia's polygon, so that area is corrected (same rule as the server). */
 export async function countryAt(lat: number, lng: number): Promise<string | null> {
+  if (lat >= 31.22 && lat <= 31.6 && lng >= 34.2 && lng <= 34.57) return 'Gaza Strip';
   const shapes = await loadCountryShapes();
   const f = shapes.find((s) => featureContains(s, lng, lat));
   if (f?.properties.iso3 === 'RUS' && lat >= 44.3 && lat <= 46.25 && lng >= 32.4 && lng <= 36.7) return 'Ukraine';

@@ -32,7 +32,8 @@ describe('geo helpers', () => {
   it('finds countries, snapping coastal points to land', () => {
     expect(countryAt(50.45, 30.52)).toBe('UKR');
     expect(countryAt(48.86, 2.35)).toBe('FRA');
-    expect(countryAt(31.5, 34.47)).toMatch(/PSE|ISR/); // Gaza, coarse shapes
+    expect(countryAt(31.5, 34.47)).toBe('PSE'); // Gaza (override: too small for 110m shapes)
+    expect(countryAt(32.08, 34.78)).toBe('ISR'); // Tel Aviv
     expect(countryAt(0, -30)).toBeNull(); // mid-Atlantic
   });
   it('geo-tags headlines by name, demonym and place without double counting', () => {
@@ -139,7 +140,6 @@ describe('feed jobs against fixtures', () => {
 describe('static datasets', () => {
   it('every entry has coordinates, a country code and at least one citation', async () => {
     const { getStatic } = await import('../../lib/watchtower/static-data');
-    await import('../../lib/watchtower/static-register');
     for (const id of ['bases', 'nuclear', 'spaceports', 'datacenters']) {
       const s = getStatic(id)!;
       expect(s.data.items.length).toBeGreaterThan(5);

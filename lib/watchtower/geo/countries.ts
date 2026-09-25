@@ -1,11 +1,11 @@
 // Server-side country lookup: point-in-country (Natural Earth 110m via world-atlas,
 // public domain) and ISO code/name helpers (i18n-iso-countries, MIT).
 import countries from 'i18n-iso-countries';
+import en from 'i18n-iso-countries/langs/en.json';
 import { feature } from 'topojson-client';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const en = require('i18n-iso-countries/langs/en.json');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const topo = require('world-atlas/countries-110m.json');
+import topoJson from 'world-atlas/countries-110m.json';
+
+const topo = topoJson as any;
 
 countries.registerLocale(en);
 
@@ -64,9 +64,13 @@ for (const r of [0.35, 0.8, 1.4]) for (let k = 0; k < 8; k++) OFFSETS.push([r * 
 // Attribution follows internationally recognised (UN) borders. The bundled
 // Natural Earth build draws some occupied/annexed areas inside another
 // country's polygon, so those areas are corrected here.
-const RECOGNITION_OVERRIDES: { name: string; box: [number, number, number, number]; from: string; to: string }[] = [
+// `anywhere: true` applies inside the box regardless of the matched polygon
+// (for areas too small or coastal for the 110m shapes).
+const RECOGNITION_OVERRIDES: { name: string; box: [number, number, number, number]; from: string; to: string; anywhere?: boolean }[] = [
   // Crimea (annexed by Russia in 2014; recognised by the UN General Assembly as Ukraine)
   { name: 'Crimea', box: [44.3, 32.4, 46.25, 36.7], from: 'RUS', to: 'UKR' },
+  // Gaza Strip — too small for the 110m shapes, which fold it into Israel
+  { name: 'Gaza Strip', box: [31.22, 34.2, 31.6, 34.57], from: 'ISR', to: 'PSE', anywhere: true },
 ];
 
 function recognised(iso: string | null, lat: number, lon: number): string | null {
@@ -80,6 +84,10 @@ function recognised(iso: string | null, lat: number, lon: number): string | null
 /** ISO3 of the country containing the point. The 110m shapes are coarse, so
  *  coastal/island points that fall just offshore are snapped to land within ~1.5°. */
 export function countryAt(lat: number, lon: number): string | null {
+  for (const o of RECOGNITION_OVERRIDES) {
+    const [a, b, c, d] = o.box;
+    if (o.anywhere && lat >= a && lat <= c && lon >= b && lon <= d) return o.to;
+  }
   const hit = exact(lat, lon);
   if (hit) return recognised(hit, lat, lon);
   for (const [dy, dx] of OFFSETS) {

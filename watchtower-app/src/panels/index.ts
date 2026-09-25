@@ -1,13 +1,10 @@
-// Panel layout. Each slot is filled by a Panel subclass.
-import { h } from '../lib/dom';
-import { Panel } from './Panel';
+// Panel layout (matches the Global Situation mockup, plus a second deck below).
+import { state } from '../app/state';
+import { AdminPanel } from './admin';
+import { ForecastsPanel, WorldBriefPanel } from './ai';
+import { ChokepointsPanel, CiiPanel, InfrastructurePanel, PosturePanel, SignalsPanel, SpikesPanel } from './intel';
+import { LiveNewsPanel, WebcamsPanel } from './media';
 import { SeismicPanel } from './seismic';
-
-class Placeholder extends Panel {
-  protected renderBody() {
-    return h('div', { class: 'wt-panel-state' }, 'This panel is wired up in a later phase.');
-  }
-}
 
 export interface PanelSlots {
   right: HTMLElement;
@@ -16,10 +13,19 @@ export interface PanelSlots {
 }
 
 export function mountPanels(slots: PanelSlots) {
-  const mk = (id: string, title: string, info: string) => new Placeholder({ id, title, feeds: [], info, access: 'free' });
-  mk('brief', 'WORLD BRIEF', 'AI summary of the top-ranked headlines.').mount(slots.right);
-  mk('chokepoints', 'CHOKEPOINTS', 'Status of nine maritime chokepoints.').mount(slots.right);
-  mk('signals', 'SIGNALS', 'Cross-source signal aggregator.').mount(slots.bottom);
-  mk('cii', 'COUNTRY INSTABILITY', 'Country Instability Index.').mount(slots.bottom);
+  // Right column
+  new WorldBriefPanel().mount(slots.right);
+  new ChokepointsPanel().mount(slots.right);
+  // Bottom row
+  new SignalsPanel().mount(slots.bottom);
+  new CiiPanel().mount(slots.bottom);
   new SeismicPanel().mount(slots.bottom);
+  // Deck
+  if (state.tier === 'admin') new AdminPanel().mount(slots.deck);
+  new PosturePanel().mount(slots.deck);
+  new ForecastsPanel().mount(slots.deck);
+  new InfrastructurePanel().mount(slots.deck);
+  new SpikesPanel().mount(slots.deck);
+  new LiveNewsPanel().mount(slots.deck);
+  new WebcamsPanel().mount(slots.deck);
 }

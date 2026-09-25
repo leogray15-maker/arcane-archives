@@ -94,7 +94,8 @@ route('GET', 'admin/status', true, async ({ store, principal }) => {
 route('POST', 'admin/refresh', true, async ({ req, store, principal }) => {
   requireTier(principal!, 'admin');
   const id = String((req.body as any)?.job ?? req.query.job ?? '');
-  const job = JOBS.find((j) => j.id === id || j.feed === id);
+  // Accept a job id or a feed id; derived feeds are produced by the intel job.
+  const job = JOBS.find((j) => j.id === id || j.feed === id) ?? (FEED_BY_ID[id]?.derived ? JOBS.find((j) => j.id === 'intel') : undefined);
   if (!job) throw new HttpError(404, `Unknown job "${id}"`);
   const result = await runSeed(job, store);
   return json({ result, feed: FEED_BY_ID[job.feed]?.label });

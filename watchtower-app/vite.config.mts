@@ -15,44 +15,57 @@ function devApi(): Plugin {
       process.env.WT_DEV_AUTH_BYPASS = '1';
       // Seed the in-memory store from local fixtures (upstream APIs are not
       // called in dev unless WT_DEV_FIXTURES=0). The UI marks this as fixture data.
-      let seeded: Promise<unknown> | null = null;
-      const seed = () =>
-        (seeded ??= (async () => {
-          if (process.env.WT_DEV_FIXTURES === '0') return;
+      // Re-seeds whenever the (in-memory) store is empty — e.g. after a hot
+      // reload of server modules creates a fresh store instance.
+      let seeding: Promise<void> | null = null;
+      const seed = async () => {
+        if (process.env.WT_DEV_FIXTURES === '0') return;
+        const st = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/store.ts'));
+        if (await st.getStore().get('wt:meta:wt:seismic:v1')) return;
+        seeding ??= (async () => {
           // Fixture keys so every job runs locally; the AI endpoint returns a labelled DEV STUB.
           for (const k of ['NASA_FIRMS_MAP_KEY', 'UCDP_ACCESS_TOKEN', 'FRED_API_KEY', 'GROQ_API_KEY']) process.env[k] ??= 'fixture';
           const fx = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/dev/fixture-fetch.ts'));
           const reg = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/seed/registry.ts'));
-          const st = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/store.ts'));
           fx.installFixtureFetch(resolve(repo, 'tests/watchtower/fixtures'));
-          for (const tier of ['daily', 'slow', 'medium', 'fast']) await reg.runTier(tier, st.getStore(), { force: true });
-        })().catch((e) => console.error('[watchtower dev] fixture seed failed', e)));
+          for (const tier of ['daily', 'slow', 'medium', 'fast', 'slow']) await reg.runTier(tier, st.getStore(), { force: true });
+        })()
+          .catch((e) => console.error('[watchtower dev] fixture seed failed', e))
+          .finally(() => (seeding = null));
+        await seeding;
+      };
       server.middlewares.use('/api/watchtower', async (req, res) => {
-        await seed();
-        const { handle } = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/routes.ts'));
-        const url = new URL(req.url || '/', 'http://local');
-        const query: Record<string, string> = {};
-        url.searchParams.forEach((v, k) => (query[k] = v));
-        let body: unknown;
-        if (req.method === 'POST') {
-          const chunks: Buffer[] = [];
-          for await (const c of req) chunks.push(c as Buffer);
-          try {
-            body = JSON.parse(Buffer.concat(chunks).toString() || 'null');
-          } catch {
-            body = null;
+        try {
+          await seed();
+          const { handle } = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/routes.ts'));
+          const url = new URL(req.url || '/', 'http://local');
+          const query: Record<string, string> = {};
+          url.searchParams.forEach((v, k) => (query[k] = v));
+          let body: unknown;
+          if (req.method === 'POST') {
+            const chunks: Buffer[] = [];
+            for await (const c of req) chunks.push(c as Buffer);
+            try {
+              body = JSON.parse(Buffer.concat(chunks).toString() || 'null');
+            } catch {
+              body = null;
+            }
           }
+          const out = await handle({
+            method: req.method || 'GET',
+            route: url.pathname.replace(/^\//, ''),
+            query,
+            headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])),
+            body,
+          });
+          res.statusCode = out.status;
+          for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v as string);
+          res.end(typeof out.body === 'string' ? out.body : JSON.stringify(out.body));
+        } catch (e) {
+          console.error('[watchtower dev api]', e);
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: String(e) }));
         }
-        const out = await handle({
-          method: req.method || 'GET',
-          route: url.pathname.replace(/^\//, ''),
-          query,
-          headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])),
-          body,
-        });
-        res.statusCode = out.status;
-        for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v as string);
-        res.end(typeof out.body === 'string' ? out.body : JSON.stringify(out.body));
       });
     },
   };

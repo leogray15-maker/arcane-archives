@@ -130,6 +130,7 @@ export abstract class Panel {
   }
 
   private updateFreshness() {
+    this.freshEl.hidden = this.opts.feeds.length === 0 && !this.isLocked;
     if (this.isLocked) {
       this.freshEl.className = 'wt-fresh empty';
       this.freshEl.textContent = 'MEMBERS';

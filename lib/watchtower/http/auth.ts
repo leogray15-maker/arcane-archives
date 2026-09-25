@@ -45,10 +45,10 @@ export function setTokenVerifier(v: TokenVerifier | null) {
   verifier = v;
 }
 
-function firebaseVerifier(): TokenVerifier {
+async function firebaseVerifier(): Promise<TokenVerifier> {
   // Loaded lazily so tests and the dev server never need a service account.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const admin = require('firebase-admin') as typeof import('firebase-admin');
+  const mod = await import('firebase-admin');
+  const admin = ((mod as any).default ?? mod) as typeof import('firebase-admin');
   if (!admin.apps.length) {
     const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!raw) throw new HttpError(500, 'Server auth is not configured', 'auth_unconfigured');
@@ -80,7 +80,7 @@ export async function authenticate(req: WtRequest, store: Store): Promise<Princi
     if (tier === 'free' || tier === 'member' || tier === 'admin') return { uid: `dev-${tier}`, email: null, tier };
   }
 
-  const v = verifier ?? (verifier = firebaseVerifier());
+  const v = verifier ?? (verifier = await firebaseVerifier());
   let decoded;
   try {
     decoded = await v.verify(token);

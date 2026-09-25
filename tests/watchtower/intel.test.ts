@@ -12,7 +12,6 @@ import { overlap } from '../../lib/watchtower/intel/util';
 import { runTier } from '../../lib/watchtower/seed/registry';
 import { MemoryStore } from '../../lib/watchtower/store';
 import { installFixtureFetch } from '../../lib/watchtower/dev/fixture-fetch';
-import '../../lib/watchtower/static-register';
 import { FEED_BY_ID } from '../../shared/watchtower/feeds';
 
 const NOW = Date.UTC(2026, 8, 25, 12, 0, 0);

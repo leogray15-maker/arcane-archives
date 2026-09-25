@@ -2,7 +2,7 @@
 import { canAccess } from '../../../shared/watchtower/feeds';
 import type {
   Aircraft, Chokepoint, ChokepointStatus, CiiScore, ConflictEvent, ConvergenceCell, FireSummary, Hotspot,
-  NaturalEvent, Quake, RefLine, RefPoint, SatGroup, Signal, StaticDataset,
+  NaturalEvent, Quake, RefLine, RefPoint, SatGroup, Signal, SignalSet, StaticDataset,
 } from '../../../shared/watchtower/types';
 import { state } from '../app/state';
 import { LAYER_BY_ID, layerAccess } from '../config/layers';
@@ -177,7 +177,7 @@ export function buildScene(now = Date.now()): Scene {
   }
 
   // Critical signals get a pulse regardless of layer (they are the headline events).
-  for (const s of list<Signal>(d.signals)) {
+  for (const s of (d.signals as SignalSet | null)?.items ?? []) {
     if (s.severity === 'critical' && now - s.time < 6 * HOUR && on(signalLayer(s.type))) {
       rings.push({ id: `r:sg:${s.id}`, lat: s.lat, lng: s.lon, color: '#f0526b', maxRadius: 3 });
     }

@@ -59,10 +59,11 @@ export function chokepointStatus(
       const disruptive = mentions.filter((n) => DISRUPTION_WORDS.some((w) => hasWord(n.title, w)));
       const signals = kinetic.length + disasters.length + (air.length >= 3 ? 1 : 0);
       const reasons: string[] = [];
-      if (kinetic.length) reasons.push(`${kinetic.length} conflict/military events within ${c.radiusKm} km`);
-      if (disasters.length) reasons.push(`${disasters.length} disaster alert(s) nearby`);
+      const pl = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+      if (kinetic.length) reasons.push(`${pl(kinetic.length, 'conflict/military event', 'conflict/military events')} within ${c.radiusKm} km`);
+      if (disasters.length) reasons.push(`${pl(disasters.length, 'disaster alert', 'disaster alerts')} nearby`);
       if (air.length) reasons.push(`${air.length} military aircraft in the area`);
-      if (disruptive.length) reasons.push(`${disruptive.length} headlines mention disruption`);
+      if (disruptive.length) reasons.push(`${pl(disruptive.length, 'headline mentions', 'headlines mention')} disruption`);
       const status: ChokepointStatus['status'] =
         kinetic.length >= 3 || disruptive.length >= 5 || disasters.some((d) => d.alertLevel === 'Red')
           ? 'DISRUPTED'
