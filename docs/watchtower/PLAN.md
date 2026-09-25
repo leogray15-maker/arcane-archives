@@ -1,6 +1,6 @@
 # Arcane Watchtower v2 — Phase 0: Recon & Plan
 
-Status: **draft for approval** · Date: 2026-09-25 · No code has been written yet.
+Status: **implemented** (all phases, 2026-09-25) with the §8 recommendations. See README.md for how it works now; this file is the original Phase 0 plan.
 
 This document covers Phase 0 of the brief: what exists today, the target
 structure, the data sources and their licences, the env vars and accounts you
