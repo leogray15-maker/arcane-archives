@@ -10,7 +10,6 @@ const repo = resolve(here, '..');
 function devApi(): Plugin {
   return {
     name: 'watchtower-dev-api',
-    apply: 'serve',
     configureServer(server: ViteDevServer) {
       process.env.WT_DEV_AUTH_BYPASS = '1';
       // Seed the in-memory store from local fixtures (upstream APIs are not
@@ -71,12 +70,27 @@ function devApi(): Plugin {
   };
 }
 
+/** `vite preview` for the local perf build proxies the API to the dev server. */
+function previewProxy(): Plugin {
+  return {
+    name: 'watchtower-preview-proxy',
+    configurePreviewServer(server) {
+      server.middlewares.use('/api/watchtower', async (req, res) => {
+        const r = await fetch(`http://localhost:5178/api/watchtower${req.url}`, { headers: { authorization: String(req.headers.authorization ?? '') } });
+        res.statusCode = r.status;
+        r.headers.forEach((v, k) => k !== 'content-encoding' && res.setHeader(k, v));
+        res.end(Buffer.from(await r.arrayBuffer()));
+      });
+    },
+  };
+}
+
 export default defineConfig({
   root: here,
   base: '/watchtower/',
   publicDir: resolve(here, 'public'),
   envDir: here,
-  plugins: [devApi()],
+  plugins: [devApi(), previewProxy()],
   build: {
     outDir: resolve(repo, 'dist/watchtower'),
     emptyOutDir: true,

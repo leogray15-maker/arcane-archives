@@ -82,7 +82,7 @@ export class SignalsPanel extends Panel {
     return items.slice(0, 120).map((s) =>
       h(
         'button',
-        { class: 'wt-sig row', onclick: () => focusSignal(s), 'aria-label': `${SEV_LABEL[s.severity]} ${TYPE_LABEL[s.type] ?? s.type}: ${s.title}` },
+        { class: 'wt-sig row', onclick: () => focusSignal(s) },
         h('span', { class: 'wt-sig-meta' }, h('span', { class: `sev ${s.severity}` }, SEV_LABEL[s.severity]), h('span', null, TYPE_LABEL[s.type] ?? s.type.toUpperCase()), h('span', { class: 'ago' }, ago(s.time))),
         h('span', { class: 'wt-sig-title' }, s.title),
         s.evidence.length ? h('span', { class: 'wt-sub' }, `${s.source} · ${s.evidence.slice(0, 3).join(' · ')}`) : h('span', { class: 'wt-sub' }, s.source),
@@ -107,7 +107,7 @@ export class CiiPanel extends Panel {
       const d = k.change24h;
       return h(
         'button',
-        { class: 'wt-cii row', onclick: () => emit('wt:country', k.iso3), 'aria-label': `${k.name}: ${k.score}, ${k.band}${d ? `, ${d > 0 ? 'up' : 'down'} ${Math.abs(d)} in 24 hours` : ''}` },
+        { class: 'wt-cii row', onclick: () => emit('wt:country', k.iso3) },
         h(
           'span',
           { class: 'wt-cii-top' },

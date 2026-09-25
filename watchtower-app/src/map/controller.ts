@@ -164,5 +164,7 @@ export function buildMap(section: HTMLElement) {
   requestAnimationFrame(tick);
   document.addEventListener('visibilitychange', () => !document.hidden && requestAnimationFrame(tick));
 
-  void setMode(state.mode);
+  // Load the (heavy) map engine once the shell and panels have painted.
+  const idle = (window as any).requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 300));
+  idle(() => void setMode(state.mode), { timeout: 1200 });
 }

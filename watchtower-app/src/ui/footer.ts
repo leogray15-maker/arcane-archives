@@ -25,6 +25,7 @@ export function buildFooter(): HTMLElement {
     okEl,
     badEl,
     h('span', { style: 'flex:1' }),
+    h('span', { class: 'wt-footer-item wt-credit-line', title: 'Full attribution in Sources & Methodology' }, 'DATA: USGS · NASA · GDACS · GDELT · UCDP · CELESTRAK · ADSB.LOL (ODbL) · FRED · NATURAL EARTH'),
     h('button', { class: 'wt-link-btn', onclick: () => emit('wt:sources') }, 'SOURCES & METHODOLOGY'),
     h('span', null, 'THE ARCANE ARCHIVES'),
   );

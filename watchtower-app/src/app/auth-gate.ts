@@ -20,7 +20,8 @@ export interface Session {
 export const LOGIN_URL = '/login.html?next=watchtower';
 
 export async function authGate(): Promise<Session> {
-  const devTier = import.meta.env.DEV ? (import.meta.env.VITE_WT_DEV_AUTH as string | undefined) : undefined;
+  // Dev server and the local 'lighthouse' perf build only; statically false in production builds.
+  const devTier = import.meta.env.DEV || import.meta.env.MODE === 'lighthouse' ? (import.meta.env.VITE_WT_DEV_AUTH as string | undefined) : undefined;
   if (devTier) {
     const tier = new URLSearchParams(location.search).get('as') || devTier;
     return { getToken: async () => `dev-${tier}`, signOut: async () => undefined };

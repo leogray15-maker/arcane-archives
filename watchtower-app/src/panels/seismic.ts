@@ -32,7 +32,6 @@ export class SeismicPanel extends Panel {
         {
           class: 'row wt-row-btn wt-quake',
           onclick: () => emit('wt:focus', { lat: q.lat, lng: q.lon, alt: 0.9, kind: 'seismic', id: q.id }),
-          'aria-label': `Magnitude ${q.mag.toFixed(1)}, ${q.place}, ${ago(q.time)} ago`,
         },
         h('span', { class: 'wt-mag', style: `color:${c};border-color:${c}66;background:${c}14` }, q.mag.toFixed(1)),
         h(
