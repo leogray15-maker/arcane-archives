@@ -4,6 +4,7 @@
 import type { Store } from '../store';
 import { runSeed, type SeedJob, type SeedResult, type SeedTier } from './framework';
 import { adsbJob } from './jobs/adsb';
+import { aiBriefJob, aiForecastJob } from './jobs/ai';
 import { celestrakJob } from './jobs/celestrak';
 import { firmsJob } from './jobs/firms';
 import { fredJob } from './jobs/fred';
@@ -18,7 +19,7 @@ export const JOBS: SeedJob<any>[] = [
   // fetch stage
   usgsJob, adsbJob, eonetJob, gdacsJob, gdeltEventsJob, rssJob, firmsJob, gdeltToneJob, celestrakJob, ucdpJob, fredJob,
   // derive stage (runs after the fetch jobs of the same tier)
-  intelJob,
+  intelJob, aiBriefJob, aiForecastJob,
 ];
 
 export function registerJob(job: SeedJob<any>) {

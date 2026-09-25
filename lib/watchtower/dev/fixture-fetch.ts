@@ -33,6 +33,7 @@ export const FIXTURE_ROUTES: FixtureRoute[] = [
   [/rss\.dw\.com/, 'rss-dw.xml'],
   [/aljazeera\.com\/xml\/rss/, 'rss-aljazeera.xml'],
   [/bellingcat\.com\/feed/, 'atom-bellingcat.xml'],
+  [/api\.groq\.com|openrouter\.ai/, 'ai-completion.json'],
   [/series_id=DFF&/, 'fred-DFF.json'],
   [/series_id=DGS2&/, 'fred-DGS2.json'],
   [/series_id=DGS10&/, 'fred-DGS10.json'],

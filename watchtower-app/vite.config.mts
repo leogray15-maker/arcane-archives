@@ -19,7 +19,8 @@ function devApi(): Plugin {
       const seed = () =>
         (seeded ??= (async () => {
           if (process.env.WT_DEV_FIXTURES === '0') return;
-          for (const k of ['NASA_FIRMS_MAP_KEY', 'UCDP_ACCESS_TOKEN', 'FRED_API_KEY']) process.env[k] ??= 'fixture';
+          // Fixture keys so every job runs locally; the AI endpoint returns a labelled DEV STUB.
+          for (const k of ['NASA_FIRMS_MAP_KEY', 'UCDP_ACCESS_TOKEN', 'FRED_API_KEY', 'GROQ_API_KEY']) process.env[k] ??= 'fixture';
           const fx = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/dev/fixture-fetch.ts'));
           const reg = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/seed/registry.ts'));
           const st = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/store.ts'));
