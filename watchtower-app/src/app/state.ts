@@ -30,7 +30,7 @@ export interface AppState {
 export type StateKey = keyof AppState | `data.${string}`;
 type Listener = (changed: Set<StateKey>) => void;
 
-export const HOME_VIEW: View = { lat: 22, lng: 20, alt: 2.4 };
+export const HOME_VIEW: View = { lat: 22, lng: 20, alt: 2.1 };
 
 export const state: AppState = {
   uid: '',

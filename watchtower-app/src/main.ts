@@ -7,6 +7,7 @@ import { state, update } from './app/state';
 import { readUrl, startUrlSync } from './app/url-sync';
 import { DEFAULT_LAYERS, LAYERS } from './config/layers';
 import { h, replaceChildren } from './lib/dom';
+import { buildMap } from './map/controller';
 import { mountPanels } from './panels';
 import { buildDrawer } from './ui/drawer';
 import { buildFooter } from './ui/footer';
@@ -49,7 +50,7 @@ async function start() {
 function mountShell() {
   installTooltips();
   const main = h('main', { class: 'wt-main', id: 'wt-main' });
-  const map = h('section', { class: 'wt-map', id: 'wt-map', 'aria-label': 'Map' }, h('div', { class: 'wt-map-msg' }, 'MAP LOADS IN PHASE 3'));
+  const map = h('section', { class: 'wt-map', id: 'wt-map', 'aria-label': 'Map' });
   const right = h('div', { class: 'wt-right' });
   const bottom = h('div', { class: 'wt-bottom' });
   const deck = h('div', { class: 'wt-deck' });
@@ -57,6 +58,7 @@ function mountShell() {
   const app = h('div', { class: 'wt-app' }, buildHeader(), main, buildFooter());
   root.append(app, ...buildDrawer());
   mountPanels({ right, bottom, deck });
+  buildMap(map);
 }
 
 start().catch((e) => {

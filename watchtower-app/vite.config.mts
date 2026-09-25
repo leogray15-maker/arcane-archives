@@ -71,4 +71,6 @@ export default defineConfig({
     reportCompressedSize: true,
   },
   server: { port: 5178, fs: { allow: [repo] } },
+  // MapLibre ships its worker inline; pre-bundling breaks it in dev.
+  optimizeDeps: { exclude: ['maplibre-gl'] },
 });
