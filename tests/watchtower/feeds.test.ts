@@ -161,3 +161,11 @@ describe('static datasets', () => {
     expect(hs.every((h) => h.baseline >= 1 && h.baseline <= 5 && h.summary.length > 20)).toBe(true);
   });
 });
+
+describe('border attribution', () => {
+  it('attributes Crimea to Ukraine (UN-recognised borders)', () => {
+    expect(countryAt(44.6, 33.5)).toBe('UKR'); // Sevastopol
+    expect(countryAt(45.0, 34.1)).toBe('UKR'); // Simferopol
+    expect(countryAt(45.3, 36.9)).toBe('RUS'); // Taman peninsula, east of the Kerch Strait
+  });
+});

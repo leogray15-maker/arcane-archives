@@ -18,8 +18,12 @@ export function featureContains(f: CountryFeature, lng: number, lat: number) {
   return polys.some((p) => inRing(lng, lat, p[0]) && !p.slice(1).some((hole) => inRing(lng, lat, hole)));
 }
 
-/** Country name at a point (for the VIEW chip), or null over open water. */
+/** Country name at a point (for the VIEW chip), or null over open water.
+ *  Uses UN-recognised borders: the bundled Natural Earth build places Crimea
+ *  inside Russia's polygon, so that area is corrected (same rule as the server). */
 export async function countryAt(lat: number, lng: number): Promise<string | null> {
   const shapes = await loadCountryShapes();
-  return shapes.find((f) => featureContains(f, lng, lat))?.properties.name ?? null;
+  const f = shapes.find((s) => featureContains(s, lng, lat));
+  if (f?.properties.iso3 === 'RUS' && lat >= 44.3 && lat <= 46.25 && lng >= 32.4 && lng <= 36.7) return 'Ukraine';
+  return f?.properties.name ?? null;
 }

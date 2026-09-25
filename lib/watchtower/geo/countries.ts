@@ -61,14 +61,30 @@ function exact(lat: number, lon: number): string | null {
 const OFFSETS: [number, number][] = [];
 for (const r of [0.35, 0.8, 1.4]) for (let k = 0; k < 8; k++) OFFSETS.push([r * Math.cos((k * Math.PI) / 4), r * Math.sin((k * Math.PI) / 4)]);
 
+// Attribution follows internationally recognised (UN) borders. The bundled
+// Natural Earth build draws some occupied/annexed areas inside another
+// country's polygon, so those areas are corrected here.
+const RECOGNITION_OVERRIDES: { name: string; box: [number, number, number, number]; from: string; to: string }[] = [
+  // Crimea (annexed by Russia in 2014; recognised by the UN General Assembly as Ukraine)
+  { name: 'Crimea', box: [44.3, 32.4, 46.25, 36.7], from: 'RUS', to: 'UKR' },
+];
+
+function recognised(iso: string | null, lat: number, lon: number): string | null {
+  for (const o of RECOGNITION_OVERRIDES) {
+    const [a, b, c, d] = o.box;
+    if (iso === o.from && lat >= a && lat <= c && lon >= b && lon <= d) return o.to;
+  }
+  return iso;
+}
+
 /** ISO3 of the country containing the point. The 110m shapes are coarse, so
  *  coastal/island points that fall just offshore are snapped to land within ~1.5°. */
 export function countryAt(lat: number, lon: number): string | null {
   const hit = exact(lat, lon);
-  if (hit) return hit;
+  if (hit) return recognised(hit, lat, lon);
   for (const [dy, dx] of OFFSETS) {
     const h = exact(lat + dy, lon + dx);
-    if (h) return h;
+    if (h) return recognised(h, lat, lon);
   }
   return null;
 }

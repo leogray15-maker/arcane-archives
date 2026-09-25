@@ -360,3 +360,28 @@ export interface HealthResponse {
   counts: Record<FeedStatus, number>;
   feeds?: HealthFeed[];
 }
+
+export interface SignalBucket {
+  count: number;
+  max: Severity;
+  types: string[];
+}
+
+export interface SignalSet {
+  items: Signal[];
+  byCountry: Record<string, SignalBucket>;
+  byRegion: Record<string, SignalBucket>;
+}
+
+export interface SpikeSet {
+  items: KeywordSpike[];
+  /** True until enough history exists for a meaningful baseline */
+  learning: boolean;
+  historyHours: number;
+}
+
+export interface AnomalySet {
+  items: Anomaly[];
+  learning: boolean;
+  samples: number;
+}

@@ -8,6 +8,7 @@ import { celestrakJob } from './jobs/celestrak';
 import { firmsJob } from './jobs/firms';
 import { fredJob } from './jobs/fred';
 import { gdeltEventsJob, gdeltToneJob } from './jobs/gdelt';
+import { intelJob } from './jobs/intel';
 import { eonetJob, gdacsJob } from './jobs/natural';
 import { rssJob } from './jobs/rss';
 import { ucdpJob } from './jobs/ucdp';
@@ -16,6 +17,8 @@ import { usgsJob } from './jobs/usgs';
 export const JOBS: SeedJob<any>[] = [
   // fetch stage
   usgsJob, adsbJob, eonetJob, gdacsJob, gdeltEventsJob, rssJob, firmsJob, gdeltToneJob, celestrakJob, ucdpJob, fredJob,
+  // derive stage (runs after the fetch jobs of the same tier)
+  intelJob,
 ];
 
 export function registerJob(job: SeedJob<any>) {
