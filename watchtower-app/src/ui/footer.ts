@@ -36,9 +36,11 @@ export function buildFooter(): HTMLElement {
       return;
     }
     replaceChildren(okEl, h('span', { class: 'dot', style: `background:${hl.ok === hl.total ? '#5ee3a1' : '#f59e42'}` }), `FEEDS ${hl.ok}/${hl.total} OK`);
-    const bad = [...hl.stale.map((s) => s), ...hl.empty.map((s) => `${s} (no data)`)];
+    const bad = [...hl.stale, ...hl.empty.map((s) => `${s} (no data)`)];
     if (bad.length) {
-      replaceChildren(badEl, h('span', { class: 'dot', style: 'background:#f59e42' }), `${bad.length} STALE · ${bad.slice(0, 3).join(', ').toUpperCase()}${bad.length > 3 ? '…' : ''}`);
+      const parts = [hl.stale.length ? `${hl.stale.length} STALE` : '', hl.empty.length ? `${hl.empty.length} NO DATA` : ''].filter(Boolean).join(' · ');
+      const names = [...hl.stale, ...hl.empty].slice(0, 3).join(', ').toUpperCase();
+      replaceChildren(badEl, h('span', { class: 'dot', style: 'background:#f59e42' }), `${parts} · ${names}${bad.length > 3 ? '…' : ''}`);
       badEl.title = bad.join('\n');
     } else replaceChildren(badEl);
   };

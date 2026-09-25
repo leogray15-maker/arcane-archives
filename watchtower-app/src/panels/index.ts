@@ -1,6 +1,7 @@
 // Panel layout. Each slot is filled by a Panel subclass.
 import { h } from '../lib/dom';
 import { Panel } from './Panel';
+import { SeismicPanel } from './seismic';
 
 class Placeholder extends Panel {
   protected renderBody() {
@@ -20,5 +21,5 @@ export function mountPanels(slots: PanelSlots) {
   mk('chokepoints', 'CHOKEPOINTS', 'Status of nine maritime chokepoints.').mount(slots.right);
   mk('signals', 'SIGNALS', 'Cross-source signal aggregator.').mount(slots.bottom);
   mk('cii', 'COUNTRY INSTABILITY', 'Country Instability Index.').mount(slots.bottom);
-  mk('seismic', 'SEISMIC WATCH', 'USGS earthquakes.').mount(slots.bottom);
+  new SeismicPanel().mount(slots.bottom);
 }

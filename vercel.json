@@ -2,29 +2,79 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/watchtower.ts": { "maxDuration": 60 }
+    "api/watchtower.ts": {
+      "maxDuration": 60
+    }
   },
+  "crons": [
+    {
+      "path": "/api/watchtower/cron/fast",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/watchtower/cron/medium",
+      "schedule": "2-59/15 * * * *"
+    },
+    {
+      "path": "/api/watchtower/cron/slow",
+      "schedule": "7 * * * *"
+    },
+    {
+      "path": "/api/watchtower/cron/daily",
+      "schedule": "17 3 * * *"
+    }
+  ],
   "redirects": [
-    { "source": "/watchtower", "destination": "/watchtower/", "permanent": false }
+    {
+      "source": "/watchtower",
+      "destination": "/watchtower/",
+      "permanent": false
+    }
   ],
   "rewrites": [
-    { "source": "/api/watchtower/:path*", "destination": "/api/watchtower?route=:path*" },
-    { "source": "/api/coingecko/:path*", "destination": "https://api.coingecko.com/api/v3/:path*" },
-    { "source": "/api/metals/:path*", "destination": "https://metals.live/api/:path*" },
-    { "source": "/api/fx/:path*", "destination": "https://open.er-api.com/v6/:path*" }
+    {
+      "source": "/api/watchtower/:path*",
+      "destination": "/api/watchtower?route=:path*"
+    },
+    {
+      "source": "/api/coingecko/:path*",
+      "destination": "https://api.coingecko.com/api/v3/:path*"
+    },
+    {
+      "source": "/api/metals/:path*",
+      "destination": "https://metals.live/api/:path*"
+    },
+    {
+      "source": "/api/fx/:path*",
+      "destination": "https://open.er-api.com/v6/:path*"
+    }
   ],
   "headers": [
     {
       "source": "/watchtower/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
       ]
     },
     {
       "source": "/watchtower/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }

@@ -28,6 +28,8 @@ export async function api<T>(path: string, opts: { timeoutMs?: number; method?: 
         },
         body: opts.body ? JSON.stringify(opts.body) : undefined,
         signal: ctrl.signal,
+        // Revalidate with the ETag every time; the server answers 304 when unchanged.
+        cache: 'no-cache',
       });
     } finally {
       clearTimeout(timer);

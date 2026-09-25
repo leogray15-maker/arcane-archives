@@ -37,6 +37,9 @@ export function buildHeader(): HTMLElement {
   const monitorBtn = h('button', { class: 'wt-monitor-btn', 'aria-label': 'Open Extended Global Monitor', onclick: () => emit('wt:drawer') }, svg(ICONS.panel), h('span', { class: 'label' }, 'MONITOR'));
 
   const tierChip = h('span', { class: 'wt-tier-chip' });
+  const devChip = import.meta.env.DEV
+    ? h('span', { class: 'wt-tier-chip', style: 'color:#f59e42;border-color:#5a3d1c', title: 'Local dev server: data comes from test fixtures, not live sources.' }, 'DEV')
+    : null;
 
   const back = h('a', { class: 'wt-back', href: '/dashboard.html' }, '‹', h('span', { class: 'label' }, 'DASHBOARD'));
 
@@ -57,6 +60,7 @@ export function buildHeader(): HTMLElement {
       h('button', { class: 'wt-metric', 'data-tip': THREAT_TIP, 'aria-label': 'Threat level' }, h('span', { class: 'wt-metric-label' }, 'THREAT LEVEL ⓘ'), h('span', { class: 'wt-metric-value' }, bars, threatVal)),
       h('button', { class: 'wt-metric', 'data-tip': SENTIMENT_TIP, 'aria-label': 'News sentiment' }, h('span', { class: 'wt-metric-label' }, 'SENTIMENT ⓘ'), h('span', { class: 'wt-metric-value', style: 'align-items:baseline;gap:6px' }, sentVal, sentDelta)),
       h('div', { class: 'wt-vsep' }),
+      devChip,
       tierChip,
       monitorBtn,
     ),

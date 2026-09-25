@@ -13,7 +13,20 @@ function devApi(): Plugin {
     apply: 'serve',
     configureServer(server: ViteDevServer) {
       process.env.WT_DEV_AUTH_BYPASS = '1';
+      // Seed the in-memory store from local fixtures (upstream APIs are not
+      // called in dev unless WT_DEV_FIXTURES=0). The UI marks this as fixture data.
+      let seeded: Promise<unknown> | null = null;
+      const seed = () =>
+        (seeded ??= (async () => {
+          if (process.env.WT_DEV_FIXTURES === '0') return;
+          const fx = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/dev/fixture-fetch.ts'));
+          const reg = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/seed/registry.ts'));
+          const st = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/store.ts'));
+          fx.installFixtureFetch(resolve(repo, 'tests/watchtower/fixtures'));
+          for (const tier of ['daily', 'slow', 'medium', 'fast']) await reg.runTier(tier, st.getStore(), { force: true });
+        })().catch((e) => console.error('[watchtower dev] fixture seed failed', e)));
       server.middlewares.use('/api/watchtower', async (req, res) => {
+        await seed();
         const { handle } = await server.ssrLoadModule(resolve(repo, 'lib/watchtower/routes.ts'));
         const url = new URL(req.url || '/', 'http://local');
         const query: Record<string, string> = {};

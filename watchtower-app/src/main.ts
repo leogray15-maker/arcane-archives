@@ -2,6 +2,7 @@ import './styles/app.css';
 import type { MeResponse } from '../../shared/watchtower/types';
 import { api, ApiError, setSession } from './app/api-client';
 import { authGate } from './app/auth-gate';
+import { startBootstrap } from './app/bootstrap-loader';
 import { state, update } from './app/state';
 import { readUrl, startUrlSync } from './app/url-sync';
 import { DEFAULT_LAYERS, LAYERS } from './config/layers';
@@ -42,6 +43,7 @@ async function start() {
   startUrlSync();
   boot.remove();
   update('tier', me.tier);
+  void startBootstrap();
 }
 
 function mountShell() {
