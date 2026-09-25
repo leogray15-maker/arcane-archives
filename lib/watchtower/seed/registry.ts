@@ -3,9 +3,24 @@
 // A job runs when its tier fires AND its own interval has elapsed.
 import type { Store } from '../store';
 import { runSeed, type SeedJob, type SeedResult, type SeedTier } from './framework';
+import { adsbJob } from './jobs/adsb';
+import { celestrakJob } from './jobs/celestrak';
+import { firmsJob } from './jobs/firms';
+import { fredJob } from './jobs/fred';
+import { gdeltEventsJob, gdeltToneJob } from './jobs/gdelt';
+import { eonetJob, gdacsJob } from './jobs/natural';
+import { rssJob } from './jobs/rss';
+import { ucdpJob } from './jobs/ucdp';
 import { usgsJob } from './jobs/usgs';
 
-export const JOBS: SeedJob<any>[] = [usgsJob];
+export const JOBS: SeedJob<any>[] = [
+  // fetch stage
+  usgsJob, adsbJob, eonetJob, gdacsJob, gdeltEventsJob, rssJob, firmsJob, gdeltToneJob, celestrakJob, ucdpJob, fredJob,
+];
+
+export function registerJob(job: SeedJob<any>) {
+  if (!JOBS.some((j) => j.id === job.id)) JOBS.push(job);
+}
 
 export const JOB_BY_ID = () => Object.fromEntries(JOBS.map((j) => [j.id, j]));
 
