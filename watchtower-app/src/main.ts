@@ -32,9 +32,9 @@ async function start() {
 
   let me: MeResponse;
   try {
-    me = await api<MeResponse>('me', { timeoutMs: 8000 });
+    me = await api<MeResponse>('me', { timeoutMs: 15000 });
   } catch (e) {
-    const msg = e instanceof ApiError && e.status === 500 ? 'The Watchtower server is not configured yet.' : 'Could not reach the Watchtower. Check your connection.';
+    const msg = e instanceof ApiError && e.status >= 500 ? `The Watchtower server hit an error (${e.message}). Try again in a minute.` : 'Could not reach the Watchtower. Check your connection.';
     bootMessage(msg, h('a', { href: location.href }, 'RETRY'), h('a', { href: '/dashboard.html' }, '‹ DASHBOARD'));
     return;
   }

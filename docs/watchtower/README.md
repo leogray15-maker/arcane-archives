@@ -54,14 +54,15 @@ npm run build        # dist/ (what Vercel serves)
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `FIREBASE_SERVICE_ACCOUNT` | **yes** | Service-account JSON for verifying ID tokens and reading `Users/{uid}` |
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | **yes** | The cache/store. Without them the function falls back to per-instance memory, and the health panel shows `STORE MEMORY` |
-| `CRON_SECRET` | **yes** | Bearer token for the cron routes. Vercel Cron sends it automatically; give the same value to the 5-minute scheduler (RUNBOOK.md › Scheduling) |
+| `FIREBASE_SERVICE_ACCOUNT` | recommended | Service-account JSON for verifying ID tokens and reading `Users/{uid}`. Without it the server verifies tokens against Google's public keys and reads the member's own `Users` doc with their token (`lib/watchtower/http/firebase-lite.ts`) |
+| `FIREBASE_PROJECT_ID` | optional | Only for the no-service-account path; defaults to `arcane-archives-3b0f5` |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | recommended | Shared cache/store. Without them each warm function instance keeps its own memory store and seeds itself on first request (the health panel shows `STORE MEMORY`) |
+| `CRON_SECRET` | recommended | Bearer token for the cron routes. Without a scheduler, viewers' requests refresh due feeds themselves (`lib/watchtower/seed/lazy.ts`); set `WT_LAZY_SEED=0` to turn that off |
 | `NASA_FIRMS_MAP_KEY` | for wildfires | Free key from NASA FIRMS |
 | `UCDP_ACCESS_TOKEN` | for CII floors | Request by email (see SOURCES.md) |
 | `WT_UCDP_VERSION` | with UCDP | Current GED candidate version, e.g. `25.0.8` |
 | `FRED_API_KEY` | for macro | Free FRED key |
-| `GROQ_API_KEY` / `OPENROUTER_API_KEY` | for AI | Either or both; Groq is tried first |
+| `GROQ_API_KEY` / `OPENROUTER_API_KEY` | for AI | Either or both; Groq is tried first. Without one, the World Brief is a cited digest of the top-ranked headlines and AI Forecasts stay off |
 | `WT_GROQ_MODEL`, `WT_OPENROUTER_MODEL` | optional | Override the default models |
 | `WT_AI_MONTHLY_BUDGET_USD` | recommended | Hard monthly AI cap (default 10) |
 | `WT_AI_USER_DAILY_LIMIT` | optional | New country briefs per member per day (default 20) |

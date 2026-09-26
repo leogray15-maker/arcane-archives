@@ -42,7 +42,7 @@ export const LAYERS: LayerDef[] = [
 
   // ── INFRASTRUCTURE ───────────────────────────────────────────
   { id: 'chokepoints', label: 'Chokepoints', category: 'infra', color: '#7dd3fc', shape: 'diamond', renderers: ['globe', 'flat'], defaultOn: true, dataKeys: ['chokepoints'], geometry: 'arcs', description: 'Nine maritime chokepoints with main shipping lanes.', count: (g) => items(g('chokepoints')) },
-  { id: 'cables', label: 'Undersea Cables', category: 'infra', color: '#8b7cf6', shape: 'line', renderers: ['globe', 'flat'], defaultOn: false, dataKeys: ['cables'], geometry: 'paths', description: 'Simplified routes of major submarine cable systems (approximate).', count: (g) => items(g('cables')) },
+  { id: 'cables', label: 'Undersea Cables', category: 'infra', color: '#38bdf8', shape: 'line', renderers: ['globe', 'flat'], defaultOn: true, dataKeys: ['cables'], geometry: 'paths', description: 'Simplified routes of major submarine cable systems (approximate).', count: (g) => items(g('cables')) },
   { id: 'pipelines', label: 'Pipelines', category: 'infra', color: '#b8a36a', shape: 'line', renderers: ['globe', 'flat'], defaultOn: false, dataKeys: ['pipelines'], geometry: 'paths', description: 'Major oil and gas trunk pipelines (approximate routes).', count: (g) => items(g('pipelines')) },
   { id: 'datacenters', label: 'AI Data Centres', category: 'infra', color: '#93c5fd', shape: 'square', renderers: ['globe', 'flat'], defaultOn: false, dataKeys: ['datacenters'], geometry: 'points', description: 'Publicly announced large AI compute campuses.', count: (g) => items(g('datacenters')) },
   { id: 'spaceports', label: 'Spaceports', category: 'infra', color: '#c4b5fd', shape: 'diamond', renderers: ['globe', 'flat'], defaultOn: false, dataKeys: ['spaceports'], geometry: 'points', description: 'Orbital launch sites.', count: (g) => items(g('spaceports')) },
@@ -50,7 +50,7 @@ export const LAYERS: LayerDef[] = [
   { id: 'bases', label: 'Military Bases', category: 'infra', color: '#a9a4b8', shape: 'square', renderers: ['globe', 'flat'], defaultOn: false, dataKeys: ['bases'], geometry: 'points', description: 'Major military installations from public sources, cited per entry.', count: (g) => items(g('bases')) },
 
   // ── ANALYSIS ─────────────────────────────────────────────────
-  { id: 'cii', label: 'Instability Choropleth', category: 'analysis', color: '#f0788a', shape: 'area', renderers: ['globe', 'flat'], defaultOn: false, dataKeys: ['cii'], geometry: 'polygons', description: 'Country Instability Index shaded by band.', count: (g) => len(g('cii')) },
+  { id: 'cii', label: 'Instability Choropleth', category: 'analysis', color: '#f0788a', shape: 'area', renderers: ['globe', 'flat'], defaultOn: true, dataKeys: ['cii'], geometry: 'polygons', description: 'Country Instability Index shaded by band.', count: (g) => len(g('cii')) },
   { id: 'convergence', label: 'Convergence Cells', category: 'analysis', color: '#f5b36b', shape: 'square', renderers: ['globe', 'flat'], defaultOn: true, dataKeys: ['convergence'], geometry: 'points', description: '1°×1° cells where 3+ event types coincide in 24h.', count: (g) => len(g('convergence')) },
 ];
 

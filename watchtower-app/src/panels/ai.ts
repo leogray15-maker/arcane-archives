@@ -30,7 +30,7 @@ export function briefBody(b: AiBrief, note = 'AI-GENERATED FROM RANKED HEADLINES
     b.citations.length
       ? h('div', { class: 'wt-brief-cites' }, ...b.citations.map((c) => h('a', { href: safeUrl(c.link), target: '_blank', rel: 'noopener noreferrer' }, `[${c.n}] ${c.source} · ${ago(c.time)} — ${c.title}`)))
       : null,
-    h('span', { class: 'wt-ai-note' }, `${note} · ${b.provider.toUpperCase()} · ${ago(b.generatedAt)} AGO`),
+    h('span', { class: 'wt-ai-note' }, b.provider === 'digest' ? `DIGEST OF TOP-RANKED HEADLINES · ${ago(b.generatedAt)} AGO` : `${note} · ${b.provider.toUpperCase()} · ${ago(b.generatedAt)} AGO`),
   );
 }
 

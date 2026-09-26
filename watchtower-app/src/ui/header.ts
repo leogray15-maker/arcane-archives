@@ -1,6 +1,6 @@
 import type { HeaderMetrics } from '../../../shared/watchtower/types';
 import { feed, state, subscribe } from '../app/state';
-import { h, ICONS, svg } from '../lib/dom';
+import { h, ICONS, replaceChildren, svg } from '../lib/dom';
 
 export const emit = (name: string, detail?: unknown) => document.dispatchEvent(new CustomEvent(name, { detail }));
 
@@ -9,7 +9,7 @@ const THREAT_TIP =
 const SENTIMENT_TIP =
   'Sentiment (0–100, 50 = neutral) is the average tone of the last 24h of news coverage — GDELT tone when available, otherwise our headline lexicon. The arrow compares with the previous 24h.';
 
-const THREAT_COLORS = ['#5ee3a1', '#8b7cf6', '#f59e42', '#f0526b', '#f0526b'];
+const THREAT_COLORS = ['#4ade80', '#9b7bf7', '#f97316', '#ef4444', '#ef4444'];
 
 export function buildHeader(): HTMLElement {
   const live = h('div', { class: 'wt-live', 'data-state': 'connecting', role: 'status', 'aria-live': 'polite' }, h('span', { class: 'dot' }), h('span', { class: 'txt' }, 'CONNECTING'));
@@ -18,6 +18,17 @@ export function buildHeader(): HTMLElement {
   const threatVal = h('span', { style: 'font-size:13px;font-weight:700' }, '— / 5');
   const sentVal = h('span', { style: 'font-size:13px;font-weight:700' }, '—');
   const sentDelta = h('span', { style: 'font-size:11px' });
+
+  const threatBtn = h('button', { class: 'wt-metric', 'data-tip': THREAT_TIP }, h('span', { class: 'wt-metric-label' }, 'THREAT'), h('span', { class: 'wt-metric-value' }, bars, threatVal));
+  const clock = h('div', { class: 'wt-clock', 'aria-label': 'Current time, UTC' });
+  const tick = () => {
+    const d = new Date();
+    const p = (n: number) => String(n).padStart(2, '0');
+    const date = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC' }).toUpperCase().replace(',', '');
+    replaceChildren(clock, h('span', { class: 'wt-clock-date' }, `${date} · `), h('b', null, `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`), ' UTC');
+  };
+  tick();
+  setInterval(tick, 1000);
 
   const layersBtn = h('button', { class: 'wt-icon-btn', 'aria-label': 'Open layers', onclick: () => emit('wt:layers-mobile') });
   layersBtn.appendChild(svg(ICONS.layers));
@@ -51,8 +62,10 @@ export function buildHeader(): HTMLElement {
     h(
       'div',
       { class: 'wt-metrics' },
-      h('button', { class: 'wt-metric', 'data-tip': THREAT_TIP }, h('span', { class: 'wt-metric-label' }, 'THREAT LEVEL ⓘ'), h('span', { class: 'wt-metric-value' }, bars, threatVal)),
-      h('button', { class: 'wt-metric', 'data-tip': SENTIMENT_TIP }, h('span', { class: 'wt-metric-label' }, 'SENTIMENT ⓘ'), h('span', { class: 'wt-metric-value', style: 'align-items:baseline;gap:6px' }, sentVal, sentDelta)),
+      threatBtn,
+      h('button', { class: 'wt-metric', 'data-tip': SENTIMENT_TIP }, h('span', { class: 'wt-metric-label' }, 'SENTIMENT'), h('span', { class: 'wt-metric-value', style: 'align-items:baseline;gap:6px' }, sentVal, sentDelta)),
+      h('div', { class: 'wt-vsep' }),
+      clock,
       h('div', { class: 'wt-vsep' }),
       devChip,
       tierChip,
@@ -65,6 +78,7 @@ export function buildHeader(): HTMLElement {
     const lvl = m?.threatLevel ?? 0;
     [...bars.children].forEach((b, i) => ((b as HTMLElement).style.background = i < lvl ? THREAT_COLORS[lvl - 1] : ''));
     threatVal.textContent = lvl ? `${lvl} / 5` : '— / 5';
+    threatBtn.dataset.level = String(lvl);
     threatVal.style.color = lvl ? (lvl >= 4 ? '#f0788a' : lvl === 3 ? '#f5b36b' : '#e9e6f2') : '#8a8699';
     if (m && m.sentiment !== null) {
       sentVal.textContent = String(Math.round(m.sentiment));

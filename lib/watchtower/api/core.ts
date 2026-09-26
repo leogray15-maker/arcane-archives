@@ -5,6 +5,7 @@ import { authenticate, checkCronSecret, requireTier, type Principal } from '../h
 import { route, type Handler } from '../http/router';
 import { fnv1a, HttpError, json } from '../http/types';
 import { runSeed, recentRuns } from '../seed/framework';
+import { ensureFresh } from '../seed/lazy';
 import { JOBS, lastRuns, runTier } from '../seed/registry';
 import type { Store } from '../store';
 import { getStatic } from '../static-data';
@@ -35,6 +36,7 @@ export async function buildBootstrap(store: Store, tier: BootTier, viewer: Princ
 
 route('GET', 'bootstrap', true, async ({ req, store, principal }) => {
   const tier = req.query.tier === 'slow' ? 'slow' : 'fast';
+  await ensureFresh(store);
   const body = await buildBootstrap(store, tier, principal!);
   // ETag over the data + meta only, so unchanged polls get a cheap 304.
   const etag = `"${fnv1a(JSON.stringify([body.data, body.meta, body.locked]))}"`;

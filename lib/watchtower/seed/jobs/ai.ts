@@ -14,13 +14,17 @@ export const aiBriefJob: SeedJob<AiBrief> = {
   feed: 'brief',
   tier: 'slow',
   stage: 'derive',
-  intervalMin: 115,
+  // The AI brief costs tokens; the no-key digest is free, so it tracks the headlines closely.
+  get intervalMin() {
+    return configuredProviders().length ? 115 : 15;
+  },
   timeoutMs: 55000,
   ttlSec: 3 * 24 * 3600,
   async run({ store, now }) {
-    requireAi();
     const ranked = (await store.get<RankedHeadline[]>(FEED_BY_ID.headlines.redisKey)) ?? [];
     if (!ranked.length) throw new Error('Waiting for input: ranked headlines');
+    // No AI key: a plain digest of the top-ranked stories, clearly labelled as such.
+    if (!configuredProviders().length) return headlineDigest(ranked, now);
     return generateWorldBrief(store, ranked, now);
   },
   validate: (d) => (d?.paragraphs?.length ? { ok: true, count: d.citations.length } : { ok: false, count: 0, reason: 'empty brief' }),
@@ -50,3 +54,14 @@ export const aiForecastJob: SeedJob<ForecastSet> = {
   },
   validate: (d) => (Array.isArray(d?.items) && d.items.length ? { ok: true, count: d.items.length } : { ok: false, count: 0, reason: 'no forecast items passed the checks' }),
 };
+
+/** Rule-based World Brief used when no AI provider is configured: the top
+ *  stories verbatim, each cited, with no generated wording. */
+export function headlineDigest(ranked: RankedHeadline[], now: number): AiBrief {
+  const top = ranked.slice(0, 4);
+  const citations = top.map((x, i) => ({ n: i + 1, title: x.title, source: x.source, link: x.link, time: x.time }));
+  const line = (x: RankedHeadline, n: number) => `${x.title.replace(/[.\s]+$/, '')} (${x.source}${x.corroboration > 1 ? `, +${x.corroboration - 1} more` : ''}) [${n}].`;
+  const paragraphs = [`Top story: ${line(top[0], 1)}`];
+  if (top.length > 1) paragraphs.push(`Also tracking: ${top.slice(1).map((x, i) => line(x, i + 2)).join(' ')}`);
+  return { paragraphs, citations, generatedAt: now, model: 'rule-based', provider: 'digest', thinData: ranked.length < 5 };
+}

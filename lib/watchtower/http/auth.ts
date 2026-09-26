@@ -46,13 +46,14 @@ export function setTokenVerifier(v: TokenVerifier | null) {
 }
 
 async function firebaseVerifier(): Promise<TokenVerifier> {
+  // No service account: verify against Google's public keys and read the
+  // member's own Users doc with their token (see firebase-lite.ts).
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) return (await import('./firebase-lite')).liteVerifier();
   // Loaded lazily so tests and the dev server never need a service account.
   const mod = await import('firebase-admin');
   const admin = ((mod as any).default ?? mod) as typeof import('firebase-admin');
   if (!admin.apps.length) {
-    const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (!raw) throw new HttpError(500, 'Server auth is not configured', 'auth_unconfigured');
-    admin.initializeApp({ credential: admin.credential.cert(JSON.parse(raw)) });
+    admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!)) });
   }
   return {
     async verify(token) {
@@ -91,9 +92,15 @@ export async function authenticate(req: WtRequest, store: Store): Promise<Princi
   const cacheKey = `wt:auth:${decoded.uid}`;
   let tier = await store.get<Tier>(cacheKey).catch(() => null);
   if (!tier) {
-    const user = await v.loadUser(decoded.uid);
+    let lookupFailed = false;
+    const user = await v.loadUser(decoded.uid).catch((e) => {
+      lookupFailed = true;
+      console.warn('[watchtower] membership lookup failed:', e instanceof Error ? e.message : e);
+      return null;
+    });
     tier = tierFor(decoded.uid, decoded.claims, user);
-    await store.set(cacheKey, tier, { ex: MEMBERSHIP_CACHE_SEC }).catch(() => undefined);
+    // Don't pin a member to "free" for five minutes because one lookup failed.
+    if (!lookupFailed) await store.set(cacheKey, tier, { ex: MEMBERSHIP_CACHE_SEC }).catch(() => undefined);
   }
   return { uid: decoded.uid, email: decoded.email ?? null, tier };
 }

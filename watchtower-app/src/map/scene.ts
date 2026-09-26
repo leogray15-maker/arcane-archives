@@ -15,7 +15,7 @@ const HOUR = 3600 * 1000;
 const items = <T>(v: unknown): T[] => ((v as StaticDataset<T> | null)?.items ?? []);
 const list = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
-export const BAND_COLORS: Record<string, string> = { CRITICAL: '#f0526b', HIGH: '#f59e42', ELEVATED: '#e5c85a', NORMAL: '#8b7cf6', LOW: '#5ee3a1' };
+export const BAND_COLORS: Record<string, string> = { CRITICAL: '#ef4444', HIGH: '#f97316', ELEVATED: '#eab308', NORMAL: '#9b7bf7', LOW: '#4ade80' };
 const CHOKE_COLORS = { DISRUPTED: '#f0526b', ELEVATED: '#f59e42', NORMAL: '#7dd3fc' } as const;
 
 export function layerVisible(id: string) {
@@ -173,7 +173,8 @@ export function buildScene(now = Date.now()): Scene {
   }
 
   if (on('cii')) {
-    for (const c of list<CiiScore>(d.cii)) areas.push({ iso3: c.iso3, color: BAND_COLORS[c.band], label: `${c.name}: ${c.score} (${c.band})`, score: c.score });
+    // Only shade countries that stand out; NORMAL/LOW stay the base land colour.
+    for (const c of list<CiiScore>(d.cii)) if (c.band !== 'NORMAL' && c.band !== 'LOW') areas.push({ iso3: c.iso3, color: BAND_COLORS[c.band], label: `${c.name}: ${c.score} (${c.band})`, score: c.score });
   }
 
   // Critical signals get a pulse regardless of layer (they are the headline events).

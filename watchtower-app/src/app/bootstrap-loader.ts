@@ -1,5 +1,5 @@
-// Fetches both bootstrap tiers in parallel with separate timeouts (fast ~3s,
-// slow ~5s) and renders progressively as each arrives. Then keeps them fresh
+// Fetches both bootstrap tiers in parallel with separate timeouts (the first
+// load allows for a cold server seeding its feeds) and renders progressively as each arrives. Then keeps them fresh
 // through the smart poller.
 import { FEEDS, FEED_BY_ID } from '../../../shared/watchtower/feeds';
 import type { BootstrapResponse } from '../../../shared/watchtower/types';
@@ -7,7 +7,8 @@ import { api } from './api-client';
 import { poller } from './poller';
 import { notify, setFeed, state, update } from './state';
 
-const TIMEOUT = { fast: 3000, slow: 5000 } as const;
+// Generous on first load: with no scheduler/Redis the first request seeds the feeds (see lib/watchtower/seed/lazy.ts).
+const TIMEOUT = { fast: 20000, slow: 25000 } as const;
 const INTERVAL = { fast: 2 * 60 * 1000, slow: 10 * 60 * 1000 } as const;
 let fastFailures = 0;
 

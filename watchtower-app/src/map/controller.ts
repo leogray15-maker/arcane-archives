@@ -4,7 +4,6 @@
 import { HOME_VIEW, state, subscribe, update, type MapMode } from '../app/state';
 import { LAYER_BY_ID } from '../config/layers';
 import { debounce, h, ICONS, replaceChildren, svg, toast } from '../lib/dom';
-import { utcClockLong } from '../lib/time';
 import { countryAt } from './geo';
 import { Popover } from './popover';
 import { loadSatLib } from './satellites';
@@ -32,8 +31,6 @@ export function buildMap(section: HTMLElement): HTMLElement {
   let switching = false;
   const popover = new Popover(section, () => renderer);
 
-  const clock = h('span', { class: 'wt-map-clock', 'aria-label': 'Current UTC time' }, utcClockLong());
-  setInterval(() => (clock.textContent = utcClockLong()), 1000);
   const fsBtn = h('button', { class: 'wt-tool fs', 'aria-label': 'Full screen map', 'data-tip': 'Full screen map', onclick: () => (document.fullscreenElement ? document.exitFullscreen() : section.requestFullscreen?.()) });
   fsBtn.appendChild(svg(ICONS.expand));
   const monBtn = h('button', { class: 'wt-tool', 'aria-label': 'Open Extended Global Monitor', 'data-tip': 'Extended Global Monitor: news, macro, air traffic', onclick: () => document.dispatchEvent(new CustomEvent('wt:drawer')) });
@@ -45,7 +42,7 @@ export function buildMap(section: HTMLElement): HTMLElement {
     { class: 'wt-map-stage' },
     canvas,
     msg,
-    h('div', { class: 'wt-map-bar' }, viewChip, h('span', { style: 'flex:1' }), stats),
+    h('div', { class: 'wt-map-bar' }, viewChip),
     h(
       'div',
       { class: 'wt-zoom' },
@@ -61,7 +58,7 @@ export function buildMap(section: HTMLElement): HTMLElement {
       'div',
       { class: 'wt-map-head' },
       h('h1', { class: 'wt-map-title', style: 'margin:0' }, 'GLOBAL SITUATION'),
-      clock,
+      stats,
       h('div', { class: 'wt-map-tools' }, h('div', { class: 'wt-seg', role: 'group', 'aria-label': 'Map mode' }, btn2d, btn3d), monBtn, fsBtn),
     ),
     stage,
@@ -77,11 +74,11 @@ export function buildMap(section: HTMLElement): HTMLElement {
   const rebuildSoon = debounce(rebuild, 120);
 
   const renderLegend = () => {
-    const shown = [...state.layers].map((id) => LAYER_BY_ID[id]).filter((l) => l && layerVisible(l.id)).slice(0, 7);
+    const shown = [...state.layers].map((id) => LAYER_BY_ID[id]).filter((l) => l && layerVisible(l.id)).sort((a, b) => Number(b.shape === 'area') - Number(a.shape === 'area')).slice(0, 8);
     replaceChildren(
       legend,
       ...shown.map((l) =>
-        h('span', null, l.shape === 'tri' ? h('i', { style: `width:0;height:0;border-radius:0;border-left:7px solid ${l.color};border-top:4px solid transparent;border-bottom:4px solid transparent` }) : h('i', { style: `background:${l.color};border-radius:${l.shape === 'dot' ? '50%' : '1px'};${l.shape === 'diamond' ? 'transform:rotate(45deg)' : ''}${l.shape === 'line' ? ';height:2px;width:10px' : ''}` }), l.label.toUpperCase()),
+        l.shape === 'area' ? h('span', null, 'CII', h('i', { class: 'wt-cii-scale' }), '0–100') : h('span', null, l.shape === 'tri' ? h('i', { style: `width:0;height:0;border-radius:0;border-left:7px solid ${l.color};border-top:4px solid transparent;border-bottom:4px solid transparent` }) : h('i', { style: `background:${l.color};border-radius:${l.shape === 'dot' ? '50%' : '1px'};${l.shape === 'diamond' ? 'transform:rotate(45deg)' : ''}${l.shape === 'line' ? ';height:2px;width:10px' : ''}` }), l.label.toUpperCase()),
       ),
     );
     legend.style.display = shown.length ? '' : 'none';
@@ -179,7 +176,9 @@ export function buildMap(section: HTMLElement): HTMLElement {
       last = t;
       const total = scene?.totalPoints ?? 0;
       const rendered = (renderer as any)?.renderedCount ?? total;
-      stats.textContent = `${total.toLocaleString('en-GB')} markers${rendered < total ? ` · ${rendered.toLocaleString('en-GB')} drawn` : ''} · ${fps} fps`;
+      const proj = state.mode === '3d' ? 'Orbital view' : 'Flat projection';
+      stats.textContent = `${proj} · ${total.toLocaleString('en-GB')} markers${rendered < total ? ` · ${rendered.toLocaleString('en-GB')} drawn` : ''}`;
+      stats.title = `${fps} fps`;
     }
     if (!document.hidden) requestAnimationFrame(tick);
   };
