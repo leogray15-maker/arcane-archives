@@ -10,7 +10,7 @@ Browser (watchtower-app, Vite + vanilla TS)
 /api/watchtower/*  →  api/watchtower.ts (one Vercel function, Node runtime)
   │  verify token → membership (Firestore, cached 5 min) → rate limit
   ▼
-Upstash Redis  ◀── Vercel Cron → /api/watchtower/cron/{fast,medium,slow,daily}
+Upstash Redis  ◀── scheduler → /api/watchtower/cron/tick every 5 min (+ Vercel Cron → cron/daily)
                      seed jobs: fetch → validate → write last-good + meta
                      derive jobs: signals, CII, convergence, spikes, AI…
 ```
@@ -56,7 +56,7 @@ npm run build        # dist/ (what Vercel serves)
 |---|---|---|
 | `FIREBASE_SERVICE_ACCOUNT` | **yes** | Service-account JSON for verifying ID tokens and reading `Users/{uid}` |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | **yes** | The cache/store. Without them the function falls back to per-instance memory, and the health panel shows `STORE MEMORY` |
-| `CRON_SECRET` | **yes** | Vercel Cron sends it as a bearer token; cron routes reject anything else |
+| `CRON_SECRET` | **yes** | Bearer token for the cron routes. Vercel Cron sends it automatically; give the same value to the 5-minute scheduler (RUNBOOK.md › Scheduling) |
 | `NASA_FIRMS_MAP_KEY` | for wildfires | Free key from NASA FIRMS |
 | `UCDP_ACCESS_TOKEN` | for CII floors | Request by email (see SOURCES.md) |
 | `WT_UCDP_VERSION` | with UCDP | Current GED candidate version, e.g. `25.0.8` |
@@ -115,7 +115,8 @@ the base class. Mount it in `panels/index.ts`.
 ## Deploying
 
 Vercel runs `npm run build` (see `vercel.json`) and serves `dist/`. The function
-in `api/` and the four crons deploy with it. After a deploy:
+in `api/` and the daily cron deploy with it; the 5-minute refresh comes from an
+external scheduler (RUNBOOK.md › Scheduling). After a deploy:
 
 ```bash
 WT_SMOKE_URL=https://arcanearchives.shop npm run smoke

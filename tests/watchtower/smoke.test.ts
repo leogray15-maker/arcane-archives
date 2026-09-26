@@ -55,6 +55,14 @@ describe('smoke: bootstrap + health', () => {
     expect(ok.status).toBe(200);
   });
 
+  it('cron/tick runs due jobs from every non-daily tier, over GET or POST', async () => {
+    expect((await handle({ method: 'POST', route: 'cron/tick', query: {}, headers: {} }, store)).status).toBe(401);
+    const res = await handle({ method: 'POST', route: 'cron/tick', query: {}, headers: { authorization: 'Bearer smoke-secret' } }, store);
+    expect(res.status).toBe(200);
+    expect((res.body as { tier: string }).tier).toBe('tick');
+    expect((await handle({ method: 'GET', route: 'cron/weekly', query: {}, headers: { authorization: 'Bearer smoke-secret' } }, store)).status).toBe(404);
+  });
+
   it('admin routes are admin-only', async () => {
     expect((await get('admin/status', 'dev-member')).status).toBe(403);
     expect((await get('admin/status', 'dev-admin')).status).toBe(200);

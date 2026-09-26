@@ -5,7 +5,7 @@ import { authenticate, type Principal } from './auth';
 import { rateLimit } from './ratelimit';
 import { HttpError, json, type WtRequest, type WtResponse } from './types';
 
-type Handler = (ctx: Ctx) => Promise<WtResponse>;
+export type Handler = (ctx: Ctx) => Promise<WtResponse>;
 
 export interface Ctx {
   req: WtRequest;

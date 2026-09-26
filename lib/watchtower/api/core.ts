@@ -2,7 +2,7 @@
 import { FEEDS, FEED_BY_ID, canAccess, metaKey, type BootTier } from '../../../shared/watchtower/feeds';
 import type { BootstrapResponse, FeedMeta, FeedStatus, HealthFeed, HealthResponse } from '../../../shared/watchtower/types';
 import { authenticate, checkCronSecret, requireTier, type Principal } from '../http/auth';
-import { route } from '../http/router';
+import { route, type Handler } from '../http/router';
 import { fnv1a, HttpError, json } from '../http/types';
 import { runSeed, recentRuns } from '../seed/framework';
 import { JOBS, lastRuns, runTier } from '../seed/registry';
@@ -75,13 +75,17 @@ route('GET', 'health', false, async ({ req, store }) => {
 
 /* ── cron ──────────────────────────────────────────────────── */
 
-route('GET', 'cron/:tier', false, async ({ req, store, params }) => {
+// Vercel Cron calls these with GET. `tick` is for an external scheduler (see
+// RUNBOOK.md › Scheduling), which may use GET or POST.
+const cronHandler: Handler = async ({ req, store, params }) => {
   checkCronSecret(req);
   const tier = params.tier;
-  if (!['fast', 'medium', 'slow', 'daily'].includes(tier)) throw new HttpError(404, 'Unknown tier');
+  if (!['fast', 'medium', 'slow', 'daily', 'tick'].includes(tier)) throw new HttpError(404, 'Unknown tier');
   const out = await runTier(tier as 'fast', store);
   return json(out);
-});
+};
+route('GET', 'cron/:tier', false, cronHandler);
+route('POST', 'cron/:tier', false, cronHandler);
 
 /* ── admin ─────────────────────────────────────────────────── */
 

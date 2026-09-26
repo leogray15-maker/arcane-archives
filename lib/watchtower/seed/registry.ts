@@ -30,9 +30,11 @@ export const JOB_BY_ID = () => Object.fromEntries(JOBS.map((j) => [j.id, j]));
 
 const lastRunKey = (id: string) => `wt:lastrun:${id}`;
 
-export async function runTier(tier: SeedTier, store: Store, opts: { force?: boolean; now?: number } = {}) {
+/** `tick` runs every due job outside the daily tier, so one external scheduler
+ *  calling it every 5 minutes can stand in for the fast/medium/slow crons. */
+export async function runTier(tier: SeedTier | 'tick', store: Store, opts: { force?: boolean; now?: number } = {}) {
   const now = opts.now ?? Date.now();
-  const inTier = JOBS.filter((j) => j.tier === tier);
+  const inTier = JOBS.filter((j) => (tier === 'tick' ? j.tier !== 'daily' : j.tier === tier));
   const due: SeedJob[] = [];
   const last = await store.mget<number>(inTier.map((j) => lastRunKey(j.id)));
   inTier.forEach((j, i) => {

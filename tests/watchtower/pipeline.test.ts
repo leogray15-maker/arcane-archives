@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { metaKey, FEED_BY_ID } from '../../shared/watchtower/feeds';
 import type { FeedMeta, Quake } from '../../shared/watchtower/types';
 import { runSeed, validateList, type SeedJob } from '../../lib/watchtower/seed/framework';
-import { runTier } from '../../lib/watchtower/seed/registry';
+import { JOBS, runTier } from '../../lib/watchtower/seed/registry';
 import { usgsJob } from '../../lib/watchtower/seed/jobs/usgs';
 import { MemoryStore, setStore } from '../../lib/watchtower/store';
 import { installFixtureFetch } from '../../lib/watchtower/dev/fixture-fetch';
@@ -106,6 +106,20 @@ describe('dispatcher', () => {
     expect(b.results.find((r) => r.job === 'usgs')).toBeUndefined();
     const c = await runTier('fast', store, { now: t0 + 5 * 60_000 });
     expect(c.results.find((r) => r.job === 'usgs')).toBeDefined();
+  });
+
+  it('tick runs due jobs across fast, medium and slow but never daily ones', async () => {
+    const t0 = 2_000_000_000_000;
+    const r = await runTier('tick', store, { now: t0 });
+    const ran = new Set(r.results.map((x) => x.job));
+    const tiers = new Set(JOBS.filter((j) => ran.has(j.id)).map((j) => j.tier));
+    expect(tiers.has('fast') && tiers.has('medium') && tiers.has('slow')).toBe(true);
+    expect(tiers.has('daily')).toBe(false);
+    // derived jobs run after every fetch job
+    const firstDerive = r.results.findIndex((x) => JOBS.find((j) => j.id === x.job)?.stage === 'derive');
+    expect(r.results.slice(firstDerive).every((x) => JOBS.find((j) => j.id === x.job)?.stage === 'derive')).toBe(true);
+    const again = await runTier('tick', store, { now: t0 + 60_000 });
+    expect(again.results.find((x) => x.job === 'usgs')).toBeUndefined();
   });
 });
 
