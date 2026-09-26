@@ -90,7 +90,10 @@ hand-built routes. Add GEM to SOURCES.md and the Sources modal if you do.
   entered from memory in an offline build: press play on each one after the
   first deploy, and fix any that don't play.
 - Webcams ship empty. Add only official operators' YouTube live streams that
-  allow embedding.
+  allow embedding, each with a `region` (MIDEAST, EUROPE, AMERICAS, ASIA,
+  AFRICA or SPACE) so the region filter picks it up.
+- Live News starts muted once the page is idle on desktop (not on phones or with
+  data-saver on).
 
 ## Performance check
 

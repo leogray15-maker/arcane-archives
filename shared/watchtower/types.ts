@@ -106,6 +106,13 @@ export interface RankedHeadline extends NewsItem {
   clusterSources: string[];
 }
 
+/** GDELT average news tone (-10..+10, 0 neutral); points are [time ms, tone]. */
+export interface ToneSummary {
+  avg24: number | null;
+  prev24: number | null;
+  points: [number, number][];
+}
+
 export interface MacroPoint {
   id: string;
   label: string;

@@ -3,7 +3,7 @@
 //    coercion, force-posture and protest events (CAMEO root codes), kept 24h.
 //  • Tone: DOC API average tone timeline → header sentiment.
 import { unzipSync, strFromU8 } from 'fflate';
-import type { ConflictEvent } from '../../../../shared/watchtower/types';
+import type { ConflictEvent, ToneSummary } from '../../../../shared/watchtower/types';
 import { countryAt } from '../../geo/countries';
 import { fetchJson, fetchRaw, fetchText, UpstreamError } from '../fetch';
 import { isCoord, type SeedJob } from '../framework';
@@ -129,11 +129,7 @@ export const gdeltEventsJob: SeedJob<ConflictEvent[]> = {
 
 /* ── Tone ─────────────────────────────────────────────────────── */
 
-export interface ToneSummary {
-  avg24: number | null;
-  prev24: number | null;
-  points: [number, number][];
-}
+export type { ToneSummary };
 
 export function summariseTone(timeline: { date: string; value: number }[], now: number): ToneSummary {
   const pts: [number, number][] = timeline

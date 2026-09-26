@@ -1,7 +1,6 @@
 import type { HeaderMetrics } from '../../../shared/watchtower/types';
 import { feed, state, subscribe } from '../app/state';
 import { h, ICONS, svg } from '../lib/dom';
-import { utcClock } from '../lib/time';
 
 export const emit = (name: string, detail?: unknown) => document.dispatchEvent(new CustomEvent(name, { detail }));
 
@@ -13,9 +12,6 @@ const SENTIMENT_TIP =
 const THREAT_COLORS = ['#5ee3a1', '#8b7cf6', '#f59e42', '#f0526b', '#f0526b'];
 
 export function buildHeader(): HTMLElement {
-  const clock = h('span', { class: 'wt-metric-value' }, utcClock());
-  setInterval(() => (clock.textContent = utcClock()), 1000);
-
   const live = h('div', { class: 'wt-live', 'data-state': 'connecting', role: 'status', 'aria-live': 'polite' }, h('span', { class: 'dot' }), h('span', { class: 'txt' }, 'CONNECTING'));
 
   const bars = h('span', { class: 'wt-threat-bars' }, ...Array.from({ length: 5 }, () => h('span')));
@@ -55,8 +51,6 @@ export function buildHeader(): HTMLElement {
     h(
       'div',
       { class: 'wt-metrics' },
-      h('div', { class: 'wt-metric clock' }, h('span', { class: 'wt-metric-label' }, 'UTC'), clock),
-      h('div', { class: 'wt-vsep' }),
       h('button', { class: 'wt-metric', 'data-tip': THREAT_TIP }, h('span', { class: 'wt-metric-label' }, 'THREAT LEVEL ⓘ'), h('span', { class: 'wt-metric-value' }, bars, threatVal)),
       h('button', { class: 'wt-metric', 'data-tip': SENTIMENT_TIP }, h('span', { class: 'wt-metric-label' }, 'SENTIMENT ⓘ'), h('span', { class: 'wt-metric-value', style: 'align-items:baseline;gap:6px' }, sentVal, sentDelta)),
       h('div', { class: 'wt-vsep' }),

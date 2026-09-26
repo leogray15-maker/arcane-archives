@@ -102,5 +102,11 @@ export const ICONS = {
   chevron: `<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9 L12 15 L18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   close: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
   play: `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="currentColor"/></svg>`,
+  expand: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  star: `<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 l2.7 5.6 6.1 .9 -4.4 4.3 1 6.1 -5.4 -2.9 -5.4 2.9 1 -6.1 -4.4 -4.3 6.1 -.9 Z" fill="var(--fill, none)" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  mute: `<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 h4 l5 -4 v14 l-5 -4 h-4 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M17 9 l5 6 M22 9 l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  sound: `<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 h4 l5 -4 v14 l-5 -4 h-4 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M17 8 q3 4 0 8 M19.5 5.5 q5 6.5 0 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  grid: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4 h7 v7 h-7 Z M13 4 h7 v7 h-7 Z M4 13 h7 v7 h-7 Z M13 13 h7 v7 h-7 Z" fill="currentColor"/></svg>`,
+  single: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="1" fill="currentColor"/></svg>`,
   share: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 v7 h16 v-7 M12 3 v12 M7 8 l5 -5 l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 };

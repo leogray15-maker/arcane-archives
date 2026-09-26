@@ -4,13 +4,15 @@
 import { HOME_VIEW, state, subscribe, update, type MapMode } from '../app/state';
 import { LAYER_BY_ID } from '../config/layers';
 import { debounce, h, ICONS, replaceChildren, svg, toast } from '../lib/dom';
+import { utcClockLong } from '../lib/time';
 import { countryAt } from './geo';
 import { Popover } from './popover';
 import { loadSatLib } from './satellites';
 import { buildScene, layerVisible } from './scene';
 import type { MapRenderer, Marker, Scene } from './types';
 
-export function buildMap(section: HTMLElement) {
+/** Builds the map section and returns its stage (where overlays such as the layer list go). */
+export function buildMap(section: HTMLElement): HTMLElement {
   const canvas = h('div', { class: 'wt-map-canvas' });
   const viewChip = h('span', { class: 'wt-chip-flat' }, 'VIEW · GLOBAL');
   const stats = h('span', { class: 'wt-map-stats', 'aria-live': 'off' });
@@ -30,10 +32,20 @@ export function buildMap(section: HTMLElement) {
   let switching = false;
   const popover = new Popover(section, () => renderer);
 
-  section.replaceChildren(
+  const clock = h('span', { class: 'wt-map-clock', 'aria-label': 'Current UTC time' }, utcClockLong());
+  setInterval(() => (clock.textContent = utcClockLong()), 1000);
+  const fsBtn = h('button', { class: 'wt-tool fs', 'aria-label': 'Full screen map', 'data-tip': 'Full screen map', onclick: () => (document.fullscreenElement ? document.exitFullscreen() : section.requestFullscreen?.()) });
+  fsBtn.appendChild(svg(ICONS.expand));
+  const monBtn = h('button', { class: 'wt-tool', 'aria-label': 'Open Extended Global Monitor', 'data-tip': 'Extended Global Monitor: news, macro, air traffic', onclick: () => document.dispatchEvent(new CustomEvent('wt:drawer')) });
+  monBtn.appendChild(svg(ICONS.panel));
+  document.addEventListener('fullscreenchange', () => window.dispatchEvent(new Event('resize')));
+
+  const stage = h(
+    'div',
+    { class: 'wt-map-stage' },
     canvas,
     msg,
-    h('div', { class: 'wt-map-bar' }, h('div', { class: 'wt-seg', role: 'group', 'aria-label': 'Map mode' }, btn2d, btn3d), viewChip, stats),
+    h('div', { class: 'wt-map-bar' }, viewChip, h('span', { style: 'flex:1' }), stats),
     h(
       'div',
       { class: 'wt-zoom' },
@@ -43,6 +55,16 @@ export function buildMap(section: HTMLElement) {
     ),
     legend,
     credit,
+  );
+  section.replaceChildren(
+    h(
+      'div',
+      { class: 'wt-map-head' },
+      h('h1', { class: 'wt-map-title', style: 'margin:0' }, 'GLOBAL SITUATION'),
+      clock,
+      h('div', { class: 'wt-map-tools' }, h('div', { class: 'wt-seg', role: 'group', 'aria-label': 'Map mode' }, btn2d, btn3d), monBtn, fsBtn),
+    ),
+    stage,
   );
 
   const rebuild = () => {
@@ -167,4 +189,5 @@ export function buildMap(section: HTMLElement) {
   // Load the (heavy) map engine once the shell and panels have painted.
   const idle = (window as any).requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 300));
   idle(() => void setMode(state.mode), { timeout: 1200 });
+  return stage;
 }

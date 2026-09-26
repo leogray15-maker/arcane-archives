@@ -32,7 +32,7 @@ export const FEEDS: FeedDef[] = [
   f({ id: 'disasters', label: 'Disaster alerts (GDACS)', redisKey: 'wt:gdacs:v1', boot: 'fast', maxStaleMin: 45, access: 'member', source: 'GDACS' }),
   f({ id: 'fires', label: 'Wildfires (FIRMS)', redisKey: 'wt:fires:v1', boot: 'slow', maxStaleMin: 180, access: 'member', source: 'NASA FIRMS' }),
   f({ id: 'conflict', label: 'Conflict & protest events (GDELT)', redisKey: 'wt:conflict:v1', boot: 'fast', maxStaleMin: 45, access: 'member', source: 'GDELT' }),
-  f({ id: 'tone', label: 'News tone (GDELT)', redisKey: 'wt:tone:v1', boot: 'slow', maxStaleMin: 180, access: 'member', source: 'GDELT', internal: true }),
+  f({ id: 'tone', label: 'News tone (GDELT)', redisKey: 'wt:tone:v1', boot: 'slow', maxStaleMin: 180, access: 'member', source: 'GDELT' }),
   f({ id: 'ucdp', label: 'Conflict baseline (UCDP)', redisKey: 'wt:ucdp:v1', boot: 'slow', maxStaleMin: 60 * 24 * 3, access: 'member', source: 'UCDP', internal: true }),
   f({ id: 'satellites', label: 'Satellites (CelesTrak)', redisKey: 'wt:satellites:v1', boot: 'slow', maxStaleMin: 60 * 8, access: 'member', source: 'CelesTrak' }),
   f({ id: 'aircraft', label: 'Military aircraft (adsb.lol)', redisKey: 'wt:aircraft:v1', boot: 'fast', maxStaleMin: 20, access: 'member', source: 'adsb.lol' }),

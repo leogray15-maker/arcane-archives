@@ -1,8 +1,8 @@
 // Signals, Country Instability, Chokepoints, Strategic Posture, Infrastructure.
-import type { ChokepointStatus, CiiScore, Severity, Signal, SignalSet, SpikeSet, TheatrePosture } from '../../../shared/watchtower/types';
+import type { CiiScore, Severity, Signal, SignalSet, SpikeSet } from '../../../shared/watchtower/types';
 import { feed, state, toggleLayer } from '../app/state';
 import { LAYER_BY_ID } from '../config/layers';
-import { h, lsGet, lsSet } from '../lib/dom';
+import { h, ICONS, lsGet, lsSet, svg, toast } from '../lib/dom';
 import { ago } from '../lib/time';
 import { BAND_COLORS } from '../map/scene';
 import { emit } from '../ui/header';
@@ -92,86 +92,66 @@ export class SignalsPanel extends Panel {
 }
 
 /* ── Country Instability ───────────────────────────────────────── */
+const PIN_KEY = 'wt:cii:pins';
 export class CiiPanel extends Panel {
+  private pins = new Set<string>(lsGet<string[]>(PIN_KEY, []));
   constructor() {
     super({
       id: 'cii', title: 'COUNTRY INSTABILITY', feeds: ['cii'],
-      info: 'Country Instability Index (0–100): 40% structural baseline + 60% live events (unrest, conflict, security, information), plus capped boosts for disasters. Floors keep active war zones from looking calm in a data gap. Arrow = change over 24h. Click a country for its brief.',
+      info: 'Country Instability Index (0–100): 40% structural baseline + 60% live events. U = unrest, C = conflict, S = security, I = information (each 0–100). Floors keep active war zones from looking calm in a data gap. The arrow is the change over 24h. Star a country to keep it at the top; click one for its brief.',
     });
+  }
+  private togglePin(iso3: string) {
+    if (this.pins.has(iso3)) this.pins.delete(iso3);
+    else this.pins.add(iso3);
+    lsSet(PIN_KEY, [...this.pins]);
+    this.scheduleRender();
+  }
+  private async share(k: CiiScore) {
+    const url = new URL(location.href);
+    url.searchParams.set('c', k.iso3);
+    const text = `${k.name}: instability ${k.score}/100 (${k.band}) on the Arcane Watchtower`;
+    try {
+      if (navigator.share) await navigator.share({ title: 'Arcane Watchtower', text, url: url.toString() });
+      else {
+        await navigator.clipboard.writeText(url.toString());
+        toast('Link copied');
+      }
+    } catch {
+      /* share sheet dismissed */
+    }
   }
   protected renderBody() {
     const list = feed<CiiScore[] | null>('cii');
     if (!list?.length) return null;
-    return list.map((k) => {
+    this.setCount(list.length);
+    const sorted = [...list].sort((a, b) => Number(this.pins.has(b.iso3)) - Number(this.pins.has(a.iso3)) || b.score - a.score);
+    return sorted.map((k) => {
       const color = BAND_COLORS[k.band];
       const d = k.change24h;
+      const pinned = this.pins.has(k.iso3);
+      const star = h('button', { class: 'wt-ico', 'aria-pressed': String(pinned), 'aria-label': `${pinned ? 'Unpin' : 'Pin'} ${k.name}`, onclick: (e: Event) => { e.stopPropagation(); this.togglePin(k.iso3); } });
+      star.appendChild(svg(ICONS.star));
+      const share = h('button', { class: 'wt-ico', 'aria-label': `Share ${k.name}`, onclick: (e: Event) => { e.stopPropagation(); void this.share(k); } });
+      share.appendChild(svg(ICONS.share));
+      const c = k.components;
       return h(
-        'button',
-        { class: 'wt-cii row', onclick: () => emit('wt:country', k.iso3) },
+        'div',
+        { class: 'wt-cii row', role: 'button', tabindex: '0', onclick: () => emit('wt:country', k.iso3), onkeydown: (e: KeyboardEvent) => e.key === 'Enter' && emit('wt:country', k.iso3) },
         h(
           'span',
           { class: 'wt-cii-top' },
+          star,
+          h('span', { class: 'dot', style: `background:${color}` }),
           h('span', { class: 'wt-cii-name' }, k.name),
-          sparkline(k.spark, color),
-          h('span', { class: 'wt-cii-band', style: `color:${color}` }, k.band),
           h('span', { class: 'wt-cii-score' }, String(k.score)),
-          h('span', { class: 'wt-cii-delta', style: `color:${d && d > 0 ? '#f0788a' : d && d < 0 ? '#5ee3a1' : '#8a8699'}` }, d === null ? '·' : d > 0 ? `▲${d}` : d < 0 ? `▼${Math.abs(d)}` : '—'),
+          h('span', { class: 'wt-cii-delta', style: `color:${d && d > 0 ? '#f0788a' : d && d < 0 ? '#5ee3a1' : '#8a8699'}` }, d === null ? '·' : d > 0 ? `↑${d}` : d < 0 ? `↓${Math.abs(d)}` : '→'),
+          share,
         ),
         h('span', { class: 'wt-bar' }, h('span', { style: `width:${k.score}%;background:${color}` })),
+        h('span', { class: 'wt-cii-parts', title: 'Unrest · Conflict · Security · Information' }, `U:${Math.round(c.unrest)} C:${Math.round(c.conflict)} S:${Math.round(c.security)} I:${Math.round(c.information)}`, h('span', { style: `color:${color};margin-left:auto` }, k.band)),
       );
     });
-  }
-}
-
-/* ── Chokepoints ───────────────────────────────────────────────── */
-const CK_COLOR = { DISRUPTED: '#f0526b', ELEVATED: '#f59e42', NORMAL: '#5ee3a1' } as const;
-export class ChokepointsPanel extends Panel {
-  constructor() {
-    super({
-      id: 'chokepoints', title: 'CHOKEPOINTS', feeds: ['chokepointStatus'], access: 'free',
-      info: 'Supply-chain chokepoints. Status comes from conflict events, military aircraft and disaster alerts within each strait’s radius, plus 24h headlines mentioning disruption there.',
-    });
-  }
-  protected renderBody() {
-    const list = feed<ChokepointStatus[] | null>('chokepointStatus');
-    if (!list?.length) return null;
-    this.setCount(list.length);
-    return list.map((c) =>
-      h(
-        'button',
-        { class: 'row wt-row-btn wt-li', title: c.reasons.join('\n') || 'No nearby signals', onclick: () => emit('wt:focus', { lat: c.lat, lng: c.lon, alt: 1.1, kind: 'chokepoints', id: c.id }) },
-        h('span', { class: 'wt-diamond', style: `background:${CK_COLOR[c.status]}` }),
-        h('span', { class: 'wt-li-main' }, h('span', { class: 'wt-li-title' }, c.name), c.reasons[0] ? h('span', { class: 'wt-sub' }, c.reasons[0]) : null),
-        h('span', { class: 'wt-sub' }, `${c.signals} sig`),
-        h('span', { class: 'wt-status', style: `color:${CK_COLOR[c.status]}` }, c.status),
-      ),
-    );
-  }
-}
-
-/* ── Strategic posture ─────────────────────────────────────────── */
-const POSTURE_COLOR = { CRITICAL: '#f0526b', ELEVATED: '#f59e42', NORMAL: '#5ee3a1' } as const;
-const THEATRE_VIEW: Record<string, [number, number, number]> = {
-  gulf: [27, 53, 1.1], taiwan: [24, 120, 0.9], baltic: [57, 20, 1.1], blacksea: [44, 34, 1.0], korea: [38, 127.5, 0.9], redsea: [19, 39, 1.1],
-};
-export class PosturePanel extends Panel {
-  constructor() {
-    super({
-      id: 'posture', title: 'STRATEGIC POSTURE', feeds: ['posture'],
-      info: 'Per-theatre summary from military aircraft visible in the open ADS-B network, high/critical signals in the area, and the instability of adjacent countries. Aircraft that do not broadcast are not counted.',
-    });
-  }
-  protected renderBody() {
-    const list = feed<TheatrePosture[] | null>('posture');
-    if (!list?.length) return null;
-    return list.map((t) =>
-      h(
-        'button',
-        { class: 'row wt-row-btn wt-li', style: 'align-items:flex-start', onclick: () => { const v = THEATRE_VIEW[t.id]; if (v) emit('wt:fly', { lat: v[0], lng: v[1], alt: v[2] }); } },
-        h('span', { class: 'wt-li-main' }, h('span', { class: 'wt-li-title' }, t.name), h('span', { class: 'wt-sub', style: 'white-space:normal;line-height:1.5' }, t.summary)),
-        h('span', { class: 'wt-status', style: `color:${POSTURE_COLOR[t.level]}` }, t.level),
-      ),
-    );
   }
 }
 

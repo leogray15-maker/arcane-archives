@@ -41,6 +41,16 @@ export class GlobeRenderer implements MapRenderer {
       .atmosphereColor('#8b7cf6')
       .atmosphereAltitude(0.2)
       .showGraticules(false);
+    // Tint the Blue Marble texture down to a night-ops look so markers stand out.
+    // three-globe resets material.color to null whenever a texture loads, so the
+    // tint is pinned with an accessor that ignores those resets.
+    const mat = g.globeMaterial() as unknown as { color: { set(c: string): unknown } | null; shininess: number };
+    const tint = mat.color;
+    if (tint) {
+      tint.set('#5f6890');
+      Object.defineProperty(mat, 'color', { get: () => tint, set: () => undefined, configurable: true });
+    }
+    mat.shininess = 4;
 
     // Swap in the 4K texture after first paint on large/high-DPI screens.
     if ((window.devicePixelRatio || 1) > 1.4 && el.clientWidth > 700) {

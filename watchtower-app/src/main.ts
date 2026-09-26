@@ -72,11 +72,12 @@ function mountShell() {
   const right = h('div', { class: 'wt-right' });
   const bottom = h('div', { class: 'wt-bottom' });
   const deck = h('div', { class: 'wt-deck' });
-  main.append(buildLayerPanel(main), map, right, bottom, deck);
+  main.append(map, right, bottom, deck);
   const app = h('div', { class: 'wt-app' }, buildHeader(), state.tier === 'free' ? previewBanner() : null, main, buildFooter());
   root.append(app, ...buildDrawer());
   mountPanels({ right, bottom, deck });
-  buildMap(map);
+  const stage = buildMap(map);
+  stage.appendChild(buildLayerPanel());
   if (state.country) document.dispatchEvent(new CustomEvent('wt:country', { detail: state.country }));
 }
 

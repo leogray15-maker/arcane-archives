@@ -6,23 +6,29 @@
 export interface Stream {
   id: string;
   name: string;
+  /** Label on the channel tab */
+  short: string;
   /** YouTube channel ID; the embed plays that channel's current live stream */
   channel: string;
 }
 
 export const LIVE_NEWS: Stream[] = [
-  { id: 'aljazeera', name: 'Al Jazeera English', channel: 'UCNye-wNBqNL5ZzHSJj3l8Bg' },
-  { id: 'dw', name: 'DW News', channel: 'UCknLrEdhRCp1aegoMqRaCZg' },
-  { id: 'france24', name: 'France 24 English', channel: 'UCQfwfsi5VrQ8yKZ-UWmAEFg' },
-  { id: 'sky', name: 'Sky News', channel: 'UCoMdktPbSTixAyNGwb-UYkQ' },
-  { id: 'euronews', name: 'Euronews', channel: 'UCSrZ3UV4jOidv8ppoVuvW9Q' },
-  { id: 'bloomberg', name: 'Bloomberg Television', channel: 'UCIALMKvObZNtJ6AmdCLP7Lg' },
+  { id: 'aljazeera', name: 'Al Jazeera English', short: 'Al Jazeera', channel: 'UCNye-wNBqNL5ZzHSJj3l8Bg' },
+  { id: 'dw', name: 'DW News', short: 'DW', channel: 'UCknLrEdhRCp1aegoMqRaCZg' },
+  { id: 'france24', name: 'France 24 English', short: 'France 24', channel: 'UCQfwfsi5VrQ8yKZ-UWmAEFg' },
+  { id: 'sky', name: 'Sky News', short: 'Sky News', channel: 'UCoMdktPbSTixAyNGwb-UYkQ' },
+  { id: 'euronews', name: 'Euronews', short: 'Euronews', channel: 'UCSrZ3UV4jOidv8ppoVuvW9Q' },
+  { id: 'bloomberg', name: 'Bloomberg Television', short: 'Bloomberg', channel: 'UCIALMKvObZNtJ6AmdCLP7Lg' },
 ];
+
+export const WEBCAM_REGIONS = ['MIDEAST', 'EUROPE', 'AMERICAS', 'ASIA', 'AFRICA', 'SPACE'] as const;
+export type WebcamRegion = (typeof WEBCAM_REGIONS)[number];
 
 export interface Webcam {
   id: string;
   name: string;
   city: string;
+  region: WebcamRegion;
   /** YouTube video ID of a permanent live stream, or a channel ID (prefix "channel:") */
   youtube: string;
 }
@@ -31,7 +37,9 @@ export interface Webcam {
  *  rather than guessing IDs offline — the panel explains how to add them. */
 export const WEBCAMS: Webcam[] = [];
 
-export const embedUrl = (yt: string) =>
-  yt.startsWith('channel:')
-    ? `https://www.youtube-nocookie.com/embed/live_stream?channel=${encodeURIComponent(yt.slice(8))}&autoplay=1&mute=1&rel=0`
-    : `https://www.youtube-nocookie.com/embed/${encodeURIComponent(yt)}?autoplay=1&mute=1&rel=0`;
+export function embedUrl(yt: string, opts: { muted?: boolean; api?: boolean } = {}) {
+  const q = `autoplay=1&mute=${opts.muted === false ? 0 : 1}&rel=0&playsinline=1${opts.api ? '&enablejsapi=1' : ''}`;
+  return yt.startsWith('channel:')
+    ? `https://www.youtube-nocookie.com/embed/live_stream?channel=${encodeURIComponent(yt.slice(8))}&${q}`
+    : `https://www.youtube-nocookie.com/embed/${encodeURIComponent(yt)}?${q}`;
+}

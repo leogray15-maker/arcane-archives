@@ -210,7 +210,7 @@ export abstract class Panel {
     return h('div', null, ...Array.from({ length: 5 }, (_, i) => h('div', { class: 'wt-skel', style: `width:${90 - i * 9}%;animation:none` })));
   }
 
-  protected tool(el: HTMLElement) {
+  tool(el: HTMLElement) {
     if (!this.tools) {
       this.tools = h('div', { class: 'wt-panel-tools' });
       this.el.insertBefore(this.tools, this.body);

@@ -17,6 +17,11 @@ export function utcClock(d = new Date()): string {
   return `${DAYS[d.getUTCDay()]} ${p2(d.getUTCDate())} ${MONTHS[d.getUTCMonth()]} · ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())}`;
 }
 
+/** e.g. "SAT, 26 SEP 2026 16:10:14 UTC" */
+export function utcClockLong(d = new Date()): string {
+  return `${DAYS[d.getUTCDay()]}, ${p2(d.getUTCDate())} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())} UTC`;
+}
+
 export function utcStamp(ms: number): string {
   const d = new Date(ms);
   return `${p2(d.getUTCDate())} ${MONTHS[d.getUTCMonth()]} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())} UTC`;
