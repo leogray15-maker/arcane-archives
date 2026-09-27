@@ -14,7 +14,7 @@ const out = join(root, 'dist');
 
 const DENY_DIRS = new Set([
   '.git', '.github', '.vercel', '.claude', 'node_modules', 'dist', 'api', 'lib', 'shared', 'watchtower-app',
-  'data', 'tests', 'docs', 'scripts', 'netlify', 'functions', 'archive',
+  'data', 'tests', 'docs', 'scripts', 'netlify', 'functions', 'archive', 'ad',
 ]);
 const DENY_FILES = new Set([
   'package.json', 'package-lock.json', 'tsconfig.json', 'vercel.json', 'netlify.toml', 'firebase.json',
