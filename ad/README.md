@@ -1,6 +1,6 @@
 # The Arcane Archives: 9:16 ads
 
-Six 1080×1920, 30fps vertical adverts built entirely in code with Remotion (React) and three.js.
+Ten 1080×1920, 30fps vertical adverts built entirely in code with Remotion (React) and three.js.
 The voiceover, sound effects, music and mastering are all generated from the same timing map, so every render is deterministic.
 
 ## The ads (`out/`)
@@ -15,6 +15,22 @@ The voiceover, sound effects, music and mastering are all generated from the sam
 | `room` | `arcane-archives-ad-06-room` | 06 · The Room: community, ranks, referral link and Arcane Credits | 28.5s |
 
 Each ad has `<stem>-full.mp4` (mastered to -14 LUFS, true peak ≤ -1.5 dBTP), `<stem>-silent.mp4` (no audio track, for trending sounds) and `<stem>-cover.png`.
+
+## v2: music-led ads (07–10)
+
+No narrator and no sound-effect layer. Each ad is cut to its own track on a 120 BPM grid (15 frames a beat, 60 a bar), so every cut lands on a downbeat and the picture punches on the kick. The look follows the site: heavy tight Inter, lavender accent lines and flat dark panels.
+
+| Ad id | File stem | Angle | Length |
+| --- | --- | --- | --- |
+| `zero` | `arcane-archives-ad-07-from-zero` | Starting from zero in 2026: five things, then "so I built the place" | 23s |
+| `watch` | `arcane-archives-ad-08-watchtower` | The news is out of date: the live Watchtower dashboard, globe layers, 5-minute refresh | 23s |
+| `order` | `arcane-archives-ad-09-order` | You don't need another course: the vault scroll, day one, daily quest, War Room | 23s |
+| `timing` | `arcane-archives-ad-10-timing` | Same setup, wrong hour: session dial, killzones, markets, programme, War Room | 23s |
+
+- `src/v2/config.ts` holds every v2 ad: segments (scene type, length in bars, lines, props) plus the ad's music (key, chords, lead and pad instruments, drop bar).
+- `src/v2/timeline.ts` turns that into frames: word pops on the 8th-note grid and the drum pattern. The picture and `scripts/music.py` read the same hits.
+- `scripts/music.py` writes MIDI parts, renders them through the MuseScore General soundfont with FluidSynth, then adds a synthesised 808 sub, risers built from a reversed crash, and the CTA impact. Each stem is gain-staged to a target level, run through pedalboard reverb/delay/compression with a kick sidechain, and mastered to -14 LUFS / ≤ -1.5 dBTP.
+- `bash scripts/render-v2.sh <id>` renders one ad end to end. Requires `apt install fluidsynth musescore-general-soundfont` and `pip install pedalboard mido`.
 
 ## Making another ad: edit one file
 

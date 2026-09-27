@@ -100,12 +100,16 @@ for f, label in checks:
     # Data colours are allowed where they carry meaning: candles/quotes (green, red)
     # and Watchtower risk levels (red).
     data_scene = any(k in label for k in ("markets", "ticker", "instability", "globeLayers", "intel"))
-    allowed = gold | violet | (candles if data_scene else False)
+    v2 = "bpm" in tl  # v2 uses the site's palette: lavender/violet + green LIVE, orange/red status colours
+    allowed = gold | violet | (candles if (data_scene or v2) else False)
     frac = 100 * (1 - allowed.mean())
-    off_brand.append({"frame": f, "label": label, "off_brand_%_of_saturated": round(float(frac), 2)})
-worst_c = max(o["off_brand_%_of_saturated"] for o in off_brand)
-report["colours"] = {"worst_off_brand_%": worst_c, "pass": bool(worst_c < 5), "frames": off_brand}
-ok &= bool(worst_c < 5)
+    # Share of the whole frame that is saturated and off-brand (robust when a frame has
+    # almost no colour, e.g. white text on black, where the ratio above is noise).
+    frame_share = 100 * float((~allowed).sum()) / len(img)
+    off_brand.append({"frame": f, "label": label, "off_brand_%_of_saturated": round(float(frac), 2), "off_brand_%_of_frame": round(frame_share, 3)})
+worst_c = max(o["off_brand_%_of_frame"] for o in off_brand)
+report["colours"] = {"worst_off_brand_%": worst_c, "measure": "% of frame pixels that are saturated and outside the palette", "pass": bool(worst_c < 0.5), "frames": off_brand}
+ok &= bool(worst_c < 0.5)
 
 # 4 ------------------------------------------------------------------------
 cues = json.load(open(f"build/audio/{variant}-cues.json"))
@@ -145,5 +149,5 @@ report["pass"] = bool(ok)
 json.dump(report, open(f"build/qa/{variant}-report.json", "w"), indent=2)
 print(json.dumps({k: v for k, v in report.items() if k not in ("safe_zones", "colours")}, indent=1)[:4000])
 print("safe zones:", report["safe_zones"]["max_bright_coverage_%"], "% max  pass=", report["safe_zones"]["pass"])
-print("colours:", report["colours"]["worst_off_brand_%"], "% off-brand max  pass=", report["colours"]["pass"])
+print("colours:", report["colours"]["worst_off_brand_%"], "% of frame off-brand (max)  pass=", report["colours"]["pass"])
 print("OVERALL PASS" if ok else "QA FAILED")
