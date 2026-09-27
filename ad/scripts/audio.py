@@ -14,7 +14,7 @@ import soundfile as sf
 from scipy import signal
 
 SR = 48000
-variant = sys.argv[1] if len(sys.argv) > 1 else "full"
+variant = sys.argv[1] if len(sys.argv) > 1 else "original"
 tl = json.load(open(f"build/timeline-{variant}.json"))
 cfg = json.load(open("build/config.json"))
 FPS = tl["fps"]

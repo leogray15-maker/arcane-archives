@@ -5,7 +5,7 @@ import { config } from "../ad.config";
 import { ease, rng, spr } from "../anim";
 import { MONO, SANS } from "../fonts";
 import { MARK_PATHS, MARK_VIEWBOX } from "./markPath";
-import type { SceneSlot } from "../timeline";
+type SceneSlot = { start: number };
 
 const C = config.colors;
 

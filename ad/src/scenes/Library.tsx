@@ -6,7 +6,7 @@ import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
 import { MONO, SANS } from "../fonts";
 import { MODULES } from "../modules";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 import { HOOK_CIRCLE } from "./Hook";
 
 const C = config.colors;
@@ -66,8 +66,8 @@ const ModuleCard: React.FC<{ title: string; domain: string; n: number; glow?: nu
 
 export const Library: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("library");
-  const cfg = config.scenes.library;
+  const cue = useCues<"library">();
+  const cfg = useSpec<"library">();
   // Camera: fast launch, easing into a slow drift (easeOutExpo), never fully stops.
   const camZ = ease(frame, [0, 120], [0, DEPTH * 0.62]) + frame * 4;
   const speed = ease(frame, [0, 120], [0, DEPTH * 0.62]) - ease(frame - 1, [0, 120], [0, DEPTH * 0.62]);
@@ -80,7 +80,13 @@ export const Library: React.FC = () => {
   return (
     <AbsoluteFill>
       <LineWork duration={cue.dur} sigil="none" />
-      {/* 3D fly-through */}
+      {/* 3D fly-through (faded at both sides so nothing drifts under the action rail) */}
+      <AbsoluteFill
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0px, black 110px, black 830px, transparent 940px)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0px, black 110px, black 830px, transparent 940px)",
+        }}
+      >
       <AbsoluteFill
         style={{
           perspective: 900,
@@ -111,6 +117,7 @@ export const Library: React.FC = () => {
             );
           })}
         </div>
+      </AbsoluteFill>
       </AbsoluteFill>
       <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
         <circle cx={HOOK_CIRCLE.cx} cy={HOOK_CIRCLE.cy} r={ringR} fill="none" stroke={C.gold} strokeWidth={3} opacity={ringO} />

@@ -6,7 +6,7 @@ import { Globe } from "../components/Globe";
 import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
 import { MONO, SANS, SERIF } from "../fonts";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 
 const C = config.colors;
 const INITIALS = ["JM", "AK", "RT", "SL", "DN", "OB", "KP", "HW", "EV", "MC", "TF", "YR"];
@@ -108,18 +108,22 @@ const WarRoom: React.FC<{ frame: number; avatars: number[] }> = ({ frame, avatar
 
 export const Live: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("live");
-  const cfg = config.scenes.live;
+  const cue = useCues<"live">();
+  const cfg = useSpec<"live">();
   const g = cue.globeAt;
   const toGlobe = ease(frame, [g, g + 20], [0, 1], easeInOut);
   const cardIn = spr(frame, 0, 17, 120);
   const globeIn = ease(frame, [g, g + 34]);
-  const globeScale = 0.5 + 0.34 * globeIn + ease(frame, [g + 34, cue.dur], [0, 0.04], (t) => t);
+  const globeScale = 0.5 + 0.34 * globeIn + (cfg.globe ? ease(frame, [g + 34, cue.dur], [0, 0.04], (t) => t) : 0);
   const events = Math.round(ease(frame, [cue.pins[0], cue.pins[5] + 10], [96, 128]));
 
   return (
     <AbsoluteFill>
-      <LineWork duration={cue.dur} sigil="orbit" cx={500} cy={1010} r={400} spin={0.08} opacity={0.3 * globeIn} delay={g} />
+      {cfg.globe ? (
+        <LineWork duration={cue.dur} sigil="orbit" cx={500} cy={1010} r={400} spin={0.08} opacity={0.3 * globeIn} delay={g} />
+      ) : (
+        <LineWork duration={cue.dur} sigil="square" cx={500} cy={1000} r={460} spin={0.03} opacity={0.22} />
+      )}
       <Headline lines={cfg.headline} wordFrames={cue.words} top={330} size={100} />
 
       {/* War Room card: pushes back into depth-of-field as we move to the globe */}
@@ -127,7 +131,7 @@ export const Live: React.FC = () => {
         style={{
           position: "absolute",
           left: 90,
-          top: 660,
+          top: cfg.globe ? 660 : 740,
           transform: `translateY(${(1 - cardIn) * 80 - toGlobe * 120}px) scale(${1 - toGlobe * 0.25})`,
           opacity: (1 - toGlobe) * Math.min(1, cardIn * 1.5),
           filter: `blur(${toGlobe * 12}px)`,

@@ -5,7 +5,7 @@ import { ease, easeInExpo, easeInOut, lerp, rng, spr } from "../anim";
 import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
 import { MONO } from "../fonts";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 import { chipRect } from "./Library";
 
 const C = config.colors;
@@ -13,9 +13,9 @@ const CX = 500;
 const CY = 1000;
 const R = 300;
 
-const DOMAINS = config.scenes.library.domains;
-const domainPos = DOMAINS.map((_, i) => {
-  const a = -Math.PI / 2 + (i / DOMAINS.length) * Math.PI * 2;
+const N_DOMAINS = 9; // graph layout is built for nine domain nodes
+const domainPos = Array.from({ length: N_DOMAINS }, (_, i) => {
+  const a = -Math.PI / 2 + (i / N_DOMAINS) * Math.PI * 2;
   return { x: CX + Math.cos(a) * R, y: CY + Math.sin(a) * R * 0.95 };
 });
 
@@ -23,7 +23,7 @@ const domainPos = DOMAINS.map((_, i) => {
 const GRAPH = (() => {
   const r = rng(7);
   const sats = Array.from({ length: 30 }, (_, i) => {
-    const d = i % DOMAINS.length;
+    const d = i % N_DOMAINS;
     const a = r() * Math.PI * 2;
     const rad = 60 + r() * 150;
     const p = domainPos[d];
@@ -44,8 +44,8 @@ const GRAPH = (() => {
 
 export const Connection: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("connection");
-  const cfg = config.scenes.connection;
+  const cue = useCues<"connection">();
+  const cfg = useSpec<"connection">();
   const collapse = spr(frame, cue.collapse.from, 17, 120);
   // Exit: the whole web flattens onto the horizontal price line of the next scene.
   const flat = ease(frame, [cue.dur - 22, cue.dur - 4], [0, 1], easeInExpo);
@@ -107,7 +107,7 @@ export const Connection: React.FC = () => {
         })}
       </svg>
       {/* Domain nodes: born from the library's domain chips (match-cut) */}
-      {DOMAINS.map((d, i) => {
+      {cfg.domains.slice(0, N_DOMAINS).map((d, i) => {
         const chip = chipRect(i);
         const target = map(domainPos[i]);
         const named = cue.named.indexOf(i);

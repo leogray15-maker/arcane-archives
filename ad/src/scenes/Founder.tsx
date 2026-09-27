@@ -5,7 +5,7 @@ import { ease, easeInOut, lerp } from "../anim";
 import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
 import { MONO } from "../fonts";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 
 const C = config.colors;
 const FX = 520;
@@ -41,8 +41,8 @@ const ORDER = [0, 1, 7, 8, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 11, 12, 13, 17];
 
 export const Founder: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("founder");
-  const cfg = config.scenes.founder;
+  const cue = useCues<"founder">();
+  const cfg = useSpec<"founder">();
   const morphDone = ease(frame, [cue.morph.to - 10, cue.morph.to + 10]);
   const glintT = ease(frame, [cue.knife.to - 8, cue.knife.to + 10], [0, 1], easeInOut);
   const glintO = frame >= cue.knife.to - 8 && frame <= cue.knife.to + 12 ? Math.sin(glintT * Math.PI) : 0;
@@ -117,8 +117,8 @@ export const Founder: React.FC = () => {
         )}
       </svg>
       <div style={{ position: "absolute", top: FY + 330, left: 60, width: 880, textAlign: "center", fontFamily: MONO, fontSize: 22, letterSpacing: "0.42em", height: 30 }}>
-        <span style={{ position: "absolute", left: 0, right: 0, color: C.muted, opacity: kitchen, transform: `translateY(${(1 - kitchen) * -10}px)` }}>THE KITCHEN</span>
-        <span style={{ position: "absolute", left: 0, right: 0, color: C.gold, opacity: charts, transform: `translateY(${(1 - charts) * 10}px)` }}>THE CHARTS</span>
+        <span style={{ position: "absolute", left: 0, right: 0, color: C.muted, opacity: kitchen, transform: `translateY(${(1 - kitchen) * -10}px)` }}>{cfg.labels[0]}</span>
+        <span style={{ position: "absolute", left: 0, right: 0, color: C.gold, opacity: charts, transform: `translateY(${(1 - charts) * 10}px)` }}>{cfg.labels[1]}</span>
       </div>
     </AbsoluteFill>
   );

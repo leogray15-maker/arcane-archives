@@ -5,7 +5,7 @@ import { ease, easeInExpo, spr } from "../anim";
 import { ArcaneMark } from "../components/Chrome";
 import { Headline } from "../components/Headline";
 import { MONO, SANS } from "../fonts";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 
 const C = config.colors;
 const AX = 500;
@@ -50,8 +50,8 @@ const Token: React.FC<{ kind: number }> = ({ kind }) => {
 
 const CtaInner: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("cta");
-  const cfg = config.scenes.cta;
+  const cue = useCues<"cta">();
+  const cfg = useSpec<"cta">();
   const pull = ease(frame, [0, cue.hit], [0, 1], easeInExpo);
   const hitP = spr(frame, cue.hit, 12, 160);
   const post = frame >= cue.hit;
@@ -66,7 +66,7 @@ const CtaInner: React.FC = () => {
       {!post &&
         Array.from({ length: 6 }, (_, k) => {
           const a = (k / 6) * Math.PI * 2 - Math.PI / 2 + 0.3;
-          const R0 = 560;
+          const R0 = 400; // stays clear of the action rail
           return [0, 1, 2, 3].map((g) => {
             const p = Math.max(0, pull - g * 0.04);
             const R = R0 * (1 - p);
@@ -204,7 +204,7 @@ const CtaInner: React.FC = () => {
 /** Final hold: freeze the last composed frame for `finalHoldFrames` (dust + grain keep breathing on top). */
 export const Cta: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("cta");
+  const cue = useCues<"cta">();
   return frame >= cue.hold ? (
     <Freeze frame={cue.hold}>
       <CtaInner />

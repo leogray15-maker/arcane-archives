@@ -15,9 +15,10 @@ voice = cfg["voice"]
 def key(t): return re.sub(r"^-|-$", "", re.sub(r"[^a-z0-9]+", "-", t.lower()))
 
 texts = []
-for s in cfg["scenes"].values():
-    for v in s["vo"]:
-        if v["text"] not in texts: texts.append(v["text"])
+for ad in cfg["ads"].values():
+    for s in ad["scenes"]:
+        for v in s["vo"]:
+            if v["text"] not in texts: texts.append(v["text"])
 
 os.makedirs("build/vo", exist_ok=True)
 from kokoro_onnx import Kokoro
@@ -30,12 +31,20 @@ def onset_of_last_word(x, sr):
     hop = int(sr * 0.01)
     env = np.array([np.sqrt(np.mean(x[i:i + hop] ** 2)) for i in range(0, len(x) - hop, hop)])
     env = np.convolve(env, np.ones(3) / 3, "same") / env.max()
-    for i in range(len(env) - 1, 8, -1):
+    for i in range(len(env) - 1, 12, -1):
         if env[i] >= 0.5 and env[i - 12:i].min() < 0.2:
             j = i - 12 + int(np.argmin(env[i - 12:i]))
             while j < i and env[j] < 0.2: j += 1
             return max(0.0, j * 0.01 - 0.05)
     return 0.0
+
+
+def last_word(x, sr):
+    """Onset of the last word, falling back to 60% through very short phrases
+    where there's no clear dip before the final word."""
+    o = onset_of_last_word(x, sr)
+    d = len(x) / sr
+    return o if o >= 0.3 * d else 0.6 * d
 
 timing = {}
 r = 2 ** (voice["pitchSemitones"] / 12)
@@ -43,6 +52,11 @@ for t in texts:
     kk = key(t)
     raw = f"build/vo/{kk}.raw.wav"
     out = f"build/vo/{kk}.wav"
+    if os.path.exists(out) and not os.environ.get("FORCE_VO"):
+        x, sr2 = sf.read(out)
+        timing[kk] = {"duration": round(len(x) / sr2, 3), "lastWordOnset": round(float(last_word(x, sr2)), 3)}
+        print(f"{t!r:60} {timing[kk]} (cached)")
+        continue
     audio, sr = k.create(t.replace("'Archives'", "Archives"), voice=voice["id"], speed=voice["speed"], lang="en-gb")
     sf.write(raw, audio, sr)
     # Deeper + a touch of grit: formant-lowering pitch drop, warmth, presence, soft saturation, short room.
@@ -58,7 +72,7 @@ for t in texts:
     )
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", chain, "-ar", "48000", "-ac", "1", out], check=True)
     x, sr2 = sf.read(out)
-    timing[kk] = {"duration": round(len(x) / sr2, 3), "lastWordOnset": round(float(onset_of_last_word(x, sr2)), 3)}
+    timing[kk] = {"duration": round(len(x) / sr2, 3), "lastWordOnset": round(float(last_word(x, sr2)), 3)}
     print(f"{t!r:60} {timing[kk]}")
 
 os.makedirs("src/generated", exist_ok=True)

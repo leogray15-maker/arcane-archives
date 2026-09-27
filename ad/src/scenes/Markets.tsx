@@ -5,7 +5,7 @@ import { ease, easeInOut, rng, spr } from "../anim";
 import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
 import { MONO, SANS } from "../fonts";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 
 const C = config.colors;
 // TradingView-style candle colours (style only; no logo).
@@ -48,8 +48,8 @@ const price = (v: number) => (2380 + v * 0.8).toFixed(2);
 
 export const Markets: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("markets");
-  const cfg = config.scenes.markets;
+  const cue = useCues<"markets">();
+  const cfg = useSpec<"markets">();
   // Panel opens from the flat gold line the graph collapsed into.
   const open = spr(frame, 0, 18, 110);
   const shown = ease(frame, [cue.candles.from, cue.candles.to], [0, N], easeInOut);

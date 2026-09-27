@@ -16,8 +16,8 @@ import numpy as np
 import soundfile as sf
 from PIL import Image, ImageDraw
 
-variant = sys.argv[1] if len(sys.argv) > 1 else "full"
-name = "arcane-archives-ad" + ("" if variant == "full" else f"-{variant}")
+variant = sys.argv[1] if len(sys.argv) > 1 else "original"
+name = json.load(open(f"build/timeline-{variant}.json"))["file"]
 mp4 = f"out/{name}-full.mp4"
 silent = f"out/{name}-silent.mp4"
 tl = json.load(open(f"build/timeline-{variant}.json"))
@@ -51,7 +51,7 @@ for p in (mp4, silent):
 T = cfg["transitionFrames"]
 checks = []
 for s in tl["slots"]:
-    checks += [(s["start"] + T + 2, f"{s['id']} in"), (s["start"] + s["duration"] - T - 1, f"{s['id']} out")]
+    checks += [(s["start"] + T + 2, f"{s['type']} in"), (s["start"] + s["duration"] - T - 1, f"{s['type']} out")]
 checks.append((tl["totalFrames"] - 1, "final"))
 thumbs, zone_rows = [], []
 for f, label in checks:
@@ -96,8 +96,11 @@ for f, label in checks:
     h = sat[:, 0]
     gold = (h >= 25) & (h <= 55)
     violet = (h >= 225) & (h <= 275)
-    candles = ((h >= 160) & (h <= 185)) | (h <= 10) | (h >= 345)
-    allowed = gold | violet | (candles if "markets" in label else False)
+    candles = ((h >= 140) & (h <= 185)) | (h <= 10) | (h >= 345)
+    # Data colours are allowed where they carry meaning: candles/quotes (green, red)
+    # and Watchtower risk levels (red).
+    data_scene = any(k in label for k in ("markets", "ticker", "instability", "globeLayers", "intel"))
+    allowed = gold | violet | (candles if data_scene else False)
     frac = 100 * (1 - allowed.mean())
     off_brand.append({"frame": f, "label": label, "off_brand_%_of_saturated": round(float(frac), 2)})
 worst_c = max(o["off_brand_%_of_saturated"] for o in off_brand)

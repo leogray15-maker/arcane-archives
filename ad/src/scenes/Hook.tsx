@@ -4,14 +4,15 @@ import { config } from "../ad.config";
 import { ease, rng, spr } from "../anim";
 import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 
 const C = config.colors;
 export const HOOK_CIRCLE = { cx: 500, cy: 900, r: 390 };
 
 export const Hook: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("hook");
+  const cue = useCues<"hook">();
+  const cfg = useSpec<"hook">();
   const { cx, cy, r } = HOOK_CIRCLE;
   // Frame 0 is already mid-stroke: the circle starts 12% drawn.
   const draw = 0.12 + 0.88 * ease(frame, [0, 26], [0, 1]);
@@ -96,7 +97,7 @@ export const Hook: React.FC = () => {
         )}
       </svg>
       <div style={{ position: "absolute", top: cy - 150, left: 0, right: 0 }}>
-        <Headline lines={config.scenes.hook.headline} wordFrames={cue.words} top={0} size={84} line2Scale={1.45} slam right={config.safe.rightRail} />
+        <Headline lines={cfg.headline} wordFrames={cue.words} top={0} size={84} line2Scale={cfg.headline[1].length <= 16 ? 1.45 : 1.12} slam right={config.safe.rightRail} />
       </div>
     </AbsoluteFill>
   );

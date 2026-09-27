@@ -6,7 +6,7 @@ import { ArcaneMark } from "../components/Chrome";
 import { Headline } from "../components/Headline";
 import { LineWork } from "../components/LineWork";
 import { MONO, SANS, SERIF } from "../fonts";
-import { sceneCues } from "../timeline";
+import { useCues, useSpec } from "../SceneContext";
 
 const C = config.colors;
 const BX = 500;
@@ -85,8 +85,8 @@ const Badge: React.FC<{ tier: number; frame: number; since: number }> = ({ tier,
 
 export const Rank: React.FC = () => {
   const frame = useCurrentFrame();
-  const cue = sceneCues("rank");
-  const cfg = config.scenes.rank;
+  const cue = useCues<"rank">();
+  const cfg = useSpec<"rank">();
   let tier = 0;
   cue.tiers.forEach((f, i) => {
     if (frame >= f) tier = i;
