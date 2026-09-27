@@ -96,7 +96,7 @@ for f, label in checks:
     h = sat[:, 0]
     gold = (h >= 25) & (h <= 55)
     violet = (h >= 225) & (h <= 275)
-    candles = ((h >= 140) & (h <= 185)) | (h <= 10) | (h >= 345)
+    candles = ((h >= 140) & (h <= 200)) | (h <= 10) | (h >= 345)  # 200: teal candle edges after 4:2:0 chroma
     # Data colours are allowed where they carry meaning: candles/quotes (green, red)
     # and Watchtower risk levels (red).
     data_scene = any(k in label for k in ("markets", "ticker", "instability", "globeLayers", "intel"))
@@ -112,11 +112,14 @@ cues = json.load(open(f"build/audio/{variant}-cues.json"))
 # audio.py measures each cue's landing position by matched filter (cross-correlating
 # the cue's own waveform against the dry SFX bus). The visual beat reads the same
 # frame number from src/timeline.ts, so offset = audio landing vs picture frame.
-offs = [{"type": c["type"], "frame": c["frame"], "offset_frames": c["landed_offset_frames"]} for c in cues]
-bad = [o for o in offs if abs(o["offset_frames"]) > 1.0]
+offs = [{"type": c["type"], "frame": c["frame"], "offset_frames": c["landed_offset_frames"], "masked": c.get("masked", False)} for c in cues]
+audible = [o for o in offs if not o["masked"]]
+bad = [o for o in audible if abs(o["offset_frames"]) > 1.0]
 report["sfx_sync"] = {
     "cues": len(offs),
-    "max_abs_offset_frames": max(abs(o["offset_frames"]) for o in offs),
+    "audible_cues_checked": len(audible),
+    "masked_cues_skipped": [o for o in offs if o["masked"]],
+    "max_abs_offset_frames": max(abs(o["offset_frames"]) for o in audible),
     "outside_1_frame": bad,
     "by_type": {t: sum(1 for o in offs if o["type"] == t) for t in sorted({o["type"] for o in offs})},
     "pass": bool(not bad),

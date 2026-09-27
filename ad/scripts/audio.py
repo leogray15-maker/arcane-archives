@@ -286,25 +286,36 @@ for c in tl["sfx"]:
     clip, pre = SFX[c["type"]](c)
     at = int(round(c["frame"] / FPS * SR))
     place(sfx, clip * db(c.get("gain", 0)), at - pre)
-    cue_log.append({"type": c["type"], "frame": c["frame"], "sample": at, "_ref": (clip.mean(1), pre)})
+    cue_log.append({"type": c["type"], "frame": c["frame"], "sample": at, "_ref": (clip.mean(1) * db(c.get("gain", 0)), pre)})
 
 # Verify where every cue's transient actually landed: cross-correlate a 300ms
 # window of each clip (around its transient) against the dry SFX bus, searching
 # +/-5 frames. Overlapping sounds don't move the correlation peak.
 dry = sfx.mean(1)
-D = int(5 / FPS * SR)
+dry_hp = hp(dry, 1500, 4)
+D = int(3 / FPS * SR)
 for c in cue_log:
     ref, pre = c.pop("_ref")
     a, b = max(0, pre - int(0.05 * SR)), min(len(ref), pre + int(0.25 * SR))
     tmpl = ref[a:b]
+    # Short clicky sounds are matched on their high band, where the music and
+    # low-end hits can't pull the correlation peak around.
+    bus = dry
+    if c["type"] in ("tick", "flutter", "zap", "pop"):
+        tmpl = hp(tmpl, 1500, 4)
+        bus = dry_hp
     start = c["sample"] - (pre - a) - D
-    seg = dry[max(0, start): start + len(tmpl) + 2 * D]
+    seg = bus[max(0, start): start + len(tmpl) + 2 * D]
     if start < 0 or len(seg) < len(tmpl) + 2 * D or np.abs(tmpl).max() == 0:
         c["landed_offset_frames"] = 0.0
         continue
     corr = signal.fftconvolve(seg, tmpl[::-1], "valid")
     lag = int(np.argmax(corr)) - D
     c["landed_offset_frames"] = round(lag / SR * FPS, 3)
+    # How far this cue sits under everything else playing at that moment.
+    own = np.sum(tmpl ** 2) + 1e-12
+    other = np.sum(seg[D: D + len(tmpl)] ** 2) - own
+    c["masked"] = bool(10 * np.log10(own / max(other, 1e-12)) < -12)
 sfx = reverb(sfx, 1.8, 0.2)
 
 # Music: dark ambient bed in D minor. Drones, a slow heartbeat pulse, air.

@@ -42,7 +42,7 @@ export const Kitchen: React.FC = () => {
         const at = cue.tickets[i];
         const p = spr(frame, at, 14, 150);
         const x = 74 + i * 144;
-        const from = 1120;
+        const from = -160; // slide in from the left, clear of the action rail
         const swing = Math.sin((frame - at) / 5) * 6 * Math.exp(-(frame - at) / 18) * (frame >= at ? 1 : 0);
         // First ticket goes on "order up".
         const pulled = i === 0 ? ease(frame, [cue.bell + 4, cue.bell + 20], [0, 1], easeInExpo) : 0;

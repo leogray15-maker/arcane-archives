@@ -11,7 +11,7 @@ import { useCues, useSpec } from "../SceneContext";
 const C = config.colors;
 const COLS = 26;
 const ROWS = 14; // 364 days + today
-const PITCH = 33;
+const PITCH = 32;
 const GX = 60 + (880 - COLS * PITCH) / 2;
 const GY = 930;
 
