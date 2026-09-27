@@ -48,7 +48,7 @@ const NAV = [
   ]},
   { label: 'Markets', items: [
     { key: 'trading-floor',   label: 'Trading Floor', href: 'trading-floor.html',   icon: 'floor' },
-    { key: 'watchtower',      label: 'Watchtower',    href: 'world-map.html',       icon: 'watchtower' },
+    { key: 'watchtower',      label: 'Watchtower',    href: '/watchtower/',          icon: 'watchtower' },
     { key: 'stock-picks',     label: 'Stock Picks',   href: 'stock-picks.html',     icon: 'stocks' },
     { key: 'free-signals',    label: 'Signals',       href: 'free-signals.html',    icon: 'signal' },
     { key: 'bullion',         label: 'Bullion',       href: 'bullion.html',         icon: 'bullion' },
