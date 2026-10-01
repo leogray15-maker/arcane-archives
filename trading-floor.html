@@ -45,6 +45,8 @@
       position: relative;
       z-index: 2;
     }
+    /* Inside the shared shell the body already clears the top bar */
+    body.has-portal-shell .tf-layout { margin-top: 0; height: calc(100dvh - var(--aa-nav-h)); }
 
     /* ── Top toolbar ── */
     .tf-toolbar {
@@ -967,7 +969,7 @@
 <script type="module">
   import { initializeApp }               from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   const app  = initializeApp({ apiKey:"AIzaSyAK9MheMvSeOpscic4lXUsIwa0J5ubVf6w", authDomain:"arcane-archives-3b0f5.firebaseapp.com", projectId:"arcane-archives-3b0f5" });
   const auth = getAuth(app);
@@ -990,6 +992,10 @@
       document.getElementById('nav-xp').textContent = xp.toLocaleString();
       document.getElementById('nav-rank').textContent = getRank(xp).label;
       if (user.photoURL) document.getElementById('nav-avatar').src = user.photoURL;
+      try {
+        const alerts = await getDocs(query(collection(db, 'alerts_live'), orderBy('createdAt', 'desc'), limit(8)));
+        window.renderSignals?.(alerts.docs.map(d => d.data()).filter(a => (a.status || 'open') === 'open'));
+      } catch (err) { console.warn('Signals unavailable:', err.message); window.renderSignals?.([]); }
     } catch(e) {
       console.error('Auth guard error:', e);
       location.href = 'arcane-store.html';
@@ -1105,6 +1111,8 @@
 .wl-item { border-radius: 10px; margin: 0 0.3rem 0.3rem; padding: 0.5rem 0.6rem; border:1px solid transparent; }
 .wl-item:hover { background: var(--bg-3); border-color: var(--border); }
 .wl-item.active { background: rgba(155, 123, 247,0.08); border-color: var(--border-hi); border-left: 2px solid var(--teal); }
+.sig-empty, .ta-empty { padding: 1.25rem 1rem; font-size: 0.7rem; line-height: 1.55; color: var(--text-muted); text-align: center; }
+.wl-chg.flat { color: var(--text-muted); }
 </style>
 <script>
 /* Claim the nav ticker BEFORE arcane-prices.js loads so its shared
@@ -1227,7 +1235,7 @@ function renderWatchlist() {
   container.innerHTML = WATCHLIST.map(item => `
     <div class="wl-item ${item.active ? 'active' : ''}" onclick="selectSymbol('${item.sym}',this)">
       <div class="wl-left">
-        <div class="wl-dir-arrow ${item.up ? 'up' : 'down'}" id="wl-arr-${item.sym}">${item.up ? '▲' : '▼'}</div>
+        <div class="wl-dir-arrow flat" id="wl-arr-${item.sym}">–</div>
         <div>
           <div class="wl-sym">${item.sym}</div>
           <div class="wl-name">${item.name}</div>
@@ -1235,7 +1243,7 @@ function renderWatchlist() {
       </div>
       <div class="wl-right">
         <div class="wl-price" id="wl-p-${item.sym}">${item.price}</div>
-        <div class="wl-chg ${item.up ? 'up' : 'down'}" id="wl-c-${item.sym}">${item.chg}</div>
+        <div class="wl-chg flat" id="wl-c-${item.sym}">${item.chg}</div>
       </div>
     </div>
   `).join('');
@@ -1252,20 +1260,24 @@ function selectSymbol(sym, el) {
 window.selectSymbol = selectSymbol;
 
 /* ══ Signals ══ */
-function renderSignals() {
-  const signals = [
-    { sym:'XAUUSD', dir:'LONG',  desc:'Break above key resistance at 2,640. Target 2,680. SL below 2,620.', entry:'2,641', tp:'2,680', sl:'2,618' },
-    { sym:'BTCUSD', dir:'LONG',  desc:'Consolidation above 95K. Bullish structure intact. Watch for momentum push.', entry:'95,400', tp:'102,000', sl:'91,500' },
-    { sym:'EURUSD', dir:'SHORT', desc:'Bearish divergence on 4H RSI. Rejection from 1.0850 resistance.', entry:'1.0835', tp:'1.0760', sl:'1.0875' },
-    { sym:'USOIL',  dir:'SHORT', desc:'Supply zone reaction. EIA data negative. OPEC+ uncertainty.', entry:'78.80', tp:'75.50', sl:'80.10' },
-  ];
-  document.getElementById('tab-signals').innerHTML = signals.map(s => `
+// Leo's open trade alerts from the admin panel (alerts_live), newest first.
+// list is null while loading; the module script below fills it in.
+function renderSignals(list) {
+  const host = document.getElementById('tab-signals');
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  if (list == null) { host.innerHTML = '<div class="sig-empty">Loading signals…</div>'; return; }
+  if (!list.length) { host.innerHTML = '<div class="sig-empty">No open signals right now. New trade alerts from Leo appear here as soon as they are posted.</div>'; return; }
+  const signals = list.map(a => ({
+    sym: esc(a.pair), dir: /sell|short/i.test(a.direction || '') ? 'SHORT' : 'LONG',
+    desc: esc(a.notes || ''), entry: esc(a.entry || '—'), tp: esc(a.tp1 || '—'), sl: esc(a.sl || '—'),
+  }));
+  host.innerHTML = signals.map(s => `
     <div class="sig-item">
       <div class="sig-header">
         <span class="sig-sym">${s.sym}</span>
         <span class="sig-dir ${s.dir.toLowerCase()}">${s.dir}</span>
       </div>
-      <div class="sig-body">${s.desc}</div>
+      ${s.desc ? `<div class="sig-body">${s.desc}</div>` : ''}
       <div class="sig-levels">
         <div class="sig-level">ENTRY <span>${s.entry}</span></div>
         <div class="sig-level">TP <span style="color:var(--green)">${s.tp}</span></div>
@@ -1420,7 +1432,7 @@ function _renderFearGreed(fg) {
   if (val == null) {
     if (valEl) valEl.textContent = '—';
     if (lblEl) { lblEl.textContent = 'Unavailable'; lblEl.className = 'imc-sub neutral'; }
-    if (barEl) { barEl.style.width = '50%'; barEl.classList.remove('skeleton'); }
+    if (barEl) { barEl.style.width = '0%'; barEl.classList.remove('skeleton'); }
     return;
   }
   if (barEl) { barEl.style.width = val + '%'; barEl.style.background = _fgColor(val); barEl.classList.remove('skeleton'); }
@@ -1521,22 +1533,25 @@ function _renderSectorHeatmap(data) {
 
 /* ── Macro Pulse ── */
 function _renderMacroPulse(data) {
-  const dxy = data.DXY?.price ?? 100;
-  const fg  = _fearGreedData?.value ?? 50;
+  // Each reading needs its live input; without one it says so instead of guessing
+  const dxy = data.DXY?.price ?? null;
+  const fg  = _fearGreedData?.value ?? null;
   const xau = data.XAU;
-  const vix = data.VIX?.price ?? 18;
+  const vix = data.VIX?.price ?? null;
+  const NA = { text:'NO DATA', cls:'neutral' };
 
-  const dollar = dxy > 103 ? { text:'STRONG', cls:'strong' } : dxy > 98 ? { text:'NEUTRAL', cls:'neutral' } : { text:'WEAK', cls:'weak' };
-  const risk   = fg > 60   ? { text:'RISK-ON',  cls:'on'  } : fg < 40 ? { text:'RISK-OFF', cls:'off' } : { text:'NEUTRAL', cls:'neutral' };
-  const gold   = xau && xau.change > 0.3 ? { text:'BULLISH', cls:'bullish' } : xau && xau.change < -0.3 ? { text:'BEARISH', cls:'bearish' } : { text:'NEUTRAL', cls:'neutral' };
-  const vol    = vix < 15  ? { text:'LOW',      cls:'low'      } : vix < 25 ? { text:'ELEVATED', cls:'elevated' } : { text:'HIGH', cls:'high' };
+  const dollar = dxy == null ? NA : dxy > 103 ? { text:'STRONG', cls:'strong' } : dxy > 98 ? { text:'NEUTRAL', cls:'neutral' } : { text:'WEAK', cls:'weak' };
+  const risk   = fg == null ? NA : fg > 60   ? { text:'RISK-ON',  cls:'on'  } : fg < 40 ? { text:'RISK-OFF', cls:'off' } : { text:'NEUTRAL', cls:'neutral' };
+  const gold   = !xau || xau.change == null ? NA : xau.change > 0.3 ? { text:'BULLISH', cls:'bullish' } : xau.change < -0.3 ? { text:'BEARISH', cls:'bearish' } : { text:'NEUTRAL', cls:'neutral' };
+  const vol    = vix == null ? NA : vix < 15  ? { text:'LOW',      cls:'low'      } : vix < 25 ? { text:'ELEVATED', cls:'elevated' } : { text:'HIGH', cls:'high' };
 
   let phase = 'Consolidation phase — mixed signals across asset classes';
-  if (fg < 30)       phase = 'Extreme fear — potential contrarian buy signal forming';
-  else if (fg < 45)  phase = 'Risk-off environment — capital rotating to safe havens';
-  else if (fg > 75)  phase = 'Euphoria detected — elevated correction risk, tighten stops';
-  else if (fg > 60)  phase = 'Risk-on momentum — equities and crypto outperforming';
-  else if (vix > 25) phase = 'High volatility regime — reduce position size, widen stops';
+  if (fg == null && vix == null) phase = 'Waiting for live sentiment and volatility data';
+  else if (fg != null && fg < 30)  phase = 'Extreme fear — potential contrarian buy signal forming';
+  else if (fg != null && fg < 45)  phase = 'Risk-off environment — capital rotating to safe havens';
+  else if (fg != null && fg > 75)  phase = 'Euphoria detected — elevated correction risk, tighten stops';
+  else if (fg != null && fg > 60)  phase = 'Risk-on momentum — equities and crypto outperforming';
+  else if (vix != null && vix > 25) phase = 'High volatility regime — reduce position size, widen stops';
 
   const ts = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
@@ -1600,19 +1615,8 @@ function _startIntelRefresh() {
    CUSTOM INTEL WIDGETS — replaces TradingView (chart kept as-is)
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ── small math helpers (seeded, stable per symbol/day) ── */
+/* ── small math helpers ── */
 function _hex(a){ return Math.round(Math.max(0,Math.min(1,a))*255).toString(16).padStart(2,'0'); }
-function _hash(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
-function _mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-function _tkey(){ return new Date().toISOString().slice(0,10); }
-function _genCloses(seed,n,end,chg,vol){
-  const rnd=_mulberry(_hash(seed)); chg=chg||0;
-  const start=end/(1+chg/100); const drift=(end-start)/(n-1);
-  vol=(vol!=null?vol:Math.max(Math.abs(chg)/100,0.005))*end;
-  const out=[]; let p=start;
-  for(let i=0;i<n;i++){ const tgt=start+drift*i; p+=drift+(rnd()-0.5)*vol+(tgt-p)*0.2; out.push(p); }
-  out[n-1]=end; return out;
-}
 function _sma(a,p){ if(a.length<p) return a[a.length-1]; let s=0; for(let i=a.length-p;i<a.length;i++) s+=a[i]; return s/p; }
 function _emaArr(a,p){ const k=2/(p+1); let e=a[0]; const out=[e]; for(let i=1;i<a.length;i++){ e=a[i]*k+e*(1-k); out.push(e);} return out; }
 function _ema(a,p){ return _emaArr(a,p)[a.length-1]; }
@@ -1641,39 +1645,17 @@ function _renderNavTicker(data){
   if(items) track.innerHTML=items+items;   // duplicate for seamless loop
 }
 
-/* ── Economic Calendar — custom, date-aware (no TradingView) ── */
-const TF_ECO = [
-  { d:0, t:'13:45', n:'ISM Services PMI',            c:'🇺🇸 USD', imp:'high' },
-  { d:1, t:'04:30', n:'RBA Cash Rate Decision',      c:'🇦🇺 AUD', imp:'high' },
-  { d:1, t:'10:00', n:'Eurozone Retail Sales',       c:'🇪🇺 EUR', imp:'med'  },
-  { d:2, t:'15:30', n:'EIA Crude Oil Inventories',   c:'🇺🇸 USD', imp:'med'  },
-  { d:2, t:'19:00', n:'FOMC Meeting Minutes',        c:'🇺🇸 USD', imp:'high' },
-  { d:3, t:'12:00', n:'Bank of England Rate Decision',c:'🇬🇧 GBP', imp:'high' },
-  { d:3, t:'12:30', n:'ECB Monetary Policy Statement',c:'🇪🇺 EUR', imp:'high' },
-  { d:3, t:'12:30', n:'US Initial Jobless Claims',   c:'🇺🇸 USD', imp:'med'  },
-  { d:4, t:'12:30', n:'Non-Farm Payrolls (NFP)',     c:'🇺🇸 USD', imp:'high' },
-  { d:4, t:'12:30', n:'US Unemployment Rate',        c:'🇺🇸 USD', imp:'high' },
-];
+/* ── Economic Calendar — TradingView's live events feed (high impact, this week) ── */
 function _renderEcoCalendar() {
-  const host=document.getElementById('eco-calendar'); if(!host) return;
-  const now=new Date(); const dow=(now.getUTCDay()+6)%7;
-  const monday=new Date(now); monday.setUTCDate(now.getUTCDate()-dow);
-  const byDay={}; TF_ECO.forEach(e=>{ (byDay[e.d]=byDay[e.d]||[]).push(e); });
-  let html='';
-  Object.keys(byDay).sort((a,b)=>a-b).forEach(dk=>{
-    const day=new Date(monday); day.setUTCDate(monday.getUTCDate()+parseInt(dk));
-    const label=day.toLocaleDateString('en-GB',{timeZone:'UTC',weekday:'short',day:'2-digit',month:'short'});
-    const isToday=day.toISOString().slice(0,10)===now.toISOString().slice(0,10);
-    html+=`<div class="eco-day-hdr">${label}${isToday?' · TODAY':''}</div>`;
-    byDay[dk].sort((a,b)=>a.t.localeCompare(b.t)).forEach(e=>{
-      const dot = e.imp==='high'?'🔴':e.imp==='med'?'🟡':'⚪';
-      html+=`<div class="eco-event">
-        <div class="eco-event-top"><div class="eco-event-name">${e.n}</div><div class="eco-impact">${dot}</div></div>
-        <div class="eco-event-meta"><span class="eco-currency">${e.c}</span><span class="eco-date">${e.t} GMT</span></div>
-      </div>`;
-    });
-  });
-  host.innerHTML=html;
+  const host=document.getElementById('eco-calendar'); if(!host||host.dataset.tv) return;
+  host.dataset.tv='1';
+  host.style.padding='0';
+  host.innerHTML='<div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget" style="height:100%"></div></div>';
+  const s=document.createElement('script');
+  s.src='https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+  s.async=true;
+  s.text=JSON.stringify({ colorTheme:'dark', isTransparent:true, width:'100%', height:'100%', locale:'en', importanceFilter:'0,1', countryFilter:'us,eu,gb,jp,au,ca,ch,cn' });
+  host.querySelector('.tradingview-widget-container').appendChild(s);
 }
 
 /* ── Technical Outlook — custom indicator engine for the active symbol ── */
@@ -1682,17 +1664,32 @@ const TECH_MAP = {
   SPX500:{key:'SPX',dec:2}, NAS100:{key:'NDQ',dec:2}, USOIL:{key:'WTI',dec:2},
   GBPUSD:{key:'GBPUSD',dec:4}, EURUSD:{key:'EURUSD',dec:4}, USDJPY:{key:'USDJPY',dec:2}
 };
-function _symPrice(sym){
-  const m=TECH_MAP[sym]; const d=m&&_latestPriceData[m.key];
-  if(d&&d.price!=null) return { price:d.price, change:d.change||0, dec:m.dec };
-  return { price:100, change:0, dec:2 };
+// Indicator readings need real candle history. The Floor has a free 4H feed
+// for crypto (Binance); other markets show the chart's own indicators instead.
+const TA_CANDLES = { BTCUSD:'BTCUSDT', ETHUSD:'ETHUSDT' };
+const _taCache = {};
+async function _taCloses(sym){
+  const pair=TA_CANDLES[sym]; if(!pair) return null;
+  const hit=_taCache[sym]; if(hit && Date.now()-hit.t<5*60*1000) return hit.closes;
+  const ctrl=new AbortController(); const tid=setTimeout(()=>ctrl.abort(),9000);
+  try{
+    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=4h&limit=140`,{signal:ctrl.signal});
+    if(!r.ok) return null;
+    const rows=await r.json(); if(!Array.isArray(rows)||rows.length<30) return null;
+    const closes=rows.map(k=>parseFloat(k[4])).filter(v=>!isNaN(v));
+    _taCache[sym]={t:Date.now(),closes}; return closes;
+  }catch(e){ return null; } finally { clearTimeout(tid); }
 }
-function _renderTechnical(sym){
+async function _renderTechnical(sym){
   sym=sym||currentSymbol;
   const host=document.getElementById('tv-technical'); if(!host) return;
   const badge=document.getElementById('ta-badge'); if(badge) badge.textContent=sym+' · 4H';
-  const p=_symPrice(sym);
-  const closes=_genCloses(sym+_tkey()+'tech',140,p.price,p.change);
+  const p={ dec:(TECH_MAP[sym]||{dec:2}).dec };
+  if(!TA_CANDLES[sym]){ host.innerHTML=`<div class="ta-empty">There is no live candle feed for ${sym} here yet, so no technical readings are shown. Switch to the chart and use its Indicators for this market.</div>`; return; }
+  if(!host.querySelector('.ta-wrap')) host.innerHTML='<div class="ta-empty">Loading 4H candles…</div>';
+  const closes=await _taCloses(sym);
+  if(sym!==currentSymbol) return;
+  if(!closes){ host.innerHTML='<div class="ta-empty">Candle data is unavailable right now, so no technical readings are shown.</div>'; return; }
   const price=closes[closes.length-1];
 
   let maBuy=0,maSell=0; const maRows=[];
@@ -1772,11 +1769,11 @@ async function _renderCryptoHeat(){
 /* ── Market Intel Feed — custom AI briefing from live signals ── */
 function _renderIntelFeed(){
   const host=document.getElementById('tv-news'); if(!host) return;
-  const d=_latestPriceData||{}; const fg=_fearGreedData?_fearGreedData.value:50;
-  const xau=d.XAU, btc=d.BTC, dxy=d.DXY, vix=d.VIX?.price??18, us10=d.US10Y?.price, spx=d.SPX, ndq=d.NDQ;
+  const d=_latestPriceData||{}; const fg=_fearGreedData?_fearGreedData.value:null;
+  const xau=d.XAU, btc=d.BTC, dxy=d.DXY, vix=d.VIX?.price, us10=d.US10Y?.price, spx=d.SPX, ndq=d.NDQ;
   const now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
   const it=[];
-  it.push({i:'🧠',tag:'SENTIMENT',c: fg>=60?'var(--green)':fg<=40?'var(--red)':'var(--gold)',
+  if(fg!=null) it.push({i:'🧠',tag:'SENTIMENT',c: fg>=60?'var(--green)':fg<=40?'var(--red)':'var(--gold)',
     t:`Fear &amp; Greed at <b>${fg}</b> — ${fg>=60?'risk-on appetite':fg<=40?'risk-off, haven bid':'balanced positioning'}.`});
   if(dxy) it.push({i:'💵',tag:'DOLLAR',c:(dxy.change??0)>=0?'var(--green)':'var(--red)',
     t:`DXY <b>${_priceStr(dxy.price,2)}</b> (${_chgStr(dxy.change)}) — ${(dxy.change??0)>=0?'headwind for metals &amp; risk':'tailwind for commodities'}.`});
@@ -1784,12 +1781,13 @@ function _renderIntelFeed(){
     t:`Gold <b>$${_priceStr(xau.price,2)}</b> (${_chgStr(xau.change)}) — ${xau.change>0.3?'haven demand building':xau.change<-0.3?'pressured by yields/USD':'range-bound'}.`});
   if(us10!=null) it.push({i:'📊',tag:'RATES',c:'var(--teal)',
     t:`US 10Y at <b>${_priceStr(us10,2)}%</b> — ${us10>4.5?'elevated; pressures growth assets':'supportive backdrop for risk'}.`});
-  it.push({i:'⚡',tag:'VOLATILITY',c:vix>22?'var(--red)':'var(--green)',
+  if(vix!=null) it.push({i:'⚡',tag:'VOLATILITY',c:vix>22?'var(--red)':'var(--green)',
     t:`VIX <b>${_priceStr(vix,2)}</b> — ${vix>28?'stressed; reduce size':vix>20?'elevated; expect whipsaw':'calm; trend-following favoured'}.`});
   if(spx||ndq) it.push({i:'📈',tag:'EQUITIES',c:(spx?.change??0)>=0?'var(--green)':'var(--red)',
     t:`S&amp;P ${_chgStr(spx?.change)} · Nasdaq ${_chgStr(ndq?.change)} — breadth ${(spx?.change??0)>=0&&(ndq?.change??0)>=0?'broadly positive':'mixed'}.`});
   if(btc) it.push({i:'₿',tag:'CRYPTO',c:(btc.change??0)>=0?'var(--green)':'var(--red)',
     t:`BTC <b>$${_priceStr(btc.price,0)}</b> (${_chgStr(btc.change)}) leading the digital-asset tape.`});
+  if(!it.length){ host.innerHTML='<div class="intel-load">Waiting for live market data…</div>'; return; }
   host.innerHTML=it.map(x=>`<div class="nf-item"><span class="nf-icon">${x.i}</span><div>
     <span class="nf-tag" style="background:${x.c}22;color:${x.c}">${x.tag}</span>
     <div class="nf-txt" style="margin-top:0.25rem">${x.t}</div>
@@ -1806,7 +1804,7 @@ function _initIntelWidgets(){
 document.addEventListener('DOMContentLoaded', () => {
   _setupNavTicker();
   renderWatchlist();
-  renderSignals();
+  renderSignals(null);
   _renderEcoCalendar();
   _initIntelWidgets();
   _renderMacroPulse({});

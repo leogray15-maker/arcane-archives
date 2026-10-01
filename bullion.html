@@ -1145,34 +1145,26 @@
         </a>
     </nav>
 
+    <div data-hub-banner data-title="Bullion" data-kicker="Physical precious metals" data-desc="Own physical gold and silver at competitive premiums. Tangible assets held outside the banking system, with secure, insured delivery.">
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-value" id="goldSpot">—</div>
+                <div class="hero-stat-label">Gold spot / oz</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" id="silverSpot">—</div>
+                <div class="hero-stat-label">Silver spot / oz</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value">.999+</div>
+                <div class="hero-stat-label">Purity</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main">
         <div class="container">
-            <!-- Hero Section -->
-            <section class="hero">
-                <div class="hero-badge">
-                    Physical Precious Metals
-                </div>
-                <h1>Stack <span class="gold-text">Real Wealth</span></h1>
-                <p class="hero-subtitle">
-                    Own physical gold and silver at competitive premiums.
-                    Store tangible assets outside the banking system. Secure, insured delivery.
-                </p>
-                <div class="hero-stats">
-                    <div class="hero-stat">
-                        <div class="hero-stat-value" id="goldSpot">$2,650</div>
-                        <div class="hero-stat-label">Gold / oz</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="hero-stat-value" id="silverSpot">$31.50</div>
-                        <div class="hero-stat-label">Silver / oz</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="hero-stat-value">.999+</div>
-                        <div class="hero-stat-label">Purity</div>
-                    </div>
-                </div>
-            </section>
 
             <!-- Metal Toggle -->
             <div class="metal-toggle-container">
@@ -1408,8 +1400,31 @@
         let allProducts = [];
         let currentUser = null;
 
-        // Spot prices (these would ideally come from an API)
-        const spotPrices = { gold: 2650, silver: 31.50 };
+        // Spot prices in GBP per troy ounce, from the live market feed
+        // (arcane-prices.js: gold and silver quote in USD, converted at the live
+        // GBP/USD rate). They stay null until real quotes arrive, and product
+        // prices show "Price on enquiry" rather than an invented figure.
+        const spotPrices = { gold: null, silver: null };
+        function readSpot() {
+            const P = window.ArcanePrices;
+            if (!P) return;
+            const fx = P.get('GBPUSD'), xau = P.get('XAU'), xag = P.get('XAG');
+            const rate = fx && fx.price > 0 ? fx.price : null;
+            const next = {
+                gold: rate && xau && xau.price > 0 ? xau.price / rate : null,
+                silver: rate && xag && xag.price > 0 ? xag.price / rate : null,
+            };
+            if (next.gold === spotPrices.gold && next.silver === spotPrices.silver) return;
+            Object.assign(spotPrices, next);
+            const fmt = v => v == null ? '—' : '£' + v.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('goldSpot').textContent = fmt(spotPrices.gold);
+            document.getElementById('silverSpot').textContent = fmt(spotPrices.silver);
+            if (allProducts.length) renderProducts(currentMetal);
+        }
+        (function waitForPrices() {
+            if (window.ArcanePrices) { window.ArcanePrices.subscribe(readSpot); readSpot(); }
+            else setTimeout(waitForPrices, 300);
+        })();
 
         // Auth state
         onAuthStateChanged(auth, (user) => {
@@ -1560,8 +1575,7 @@
 
             grid.innerHTML = filtered.map(product => {
                 const spotPrice = spotPrices[product.metal];
-                const ozPrice = spotPrice * (product.weight / 31.1);
-                const finalPrice = ozPrice * (1 + product.premium / 100);
+                const finalPrice = spotPrice == null ? null : spotPrice * (product.weight / 31.1) * (1 + product.premium / 100);
                 const isSilver = product.metal === 'silver';
 
                 return `
@@ -1584,7 +1598,7 @@
                             <div class="product-weight">${product.weight}g</div>
 
                             <div class="product-price-row">
-                                <div class="product-price">£${finalPrice.toFixed(2)}</div>
+                                <div class="product-price">${finalPrice == null ? 'Price on enquiry' : '£' + finalPrice.toFixed(2)}</div>
                                 <div class="product-premium">Spot +${product.premium}%</div>
                             </div>
 
@@ -1649,9 +1663,10 @@
             if (!selectedProduct) return;
 
             const quantity = parseInt(document.getElementById('enquiryQuantity').value);
+            // Indicative only, at the live spot price; null when no live quote is available
             const spotPrice = spotPrices[selectedProduct.metal];
-            const unitPrice = spotPrice * (selectedProduct.weight / 31.1) * (1 + selectedProduct.premium / 100);
-            const totalPrice = unitPrice * quantity;
+            const unitPrice = spotPrice == null ? null : spotPrice * (selectedProduct.weight / 31.1) * (1 + selectedProduct.premium / 100);
+            const totalPrice = unitPrice == null ? null : unitPrice * quantity;
 
             const enquiryData = {
                 productId: selectedProduct.id,
