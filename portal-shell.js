@@ -84,6 +84,10 @@ function activeLabel(active) {
   return document.body.dataset.title || '';
 }
 
+// The dashboard renders its own hub navigation (data-shell="hub"): the shell
+// then only supplies the sidebar, as a drawer opened from the page's menu button.
+const HUB = () => document.body.dataset.shell === 'hub';
+
 function buildShell(active) {
   const groups = NAV.map(g => `
     <div class="sidebar-group">
@@ -139,26 +143,45 @@ function buildShell(active) {
 
   const host = document.createElement('div');
   host.id = 'arcane-shell';
-  host.innerHTML = sidebar;
+  host.innerHTML = HUB() ? sidebar.slice(0, sidebar.indexOf('<div class="arcane-nav"')) : sidebar;
   document.body.insertBefore(host, document.body.firstChild);
-  document.body.classList.add('has-portal-shell');
+  document.body.classList.add(HUB() ? 'shell-hub' : 'has-portal-shell');
 }
 
 function wireShell() {
   const sidebar = document.getElementById('arcane-sidebar');
   const overlay = document.getElementById('sidebar-overlay');
   const toggle  = document.getElementById('sidebar-toggle');
-  const open  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
-  const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; };
+  const open  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; toggle?.setAttribute('aria-expanded', 'true'); sidebar.querySelector('a')?.focus(); };
+  const close = () => {
+    if (!sidebar.classList.contains('open')) return;
+    sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = '';
+    toggle?.setAttribute('aria-expanded', 'false');
+  };
   toggle?.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
   sidebar?.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
   overlay?.addEventListener('click', close);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 }
 
-function populateNav() {
+// Remembers the sections a member opens (newest first, per member, this
+// browser only) so the dashboard can offer "Continue where you left off".
+function recordVisit(uid, active) {
+  const known = NAV.some(g => g.items.some(it => it.key === active));
+  if (!known || active === 'dashboard') return;
+  const key = 'aa_recent_' + uid;
+  try {
+    let list = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!Array.isArray(list)) list = [];
+    list = [{ key: active, t: Date.now() }, ...list.filter(v => v && v.key !== active)].slice(0, 12);
+    localStorage.setItem(key, JSON.stringify(list));
+  } catch (_) {}
+}
+
+function populateNav(active) {
   onAuthStateChanged(auth, async user => {
     if (!user) return;
+    recordVisit(user.uid, active);
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
@@ -225,7 +248,7 @@ function init() {
   buildShell(active);
   wireShell();
   bindLogout();
-  populateNav();
+  populateNav(active);
   loadTicker();
 }
 
