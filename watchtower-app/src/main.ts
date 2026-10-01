@@ -26,6 +26,15 @@ function bootMessage(...nodes: (Node | string)[]) {
   replaceChildren(boot.querySelector('.wt-boot-inner')!, ...nodes);
 }
 
+// The /me failure decides what the boot screen says; the code helps whoever
+// fixes the deployment (see docs/watchtower/RUNBOOK.md).
+function bootError(e: unknown): string {
+  if (!(e instanceof ApiError) || e.status === 0) return 'Could not reach the Watchtower. Check your connection.';
+  if (e.code === 'auth_unconfigured') return 'The Watchtower server is not configured yet (FIREBASE_SERVICE_ACCOUNT is not set).';
+  if (e.code === 'auth_misconfigured') return `The Watchtower server is misconfigured: ${e.message}.`;
+  return `The Watchtower server hit an error (${e.code || `HTTP ${e.status}`}). Please try again shortly.`;
+}
+
 async function start() {
   const session = await authGate();
   setSession(session);
@@ -34,7 +43,7 @@ async function start() {
   try {
     me = await api<MeResponse>('me', { timeoutMs: 8000 });
   } catch (e) {
-    const msg = e instanceof ApiError && e.status === 500 ? 'The Watchtower server is not configured yet.' : 'Could not reach the Watchtower. Check your connection.';
+    const msg = bootError(e);
     bootMessage(msg, h('a', { href: location.href }, 'RETRY'), h('a', { href: '/dashboard.html' }, '‹ DASHBOARD'));
     return;
   }
