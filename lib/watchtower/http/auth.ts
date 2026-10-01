@@ -45,14 +45,34 @@ export function setTokenVerifier(v: TokenVerifier | null) {
   verifier = v;
 }
 
+/**
+ * Reads FIREBASE_SERVICE_ACCOUNT as pasted into Vercel: the raw JSON file, or
+ * the same JSON base64-encoded. Private keys pasted with literal "\\n" escapes
+ * are normalised. Every failure is a coded 500 so the client can say which.
+ */
+export function parseServiceAccount(raw: string | undefined): Record<string, string> {
+  const value = (raw ?? '').trim();
+  if (!value) throw new HttpError(500, 'Server auth is not configured', 'auth_unconfigured');
+  const text = value.startsWith('{') ? value : Buffer.from(value, 'base64').toString('utf8');
+  let account: Record<string, string>;
+  try {
+    account = JSON.parse(text);
+  } catch {
+    throw new HttpError(500, 'FIREBASE_SERVICE_ACCOUNT is not valid JSON', 'auth_misconfigured');
+  }
+  if (!account || typeof account !== 'object' || !account.private_key || !account.client_email || !account.project_id) {
+    throw new HttpError(500, 'FIREBASE_SERVICE_ACCOUNT is missing project_id, client_email or private_key', 'auth_misconfigured');
+  }
+  return { ...account, private_key: account.private_key.replace(/\\n/g, '\n') };
+}
+
 async function firebaseVerifier(): Promise<TokenVerifier> {
   // Loaded lazily so tests and the dev server never need a service account.
   const mod = await import('firebase-admin');
   const admin = ((mod as any).default ?? mod) as typeof import('firebase-admin');
   if (!admin.apps.length) {
-    const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (!raw) throw new HttpError(500, 'Server auth is not configured', 'auth_unconfigured');
-    admin.initializeApp({ credential: admin.credential.cert(JSON.parse(raw)) });
+    const account = parseServiceAccount(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({ credential: admin.credential.cert(account) });
   }
   return {
     async verify(token) {

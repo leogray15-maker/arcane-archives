@@ -72,6 +72,18 @@ keeps showing, with its age.
 4. If a derived feed (CII, signals, …) shows "Waiting for input: X", fix feed X
    first; the derived feed recovers on the next intel run (every 5 minutes).
 
+## When the page says the server is not configured
+
+The boot screen reports why `/api/watchtower/me` failed:
+
+- "not configured yet (FIREBASE_SERVICE_ACCOUNT is not set)" → add it in Vercel
+  for the Production environment and redeploy. Paste the whole service-account
+  JSON file (Firebase console → Project settings → Service accounts → Generate
+  new private key), or the same file base64-encoded.
+- "misconfigured: …" → the value is set but isn't a complete service-account
+  JSON. Paste the file again and redeploy.
+- "hit an error (internal)" → check the Vercel function logs for `api/watchtower`.
+
 ## When everything is stale
 
 - The header reads **OFFLINE** or the footer shows no feeds → the API is failing.
