@@ -1025,6 +1025,14 @@
 .ta-val { font-variant-numeric:tabular-nums; color:var(--text); text-align:right; }
 .ta-sig { font-weight:700; text-align:right; letter-spacing:0.04em; }
 .ta-sig.buy { color:var(--green); } .ta-sig.sell { color:var(--red); } .ta-sig.neutral { color:var(--gold); }
+.ta-sec { font-size:0.46rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.12em; margin:0.55rem 0 0.15rem; }
+.ta-levels { display:grid; grid-template-columns:repeat(3,1fr); gap:0.35rem; margin-top:0.2rem; }
+.ta-lvl { background:var(--bg-3); border:1px solid var(--border); border-radius:8px; padding:0.4rem; text-align:center; }
+.ta-lvl-k { font-size:0.44rem; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase; }
+.ta-lvl-v { font-variant-numeric:tabular-nums; font-size:0.6rem; font-weight:700; margin-top:0.15rem; }
+.intel-src { font-size:0.44rem; color:var(--text-muted); letter-spacing:0.06em; padding:0.45rem 0.2rem 0; line-height:1.5; }
+.sector-cell-px { font-variant-numeric:tabular-nums; font-size:0.5rem; color:rgba(255,255,255,0.7); margin-top:0.1rem; }
+.sector-cell.nodata { background:var(--bg-3) !important; opacity:0.55; }
 
 /* Crypto Heatmap */
 #tv-cryptoheat { max-height:460px; overflow-y:auto; }
@@ -1144,8 +1152,9 @@ function loadSimpleChart(symbol, tf, type) {
   const tvTF    = TF_MAP[tf] || '240';
   const tvStyle = (typeof type === 'string' && type.length > 1) ? STYLE_MAP[type] || '1' : type;
 
+  const TV_SYMBOL = { US30:'CAPITALCOM:US30', DXY:'CAPITALCOM:DXY', VIX:'CAPITALCOM:VIX' };
   const params = new URLSearchParams({
-    symbol, interval:tvTF, style:tvStyle, theme:'dark', timezone:'Etc/UTC', locale:'en',
+    symbol: TV_SYMBOL[symbol] || symbol, interval:tvTF, style:tvStyle, theme:'dark', timezone:'Etc/UTC', locale:'en',
     toolbar_bg:'#0a0a0f', hide_top_toolbar:'0', hide_legend:'0',
     allow_symbol_change:'0', save_image:'0',
     backgroundColor:'rgba(10,10,15,1)', gridColor:'rgba(155, 123, 247,0.05)',
@@ -1160,6 +1169,7 @@ function setTF(tf, el) {
   document.querySelectorAll('.tf-time-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   loadSimpleChart(currentSymbol, tf, currentType);
+  _renderTechnical(currentSymbol);
 }
 window.setTF = setTF;
 
@@ -1228,6 +1238,9 @@ const WATCHLIST = [
   { sym:'USDJPY', name:'USD/JPY',    price:'…', chg:'…', up:true  },
   { sym:'USOIL',  name:'Crude Oil',  price:'…', chg:'…', up:false },
   { sym:'NAS100', name:'NASDAQ 100', price:'…', chg:'…', up:true  },
+  { sym:'US30',   name:'Dow Jones',  price:'…', chg:'…', up:true  },
+  { sym:'DXY',    name:'Dollar Index', price:'…', chg:'…', up:true },
+  { sym:'VIX',    name:'Volatility', price:'…', chg:'…', up:true  },
 ];
 
 function renderWatchlist() {
@@ -1256,6 +1269,7 @@ function selectSymbol(sym, el) {
   document.getElementById('sym-inp').value = sym;
   loadSimpleChart(sym, currentTF);
   _renderTechnical(sym);
+  _paintLiveStrip();
 }
 window.selectSymbol = selectSymbol;
 
@@ -1300,6 +1314,15 @@ window.saveNotes = saveNotes;
 /* ══ Live prices — ArcanePrices subscriber ══ */
 let _latestPriceData = {};
 
+// Price strip + quick stats for the selected symbol from the latest real quote.
+function _paintLiveStrip(){
+  const m = WL_MAP[currentSymbol]; const d = m ? _latestPriceData[m.key] : null;
+  const lp = document.getElementById('live-price'), lc = document.getElementById('live-chg');
+  if (lp) lp.textContent = d ? _priceStr(d.price, m.dec) : '—';
+  if (lc) { lc.textContent = d ? _chgStr(d.change) : '—'; lc.className = 'tf-price-chg ' + (d?.dir || 'flat'); }
+  updateStats(currentSymbol);
+}
+
 const WL_MAP = {
   XAUUSD: { key:'XAU',    dec:2 },
   XAGUSD: { key:'XAG',    dec:3 },
@@ -1311,6 +1334,9 @@ const WL_MAP = {
   USDJPY: { key:'USDJPY', dec:2 },
   USOIL:  { key:'WTI',    dec:2 },
   NAS100: { key:'NDQ',    dec:2 },
+  US30:   { key:'DOW',    dec:0 },
+  DXY:    { key:'DXY',    dec:3 },
+  VIX:    { key:'VIX',    dec:2 },
 };
 
 function bindLivePrices() {
@@ -1349,6 +1375,7 @@ function bindLivePrices() {
         if (lc) { lc.textContent = AP.fmtChg(d.change); lc.className = 'tf-price-chg ' + d.dir; }
       }
     }
+    updateStats(currentSymbol);
 
     // Feed intelligence panel if it's active
     if (currentView === 'intel') _updateIntelPrices(data);
@@ -1356,14 +1383,21 @@ function bindLivePrices() {
 }
 
 /* ══ Quick stats ══ */
-// No session open/high/low feed yet: show dashes rather than invented levels.
-const STATS = {};
+// Today's session open/high/low/volume from the live quote; "—" when the feed has none.
+function _fmtVol(v){
+  if (v == null || isNaN(v) || v <= 0) return '—';
+  if (v >= 1e9) return (v/1e9).toFixed(2)+'B';
+  if (v >= 1e6) return (v/1e6).toFixed(2)+'M';
+  if (v >= 1e3) return (v/1e3).toFixed(1)+'K';
+  return String(Math.round(v));
+}
 function updateStats(sym) {
-  const s = STATS[sym] || { open:'—', high:'—', low:'—', vol:'—' };
-  document.getElementById('qs-open').textContent = s.open;
-  document.getElementById('qs-high').textContent = s.high;
-  document.getElementById('qs-low').textContent  = s.low;
-  document.getElementById('qs-vol').textContent  = s.vol;
+  const m = WL_MAP[sym]; const d = m ? _latestPriceData[m.key] : null;
+  const f = v => (d && v != null && !isNaN(v)) ? _priceStr(v, m.dec) : '—';
+  document.getElementById('qs-open').textContent = f(d?.open);
+  document.getElementById('qs-high').textContent = f(d?.high);
+  document.getElementById('qs-low').textContent  = f(d?.low);
+  document.getElementById('qs-vol').textContent  = _fmtVol(d?.volume);
 }
 
 /* ══════════════════════════════════════════════
@@ -1441,144 +1475,142 @@ function _renderFearGreed(fg) {
 }
 
 /* ── Update sentiment strip + panels from ArcanePrices data ── */
+function _dirCls(d){ return d === 'up' ? 'up' : d === 'down' ? 'down' : 'neutral'; }
+function _setCard(id, chgId, val, sub, cls){
+  const el = document.getElementById(id), ce = document.getElementById(chgId);
+  if (el) { el.textContent = val; el.classList.remove('skeleton'); }
+  if (ce) { ce.textContent = sub; ce.className = 'imc-sub ' + cls; ce.classList.remove('skeleton'); }
+}
 function _updateIntelPrices(data) {
   const AP  = window.ArcanePrices;
   if (!AP) return;
 
-  /* Sentiment cards */
-  const xau = data.XAU;
-  const btc = data.BTC;
-  const dxy = data.DXY;
-  const vix = data.VIX;
-
-  if (xau) {
-    const el = document.getElementById('im-xau'); const ce = document.getElementById('im-xau-chg');
-    if (el) { el.textContent = _priceStr(xau.price, 2); el.classList.remove('skeleton'); }
-    if (ce) { ce.textContent = _chgStr(xau.change); ce.className = 'imc-sub ' + (xau.dir === 'up' ? 'up' : xau.dir === 'down' ? 'down' : 'neutral'); }
-  }
-  if (btc) {
-    const el = document.getElementById('im-btc'); const ce = document.getElementById('im-btc-chg');
-    if (el) { el.textContent = _priceStr(btc.price, 0); el.classList.remove('skeleton'); }
-    if (ce) { ce.textContent = _chgStr(btc.change); ce.className = 'imc-sub ' + (btc.dir === 'up' ? 'up' : btc.dir === 'down' ? 'down' : 'neutral'); }
-  }
-  if (dxy) {
-    const el = document.getElementById('im-dxy'); const ce = document.getElementById('im-dxy-chg');
-    if (el) { el.textContent = _priceStr(dxy.price, 2); el.classList.remove('skeleton'); }
-    const dir = dxy.price > 103 ? { text:'STRONG ↑', cls:'up' } : dxy.price > 98 ? { text:'NEUTRAL →', cls:'neutral' } : { text:'WEAK ↓', cls:'down' };
-    if (ce) { ce.textContent = dir.text; ce.className = 'imc-sub ' + dir.cls; }
-  }
+  const xau = data.XAU, btc = data.BTC, dxy = data.DXY, vix = data.VIX;
+  if (xau) _setCard('im-xau', 'im-xau-chg', _priceStr(xau.price, 2), _chgStr(xau.change), _dirCls(xau.dir));
+  if (btc) _setCard('im-btc', 'im-btc-chg', _priceStr(btc.price, 0), _chgStr(btc.change), _dirCls(btc.dir));
+  if (dxy) _setCard('im-dxy', 'im-dxy-chg', _priceStr(dxy.price, 3),
+    _chgStr(dxy.change) + (dxy.src === 'derived-fx' ? ' · from FX' : ''), _dirCls(dxy.dir));
   if (vix) {
-    const el = document.getElementById('im-vix'); const ce = document.getElementById('im-vix-status');
-    if (el) { el.textContent = _priceStr(vix.price, 2); el.classList.remove('skeleton'); }
-    const vs = vix.price < 15 ? { text:'LOW ▼', cls:'up' } : vix.price < 25 ? { text:'ELEVATED', cls:'neutral' } : { text:'HIGH ▲', cls:'down' };
-    if (ce) { ce.textContent = vs.text; ce.className = 'imc-sub ' + vs.cls; }
+    const lvl = vix.price < 15 ? 'CALM' : vix.price < 20 ? 'NORMAL' : vix.price < 30 ? 'ELEVATED' : 'STRESSED';
+    _setCard('im-vix', 'im-vix-status', _priceStr(vix.price, 2), `${lvl} · ${_chgStr(vix.change)}`,
+      vix.price < 20 ? 'up' : vix.price < 30 ? 'neutral' : 'down');
   }
 
   _renderSectorHeatmap(data);
   _renderMacroPulse(data);
 }
 
-/* ── Sector heatmap ── */
-function _renderSectorHeatmap(data) {
-  const AP = window.ArcanePrices;
-  if (!AP) return;
-  if (data.XAU?.price == null) return; // wait for real data
+// "Twelve Data · 07:51 GMT" style footer naming where each panel's numbers came from.
+const _SRC_NAME = { twelvedata:'Twelve Data', cboe:'CBOE (15 min delayed)', 'us-treasury':'US Treasury (daily)', binance:'Binance', 'derived-fx':'DXY from FX', 'er-api':'ExchangeRate-API (daily)' };
+function _srcLine(data, keys){
+  const used = [...new Set(keys.map(k => data[k]?.src).filter(Boolean))].map(s => _SRC_NAME[s] || s);
+  const ts = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  return used.length ? `<div class="intel-src">Source: ${used.join(' · ')} · checked ${ts}</div>` : '';
+}
 
+/* ── Global Markets ── */
+function _renderSectorHeatmap(data) {
+  const host = document.getElementById('sector-heatmap'); if (!host) return;
   const sectors = [
-    { label: 'COMMODITIES', assets: [
-      { sym:'Gold',     p: data.XAU?.price,    c: data.XAU?.change,    dec:2 },
-      { sym:'Silver',   p: data.XAG?.price,    c: data.XAG?.change,    dec:3 },
-      { sym:'WTI Oil',  p: data.WTI?.price,    c: data.WTI?.change,    dec:2 },
-      { sym:'Nat Gas',  p: data.NATGAS?.price, c: data.NATGAS?.change, dec:3 },
+    { label: 'METALS & ENERGY', assets: [
+      ['Gold','XAU',2], ['Silver','XAG',3], ['Platinum','XPT',2], ['WTI Oil','WTI',2], ['Brent','BRENT',2], ['Nat Gas','NATGAS',3], ['Copper','COPPER',4],
     ]},
-    { label: 'CRYPTO', assets: [
-      { sym:'BTC', p: data.BTC?.price, c: data.BTC?.change, dec:0 },
-      { sym:'ETH', p: data.ETH?.price, c: data.ETH?.change, dec:2 },
-      { sym:'SOL', p: data.SOL?.price, c: data.SOL?.change, dec:2 },
-    ]},
-    { label: 'EQUITIES', assets: [
-      { sym:'S&P 500',  p: data.SPX?.price, c: data.SPX?.change, dec:2 },
-      { sym:'NASDAQ',   p: data.NDQ?.price, c: data.NDQ?.change, dec:2 },
-      { sym:'DOW',      p: data.DOW?.price, c: data.DOW?.change, dec:0 },
-      { sym:'FTSE 100', p: data.FTSE?.price ?? 8082.5, c: data.FTSE?.change ?? 0.42, dec:1 },
+    { label: 'INDICES', assets: [
+      ['S&P 500','SPX',2], ['Nasdaq 100','NDQ',2], ['Dow','DOW',0], ['FTSE 100','FTSE',1], ['VIX','VIX',2],
     ]},
     { label: 'FOREX', assets: [
-      { sym:'GBP/USD', p: data.GBPUSD?.price, c: data.GBPUSD?.change, dec:4 },
-      { sym:'EUR/USD', p: data.EURUSD?.price, c: data.EURUSD?.change, dec:4 },
-      { sym:'USD/JPY', p: data.USDJPY?.price, c: data.USDJPY?.change, dec:2 },
+      ['DXY','DXY',3], ['EUR/USD','EURUSD',5], ['GBP/USD','GBPUSD',5], ['USD/JPY','USDJPY',3], ['AUD/USD','AUDUSD',5], ['USD/CAD','USDCAD',5], ['USD/CHF','USDCHF',5],
     ]},
-    { label: 'BONDS', assets: [
-      { sym:'US 10Y', p: data.US10Y?.price, c: data.US10Y?.change, dec:3 },
-      { sym:'UK 10Y', p: data.UK10Y?.price, c: data.UK10Y?.change, dec:3 },
-      { sym:'DE 10Y', p: data.DE10Y?.price, c: data.DE10Y?.change, dec:3 },
+    { label: 'US YIELDS', assets: [
+      ['US 2Y','US2Y',3], ['US 10Y','US10Y',3], ['US 30Y','US30Y',3],
+    ]},
+    { label: 'CRYPTO', assets: [
+      ['BTC','BTC',0], ['ETH','ETH',2], ['SOL','SOL',2],
     ]},
   ];
-
-  document.getElementById('sector-heatmap').innerHTML = sectors.map(s => `
+  const any = sectors.some(s => s.assets.some(([,k]) => data[k]?.price != null));
+  if (!any) {
+    host.innerHTML = '<div class="intel-load">Waiting for the market feed…</div>';
+    return;
+  }
+  const keys = [];
+  host.innerHTML = sectors.map(s => `
     <div class="sector-group">
       <div class="sector-group-label">${s.label}</div>
       <div class="sector-grid">
-        ${s.assets.map(a => {
-          const chg = a.c ?? 0;
-          const ps  = a.p != null ? _priceStr(a.p, a.dec) : '—';
-          return `<div class="sector-cell" style="background:${_heatBg(chg)}">
-            <div class="sector-cell-sym">${a.sym}</div>
-            <div class="sector-cell-chg">${_chgStr(chg)}</div>
+        ${s.assets.map(([label, key, dec]) => {
+          const d = data[key]; keys.push(key);
+          if (!d || d.price == null) return `<div class="sector-cell nodata" title="No live feed for ${label}">
+            <div class="sector-cell-sym">${label}</div><div class="sector-cell-chg">—</div></div>`;
+          const isYield = /^US\d+Y$/.test(key);
+          const chg = isYield && d.chgBp != null ? (d.chgBp >= 0 ? '+' : '') + d.chgBp + 'bp' : _chgStr(d.change);
+          return `<div class="sector-cell" style="background:${_heatBg(isYield ? 0 : d.change)}" title="${label}${d.delayed ? ' · delayed' : ''}${d.asOf ? ' · ' + d.asOf : ''}">
+            <div class="sector-cell-sym">${label}</div>
+            <div class="sector-cell-px">${_priceStr(d.price, dec)}${isYield ? '%' : ''}</div>
+            <div class="sector-cell-chg">${chg}</div>
           </div>`;
         }).join('')}
       </div>
     </div>
-  `).join('');
+  `).join('') + _srcLine(data, keys);
 }
 
 /* ── Macro Pulse ── */
 function _renderMacroPulse(data) {
   // Each reading needs its live input; without one it says so instead of guessing
-  const dxy = data.DXY?.price ?? null;
+  const dxy = data.DXY, vixQ = data.VIX, xau = data.XAU, spx = data.SPX;
+  const us2 = data.US2Y?.price ?? null, us10 = data.US10Y?.price ?? null;
   const fg  = _fearGreedData?.value ?? null;
-  const xau = data.XAU;
-  const vix = data.VIX?.price ?? null;
+  const vix = vixQ?.price ?? null;
   const NA = { text:'NO DATA', cls:'neutral' };
 
-  const dollar = dxy == null ? NA : dxy > 103 ? { text:'STRONG', cls:'strong' } : dxy > 98 ? { text:'NEUTRAL', cls:'neutral' } : { text:'WEAK', cls:'weak' };
-  const risk   = fg == null ? NA : fg > 60   ? { text:'RISK-ON',  cls:'on'  } : fg < 40 ? { text:'RISK-OFF', cls:'off' } : { text:'NEUTRAL', cls:'neutral' };
-  const gold   = !xau || xau.change == null ? NA : xau.change > 0.3 ? { text:'BULLISH', cls:'bullish' } : xau.change < -0.3 ? { text:'BEARISH', cls:'bearish' } : { text:'NEUTRAL', cls:'neutral' };
-  const vol    = vix == null ? NA : vix < 15  ? { text:'LOW',      cls:'low'      } : vix < 25 ? { text:'ELEVATED', cls:'elevated' } : { text:'HIGH', cls:'high' };
+  // Dollar: today's move, with the level as context
+  const dollar = !dxy || dxy.change == null ? NA
+    : dxy.change > 0.25 ? { text:'STRENGTHENING', cls:'strong' }
+    : dxy.change < -0.25 ? { text:'WEAKENING', cls:'weak' }
+    : { text: dxy.price > 103 ? 'FIRM' : dxy.price < 98 ? 'SOFT' : 'STEADY', cls:'neutral' };
+  // Risk appetite: equities + VIX first, crypto Fear & Greed if those are missing
+  let risk = NA;
+  if (spx?.change != null && vix != null) {
+    risk = spx.change > 0.3 && vix < 20 ? { text:'RISK-ON', cls:'on' }
+         : spx.change < -0.3 || vix > 25 ? { text:'RISK-OFF', cls:'off' } : { text:'NEUTRAL', cls:'neutral' };
+  } else if (fg != null) {
+    risk = fg > 60 ? { text:'RISK-ON', cls:'on' } : fg < 40 ? { text:'RISK-OFF', cls:'off' } : { text:'NEUTRAL', cls:'neutral' };
+  }
+  const gold = !xau || xau.change == null ? NA : xau.change > 0.3 ? { text:'BULLISH', cls:'bullish' } : xau.change < -0.3 ? { text:'BEARISH', cls:'bearish' } : { text:'NEUTRAL', cls:'neutral' };
+  const vol  = vix == null ? NA : vix < 15 ? { text:'LOW', cls:'low' } : vix < 25 ? { text:'ELEVATED', cls:'elevated' } : { text:'HIGH', cls:'high' };
+  const rates = us10 == null ? NA : (data.US10Y.chgBp ?? 0) >= 5 ? { text:'YIELDS RISING', cls:'bearish' } : (data.US10Y.chgBp ?? 0) <= -5 ? { text:'YIELDS FALLING', cls:'bullish' } : { text:'STABLE', cls:'neutral' };
+  const curveBp = us2 != null && us10 != null ? Math.round((us10 - us2) * 100) : null;
+  const curve = curveBp == null ? NA : curveBp < 0 ? { text:`INVERTED ${curveBp}bp`, cls:'bearish' } : { text:`+${curveBp}bp`, cls: curveBp > 50 ? 'bullish' : 'neutral' };
 
-  let phase = 'Consolidation phase — mixed signals across asset classes';
-  if (fg == null && vix == null) phase = 'Waiting for live sentiment and volatility data';
-  else if (fg != null && fg < 30)  phase = 'Extreme fear — potential contrarian buy signal forming';
-  else if (fg != null && fg < 45)  phase = 'Risk-off environment — capital rotating to safe havens';
-  else if (fg != null && fg > 75)  phase = 'Euphoria detected — elevated correction risk, tighten stops';
-  else if (fg != null && fg > 60)  phase = 'Risk-on momentum — equities and crypto outperforming';
-  else if (vix != null && vix > 25) phase = 'High volatility regime — reduce position size, widen stops';
+  let phase = 'Mixed signals across asset classes';
+  if (vix == null && fg == null && !spx) phase = 'Waiting for live equity, volatility and sentiment data';
+  else if (vix != null && vix > 30) phase = 'Stress regime: volatility above 30, cut size and widen stops';
+  else if (risk.text === 'RISK-OFF' && gold.text === 'BULLISH') phase = 'Risk-off with a haven bid: gold catching flows as equities slip';
+  else if (risk.text === 'RISK-OFF') phase = 'Risk-off: equities under pressure, volatility rising';
+  else if (risk.text === 'RISK-ON' && dollar.cls === 'weak') phase = 'Risk-on with a softer dollar: tailwind for metals, equities and crypto';
+  else if (risk.text === 'RISK-ON') phase = 'Risk-on momentum: equities bid with volatility contained';
+  else if (dollar.cls === 'strong' && gold.text === 'BEARISH') phase = 'Dollar strength weighing on gold and commodities';
+  else if (fg != null && fg < 25) phase = 'Extreme crypto fear: watch for a contrarian turn';
+  else if (fg != null && fg > 75) phase = 'Crypto euphoria: elevated correction risk';
 
   const ts = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const row = (label, st, hint) => `<div class="macro-row"><span class="macro-label">${label}${hint ? ` <span style="color:var(--text-muted)">${hint}</span>` : ''}</span><span class="macro-status ${st.cls}">${st.text}</span></div>`;
 
   document.getElementById('macro-pulse').innerHTML = `
-    <div class="macro-row">
-      <span class="macro-label">Dollar Strength</span>
-      <span class="macro-status ${dollar.cls}">${dollar.text}</span>
-    </div>
-    <div class="macro-row">
-      <span class="macro-label">Risk Appetite</span>
-      <span class="macro-status ${risk.cls}">${risk.text}</span>
-    </div>
-    <div class="macro-row">
-      <span class="macro-label">Gold Trend</span>
-      <span class="macro-status ${gold.cls}">${gold.text}</span>
-    </div>
-    <div class="macro-row">
-      <span class="macro-label">Volatility Regime</span>
-      <span class="macro-status ${vol.cls}">${vol.text}</span>
-    </div>
+    ${row('Dollar (DXY)', dollar, dxy ? _priceStr(dxy.price, 2) + ' · ' + _chgStr(dxy.change) : '')}
+    ${row('Risk Appetite', risk, spx?.change != null ? 'S&P ' + _chgStr(spx.change) : fg != null ? 'F&amp;G ' + fg : '')}
+    ${row('Gold Trend', gold, xau ? _chgStr(xau.change) : '')}
+    ${row('Volatility', vol, vix != null ? 'VIX ' + _priceStr(vix, 2) : '')}
+    ${row('US 10Y', rates, us10 != null ? _priceStr(us10, 2) + '%' : '')}
+    ${row('2s10s Curve', curve, '')}
     <div class="macro-phase">
       <div class="macro-phase-label">MARKET PHASE</div>
       <div class="macro-phase-text">${phase}</div>
     </div>
     <div class="intel-refresh-bar">
       <div class="intel-spinner idle" id="intel-spinner"></div>
-      <span>LAST UPDATED: ${ts} GMT · AUTO-REFRESH 60s</span>
+      <span>LAST UPDATED: ${ts} · AUTO-REFRESH 60s</span>
     </div>
   `;
 }
@@ -1658,57 +1690,98 @@ function _renderEcoCalendar() {
   host.querySelector('.tradingview-widget-container').appendChild(s);
 }
 
-/* ── Technical Outlook — custom indicator engine for the active symbol ── */
+/* ── Technical Outlook — indicator engine on real OHLC candles ── */
 const TECH_MAP = {
   XAUUSD:{key:'XAU',dec:2}, XAGUSD:{key:'XAG',dec:3}, BTCUSD:{key:'BTC',dec:0}, ETHUSD:{key:'ETH',dec:2},
-  SPX500:{key:'SPX',dec:2}, NAS100:{key:'NDQ',dec:2}, USOIL:{key:'WTI',dec:2},
-  GBPUSD:{key:'GBPUSD',dec:4}, EURUSD:{key:'EURUSD',dec:4}, USDJPY:{key:'USDJPY',dec:2}
+  SPX500:{key:'SPX',dec:2}, NAS100:{key:'NDQ',dec:2}, US30:{key:'DOW',dec:0}, USOIL:{key:'WTI',dec:2},
+  GBPUSD:{key:'GBPUSD',dec:5}, EURUSD:{key:'EURUSD',dec:5}, USDJPY:{key:'USDJPY',dec:3},
+  DXY:{key:'DXY',dec:3}, VIX:{key:'VIX',dec:2}
 };
-// Indicator readings need real candle history. The Floor has a free 4H feed
-// for crypto (Binance); other markets show the chart's own indicators instead.
-const TA_CANDLES = { BTCUSD:'BTCUSDT', ETHUSD:'ETHUSDT' };
+// Chart timeframe → candle interval (and its label)
+const TA_TF = { '1':['1min','1M'], '5':['5min','5M'], '15':['15min','15M'], '60':['1h','1H'], '240':['4h','4H'], 'D':['1day','1D'], 'W':['1week','1W'] };
+const TA_BINANCE = { BTCUSD:'BTCUSDT', ETHUSD:'ETHUSDT' };
+const TA_BINANCE_TF = { '1min':'1m','5min':'5m','15min':'15m','1h':'1h','4h':'4h','1day':'1d','1week':'1w' };
 const _taCache = {};
-async function _taCloses(sym){
-  const pair=TA_CANDLES[sym]; if(!pair) return null;
-  const hit=_taCache[sym]; if(hit && Date.now()-hit.t<5*60*1000) return hit.closes;
-  const ctrl=new AbortController(); const tid=setTimeout(()=>ctrl.abort(),9000);
-  try{
-    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=4h&limit=140`,{signal:ctrl.signal});
-    if(!r.ok) return null;
-    const rows=await r.json(); if(!Array.isArray(rows)||rows.length<30) return null;
-    const closes=rows.map(k=>parseFloat(k[4])).filter(v=>!isNaN(v));
-    _taCache[sym]={t:Date.now(),closes}; return closes;
-  }catch(e){ return null; } finally { clearTimeout(tid); }
+async function _taFetch(url, ms){
+  const ctrl=new AbortController(); const tid=setTimeout(()=>ctrl.abort(),ms||12000);
+  try { const r=await fetch(url,{signal:ctrl.signal}); return r.ok ? await r.json() : null; }
+  catch(e){ return null; } finally { clearTimeout(tid); }
 }
+// Returns { rows:[{t,o,h,l,c,v}], src } oldest first, or { error } with the reason.
+async function _taCandles(sym, interval){
+  const ck=sym+'|'+interval, hit=_taCache[ck];
+  if(hit && Date.now()-hit.t<60*1000) return hit.v;
+  let v=null;
+  const j=await _taFetch(`/api/candles?symbol=${encodeURIComponent(sym)}&interval=${interval}&size=220`);
+  if(j && j.ok && Array.isArray(j.candles) && j.candles.length>=60) v={ rows:j.candles, src:'Twelve Data' };
+  if(!v && TA_BINANCE[sym]){
+    const k=await _taFetch(`https://api.binance.com/api/v3/klines?symbol=${TA_BINANCE[sym]}&interval=${TA_BINANCE_TF[interval]}&limit=220`,9000);
+    if(Array.isArray(k) && k.length>=60) v={ rows:k.map(r=>({t:r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5]})), src:'Binance' };
+  }
+  if(!v) v={ error: j && j.reason === 'no_api_key' ? 'nokey' : 'unavailable' };
+  else _taCache[ck]={t:Date.now(),v};
+  return v;
+}
+function _atr(rows,p){ const tr=rows.map((r,i)=> i? Math.max(r.h-r.l, Math.abs(r.h-rows[i-1].c), Math.abs(r.l-rows[i-1].c)) : r.h-r.l); let a=tr.slice(1,p+1).reduce((x,y)=>x+y,0)/p; for(let i=p+1;i<tr.length;i++) a=(a*(p-1)+tr[i])/p; return a; }
+function _rsiW(c,p){ let g=0,l=0; for(let i=1;i<=p;i++){ const d=c[i]-c[i-1]; if(d>=0) g+=d; else l-=d; } g/=p; l/=p; for(let i=p+1;i<c.length;i++){ const d=c[i]-c[i-1]; g=(g*(p-1)+Math.max(d,0))/p; l=(l*(p-1)+Math.max(-d,0))/p; } return l===0?100:100-100/(1+g/l); }
+function _adx(rows,p){
+  let trS=0,pS=0,mS=0; const dx=[];
+  for(let i=1;i<rows.length;i++){
+    const up=rows[i].h-rows[i-1].h, dn=rows[i-1].l-rows[i].l;
+    const pdm=up>dn&&up>0?up:0, mdm=dn>up&&dn>0?dn:0;
+    const tr=Math.max(rows[i].h-rows[i].l, Math.abs(rows[i].h-rows[i-1].c), Math.abs(rows[i].l-rows[i-1].c));
+    if(i<=p){ trS+=tr; pS+=pdm; mS+=mdm; if(i<p) continue; } else { trS=trS-trS/p+tr; pS=pS-pS/p+pdm; mS=mS-mS/p+mdm; }
+    const pdi=trS?100*pS/trS:0, mdi=trS?100*mS/trS:0; dx.push({ dx:(pdi+mdi)?100*Math.abs(pdi-mdi)/(pdi+mdi):0, pdi, mdi });
+  }
+  if(dx.length<p) return null;
+  let adx=dx.slice(0,p).reduce((x,y)=>x+y.dx,0)/p; for(let i=p;i<dx.length;i++) adx=(adx*(p-1)+dx[i].dx)/p;
+  const last=dx[dx.length-1]; return { adx, pdi:last.pdi, mdi:last.mdi };
+}
+let _taSeq=0;
 async function _renderTechnical(sym){
   sym=sym||currentSymbol;
+  const seq=++_taSeq;
   const host=document.getElementById('tv-technical'); if(!host) return;
-  const badge=document.getElementById('ta-badge'); if(badge) badge.textContent=sym+' · 4H';
-  const p={ dec:(TECH_MAP[sym]||{dec:2}).dec };
-  if(!TA_CANDLES[sym]){ host.innerHTML=`<div class="ta-empty">There is no live candle feed for ${sym} here yet, so no technical readings are shown. Switch to the chart and use its Indicators for this market.</div>`; return; }
-  if(!host.querySelector('.ta-wrap')) host.innerHTML='<div class="ta-empty">Loading 4H candles…</div>';
-  const closes=await _taCloses(sym);
-  if(sym!==currentSymbol) return;
-  if(!closes){ host.innerHTML='<div class="ta-empty">Candle data is unavailable right now, so no technical readings are shown.</div>'; return; }
-  const price=closes[closes.length-1];
+  const [interval,tfLabel]=TA_TF[currentTF]||TA_TF['240'];
+  const badge=document.getElementById('ta-badge'); if(badge) badge.textContent=sym+' · '+tfLabel;
+  const dec=(TECH_MAP[sym]||{dec:2}).dec;
+  if(!host.querySelector('.ta-wrap')) host.innerHTML=`<div class="ta-empty">Loading ${tfLabel} candles…</div>`;
+  const res=await _taCandles(sym, interval);
+  if(seq!==_taSeq) return;
+  if(res.error){
+    host.innerHTML = res.error==='nokey'
+      ? `<div class="ta-empty">The candle feed for ${sym} switches on once the Twelve Data key is set on the server, so no technical readings are shown yet.</div>`
+      : `<div class="ta-empty">${tfLabel} candles for ${sym} are unavailable right now, so no technical readings are shown.</div>`;
+    return;
+  }
+  const rows=res.rows, closes=rows.map(r=>r.c), price=closes[closes.length-1], last=rows[rows.length-1];
+  const fmt=v=>Number(v).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
 
   let maBuy=0,maSell=0; const maRows=[];
-  [10,20,50,100].forEach(pp=>{
-    [['SMA'+pp,_sma(closes,pp)],['EMA'+pp,_ema(closes,pp)]].forEach(([name,v])=>{
-      const sig=price>v?'buy':'sell'; if(sig==='buy')maBuy++;else maSell++; maRows.push({name,val:v,sig});
+  [10,20,50,100,200].forEach(pp=>{
+    if(closes.length<pp) return;
+    [['SMA '+pp,_sma(closes,pp)],['EMA '+pp,_ema(closes,pp)]].forEach(([name,v])=>{
+      const sig=price>v?'buy':'sell'; if(sig==='buy')maBuy++;else maSell++; maRows.push({name,val:v,sig,dec});
     });
   });
 
-  const rsi=_rsi(closes,14), macd=_macd(closes);
+  const rsi=_rsiW(closes,14), macd=_macd(closes);
+  const n14=rows.slice(-14), hh=Math.max(...n14.map(r=>r.h)), ll=Math.min(...n14.map(r=>r.l));
+  const stoch=hh===ll?50:((price-ll)/(hh-ll))*100;
+  const willr=stoch-100;
   const roc=((price-closes[closes.length-13])/closes[closes.length-13])*100;
-  const hh=Math.max(...closes.slice(-14)), ll=Math.min(...closes.slice(-14));
-  const willr=hh===ll?-50:((hh-price)/(hh-ll))*-100;
+  const adx=_adx(rows,14);
+  const sd=Math.sqrt(closes.slice(-20).reduce((a,c)=>a+Math.pow(c-_sma(closes,20),2),0)/20);
+  const bbU=_sma(closes,20)+2*sd, bbL=_sma(closes,20)-2*sd, pctB=bbU===bbL?0.5:(price-bbL)/(bbU-bbL);
   const osc=[
-    { name:'RSI (14)',     val:rsi,       sig: rsi>70?'sell':rsi<30?'buy':'neutral', dec:1 },
-    { name:'MACD (12,26)', val:macd.macd, sig: macd.macd>macd.signal?'buy':'sell',   dec:2 },
-    { name:'Momentum (12)',val:roc,       sig: roc>0.1?'buy':roc<-0.1?'sell':'neutral', dec:2 },
-    { name:'Williams %R',  val:willr,     sig: willr<-80?'buy':willr>-20?'sell':'neutral', dec:1 },
+    { name:'RSI (14)',       val:rsi,         dec:1, sig: rsi>70?'sell':rsi<30?'buy':'neutral' },
+    { name:'Stochastic %K',  val:stoch,       dec:1, sig: stoch>80?'sell':stoch<20?'buy':'neutral' },
+    { name:'MACD (12,26,9)', val:macd.macd,   dec:Math.max(2,dec), sig: macd.macd>macd.signal?'buy':'sell' },
+    { name:'Momentum (12)',  val:roc,         dec:2, sig: roc>0.1?'buy':roc<-0.1?'sell':'neutral' },
+    { name:'Williams %R',    val:willr,       dec:1, sig: willr<-80?'buy':willr>-20?'sell':'neutral' },
+    { name:'Bollinger %B',   val:pctB*100,    dec:0, sig: pctB>1?'sell':pctB<0?'buy':'neutral' },
   ];
+  if(adx) osc.push({ name:'ADX (14)', val:adx.adx, dec:1, sig: adx.adx<20?'neutral':adx.pdi>adx.mdi?'buy':'sell' });
   let oBuy=0,oSell=0,oNeu=0; osc.forEach(o=>{ o.sig==='buy'?oBuy++:o.sig==='sell'?oSell++:oNeu++; });
 
   const totBuy=maBuy+oBuy, totSell=maSell+oSell, totNeu=oNeu, tot=totBuy+totSell+totNeu||1;
@@ -1719,8 +1792,13 @@ async function _renderTechnical(sym){
   const needle=(((score+1)/2)*100).toFixed(1);
   const sumCard=(label,b,s,nu)=>{ const sc=(b-s)/(b+s+nu||1); const v= sc>0.2?{t:'BUY',c:'var(--green)'}:sc<-0.2?{t:'SELL',c:'var(--red)'}:{t:'NEUTRAL',c:'var(--gold)'};
     return `<div class="ta-sum-card"><div class="ta-sum-label">${label}</div><div class="ta-sum-verdict" style="color:${v.c}">${v.t}</div><div class="ta-sum-counts">▲${b} ●${nu} ▼${s}</div></div>`; };
-  const row=(r)=>`<div class="ta-row"><span class="ta-ind">${r.name}</span><span class="ta-val">${Number(r.val).toLocaleString('en-US',{maximumFractionDigits:r.dec})}</span><span class="ta-sig ${r.sig}">${r.sig.toUpperCase()}</span></div>`;
-  const maShow=maRows.filter(r=>/SMA(20|50)|EMA(20|50)/.test(r.name)).map(r=>({...r,dec:p.dec}));
+  const row=(r)=>`<div class="ta-row"><span class="ta-ind">${r.name}</span><span class="ta-val">${Number(r.val).toLocaleString('en-US',{minimumFractionDigits:r.dec,maximumFractionDigits:r.dec})}</span><span class="ta-sig ${r.sig}">${r.sig.toUpperCase()}</span></div>`;
+  const maShow=maRows.filter(r=>/^(EMA 20|EMA 50|SMA 50|SMA 200)$/.test(r.name));
+
+  // Levels: ATR and the last 50 candles' swing high / low
+  const atr=_atr(rows,14), w=rows.slice(-50);
+  const res50=Math.max(...w.map(r=>r.h)), sup50=Math.min(...w.map(r=>r.l));
+  const lastAt=new Date(last.t).toUTCString().replace(/:\d\d GMT$/,' UTC').replace(/^\w+, /,'');
 
   host.innerHTML=`<div class="ta-wrap">
     <div class="ta-verdict" style="color:${verdict.c}">${verdict.t}</div>
@@ -1728,6 +1806,13 @@ async function _renderTechnical(sym){
     <div class="ta-scale"><span>SELL</span><span>NEUTRAL</span><span>BUY</span></div>
     <div class="ta-summary">${sumCard('Oscillators',oBuy,oSell,oNeu)}${sumCard('Moving Avg',maBuy,maSell,0)}</div>
     <div class="ta-rows">${osc.map(row).join('')}${maShow.map(row).join('')}</div>
+    <div class="ta-sec">Levels</div>
+    <div class="ta-levels">
+      <div class="ta-lvl"><div class="ta-lvl-k">Resistance</div><div class="ta-lvl-v" style="color:var(--red)">${fmt(res50)}</div></div>
+      <div class="ta-lvl"><div class="ta-lvl-k">ATR (14)</div><div class="ta-lvl-v">${fmt(atr)}</div></div>
+      <div class="ta-lvl"><div class="ta-lvl-k">Support</div><div class="ta-lvl-v" style="color:var(--green)">${fmt(sup50)}</div></div>
+    </div>
+    <div class="intel-src">${rows.length} ${tfLabel} candles from ${res.src} · last close ${fmt(price)} at ${lastAt}. Support and resistance are the 50-candle low and high.</div>
   </div>`;
 }
 
@@ -1779,8 +1864,13 @@ function _renderIntelFeed(){
     t:`DXY <b>${_priceStr(dxy.price,2)}</b> (${_chgStr(dxy.change)}) — ${(dxy.change??0)>=0?'headwind for metals &amp; risk':'tailwind for commodities'}.`});
   if(xau) it.push({i:'🥇',tag:'GOLD',c:(xau.change??0)>=0?'var(--green)':'var(--red)',
     t:`Gold <b>$${_priceStr(xau.price,2)}</b> (${_chgStr(xau.change)}) — ${xau.change>0.3?'haven demand building':xau.change<-0.3?'pressured by yields/USD':'range-bound'}.`});
-  if(us10!=null) it.push({i:'📊',tag:'RATES',c:'var(--teal)',
-    t:`US 10Y at <b>${_priceStr(us10,2)}%</b> — ${us10>4.5?'elevated; pressures growth assets':'supportive backdrop for risk'}.`});
+  if(us10!=null){
+    const bp=d.US10Y.chgBp, us2=d.US2Y?.price, curve=us2!=null?Math.round((us10-us2)*100):null;
+    it.push({i:'📊',tag:'RATES',c:'var(--teal)',
+      t:`US 10Y at <b>${_priceStr(us10,2)}%</b>${bp!=null?` (${bp>=0?'+':''}${bp}bp)`:''}${curve!=null?`, 2s10s ${curve>=0?'+':''}${curve}bp${curve<0?' (inverted)':''}`:''} — ${us10>4.5?'elevated; pressures growth assets and gold':'supportive backdrop for risk'}. <span style="color:var(--text-muted)">US Treasury close ${d.US10Y.asOf||''}</span>`});
+  }
+  if(d.WTI) it.push({i:'🛢️',tag:'ENERGY',c:(d.WTI.change??0)>=0?'var(--green)':'var(--red)',
+    t:`WTI <b>$${_priceStr(d.WTI.price,2)}</b> (${_chgStr(d.WTI.change)})${d.BRENT?` · Brent $${_priceStr(d.BRENT.price,2)} (${_chgStr(d.BRENT.change)})`:''} — ${Math.abs(d.WTI.change??0)>2?'large move; watch inflation-sensitive assets':'orderly'}.`});
   if(vix!=null) it.push({i:'⚡',tag:'VOLATILITY',c:vix>22?'var(--red)':'var(--green)',
     t:`VIX <b>${_priceStr(vix,2)}</b> — ${vix>28?'stressed; reduce size':vix>20?'elevated; expect whipsaw':'calm; trend-following favoured'}.`});
   if(spx||ndq) it.push({i:'📈',tag:'EQUITIES',c:(spx?.change??0)>=0?'var(--green)':'var(--red)',
@@ -1791,7 +1881,7 @@ function _renderIntelFeed(){
   host.innerHTML=it.map(x=>`<div class="nf-item"><span class="nf-icon">${x.i}</span><div>
     <span class="nf-tag" style="background:${x.c}22;color:${x.c}">${x.tag}</span>
     <div class="nf-txt" style="margin-top:0.25rem">${x.t}</div>
-    <div class="nf-time">${now} GMT · auto-generated from live data</div></div></div>`).join('');
+    <div class="nf-time">${now} · auto-generated from live data</div></div></div>`).join('') + _srcLine(d, ['XAU','DXY','VIX','SPX','US10Y','WTI','BTC']);
 }
 
 function _initIntelWidgets(){
@@ -1812,16 +1902,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateStats('XAUUSD');
   bindLivePrices();
   _startIntelRefresh();
-
-  // Simulated OHLC tick for non-crypto symbols
-  setInterval(() => {
-    if (currentSymbol !== 'BTCUSD') {
-      const base = 2643.20;
-      const v = base + (Math.random() - 0.5) * 4;
-      document.getElementById('live-price').textContent = v.toFixed(2);
-    }
-    updateStats(currentSymbol);
-  }, 5000);
 
   document.getElementById('notes-ta').value = localStorage.getItem('arcane_notes_' + currentSymbol) || '';
 });
