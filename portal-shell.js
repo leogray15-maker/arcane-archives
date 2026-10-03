@@ -1,18 +1,23 @@
 // portal-shell.js
-// Shared member-portal chrome: injects the sidebar + top navbar, highlights the
-// active page, wires the mobile toggle + logout, populates nav user data, and
-// loads the live ticker. Reuses the Firebase app from auth-guard.js (no re-init).
+// Shared member-portal chrome: injects the hub top bar (menu, search, tabs,
+// account) with the live market strip, the menu drawer, the "jump to" search
+// and the page banner; highlights the active page, wires logout, populates nav
+// user data and loads the live ticker. Reuses the Firebase app from
+// auth-guard.js (no re-init).
 //
 // Usage on a page:
 //   <body data-page="stock-picks">
 //   <link rel="stylesheet" href="arcane-portal.css">
-//   ...page content (will be offset by the .has-portal-shell body padding)...
+//   <div data-hub-banner></div>   (optional: the cinematic page banner; any
+//                                  children are kept as the banner's extras)
+//   ...page content (offset below the fixed top bar by the body padding)...
 //   <script type="module" src="portal-shell.js"></script>
 
 import { auth, db, ADMIN_UIDS } from './auth-guard.js';
 import { signOut } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { EXP, ADMIN } from './arcane-experiences.js';
 
 const ICON = {
   dashboard: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
@@ -32,6 +37,7 @@ const ICON = {
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
   menu: '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
 };
 
 // Sidebar groups: page key -> {label, href, icon}
@@ -84,6 +90,49 @@ function activeLabel(active) {
   return document.body.dataset.title || '';
 }
 
+// The dashboard renders its own hub navigation (data-shell="hub"): the shell
+// then only supplies the drawer. Every other page gets the shell's top bar.
+const HUB = () => document.body.dataset.shell === 'hub';
+
+// Top-bar tabs and the sections that light each one up
+const TABS = [
+  { label: 'Home',         href: 'dashboard.html',          keys: ['dashboard'] },
+  { label: 'The Archives', href: 'dashboard.html#archives', keys: ['courses', 'arcane-insights', 'war-room', 'live-calls', 'live-streams'] },
+  { label: 'Markets',      href: 'trading-floor.html',      keys: ['trading-floor', 'watchtower', 'stock-picks', 'free-signals', 'bullion'] },
+  { label: 'Store',        href: 'arcane-store.html',       keys: ['arcane-store'] },
+];
+
+function topBar(active) {
+  const tabs = TABS.map(t => `<a class="aa-tab" href="${t.href}"${t.keys.includes(active) ? ' aria-current="page"' : ''}>${t.label}</a>`).join('');
+  return `
+  <header class="aa-bar" id="aa-bar">
+    <div class="aa-bar-row">
+      <div class="aa-bar-left">
+        <button class="aa-icon-btn" id="sidebar-toggle" aria-label="Open the menu" aria-expanded="false" aria-controls="arcane-sidebar">${svg('menu')}<span class="aa-hide-md">Menu</span></button>
+        <button class="aa-icon-btn" id="aa-jump-btn" aria-label="Search the Archives" aria-expanded="false" aria-controls="aa-jump">${svg('search')}<kbd class="aa-hide-md" aria-hidden="true">/</kbd></button>
+        <a class="aa-wordmark" href="dashboard.html" aria-label="The Arcane Archives, home"><img src="arcane-mark.svg" alt=""><span class="t"><i>Arcane </i><b>Archives</b></span></a>
+      </div>
+      <nav class="aa-tabs" aria-label="Sections">${tabs}</nav>
+      <div class="aa-bar-right">
+        <a class="aa-balance" href="referrals.html" title="Referral balance"><span>Balance</span><b id="nav-balance">£0.00</b></a>
+        <a class="aa-icon-btn aa-hide-sm" href="settings.html" aria-label="Settings">${svg('settings')}</a>
+        <a class="aa-avatar" href="settings.html" aria-label="Your account"><img id="nav-avatar" src="arcane-icon-192.png" alt=""><span class="nav-online offline" id="nav-online"></span></a>
+      </div>
+    </div>
+    <div class="aa-strip">
+      <div class="aa-strip-meta"><span id="aa-strip-date"></span><span><i class="aa-dot" id="aa-strip-dot"></i><span id="aa-strip-london">London closed</span></span></div>
+      <div class="nav-ticker-wrap" aria-label="Live market prices"></div>
+      ${active === 'trading-floor' ? '' : '<a class="aa-strip-link" href="trading-floor.html">Trading Floor →</a>'}
+    </div>
+  </header>
+  <div class="aa-jump" id="aa-jump" role="dialog" aria-modal="true" aria-label="Search the Archives">
+    <div class="aa-jump-box">
+      <input class="aa-jump-input" id="aa-jump-input" type="search" placeholder="Jump to… The Vault, Watchtower, Store" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="aa-jump-list" aria-label="Search destinations">
+      <ul class="aa-jump-list" id="aa-jump-list" role="listbox"></ul>
+    </div>
+  </div>`;
+}
+
 function buildShell(active) {
   const groups = NAV.map(g => `
     <div class="sidebar-group">
@@ -113,52 +162,166 @@ function buildShell(active) {
       <button class="sidebar-logout" data-logout title="Log out" aria-label="Log out">${svg('logout')}</button>
     </div>
   </div>
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-  <div class="arcane-nav" role="banner">
-    <div class="nav-inner">
-      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">${svg('menu')}</button>
-      <a class="nav-left" href="dashboard.html">
-        <img src="arcane-mark.svg" class="nav-logo" alt=""/>
-        <span class="nav-brand">The Arcane Archives</span>
-      </a>
-      <div class="nav-title">${activeLabel(active)}</div>
-      <div class="nav-center">
-        <div class="nav-ticker-wrap"><div class="nav-ticker-track" id="nav-ticker-track"></div></div>
-      </div>
-      <div class="nav-right">
-        <a class="nav-balance" href="referrals.html" title="Referral balance"><span class="nav-balance-label">Balance</span><span id="nav-balance">£0.00</span></a>
-        <a href="arcane-store.html" class="nav-store-btn">${svg('store')}<span>Store</span></a>
-        <a class="nav-btn" href="settings.html" title="Settings" aria-label="Settings">${svg('settings')}</a>
-        <a class="nav-avatar-wrap" href="settings.html" aria-label="Your account">
-          <img class="nav-avatar" id="nav-avatar" src="arcane-icon-192.png" alt=""/>
-          <span class="nav-online offline" id="nav-online"></span>
-        </a>
-      </div>
-    </div>
-  </div>`;
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>`;
 
   const host = document.createElement('div');
   host.id = 'arcane-shell';
-  host.innerHTML = sidebar;
+  host.innerHTML = sidebar + (HUB() ? '' : topBar(active));
   document.body.insertBefore(host, document.body.firstChild);
-  document.body.classList.add('has-portal-shell');
+  document.body.classList.add('shell-hub');
+  if (!HUB()) {
+    document.body.classList.add('has-portal-shell');
+    const atmos = document.createElement('div');
+    atmos.className = 'aa-atmos';
+    atmos.setAttribute('aria-hidden', 'true');
+    atmos.innerHTML = '<div class="grid"></div><div class="grain"></div>';
+    document.body.insertBefore(atmos, host);
+  }
+}
+
+// The bar is fixed; pages offset themselves by its live height (--aa-nav-h,
+// and --nav-h for the pages that use the older name).
+function trackBarHeight() {
+  const bar = document.getElementById('aa-bar');
+  if (!bar) return;
+  const set = () => {
+    const h = Math.round(bar.getBoundingClientRect().height);
+    document.documentElement.style.setProperty('--aa-nav-h', h + 'px');
+    document.documentElement.style.setProperty('--nav-h', h + 'px');
+  };
+  set();
+  if ('ResizeObserver' in window) new ResizeObserver(set).observe(bar);
+  // Keep the current section's tab in view when the tabs scroll sideways
+  const tabs = bar.querySelector('.aa-tabs'), cur = tabs?.querySelector('[aria-current]');
+  if (cur && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = cur.offsetLeft - (tabs.clientWidth - cur.offsetWidth) / 2;
+  const onScroll = () => bar.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+}
+
+// Date and London session in the strip (the same rule the dashboard uses)
+function renderStrip() {
+  const date = document.getElementById('aa-strip-date');
+  if (!date) return;
+  const d = new Date();
+  date.textContent = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).replace(/,/g, '').toUpperCase();
+  const h = d.getHours(), day = d.getDay(), m = d.getMinutes();
+  const open = day >= 1 && day <= 5 && h >= 8 && (h < 16 || (h === 16 && m <= 30));
+  document.getElementById('aa-strip-london').textContent = open ? 'London open' : 'London closed';
+  document.getElementById('aa-strip-dot').classList.toggle('open', open);
+}
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// "Jump to": search every real destination ("/" or Cmd/Ctrl-K)
+let isAdmin = false;
+function bindJump() {
+  const box = document.getElementById('aa-jump'), input = document.getElementById('aa-jump-input'),
+        list = document.getElementById('aa-jump-list'), btn = document.getElementById('aa-jump-btn');
+  if (!box) return;
+  const all = () => [
+    { title: 'Dashboard', href: 'dashboard.html', group: 'Home', words: 'dashboard home hub' },
+    ...NAV.slice(1).flatMap(g => g.items.map(it => {
+      const e = EXP[it.key] || {};
+      return { title: e.title || it.label, href: it.href, group: g.label === 'The Archives' ? 'Archives' : g.label, words: `${it.label} ${e.title || ''} ${e.cat || ''} ${e.desc || ''}` };
+    })),
+    ...(isAdmin ? ADMIN.map(([h, t, s]) => ({ title: t, href: h, group: 'Admin', words: `${t} ${s} admin` })) : []),
+  ];
+  let sel = 0, rows = [], lastFocus = null;
+  const paint = () => {
+    const q = input.value.trim().toLowerCase();
+    rows = all().filter(r => !q || r.words.toLowerCase().includes(q));
+    if (q) rows.sort((a, b) => b.title.toLowerCase().includes(q) - a.title.toLowerCase().includes(q));
+    sel = Math.min(sel, Math.max(0, rows.length - 1));
+    list.innerHTML = rows.length
+      ? rows.map((r, i) => `<li><a href="${esc(r.href)}" role="option" id="aa-jump-${i}" aria-selected="${i === sel}">${esc(r.title)}<span class="g">${r.group}</span></a></li>`).join('')
+      : '<li class="aa-jump-empty">Nothing matches that.</li>';
+    input.setAttribute('aria-activedescendant', rows.length ? `aa-jump-${sel}` : '');
+  };
+  const open = () => { lastFocus = document.activeElement; box.classList.add('open'); input.value = ''; sel = 0; paint(); input.focus(); btn.setAttribute('aria-expanded', 'true'); };
+  const close = () => { box.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); lastFocus?.focus?.(); };
+  btn.addEventListener('click', open);
+  box.addEventListener('click', e => { if (e.target === box) close(); });
+  input.addEventListener('input', () => { sel = 0; paint(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(sel + 1, rows.length - 1); paint(); document.getElementById(`aa-jump-${sel}`)?.scrollIntoView({ block: 'nearest' }); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(sel - 1, 0); paint(); document.getElementById(`aa-jump-${sel}`)?.scrollIntoView({ block: 'nearest' }); }
+    if (e.key === 'Enter' && rows[sel]) { e.preventDefault(); location.href = rows[sel].href; }
+    if (e.key === 'Escape') { e.stopPropagation(); close(); }
+  });
+  document.addEventListener('keydown', e => {
+    const typing = e.target.closest?.('input, textarea, select, [contenteditable="true"]');
+    if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) { e.preventDefault(); box.classList.contains('open') ? close() : open(); }
+  });
+}
+
+// The cinematic banner: <div data-hub-banner> becomes the page's header, drawn
+// from the experience (art, category, title, line). data-title / data-kicker /
+// data-desc override the copy; data-size="slim" for full-height app pages.
+// Anything inside the placeholder is kept, below the copy.
+async function renderBanner(active) {
+  const host = document.querySelector('[data-hub-banner]');
+  if (!host) return;
+  const key = host.dataset.hubBanner || active;
+  const e = EXP[key] || {};
+  const extras = [...host.childNodes];
+  const title = host.dataset.title || e.title || activeLabel(active);
+  const kicker = host.dataset.kicker ?? e.cat ?? '';
+  const desc = host.dataset.desc ?? e.desc ?? '';
+  host.classList.add('aa-banner');
+  if (host.dataset.size === 'slim') host.classList.add('slim');
+  host.style.setProperty('--accent', e.accent || '#9B7BF7');
+  host.innerHTML = `
+    <div class="aa-banner-art" aria-hidden="true"></div>
+    <div class="aa-banner-body">
+      ${kicker ? `<div class="aa-banner-kicker"><span class="bar"></span>${esc(kicker)}</div>` : ''}
+      <h1 class="aa-banner-title">${esc(title)}</h1>
+      ${desc ? `<p class="aa-banner-desc">${esc(desc)}</p>` : ''}
+      <div class="aa-banner-extra"></div>
+    </div>`;
+  const slot = host.querySelector('.aa-banner-extra');
+  extras.forEach(n => slot.appendChild(n));
+  if (!slot.children.length) slot.remove();
+  try {
+    const { art } = await import('./arcane-hub-art.js');
+    host.querySelector('.aa-banner-art').innerHTML = art(key);
+    requestAnimationFrame(() => host.classList.add('in'));
+  } catch (_) { /* the banner reads fine without its art */ }
 }
 
 function wireShell() {
   const sidebar = document.getElementById('arcane-sidebar');
   const overlay = document.getElementById('sidebar-overlay');
   const toggle  = document.getElementById('sidebar-toggle');
-  const open  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; };
-  const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; };
+  const open  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; toggle?.setAttribute('aria-expanded', 'true'); sidebar.querySelector('a')?.focus(); };
+  const close = () => {
+    if (!sidebar.classList.contains('open')) return;
+    sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = '';
+    toggle?.setAttribute('aria-expanded', 'false');
+  };
   toggle?.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
   sidebar?.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
   overlay?.addEventListener('click', close);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 }
 
-function populateNav() {
+// Remembers the sections a member opens (newest first, per member, this
+// browser only) so the dashboard can offer "Continue where you left off".
+function recordVisit(uid, active) {
+  const known = NAV.some(g => g.items.some(it => it.key === active));
+  if (!known || active === 'dashboard') return;
+  const key = 'aa_recent_' + uid;
+  try {
+    let list = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!Array.isArray(list)) list = [];
+    list = [{ key: active, t: Date.now() }, ...list.filter(v => v && v.key !== active)].slice(0, 12);
+    localStorage.setItem(key, JSON.stringify(list));
+  } catch (_) {}
+}
+
+function populateNav(active) {
   onAuthStateChanged(auth, async user => {
     if (!user) return;
+    recordVisit(user.uid, active);
     try {
       const snap = await getDoc(doc(db, 'Users', user.uid));
       const data = snap.exists() ? snap.data() : {};
@@ -175,7 +338,7 @@ function populateNav() {
       const planEl = document.getElementById('sidebar-user-plan');
       if (planEl) planEl.textContent = ADMIN_UIDS.includes(user.uid) ? 'Admin' : (isPaid ? 'Member' : 'Free access');
       document.getElementById('nav-online')?.classList.remove('offline');
-      if (ADMIN_UIDS.includes(user.uid)) { const l = document.getElementById('sidebar-admin-link'); if (l) l.style.display = ''; }
+      if (ADMIN_UIDS.includes(user.uid)) { isAdmin = true; const l = document.getElementById('sidebar-admin-link'); if (l) l.style.display = ''; }
     } catch (e) { console.warn('portal-shell nav populate failed:', e.message); }
   });
 }
@@ -204,10 +367,10 @@ function ensureChromeCss() {
   // The chrome always comes from portal-shell.css (scoped to #arcane-shell), loaded
   // last so it wins over any page's legacy sidebar/nav rules.
   const links = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.getAttribute('href') || '');
-  if (!links.some(h => h.includes('Inter+Tight'))) {
+  if (!links.some(h => h.includes('Barlow+Condensed'))) {
     const f = document.createElement('link');
     f.rel = 'stylesheet';
-    f.href = 'https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap';
+    f.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap';
     document.head.appendChild(f);
   }
   if (!links.some(h => h.includes('portal-shell.css'))) {
@@ -223,9 +386,13 @@ function init() {
   const page = document.body.dataset.page || (location.pathname.split('/').pop() || '').replace('.html', '');
   const active = ALIAS[page] || page;
   buildShell(active);
+  trackBarHeight();
+  renderStrip();
+  renderBanner(active);
   wireShell();
+  bindJump();
   bindLogout();
-  populateNav();
+  populateNav(active);
   loadTicker();
 }
 

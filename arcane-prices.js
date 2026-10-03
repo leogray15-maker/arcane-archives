@@ -8,8 +8,8 @@
  *      COPPER), metals (XAU, XAG), US10Y, FX pairs AND crypto (BTC, ETH, SOL).
  *  • /api/markets (CoinPaprika)   → crypto market cap, volume, BTC dominance.
  *  • open.er-api.com              → FX rate fallback (no % change).
- *  • Simulation                   → fallback for anything a provider doesn't
- *      return (e.g. UK/DE/JP 10Y yields). Nothing ever breaks.
+ *  • Simulation                   → internal placeholders only; flagged `sim`
+ *      and never exposed, so pages show "—" rather than an invented price.
  *
  * CoinGecko + metals.live were removed: their free tiers block/rate-limit
  * server IPs (HTTP 403/429). Yahoo Finance covers all of it for free.
@@ -53,10 +53,25 @@
     _data[sym] = { price, change, dir: dir(change), ...(extra || {}) };
   }
 
+  // Placeholder values for instruments no provider returned. They keep the
+  // internal state shaped but are NEVER shown: subscribers, get(), fmt() and
+  // all() only ever see real quotes, so a member never reads an invented price.
+  function sim(sym, price, change, extra) {
+    if (_data[sym] && !_data[sym].sim) return;   // never overwrite a real quote
+    _data[sym] = { price, change, dir: dir(change), sim: true, ...(extra || {}) };
+  }
+
+  function real() {
+    const out = {};
+    Object.entries(_data).forEach(([k, v]) => { if (!v.sim) out[k] = { ...v }; });
+    return out;
+  }
+
   function noise(range) { return (Math.random() - 0.5) * range; }
 
   function notify() {
-    _callbacks.forEach(cb => { try { cb({ ..._data }); } catch(e) {} });
+    const d = real();
+    _callbacks.forEach(cb => { try { cb(d); } catch(e) {} });
   }
 
   /* ─── Fetchers ───────────────────────────── */
@@ -119,13 +134,13 @@
       if (CHF) set('USDCHF', parseFloat(CHF.toFixed(4)),       null);
       if (EUR && GBP) set('EURGBP', parseFloat((GBP / EUR).toFixed(4)), null);
     } catch(e) {
-      if (!_data.EURUSD) set('EURUSD', 1.0823, null);
-      if (!_data.GBPUSD) set('GBPUSD', 1.2641, null);
-      if (!_data.USDJPY) set('USDJPY', 149.82, null);
-      if (!_data.AUDUSD) set('AUDUSD', 0.6512, null);
-      if (!_data.USDCAD) set('USDCAD', 1.3541, null);
-      if (!_data.USDCHF) set('USDCHF', 0.8921, null);
-      if (!_data.EURGBP) set('EURGBP', 0.8571, null);
+      if (!_data.EURUSD) sim('EURUSD', 1.0823, null);
+      if (!_data.GBPUSD) sim('GBPUSD', 1.2641, null);
+      if (!_data.USDJPY) sim('USDJPY', 149.82, null);
+      if (!_data.AUDUSD) sim('AUDUSD', 0.6512, null);
+      if (!_data.USDCAD) sim('USDCAD', 1.3541, null);
+      if (!_data.USDCHF) sim('USDCHF', 0.8921, null);
+      if (!_data.EURGBP) sim('EURGBP', 0.8571, null);
     }
   }
 
@@ -134,83 +149,83 @@
     // S&P 500
     const spxBase = _data.SPX?.price || 5871.50;
     const spxNew  = parseFloat((spxBase + (Math.random() - 0.48) * 8).toFixed(2));
-    set('SPX', spxNew, parseFloat(((spxNew - 5871.50) / 5871.50 * 100).toFixed(2)));
+    sim('SPX', spxNew, parseFloat(((spxNew - 5871.50) / 5871.50 * 100).toFixed(2)));
 
     // Dow Jones
     const dowBase = _data.DOW?.price || 43820.00;
     const dowNew  = parseFloat((dowBase + (Math.random() - 0.48) * 45).toFixed(2));
-    set('DOW', dowNew, parseFloat(((dowNew - 43820) / 43820 * 100).toFixed(2)));
+    sim('DOW', dowNew, parseFloat(((dowNew - 43820) / 43820 * 100).toFixed(2)));
 
     // NASDAQ 100
     const ndqBase = _data.NDQ?.price || 18820.00;
     const ndqNew  = parseFloat((ndqBase + (Math.random() - 0.47) * 22).toFixed(2));
-    set('NDQ', ndqNew, parseFloat(((ndqNew - 18820) / 18820 * 100).toFixed(2)));
+    sim('NDQ', ndqNew, parseFloat(((ndqNew - 18820) / 18820 * 100).toFixed(2)));
 
     // VIX — mean-revert around 18
     const vixBase = _data.VIX?.price || 18.45;
     const vixNew  = Math.max(9, parseFloat((vixBase + (Math.random() - 0.52) * 0.3).toFixed(2)));
     const vixChg  = parseFloat(((vixNew - 18.45) / 18.45 * 100).toFixed(2));
-    set('VIX', vixNew, vixChg);
+    sim('VIX', vixNew, vixChg);
 
     // WTI Crude
     const wtiBase = _data.WTI?.price || 72.45;
     const wtiNew  = parseFloat((wtiBase + noise(0.4)).toFixed(2));
-    set('WTI', wtiNew, parseFloat(((wtiNew - 72.45) / 72.45 * 100).toFixed(2)));
+    sim('WTI', wtiNew, parseFloat(((wtiNew - 72.45) / 72.45 * 100).toFixed(2)));
 
     // Brent Crude
     const brtBase = _data.BRENT?.price || 75.80;
     const brtNew  = parseFloat((brtBase + noise(0.4)).toFixed(2));
-    set('BRENT', brtNew, parseFloat(((brtNew - 75.80) / 75.80 * 100).toFixed(2)));
+    sim('BRENT', brtNew, parseFloat(((brtNew - 75.80) / 75.80 * 100).toFixed(2)));
 
     // Natural Gas
     const ngBase = _data.NATGAS?.price || 2.85;
     const ngNew  = Math.max(1.5, parseFloat((ngBase + noise(0.025)).toFixed(3)));
-    set('NATGAS', ngNew, parseFloat(((ngNew - 2.85) / 2.85 * 100).toFixed(2)));
+    sim('NATGAS', ngNew, parseFloat(((ngNew - 2.85) / 2.85 * 100).toFixed(2)));
 
     // Copper ($/lb)
     const cuBase = _data.COPPER?.price || 4.12;
     const cuNew  = parseFloat((cuBase + noise(0.018)).toFixed(3));
-    set('COPPER', cuNew, parseFloat(((cuNew - 4.12) / 4.12 * 100).toFixed(2)));
+    sim('COPPER', cuNew, parseFloat(((cuNew - 4.12) / 4.12 * 100).toFixed(2)));
 
     // US 10Y Yield
     const us10Base = _data.US10Y?.price || 4.452;
     const us10New  = Math.max(0.5, parseFloat((us10Base + noise(0.012)).toFixed(3)));
-    set('US10Y', us10New, parseFloat((us10New - 4.452).toFixed(3)));
+    sim('US10Y', us10New, parseFloat((us10New - 4.452).toFixed(3)));
 
     // UK 10Y Gilt
     const uk10Base = _data.UK10Y?.price || 4.281;
     const uk10New  = Math.max(0.5, parseFloat((uk10Base + noise(0.010)).toFixed(3)));
-    set('UK10Y', uk10New, parseFloat((uk10New - 4.281).toFixed(3)));
+    sim('UK10Y', uk10New, parseFloat((uk10New - 4.281).toFixed(3)));
 
     // German 10Y Bund
     const de10Base = _data.DE10Y?.price || 2.381;
     const de10New  = Math.max(-0.5, parseFloat((de10Base + noise(0.008)).toFixed(3)));
-    set('DE10Y', de10New, parseFloat((de10New - 2.381).toFixed(3)));
+    sim('DE10Y', de10New, parseFloat((de10New - 2.381).toFixed(3)));
 
     // Japan 10Y JGB
     const jp10Base = _data.JP10Y?.price || 1.042;
     const jp10New  = Math.max(0, parseFloat((jp10Base + noise(0.005)).toFixed(3)));
-    set('JP10Y', jp10New, parseFloat((jp10New - 1.042).toFixed(3)));
+    sim('JP10Y', jp10New, parseFloat((jp10New - 1.042).toFixed(3)));
 
     // DXY (USD Index)
     const dxyBase = _data.DXY?.price || 104.12;
     const dxyNew  = parseFloat((dxyBase + noise(0.12)).toFixed(2));
-    set('DXY', dxyNew, parseFloat(((dxyNew - 104.12) / 104.12 * 100).toFixed(2)));
+    sim('DXY', dxyNew, parseFloat(((dxyNew - 104.12) / 104.12 * 100).toFixed(2)));
 
     // ── Crypto + metals baselines (always present so panels never stall;
     //    overridden each cycle by the live Binance / Yahoo feeds below) ──
     const xauB = _data.XAU?.price || 2643.20;
-    set('XAU', parseFloat((xauB + noise(1.5)).toFixed(2)), _data.XAU?.change ?? 0.42);
+    sim('XAU', parseFloat((xauB + noise(1.5)).toFixed(2)), _data.XAU?.change ?? 0.42);
     const xagB = _data.XAG?.price || 29.84;
-    set('XAG', parseFloat((xagB + noise(0.06)).toFixed(3)), _data.XAG?.change ?? -0.18);
+    sim('XAG', parseFloat((xagB + noise(0.06)).toFixed(3)), _data.XAG?.change ?? -0.18);
 
     const btcB = _data.BTC?.price || 96000;
-    set('BTC', parseFloat((btcB + noise(120)).toFixed(0)), _data.BTC?.change ?? 0,
+    sim('BTC', parseFloat((btcB + noise(120)).toFixed(0)), _data.BTC?.change ?? 0,
         { mcap: _data.BTC?.mcap, vol: _data.BTC?.vol });
     const ethB = _data.ETH?.price || 3400;
-    set('ETH', parseFloat((ethB + noise(8)).toFixed(2)), _data.ETH?.change ?? 0);
+    sim('ETH', parseFloat((ethB + noise(8)).toFixed(2)), _data.ETH?.change ?? 0);
     const solB = _data.SOL?.price || 190;
-    set('SOL', parseFloat((solB + noise(1)).toFixed(2)), _data.SOL?.change ?? 0);
+    sim('SOL', parseFloat((solB + noise(1)).toFixed(2)), _data.SOL?.change ?? 0);
   }
 
   /* ─── Crypto direct from Binance (free, no key, CORS — uses the visitor's
@@ -252,28 +267,28 @@
   const ArcanePrices = {
     subscribe(cb) {
       _callbacks.push(cb);
-      if (_initialised) cb({ ..._data });
+      if (_initialised) cb(real());
       return () => {
         const i = _callbacks.indexOf(cb);
         if (i > -1) _callbacks.splice(i, 1);
       };
     },
 
-    get(sym) { return _data[sym] ? { ..._data[sym] } : null; },
+    get(sym) { return _data[sym] && !_data[sym].sim ? { ..._data[sym] } : null; },
 
     fmt(sym, decimals) {
       const d = _data[sym];
-      if (!d) return '—';
+      if (!d || d.sim) return '—';
       return fmtPrice(d.price, decimals);
     },
 
     chg(sym) {
       const d = _data[sym];
-      if (!d) return '—';
+      if (!d || d.sim) return '—';
       return fmtChg(d.change);
     },
 
-    dir(sym) { return _data[sym]?.dir || 'flat'; },
+    dir(sym) { return _data[sym] && !_data[sym].sim ? _data[sym].dir : 'flat'; },
 
     fmtBig,
     fmtPrice,
@@ -281,7 +296,7 @@
 
     refresh,
 
-    all() { return { ..._data }; },
+    all() { return real(); },
   };
 
   /* ─── Shared navbar ticker — LIVE TradingView Ticker Tape (free, no key) ─── */
@@ -303,7 +318,7 @@
         { proName: 'FOREXCOM:SPXUSD',  title: 'S&P 500' },
         { proName: 'CAPITALCOM:VIX',   title: 'VIX' },
         { proName: 'CAPITALCOM:DXY',   title: 'Dollar' },
-        { proName: 'CAPITALCOM:US10Y', title: 'US 10Y' },
+        { proName: 'TVC:US10Y',        title: 'US 10Y' },
         { proName: 'FX:EURUSD',        title: 'EUR/USD' },
         { proName: 'FX:GBPUSD',        title: 'GBP/USD' },
         { proName: 'FX:USDJPY',        title: 'USD/JPY' },
