@@ -1500,8 +1500,8 @@ function _updateIntelPrices(data) {
   _renderMacroPulse(data);
 }
 
-// "Twelve Data · 07:51 GMT" style footer naming where each panel's numbers came from.
-const _SRC_NAME = { twelvedata:'Twelve Data', cboe:'CBOE (15 min delayed)', 'us-treasury':'US Treasury (daily)', binance:'Binance', 'derived-fx':'DXY from FX', 'er-api':'ExchangeRate-API (daily)' };
+// "FMP · 07:51" style footer naming where each panel's numbers came from.
+const _SRC_NAME = { twelvedata:'Twelve Data', fmp:'FMP', cboe:'CBOE (15 min delayed)', 'us-treasury':'US Treasury (daily)', binance:'Binance', 'derived-fx':'DXY from FX', 'er-api':'ExchangeRate-API (daily)' };
 function _srcLine(data, keys){
   const used = [...new Set(keys.map(k => data[k]?.src).filter(Boolean))].map(s => _SRC_NAME[s] || s);
   const ts = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
@@ -1713,7 +1713,7 @@ async function _taCandles(sym, interval){
   if(hit && Date.now()-hit.t<60*1000) return hit.v;
   let v=null;
   const j=await _taFetch(`/api/candles?symbol=${encodeURIComponent(sym)}&interval=${interval}&size=220`);
-  if(j && j.ok && Array.isArray(j.candles) && j.candles.length>=60) v={ rows:j.candles, src:'Twelve Data' };
+  if(j && j.ok && Array.isArray(j.candles) && j.candles.length>=60) v={ rows:j.candles, src:_SRC_NAME[j.src]||j.src };
   if(!v && TA_BINANCE[sym]){
     const k=await _taFetch(`https://api.binance.com/api/v3/klines?symbol=${TA_BINANCE[sym]}&interval=${TA_BINANCE_TF[interval]}&limit=220`,9000);
     if(Array.isArray(k) && k.length>=60) v={ rows:k.map(r=>({t:r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5]})), src:'Binance' };
@@ -1750,7 +1750,7 @@ async function _renderTechnical(sym){
   if(seq!==_taSeq) return;
   if(res.error){
     host.innerHTML = res.error==='nokey'
-      ? `<div class="ta-empty">The candle feed for ${sym} switches on once the Twelve Data key is set on the server, so no technical readings are shown yet.</div>`
+      ? `<div class="ta-empty">The candle feed for ${sym} switches on once the market data key is set on the server, so no technical readings are shown yet.</div>`
       : `<div class="ta-empty">${tfLabel} candles for ${sym} are unavailable right now, so no technical readings are shown.</div>`;
     return;
   }

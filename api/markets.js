@@ -2,9 +2,9 @@
  * api/markets.js — live market snapshot for every page (Vercel)
  * The Arcane Archives
  *
- * Twelve Data is the primary feed (set TWELVEDATA_API_KEY in Vercel). Free
+ * FMP (FMP_API_KEY) or Twelve Data (TWELVEDATA_API_KEY) is the primary feed. Free
  * CBOE delayed quotes and US Treasury daily yields fill VIX, US indices and
- * bond yields if Twelve Data does not return them. See lib/market/providers.js.
+ * bond yields if the primary feed does not return them. See lib/market/providers.js.
  *
  * Cached in memory (MARKETS_TTL seconds, default 60) and at Vercel's edge via
  * s-maxage, so every visitor shares one upstream fetch per minute.

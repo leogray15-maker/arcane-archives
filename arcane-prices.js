@@ -3,7 +3,7 @@
  * The Arcane Archives | v3.0
  *
  * Sources:
- *  • /api/markets → Twelve Data (metals, FX, energy, indices, crypto) with
+ *  • /api/markets → FMP or Twelve Data (metals, FX, energy, indices, crypto) with
  *      day open/high/low/prev close, plus free CBOE (VIX, US indices) and US
  *      Treasury (2Y/10Y/30Y yields) backups and CoinPaprika crypto overview.
  *      Keys live in Vercel env vars only (see lib/market/providers.js).
@@ -75,7 +75,7 @@
       try {
         console.log('%c[ArcanePrices] sources →',
           'color:#f5c842;font-weight:bold',
-          'Twelve Data key:', j.meta?.keySet, j.meta?.error ? '| error: ' + j.meta.error : '',
+          'Provider:', j.meta?.provider, '| key set:', j.meta?.keySet, j.meta?.error ? '| error: ' + j.meta.error : '',
           '| by source:', j.meta?.sources || {}, '| missing:', (j.meta?.missing || []).join(',') || 'none');
       } catch (_) {}
       const d = j && j.data;
@@ -155,12 +155,12 @@
           mcap: prev.mcap, vol: sym === 'BTC' ? (prev.vol || fmtBig(parseFloat(t.quoteVolume) || 0)) : undefined,
         });
       });
-    } catch (e) { /* keep Twelve Data values */ }
+    } catch (e) { /* keep server values */ }
   }
 
   /* ─── Main refresh ────────────────────────── */
   async function refresh() {
-    await fetchMarkets();       // Twelve Data + CBOE + Treasury
+    await fetchMarkets();       // FMP or Twelve Data + CBOE + Treasury
     await fetchFX();            // fills FX only if missing
     await fetchCryptoDirect();  // Binance: real-time crypto, wins last
     notify();
