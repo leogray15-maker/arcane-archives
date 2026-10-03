@@ -188,7 +188,9 @@
     }
 
     // Try the live Notion API (with a timeout), then fall back to a committed snapshot.
+    let LAST_API_ERR = null;   // diagnostic from /api/notion, shown in the error state
     async function fetchPage(id) {
+      LAST_API_ERR = null;
       try {
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 12000);
@@ -197,8 +199,12 @@
         if (r.ok) {
           const j = await r.json();
           if (!j.error) return j;
+        } else {
+          const j = await r.json().catch(() => ({}));
+          LAST_API_ERR = j.hint || j.message || `HTTP ${r.status}`;
+          console.warn('[reader] /api/notion failed:', r.status, j);
         }
-      } catch (_) {}
+      } catch (e) { LAST_API_ERR = e.name === 'AbortError' ? 'Request timed out' : e.message; }
       try {
         const r = await fetch(`content/${id}.json`);
         if (r.ok) return await r.json();
@@ -212,6 +218,7 @@
         <div class="reader-state">
           <h3>Couldn't load this content</h3>
           <p>The connection may be slow or interrupted. Try again, or open it directly in Notion.</p>
+          ${LAST_API_ERR ? `<p style="font-size:0.78rem;opacity:0.6;margin-top:0.5rem">${String(LAST_API_ERR).replace(/</g, '&lt;')}</p>` : ''}
           <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
             <button class="btn-primary" id="retry-btn">↻ Retry</button>
             <a class="btn-ghost" href="https://www.notion.so/${id}" target="_blank" rel="noopener">Open in Notion ↗</a>

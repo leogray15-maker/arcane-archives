@@ -109,7 +109,12 @@ async function notionFetch(path, token) {
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Notion ${res.status}: ${body.slice(0, 200)}`);
+    let code = "";
+    try { code = JSON.parse(body).code || ""; } catch (_) {}
+    const err = new Error(`Notion ${res.status}: ${body.slice(0, 200)}`);
+    err.status = res.status;
+    err.code = code;
+    throw err;
   }
   return res.json();
 }
@@ -134,6 +139,18 @@ function getPageTitle(page) {
     }
   }
   return "Untitled";
+}
+
+// Plain-English fix for the common Notion API failures
+function hintFor(err) {
+  if (err.status === 401 || err.code === "unauthorized")
+    return "NOTION_TOKEN is invalid or was revoked/regenerated. Copy the current secret from notion.so/profile/integrations into Vercel env vars, then Redeploy.";
+  if (err.status === 403 || err.code === "restricted_resource")
+    return "The integration lacks the 'Read content' capability. Enable it in notion.so/profile/integrations → your integration → Capabilities.";
+  if (err.status === 404 || err.code === "object_not_found")
+    return "The integration can't see this page. In Notion open 'The Arcane Archives' → ••• → Connections → add the integration.";
+  if (err.status === 429) return "Notion rate limit hit. Try again in a minute.";
+  return "Unexpected Notion API error — see message.";
 }
 
 module.exports = async (req, res) => {
@@ -174,6 +191,12 @@ module.exports = async (req, res) => {
     res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=86400");
     return res.status(200).json({ title: getPageTitle(page), lessons, html });
   } catch (err) {
-    return res.status(502).json({ error: "notion_error", message: err.message });
+    return res.status(502).json({
+      error: "notion_error",
+      notionStatus: err.status || null,
+      notionCode: err.code || null,
+      hint: hintFor(err),
+      message: err.message,
+    });
   }
 };
